@@ -131,3 +131,7 @@ Labelling only planted conflicts would allow measurement of recall, but not prec
 
 **Revisit when**
 If the corpus becomes much larger and some deterministic labels can be generated automatically and then human-verified.
+
+## 2026-09-25 — 5. Typed close-of-day quiz instead of voice memos
+
+Replaced voice memos with a typed close-of-day quiz; will practise spoken answers before Checkpoint 2.
