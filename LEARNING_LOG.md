@@ -8,4 +8,6 @@
 
 **Failure:** I pasted my real API key into the chat and had to revoke it. My script also crashed because it read the thinking block instead of the answer, and then printed nothing because of one stray colon — valid code that silently did the wrong thing.
 
-**Still unclear:** Much of the setup felt too technical; I wouldn't yet know how to fix a PATH problem on my own. I spent time on three rounds of design changes after saying the design was frozen — worth watching tomorrow.
+**Still unclear:** Much of the setup felt too technical; I wouldn't yet know how to fix a PATH problem on my own. I spent time on three rounds of design changes after saying the design was frozen — worth watching from Day 2.
+
+**Open question for Day 3:** Should extraction capture customer statements — reliance ("our go-live depends on it") and obligations — alongside vendor commitments?
