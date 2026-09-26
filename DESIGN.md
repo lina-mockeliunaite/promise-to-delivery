@@ -21,6 +21,15 @@ All data is fictional: a RegTech vendor selling transaction monitoring and case 
 
 A list of conflicts, each put to a person as a decision. Every conflict shows the commitment, the evidence from each source side by side with exact quotes, how its language, authorisation evidence and contractual presence changed across documents, the catalogue position it conflicts with, and a suggested resolution. It closes only when a person assigns an owner and one of five actions: confirm capability, change scope, price services, move a milestone, or clarify a customer dependency. The approved decisions become the handoff baseline for delivery.
 
+## Two failure modes
+
+The system asks where every meaningful customer promise ended up, not only which risky promises reached the contract.
+
+1. **Overcommitment**: a promise becomes firmer, broader or more contractual than the company authorised.
+2. **Expectation gap**: a firm, testable promise made in a call, RFP response, proposal or email is not reflected in the draft contract, SOW or priced services, and nothing explicitly withdrew it. The system can see only the absence of a written disposition, not the customer's expectations.
+
+Before signature, every expectation gap must end in one of three states, chosen on the decision screen using the existing five actions: incorporated into the contract or SOW; accepted as an approved delivery commitment with an owner; or explicitly changed, excluded or superseded and clarified with the customer.
+
 ## Core model
 
 Every commitment carries three separate attributes, because what someone said, what the company authorised and what is heading into the contract are different things:
@@ -43,7 +52,7 @@ One of the strongest findings the system can make: *this appears in the draft co
 2. **Extract** — the model finds every commitment, with the exact quote, who made it and its language level. Contractual presence comes from the document type. A checker confirms every quote exists word for word in its source.
 3. **Consolidate** — merge the same promise worded different ways into one record with its history, stored in a SQLite ledger. Later evidence supersedes an earlier commitment only when it explicitly revises it or belongs to the same controlled document lineage. Otherwise both versions remain and the system flags a contradiction; a later email does not silently override a draft contract or approved SOW.
 4. **Find conflicts** — two kinds:
-   - **Evidence conflicts**: drift, contradictions, disappearing conditions and newly added dates across documents. Largely deterministic once commitments are consolidated.
+   - **Evidence conflicts**: drift, contradictions, disappearing conditions and newly added dates across documents. Largely deterministic once commitments are consolidated. This includes **expectation gaps**: flag any firm, testable customer-facing commitment whose material terms are not matched or incorporated by reference in the draft contract, SOW or priced services, and for which no later document explicitly supersedes, excludes or withdraws that commitment. *Testable* means it contains a quantity, date, volume, geography, named capability or integration, defined scope, service effort or responsibility. A generic umbrella clause does not match specific terms. Where the link between a commitment and a contract clause is uncertain, the result is *needs review*, never a confirmed gap.
    - **Capability and authorisation conflicts**: whether the resulting commitment is supported by the catalogue or an explicit exception approval; this step assigns authorisation evidence. Built twice, once with rules and once as an agent with catalogue-search tools; the evaluation results decide which one stays.
 5. **Decide** — a review screen presents each conflict with its evidence and three reviewer lenses (Product, Delivery, Commercial/Contractual). A person picks the owner and action. Once approved, the decision is immutable; any later change creates a new version and preserves the earlier decision in the audit history.
 6. **Approved baseline** — export the approved decisions as the handoff record.

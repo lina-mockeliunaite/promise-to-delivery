@@ -135,3 +135,16 @@ If the corpus becomes much larger and some deterministic labels can be generated
 ## 2026-09-25 — 5. Typed close-of-day quiz instead of voice memos
 
 Replaced voice memos with a typed close-of-day quiz; will practise spoken answers before Checkpoint 2.
+
+## 2026-09-26 — 6. Detect expectation gaps across the complete deal record
+
+**What I chose**
+Detect unresolved specific commitments across the complete deal record, not only unauthorised commitments in the contract. Flag any firm, testable customer-facing commitment whose material terms are not matched or incorporated by reference in the draft contract, SOW or priced services, and for which no later document explicitly supersedes, excludes or withdraws that commitment. Testable means it contains a quantity, date, volume, geography, named capability or integration, defined scope, service effort or responsibility.
+
+**What I rejected**
+Flagging every earlier firm statement absent from the contract, because generic RFP answers would create excessive noise.
+
+**Why**
+A gap is raised only when material terms are unmatched and there is no explicit later disposition. The end states (incorporated, accepted with an owner, or explicitly changed and clarified with the customer) belong on the decision screen, not in extraction, and need no sixth action. Consolidation accuracy becomes a critical dependency: an uncertain link is shown as needs review, never asserted as a confirmed gap. One Harbour Bank conflict is replaced by an expectation-gap scenario, keeping the total at six.
+
+This is the final conceptual change. New ideas go on the Later list.
