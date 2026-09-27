@@ -11,3 +11,18 @@
 **Still unclear:** Much of the setup felt too technical; I wouldn't yet know how to fix a PATH problem on my own. I spent time on three rounds of design changes after saying the design was frozen — worth watching from Day 2.
 
 **Open question for Day 3:** Should extraction capture customer statements — reliance ("our go-live depends on it") and obligations — alongside vendor commitments?
+
+
+## 2026-09-27 — Day 2
+
+**Learned:** A region's catalogue record can hold its status, approval rule, limits and GA date together, so I can check a promise against the right market.
+
+**Stuck on:** reading the exercise instructions (what "predict what it will print" meant; where to run commands vs edit files). Pasted file contents into Terminal once.
+
+**Failure:** typo "reqiures" and "2027-o3-31" passed as valid JSON. Removed a comma on purpose: error reported line 5, mistake on line 4.
+
+**Still unclear:** How to reliably extract one commitment spread across several turns of a conversation.
+
+**Scorecard 25 Sep:** 2, 2, 1, 1, 1, 1, 1, 1, 1, 1
+
+**Scope:** Harbour Bank drift storyline moved to Day 3 (time ceiling).

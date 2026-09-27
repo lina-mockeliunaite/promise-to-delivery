@@ -1,0 +1,165 @@
+{
+  "as_of": "2026-09-27",
+  "capabilities": [
+    {
+      "id": "CAP-001",
+      "name": "Transaction monitoring rules engine",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-002",
+      "name": "Scenario and threshold tuning",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-003",
+      "name": "Real-time transaction monitoring",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": { "max_transactions_per_day": 500000 }, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": { "max_transactions_per_day": 500000 }, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-004",
+      "name": "Scheduled batch monitoring",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-005",
+      "name": "Customer risk scoring",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-006",
+      "name": "Alert triage queue",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-007",
+      "name": "Sanctions screening API",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": { "max_screenings_per_day": 100000 }, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": { "max_screenings_per_day": 50000 }, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-008",
+      "name": "Fuzzy name matching",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-009",
+      "name": "Watchlist updates",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-010",
+      "name": "Alert assignment and SLA tracking",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-011",
+      "name": "Case management workspace",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-012",
+      "name": "Transaction feed connector",
+      "regions": {
+        "SG": { "status": "beta", "sellable": "requires_named_approval", "limits": { "max_transactions_per_day": 50000 }, "roadmap_date": "2027-03-31" },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": { "max_transactions_per_day": 50000 }, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-013",
+      "name": "Case evidence and attachments",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-014",
+      "name": "Case audit history",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-015",
+      "name": "Suspicious activity report drafting",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-016",
+      "name": "Operational and audit reports",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-017",
+      "name": "Core banking event streaming",
+      "regions": {
+        "SG": { "status": "roadmap", "sellable": "requires_named_approval", "limits": {}, "roadmap_date": "2027-06-30" },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-018",
+      "name": "REST transaction ingestion API",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": {}, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-019",
+      "name": "Regional cloud deployment",
+      "regions": {
+        "SG": { "status": "generally_available", "sellable": "standard", "limits": { "supported_clouds": ["AWS", "GCP"] }, "roadmap_date": null },
+        "AU": { "status": "generally_available", "sellable": "standard", "limits": { "supported_clouds": ["AWS", "GCP"] }, "roadmap_date": null }
+      }
+    },
+    {
+      "id": "CAP-020",
+      "name": "Enhanced graph detection",
+      "regions": {
+        "SG": { "status": "roadmap", "sellable": "requires_named_approval", "limits": {}, "roadmap_date": "2027-09-30" },
+        "AU": { "status": "roadmap", "sellable": "requires_named_approval", "limits": {}, "roadmap_date": "2027-09-30" }
+      }
+    }
+  ]
+}

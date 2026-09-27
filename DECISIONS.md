@@ -148,3 +148,22 @@ Flagging every earlier firm statement absent from the contract, because generic 
 A gap is raised only when material terms are unmatched and there is no explicit later disposition. The end states (incorporated, accepted with an owner, or explicitly changed and clarified with the customer) belong on the decision screen, not in extraction, and need no sixth action. Consolidation accuracy becomes a critical dependency: an uncertain link is shown as needs review, never asserted as a confirmed gap. One Harbour Bank conflict is replaced by an expectation-gap scenario, keeping the total at six.
 
 This is the final conceptual change. New ideas go on the Later list.
+
+
+## 2026-09-27 — Day 2: capability catalogue
+
+**Per-region records.** Chose: status, sellable, limits and roadmap_date stored per region. Rejected: one status per capability; top-level defaults with regional overrides. Why: a capability can be GA in AU and beta in SG. Complete records per region are easier to verify than a fallback rule at 20 capabilities × 2 regions.
+
+**Fixed vocabularies.** Chose: status = roadmap | beta | generally_available | deprecated | retired; sellable = standard | requires_named_approval | not_sellable; regions = SG, AU; clouds = AWS, GCP. Why: code matches exact words. A typo or synonym silently changes a verdict. HK dropped: no deal uses it.
+
+**Valid combinations.** roadmap or beta → requires_named_approval or not_sellable. deprecated or retired → not_sellable. roadmap_date = planned GA date in that region: a date or null while roadmap/beta; null once GA.
+
+**Absolute limits.** Chose: not_sellable and supported_clouds cannot be overridden by any exception. A pricing note that claims to is flagged as a contradiction. Numeric limits can be exceeded only with recorded exception approval. supported_clouds is an allowlist: anything not listed is unsupported. Status: not_sellable is untested in either deal (known gap).
+
+**Authorisation checked for firm commitments only.** Why: exploratory and conditional statements are not promises. If one later firms up, the evidence rules catch it as drift. Otherwise a correct hedge becomes a false flag.
+
+**Roadmap-date mismatch, not "slip".** Chose: the conflict is a firm proposal date earlier than the catalogue's GA date. Rejected: a Product email confirming the change. Why: two sources prove the dates conflict, not why they changed. No new authority source is needed.
+
+**AU cloud trap.** Chose: AU hosting GA on AWS/GCP; the trap is a promise of another cloud. Rejected: AU hosting not_sellable. Why: a capability being available in Australia does not mean we can deliver it on the cloud platform Coral Pay requires.
+
+**Who wrote the catalogue.** I chose the capabilities, facts and traps; Claude formatted the JSON; I validated and read every entry.
