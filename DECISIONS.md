@@ -167,3 +167,7 @@ This is the final conceptual change. New ideas go on the Later list.
 **AU cloud trap.** Chose: AU hosting GA on AWS/GCP; the trap is a promise of another cloud. Rejected: AU hosting not_sellable. Why: a capability being available in Australia does not mean we can deliver it on the cloud platform Coral Pay requires.
 
 **Who wrote the catalogue.** I chose the capabilities, facts and traps; Claude formatted the JSON; I validated and read every entry.
+
+**Scope change: Lovable demo front end.** Chose: add a Lovable front end on Day 11 (15 Oct, +2 hours, six-hour day), reading the pipeline's exported JSON; record the demo on it. Streamlit stays as the working decision screen on Day 10. Rejected: replacing Streamlit with Lovable; raising every day to six hours. Why: a strong demo matters for the roles I'm targeting, and presentation work suits extra hours better than new concepts. Kill rule: if the pipeline or the sealed Coral Pay run isn't complete by end of Day 10, Lovable moves to the week of 19 Oct and the demo is recorded on Streamlit. Credit: the front end is generated with Lovable, and I'll say so.
+
+**Schedule change.** Days 3–7 move one day earlier (28 Sep – 2 Oct). Mon 5 Oct becomes a buffer, used only if something slips. Checkpoint 1 stays Fri 2 Oct. Phase 2 dates unchanged; Coral Pay sealed until 14 Oct.
