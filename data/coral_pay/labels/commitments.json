@@ -1,0 +1,105 @@
+{
+  "_how_to": "One row per consolidated commitment (7), same fields as Harbour Bank plus an optional note. Rulings: Lina. JSON conversion: Claude, checked by Lina.",
+  "commitments": [
+    {
+      "id": "C01",
+      "name": "Two 90-minute operations training sessions before launch",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CP-05 Commercial-approved standard service menu (reference only): Operations training, up to two 90-minute sessions for operations staff before go-live; standard service available to all customers when ordered; not a Coral Pay order or deal-priced allocation",
+      "contractual_presence": "absent",
+      "issues": [
+        "expectation_gap"
+      ],
+      "reason": null,
+      "customer_context": [
+        {
+          "type": "reliance",
+          "source_id": "CP-08",
+          "quote": "Our operations team is planning around the two training sessions in the first week of January."
+        }
+      ]
+    },
+    {
+      "id": "C02",
+      "name": "Every NUSD payout on Solana: recipient wallet screened through Elva's analytics integration before release (real time per Annex A)",
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-021: no AU region entry; AU/Solana/NUSD path unlisted (missing catalogue branch). CP-05 silent on Solana.",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [
+        "overcommitment"
+      ],
+      "reason": "absolute_limit",
+      "note": "CP-04 promises screening before release without specifying mode; CP-06 Annex A.1 specifies real time. These are compatible terms within one commitment. Authorisation fails because the AU/Solana path is unlisted, regardless of mode.",
+      "customer_context": [
+        {
+          "type": "reliance",
+          "source_id": "CP-01",
+          "quote": "We will hold each contractor payout until its recipient-wallet screening decision is clear."
+        },
+        {
+          "type": "reliance",
+          "source_id": "CP-08",
+          "quote": "Our 15 January launch depends on Elva screening every Solana recipient wallet before the payout is released."
+        }
+      ]
+    },
+    {
+      "id": "C03",
+      "name": "Coral Pay production environment deployed on Microsoft Azure, Australia East",
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-019/AU: supported_clouds [AWS, GCP] (value outside allowlist); CP-05: supported clouds AWS and GCP",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [
+        "overcommitment"
+      ],
+      "reason": "absolute_limit",
+      "customer_context": []
+    },
+    {
+      "id": "C04",
+      "name": "Payout ledger connector up to 12,000 payouts/day at launch",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-023/AU: max_payouts_per_day 20,000; 12,000 within limit; CP-05: no exception needed",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "C05",
+      "name": "Sanctions screening API up to 25,000 payer and beneficiary name screenings/day",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-007/AU: max_screenings_per_day 50,000; 25,000 within limit; CP-05: no exception needed",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "C06",
+      "name": "Payout exceptions managed in case management workspace",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-011/AU: generally_available, standard; CP-05: no exception needed",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "C07",
+      "name": "15 January 2027 go-live, conditional on sandbox/testnet access by 15 December 2026",
+      "authorisation": null,
+      "authorisation_evidence": "not applicable: S02 is conditional; CP-08 supplies customer access context",
+      "contractual_presence": "absent",
+      "issues": [],
+      "reason": null,
+      "customer_context": [
+        {
+          "type": "customer_obligation",
+          "source_id": "CP-08",
+          "quote": "Raj confirms sandbox and testnet access will be ready by 10 December."
+        }
+      ]
+    }
+  ]
+}

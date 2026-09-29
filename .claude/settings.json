@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(./data/coral_pay/**)",
+      "Edit(./data/coral_pay/**)"
+    ]
+  }
+}

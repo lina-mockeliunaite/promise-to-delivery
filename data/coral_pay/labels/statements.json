@@ -1,0 +1,145 @@
+{
+  "_how_to": "One row per vendor statement meeting the commitment definition. Copy each quote exactly from its source document. language = exploratory | conditional | firm. commitment_ids refer to C01-C07. Customer context belongs in commitments.json. Complete: 14 statements across CP-01 to CP-06. CP-05 (internal evidence), CP-07 (references only) and CP-08 (customer-authored) contain no Elva statements. Excluded by rule: CP-02 'reviewing Solana coverage' (next step); CP-04 §2 and CP-06 §7 Ethereum sentences (scope statements, no Elva promise); CP-06 A.2 (scope of the specification). Rulings: Lina. JSON conversion: Claude, checked by Lina.",
+  "statements": [
+    {
+      "id": "S01",
+      "source_id": "CP-01",
+      "speaker": "Ben Carter (Elva)",
+      "quote": "We're exploring whether Elva's integration could screen NUSD recipient wallets on Solana for your Australian launch.",
+      "language": "exploratory",
+      "commitment_ids": [
+        "C02"
+      ]
+    },
+    {
+      "id": "S02",
+      "source_id": "CP-02",
+      "speaker": "Hannah Moore (Elva)",
+      "quote": "We can target your 15 January 2027 go-live, provided Coral Pay gives us sandbox and testnet access by 15 December 2026.",
+      "language": "conditional",
+      "commitment_ids": [
+        "C07"
+      ]
+    },
+    {
+      "id": "S03",
+      "source_id": "CP-03",
+      "speaker": "Elva (questionnaire response)",
+      "quote": "Elva will deploy Coral Pay's production environment on Microsoft Azure in the Australia East region.",
+      "language": "firm",
+      "commitment_ids": [
+        "C03"
+      ]
+    },
+    {
+      "id": "S04",
+      "source_id": "CP-04",
+      "speaker": "Elva (proposal)",
+      "quote": "Elva will screen the recipient wallet of every NUSD payout on Solana through its pre-built analytics integration before release.",
+      "language": "firm",
+      "commitment_ids": [
+        "C02"
+      ]
+    },
+    {
+      "id": "S05",
+      "source_id": "CP-04",
+      "speaker": "Elva (proposal)",
+      "quote": "The payout ledger connector will handle up to 12,000 payouts per day at launch.",
+      "language": "firm",
+      "commitment_ids": [
+        "C04"
+      ]
+    },
+    {
+      "id": "S06",
+      "source_id": "CP-04",
+      "speaker": "Elva (proposal)",
+      "quote": "Elva's sanctions screening API will screen up to 25,000 payer and beneficiary names per day.",
+      "language": "firm",
+      "commitment_ids": [
+        "C05"
+      ]
+    },
+    {
+      "id": "S07",
+      "source_id": "CP-04",
+      "speaker": "Elva (proposal)",
+      "quote": "Payout exceptions will be managed in Elva's case management workspace.",
+      "language": "firm",
+      "commitment_ids": [
+        "C06"
+      ]
+    },
+    {
+      "id": "S08",
+      "source_id": "CP-04",
+      "speaker": "Elva (proposal)",
+      "quote": "Elva will deliver two 90-minute operations training sessions for Coral Pay's payout operations team before launch.",
+      "language": "firm",
+      "commitment_ids": [
+        "C01"
+      ]
+    },
+    {
+      "id": "S09",
+      "source_id": "CP-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "Provider will deploy Customer's production environment on Microsoft Azure in the Australia East region.",
+      "language": "firm",
+      "commitment_ids": [
+        "C03"
+      ]
+    },
+    {
+      "id": "S10",
+      "source_id": "CP-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "The payout ledger connector will handle up to 12,000 payouts per day at launch.",
+      "language": "firm",
+      "commitment_ids": [
+        "C04"
+      ]
+    },
+    {
+      "id": "S11",
+      "source_id": "CP-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "Provider's sanctions screening API will screen up to 25,000 payer and beneficiary names per day.",
+      "language": "firm",
+      "commitment_ids": [
+        "C05"
+      ]
+    },
+    {
+      "id": "S12",
+      "source_id": "CP-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "Payout exceptions will be managed in Provider's case management workspace.",
+      "language": "firm",
+      "commitment_ids": [
+        "C06"
+      ]
+    },
+    {
+      "id": "S13",
+      "source_id": "CP-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "Provider will provide NUSD recipient-wallet screening for Customer's Solana payouts through Elva's pre-built analytics integration, in accordance with the Wallet Screening Specification in Annex A.",
+      "language": "firm",
+      "commitment_ids": [
+        "C02"
+      ]
+    },
+    {
+      "id": "S14",
+      "source_id": "CP-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "A.1 Solana: each NUSD recipient wallet is screened through the analytics integration in real time before the payout is released.",
+      "language": "firm",
+      "commitment_ids": [
+        "C02"
+      ]
+    }
+  ]
+}
