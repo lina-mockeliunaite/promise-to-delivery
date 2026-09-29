@@ -26,3 +26,14 @@
 **Scorecard 25 Sep:** 2, 2, 1, 1, 1, 1, 1, 1, 1, 1
 
 **Scope:** Harbour Bank drift storyline moved to Day 3 (time ceiling).
+
+
+## 2026-09-28/29 — Day 3
+
+**Learned:** A statement records exactly what was said and how firmly; a commitment groups statements with the same material terms. Contract references have to be followed to their actual terms before I decide what is included.
+
+**Stuck on:** Whether SOW §3 and contract clause 3.4 should both produce rows. I resolved it by asking whether each sentence states material terms of its own or only points to them elsewhere.
+
+**Failure:** The brief initially called C05 and C06 overcommitments but missed that both also meet my written expectation-gap rule. I corrected the labels rather than scoring against the brief's intended summary.
+
+**Still unclear:** I can apply authorisation to C01, but I want to explain more crisply why it attaches to the consolidated terms once a firm promise exists, without implying that its earlier exploratory and conditional statements became firm. How to label an authorised training promise omitted from Coral Pay's contract also remains open.
