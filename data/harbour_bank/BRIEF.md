@@ -68,8 +68,8 @@ CAP-021, Singapore, NUSD:
 | # | Conflict | Ground truth |
 |---|---|---|
 | 1 | **Polygon real-time screening** | CAP-021 requires named approval for beta Polygon real-time; none is recorded. The RFP and proposal make a firm promise. Annex A and the contract chain specify hourly batches instead. Label overcommitment, expectation gap and contradiction. |
-| 2 | **Year-one payout volume** | HB-04 promises 40,000 payouts/day by year one. CAP-023's standard limit is 25,000/day. Label overcommitment; the 12,000/day launch commitment is within the limit. |
-| 3 | **VASP counterparty data date** | HB-04 promises general availability by 31 March 2027. CAP-024 is roadmap with planned GA 30 June 2027 and requires named approval. Label overcommitment and roadmap-date mismatch. |
+| 2 | **Year-one payout volume** | HB-04 promises 40,000 payouts/day by year one. CAP-023's standard limit is 25,000/day. Label overcommitment and expectation gap (absent from the SOW and contract, never withdrawn); the 12,000/day launch commitment is within the limit. |
+| 3 | **VASP counterparty data date** | HB-04 promises general availability by 31 March 2027. CAP-024 is roadmap with planned GA 30 June 2027 and requires named approval. Label overcommitment (roadmap-date mismatch) and expectation gap (absent from the SOW and contract, never withdrawn). |
 
 ## Clean and hard examples
 

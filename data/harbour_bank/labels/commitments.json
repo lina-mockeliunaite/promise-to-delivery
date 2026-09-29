@@ -4,10 +4,14 @@
     {
       "id": "C01",
       "name": "NUSD payouts on Polygon screened in real time before release",
-      "authorisation": "",
-      "authorisation_evidence": "",
-      "contractual_presence": "",
-      "issues": [],
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-021/SG/Polygon/NUSD/real_time: beta, requires_named_approval, roadmap_date 2027-03-31; HB-05: no named exception approved for Harbour Bank",
+      "contractual_presence": "absent",
+      "issues": [
+        "overcommitment",
+        "expectation_gap",
+        "contradiction"
+      ],
       "reason": null,
       "customer_context": [
         {
@@ -25,9 +29,9 @@
     {
       "id": "C02",
       "name": "NUSD payouts on Ethereum screened in real time before release",
-      "authorisation": "",
-      "authorisation_evidence": "",
-      "contractual_presence": "",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-021/SG/Ethereum/NUSD/real_time: generally_available, standard; HB-05: no exception needed",
+      "contractual_presence": "included_in_draft_contract",
       "issues": [],
       "reason": null,
       "customer_context": []
@@ -35,9 +39,9 @@
     {
       "id": "C03",
       "name": "NUSD payouts on Polygon screened in hourly batches and released after a clear result",
-      "authorisation": "",
-      "authorisation_evidence": "",
-      "contractual_presence": "",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-021/SG/Polygon/NUSD/batch: generally_available, standard; HB-05: no exception needed",
+      "contractual_presence": "included_in_draft_contract",
       "issues": [],
       "reason": null,
       "customer_context": []
@@ -45,9 +49,9 @@
     {
       "id": "C04",
       "name": "Payout ledger connector up to 12,000 payouts/day at launch",
-      "authorisation": "",
-      "authorisation_evidence": "",
-      "contractual_presence": "",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-023/SG: max_payouts_per_day 25,000; 12,000 within limit; HB-05",
+      "contractual_presence": "included_in_draft_contract",
       "issues": [],
       "reason": null,
       "customer_context": []
@@ -55,20 +59,26 @@
     {
       "id": "C05",
       "name": "Payout ledger connector up to 40,000 payouts/day by end of year one",
-      "authorisation": "",
-      "authorisation_evidence": "",
-      "contractual_presence": "",
-      "issues": [],
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-023/SG: max_payouts_per_day 25,000; HB-05: no approval for 40,000/day",
+      "contractual_presence": "absent",
+      "issues": [
+        "overcommitment",
+        "expectation_gap"
+      ],
       "reason": null,
       "customer_context": []
     },
     {
       "id": "C06",
       "name": "VASP counterparty data exchange generally available in Singapore by 31 March 2027",
-      "authorisation": "",
-      "authorisation_evidence": "",
-      "contractual_presence": "",
-      "issues": [],
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-024/SG: roadmap, requires_named_approval, roadmap_date 2027-06-30; HB-05: no named exception approved for Harbour Bank",
+      "contractual_presence": "absent",
+      "issues": [
+        "overcommitment",
+        "expectation_gap"
+      ],
       "reason": null,
       "customer_context": []
     },
@@ -76,8 +86,8 @@
       "id": "C07",
       "name": "1 December go-live, conditional on sandbox/testnet access by 15 November",
       "authorisation": null,
-      "authorisation_evidence": "",
-      "contractual_presence": "",
+      "authorisation_evidence": "not applicable: S02 is conditional; HB-08 supplies customer access context",
+      "contractual_presence": "absent",
       "issues": [],
       "reason": null,
       "customer_context": [

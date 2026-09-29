@@ -1,5 +1,5 @@
 {
-  "_how_to": "One row per vendor statement meeting the commitment definition. Copy each quote exactly from its source document. language = exploratory | conditional | firm. commitment_ids refer to C01-C07. A single statement may map to multiple commitments. Customer context belongs in commitments.json. Rows currently cover HB-01 to HB-03; continue from HB-04.",
+  "_how_to": "One row per vendor statement meeting the commitment definition. Copy each quote exactly from its source document. language = exploratory | conditional | firm. commitment_ids refer to C01-C07. A single statement may map to multiple commitments. Customer context belongs in commitments.json. Complete: 14 statements across HB-01 to HB-06. HB-05 (internal evidence), HB-07 (references only) and HB-08 (customer-authored) contain no Elva statements.",
   "statements": [
     {
       "id": "S01",
@@ -40,6 +40,107 @@
       "commitment_ids": [
         "C02",
         "C01"
+      ]
+    },
+    {
+      "id": "S05",
+      "source_id": "HB-04",
+      "speaker": "Elva (proposal)",
+      "quote": "Every NUSD payout on Polygon will be screened in real time through Elva's analytics integration before release, from the 1 December launch.",
+      "language": "firm",
+      "commitment_ids": [
+        "C01"
+      ]
+    },
+    {
+      "id": "S06",
+      "source_id": "HB-04",
+      "speaker": "Elva (proposal)",
+      "quote": "NUSD payouts on Ethereum will be screened in real time through Elva's analytics integration before release.",
+      "language": "firm",
+      "commitment_ids": [
+        "C02"
+      ]
+    },
+    {
+      "id": "S07",
+      "source_id": "HB-04",
+      "speaker": "Elva (proposal)",
+      "quote": "The payout ledger connector will handle up to 12,000 payouts per day at launch.",
+      "language": "firm",
+      "commitment_ids": [
+        "C04"
+      ]
+    },
+    {
+      "id": "S08",
+      "source_id": "HB-04",
+      "speaker": "Elva (proposal)",
+      "quote": "The payout ledger connector will handle up to 40,000 payouts per day by the end of the first year.",
+      "language": "firm",
+      "commitment_ids": [
+        "C05"
+      ]
+    },
+    {
+      "id": "S09",
+      "source_id": "HB-04",
+      "speaker": "Elva (proposal)",
+      "quote": "For payouts to exchange-hosted wallets, VASP counterparty data exchange will be generally available in Singapore by 31 March 2027.",
+      "language": "firm",
+      "commitment_ids": [
+        "C06"
+      ]
+    },
+    {
+      "id": "S10",
+      "source_id": "HB-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "The payout ledger connector will handle up to 12,000 payouts per day at launch.",
+      "language": "firm",
+      "commitment_ids": [
+        "C04"
+      ]
+    },
+    {
+      "id": "S11",
+      "source_id": "HB-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "Provider will provide NUSD wallet screening for HarbourPay Global payouts on Ethereum and Polygon through Elva's pre-built connector to Customer's configured blockchain analytics service, in accordance with the Wallet Screening Specification in Annex A.",
+      "language": "firm",
+      "commitment_ids": [
+        "C02",
+        "C03"
+      ]
+    },
+    {
+      "id": "S12",
+      "source_id": "HB-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "A.1 Ethereum: each recipient wallet is screened through the analytics integration in real time before the payout is released.",
+      "language": "firm",
+      "commitment_ids": [
+        "C02"
+      ]
+    },
+    {
+      "id": "S13",
+      "source_id": "HB-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "A.2 Polygon: recipient wallets are screened through the analytics integration in batches at hourly intervals.",
+      "language": "firm",
+      "commitment_ids": [
+        "C03"
+      ]
+    },
+    {
+      "id": "S14",
+      "source_id": "HB-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "A Polygon payout is released after the next completed screening batch returns a clear result.",
+      "language": "firm",
+      "commitment_ids": [
+        "C03"
       ]
     }
   ]
