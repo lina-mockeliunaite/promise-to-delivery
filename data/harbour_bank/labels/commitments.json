@@ -1,0 +1,97 @@
+{
+  "_how_to": "One row per consolidated commitment (7). Fill authorisation with standard_authorised | exception_approved | no_approval_evidence | unknown_needs_review, or null for exploratory/conditional commitments (null means not applicable, not unknown). Add catalogue/pricing-note evidence, contractual presence (absent | included_in_draft_contract), issues (overcommitment | expectation_gap | contradiction | needs_review), reason if applicable, and customer_context items ({type: reliance | customer_obligation, source_id, quote}).",
+  "commitments": [
+    {
+      "id": "C01",
+      "name": "NUSD payouts on Polygon screened in real time before release",
+      "authorisation": "",
+      "authorisation_evidence": "",
+      "contractual_presence": "",
+      "issues": [],
+      "reason": null,
+      "customer_context": [
+        {
+          "type": "reliance",
+          "source_id": "HB-01",
+          "quote": "Our launch design is to hold each payout until screening clears the recipient wallet."
+        },
+        {
+          "type": "reliance",
+          "source_id": "HB-08",
+          "quote": "Our 1 December launch depends on Elva's real-time screening result clearing every recipient wallet before release."
+        }
+      ]
+    },
+    {
+      "id": "C02",
+      "name": "NUSD payouts on Ethereum screened in real time before release",
+      "authorisation": "",
+      "authorisation_evidence": "",
+      "contractual_presence": "",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "C03",
+      "name": "NUSD payouts on Polygon screened in hourly batches and released after a clear result",
+      "authorisation": "",
+      "authorisation_evidence": "",
+      "contractual_presence": "",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "C04",
+      "name": "Payout ledger connector up to 12,000 payouts/day at launch",
+      "authorisation": "",
+      "authorisation_evidence": "",
+      "contractual_presence": "",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "C05",
+      "name": "Payout ledger connector up to 40,000 payouts/day by end of year one",
+      "authorisation": "",
+      "authorisation_evidence": "",
+      "contractual_presence": "",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "C06",
+      "name": "VASP counterparty data exchange generally available in Singapore by 31 March 2027",
+      "authorisation": "",
+      "authorisation_evidence": "",
+      "contractual_presence": "",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "C07",
+      "name": "1 December go-live, conditional on sandbox/testnet access by 15 November",
+      "authorisation": null,
+      "authorisation_evidence": "",
+      "contractual_presence": "",
+      "issues": [],
+      "reason": null,
+      "customer_context": [
+        {
+          "type": "customer_obligation",
+          "source_id": "HB-01",
+          "quote": "We can provide sandbox and testnet access by 15 November."
+        },
+        {
+          "type": "customer_obligation",
+          "source_id": "HB-08",
+          "quote": "We can provide sandbox and testnet access by 10 November, not 15 November."
+        }
+      ]
+    }
+  ]
+}

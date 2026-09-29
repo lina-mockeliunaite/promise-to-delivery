@@ -1,0 +1,46 @@
+{
+  "_how_to": "One row per vendor statement meeting the commitment definition. Copy each quote exactly from its source document. language = exploratory | conditional | firm. commitment_ids refer to C01-C07. A single statement may map to multiple commitments. Customer context belongs in commitments.json. Rows currently cover HB-01 to HB-03; continue from HB-04.",
+  "statements": [
+    {
+      "id": "S01",
+      "source_id": "HB-01",
+      "speaker": "Priya Raman (Elva)",
+      "quote": "We're exploring whether Elva's pre-built connector to a blockchain analytics provider can return real-time screening results for Polygon wallets in time for your launch.",
+      "language": "exploratory",
+      "commitment_ids": [
+        "C01"
+      ]
+    },
+    {
+      "id": "S02",
+      "source_id": "HB-01",
+      "speaker": "Priya Raman (Elva)",
+      "quote": "We're targeting a 1 December go-live, provided Harbour Bank's sandbox and testnet access is available by 15 November.",
+      "language": "conditional",
+      "commitment_ids": [
+        "C07"
+      ]
+    },
+    {
+      "id": "S03",
+      "source_id": "HB-02",
+      "speaker": "Maya Chen (Elva)",
+      "quote": "If Product grants named approval, Elva's pre-built integration to the selected blockchain analytics provider could return real-time screening results for Polygon wallets as a limited beta; planned general availability in Singapore is 31 March 2027.",
+      "language": "conditional",
+      "commitment_ids": [
+        "C01"
+      ]
+    },
+    {
+      "id": "S04",
+      "source_id": "HB-03",
+      "speaker": "Elva (RFP response)",
+      "quote": "Through its pre-built connector to a blockchain analytics provider, Elva will return real-time wallet-screening results for Ethereum and Polygon before every NUSD payout is released.",
+      "language": "firm",
+      "commitment_ids": [
+        "C02",
+        "C01"
+      ]
+    }
+  ]
+}

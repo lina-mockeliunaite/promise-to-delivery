@@ -1,0 +1,13 @@
+{
+  "deal": "harbour_bank",
+  "documents": [
+    {"source_id": "HB-01", "file": "HB-01_discovery_call.md",          "doc_type": "call_transcript",       "date": "2026-09-28"},
+    {"source_id": "HB-02", "file": "HB-02_technical_call.md",          "doc_type": "call_transcript",       "date": "2026-10-02"},
+    {"source_id": "HB-03", "file": "HB-03_rfp_response.md",            "doc_type": "rfp_response",          "date": "2026-10-06"},
+    {"source_id": "HB-04", "file": "HB-04_proposal.md",                "doc_type": "proposal",              "date": "2026-10-10"},
+    {"source_id": "HB-05", "file": "HB-05_pricing_services_note.md",   "doc_type": "pricing_services_note", "date": "2026-10-14"},
+    {"source_id": "HB-06", "file": "HB-06_draft_sow.md",               "doc_type": "draft_sow",             "date": "2026-10-20"},
+    {"source_id": "HB-07", "file": "HB-07_draft_contract.md",          "doc_type": "draft_contract",        "date": "2026-10-23"},
+    {"source_id": "HB-08", "file": "HB-08_customer_email.md",          "doc_type": "customer_email",        "date": "2026-10-27"}
+  ]
+}
