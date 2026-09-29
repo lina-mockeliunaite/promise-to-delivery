@@ -37,3 +37,14 @@
 **Failure:** The brief initially called C05 and C06 overcommitments but missed that both also meet my written expectation-gap rule. I corrected the labels rather than scoring against the brief's intended summary.
 
 **Still unclear:** I can apply authorisation to C01, but I want to explain more crisply why it attaches to the consolidated terms once a firm promise exists, without implying that its earlier exploratory and conditional statements became firm. How to label an authorised training promise omitted from Coral Pay's contract also remains open.
+
+
+## 2026-09-29 — Day 4
+
+**Learned:** A fair baseline needs the same evidence as the later system. Catching all three planted conflicts in one run is impressive, but it does not show that every issue was found or that the result will repeat.
+
+**Stuck on:** Separating a standard service that Elva is authorised to sell from a service actually allocated to Coral Pay's deal.
+
+**Failure:** I initially thought 3 of 3 would be the whole story. The baseline missed C06's expectation gap even though it found C06's overcommitment, which taught me to score issues as well as cases.
+
+**Still unclear:** Whether the rules can give a useful verdict for every commitment without producing noise when the internal note is silent, as it is for Coral Pay.
