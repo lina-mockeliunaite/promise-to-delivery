@@ -48,3 +48,14 @@
 **Failure:** I initially thought 3 of 3 would be the whole story. The baseline missed C06's expectation gap even though it found C06's overcommitment, which taught me to score issues as well as cases.
 
 **Still unclear:** Whether the rules can give a useful verdict for every commitment without producing noise when the internal note is silent, as it is for Coral Pay.
+
+
+## 2026-09-29 — Day 5
+
+**Learned:** Structured output checks the shape of an answer, while code must check its source and quote. The first run produced 23 valid quotes, but that tells me nothing yet about whether all 23 should have been extracted.
+
+**Stuck on:** I had to work through the boundary between a possible customer outcome, a planned delivery and a bare next step. The rejected `DESIGN.md` edit also made me check the exact scope: HB-08 is customer-authored, but the general rule that an Elva-authored email can contain a promise is still right.
+
+**Failure:** I pasted the API key during setup without being careful enough about where it could be retained. I need to check where that paste went, rotate the key if it was exposed, and keep the replacement out of chat and logs.
+
+**Still unclear:** Which of the nine statements above the gold count are actual extraction errors, especially the process promises and HB-07 reference, and whether the extra thinking tokens improve accuracy enough to justify their cost.
