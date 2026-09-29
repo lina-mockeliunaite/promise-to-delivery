@@ -56,6 +56,6 @@
 
 **Stuck on:** I had to work through the boundary between a possible customer outcome, a planned delivery and a bare next step. The rejected `DESIGN.md` edit also made me check the exact scope: HB-08 is customer-authored, but the general rule that an Elva-authored email can contain a promise is still right.
 
-**Failure:** I pasted the API key during setup without being careful enough about where it could be retained. I need to check where that paste went, rotate the key if it was exposed, and keep the replacement out of chat and logs.
+**Failure:** I pasted my full API key into the chat — the second time after Day 1. I revoked it and created a new one straight away, and now set the key with `read -s` so it never appears on screen or in shell history.
 
 **Still unclear:** Which of the nine statements above the gold count are actual extraction errors, especially the process promises and HB-07 reference, and whether the extra thinking tokens improve accuracy enough to justify their cost.
