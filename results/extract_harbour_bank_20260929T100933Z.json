@@ -1,0 +1,429 @@
+{
+  "deal": "harbour_bank",
+  "timestamp_utc": "2026-09-29T10:09:33+00:00",
+  "model": "claude-sonnet-5",
+  "max_tokens": 8000,
+  "thinking_mode": "model_default",
+  "prompt_hashes": {
+    "system_prompt_sha256": "3b283af80b989139c82c20ef4d83dc743c1abb247da9ae07432c94df2f309b26",
+    "user_template_sha256": "2afd3f1e5767267451f199f06d1ddcf1d6a3f2cdbf7acf4798939a4c18a398d4",
+    "schema_sha256": "a4debfaf8d03c75b41ab354d49451522b20119c90df1ee6643c5690a7fc0d5a8"
+  },
+  "price_per_mtok_usd": {
+    "input": 2.0,
+    "output": 10.0
+  },
+  "status_counts": {
+    "complete": 6,
+    "skipped_reference_only": 2
+  },
+  "totals": {
+    "input_tokens": 9560,
+    "output_tokens": 4845,
+    "thinking_tokens": 3430,
+    "cost_usd": 0.06757
+  },
+  "documents": [
+    {
+      "source_id": "HB-01",
+      "file": "HB-01_discovery_call.md",
+      "doc_type": "call_transcript",
+      "date": "2026-09-28",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1818,
+            "output_tokens": 844,
+            "thinking_tokens": 589
+          },
+          "cost_usd": 0.012076
+        }
+      ],
+      "statements": [
+        {
+          "quote": "We're exploring whether Elva's pre-built connector to a blockchain analytics provider can return real-time screening results for Polygon wallets in time for your launch.",
+          "speaker": "Priya Raman",
+          "language": "exploratory",
+          "statement_id": "HB-01-S01",
+          "source_id": "HB-01",
+          "doc_type": "call_transcript",
+          "date": "2026-09-28"
+        },
+        {
+          "quote": "I'll bring our Product team to the next call so you hear it first-hand.",
+          "speaker": "Priya Raman",
+          "language": "firm",
+          "statement_id": "HB-01-S02",
+          "source_id": "HB-01",
+          "doc_type": "call_transcript",
+          "date": "2026-09-28"
+        },
+        {
+          "quote": "We're targeting a 1 December go-live, provided Harbour Bank's sandbox and testnet access is available by 15 November.",
+          "speaker": "Priya Raman",
+          "language": "conditional",
+          "statement_id": "HB-01-S03",
+          "source_id": "HB-01",
+          "doc_type": "call_transcript",
+          "date": "2026-09-28"
+        },
+        {
+          "quote": "We'll respond to your RFP within the window and follow with a proposal.",
+          "speaker": "Daniel Ong",
+          "language": "firm",
+          "statement_id": "HB-01-S04",
+          "source_id": "HB-01",
+          "doc_type": "call_transcript",
+          "date": "2026-09-28"
+        }
+      ],
+      "input_tokens": 1818,
+      "output_tokens": 844,
+      "thinking_tokens": 589,
+      "cost_usd": 0.012076
+    },
+    {
+      "source_id": "HB-02",
+      "file": "HB-02_technical_call.md",
+      "doc_type": "call_transcript",
+      "date": "2026-10-02",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1538,
+            "output_tokens": 473,
+            "thinking_tokens": 320
+          },
+          "cost_usd": 0.007806
+        }
+      ],
+      "statements": [
+        {
+          "quote": "If Product grants named approval, Elva's pre-built integration to the selected blockchain analytics provider could return real-time screening results for Polygon wallets as a limited beta; planned general availability in Singapore is 31 March 2027.",
+          "speaker": "Maya Chen",
+          "language": "conditional",
+          "statement_id": "HB-02-S01",
+          "source_id": "HB-02",
+          "doc_type": "call_transcript",
+          "date": "2026-10-02"
+        },
+        {
+          "quote": "Priya can walk your architects through the options after this call.",
+          "speaker": "Maya Chen",
+          "language": "firm",
+          "statement_id": "HB-02-S02",
+          "source_id": "HB-02",
+          "doc_type": "call_transcript",
+          "date": "2026-10-02"
+        }
+      ],
+      "input_tokens": 1538,
+      "output_tokens": 473,
+      "thinking_tokens": 320,
+      "cost_usd": 0.007806
+    },
+    {
+      "source_id": "HB-03",
+      "file": "HB-03_rfp_response.md",
+      "doc_type": "rfp_response",
+      "date": "2026-10-06",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1529,
+            "output_tokens": 779,
+            "thinking_tokens": 607
+          },
+          "cost_usd": 0.010848
+        }
+      ],
+      "statements": [
+        {
+          "quote": "Through its pre-built connector to a blockchain analytics provider, Elva will return real-time wallet-screening results for Ethereum and Polygon before every NUSD payout is released.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-03-S01",
+          "source_id": "HB-03",
+          "doc_type": "rfp_response",
+          "date": "2026-10-06"
+        },
+        {
+          "quote": "Elva follows a phased methodology: discovery, configuration, testing and launch readiness.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-03-S02",
+          "source_id": "HB-03",
+          "doc_type": "rfp_response",
+          "date": "2026-10-06"
+        },
+        {
+          "quote": "References are available on request.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-03-S03",
+          "source_id": "HB-03",
+          "doc_type": "rfp_response",
+          "date": "2026-10-06"
+        }
+      ],
+      "input_tokens": 1529,
+      "output_tokens": 779,
+      "thinking_tokens": 607,
+      "cost_usd": 0.010848
+    },
+    {
+      "source_id": "HB-04",
+      "file": "HB-04_proposal.md",
+      "doc_type": "proposal",
+      "date": "2026-10-10",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1551,
+            "output_tokens": 810,
+            "thinking_tokens": 506
+          },
+          "cost_usd": 0.011202
+        }
+      ],
+      "statements": [
+        {
+          "quote": "Every NUSD payout on Polygon will be screened in real time through Elva's analytics integration before release, from the 1 December launch.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-04-S01",
+          "source_id": "HB-04",
+          "doc_type": "proposal",
+          "date": "2026-10-10"
+        },
+        {
+          "quote": "NUSD payouts on Ethereum will be screened in real time through Elva's analytics integration before release.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-04-S02",
+          "source_id": "HB-04",
+          "doc_type": "proposal",
+          "date": "2026-10-10"
+        },
+        {
+          "quote": "The payout ledger connector will handle up to 12,000 payouts per day at launch.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-04-S03",
+          "source_id": "HB-04",
+          "doc_type": "proposal",
+          "date": "2026-10-10"
+        },
+        {
+          "quote": "The payout ledger connector will handle up to 40,000 payouts per day by the end of the first year.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-04-S04",
+          "source_id": "HB-04",
+          "doc_type": "proposal",
+          "date": "2026-10-10"
+        },
+        {
+          "quote": "For payouts to exchange-hosted wallets, VASP counterparty data exchange will be generally available in Singapore by 31 March 2027.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-04-S05",
+          "source_id": "HB-04",
+          "doc_type": "proposal",
+          "date": "2026-10-10"
+        }
+      ],
+      "input_tokens": 1551,
+      "output_tokens": 810,
+      "thinking_tokens": 506,
+      "cost_usd": 0.011202
+    },
+    {
+      "source_id": "HB-05",
+      "file": "HB-05_pricing_services_note.md",
+      "doc_type": "pricing_services_note",
+      "date": "2026-10-14",
+      "status": "skipped_reference_only",
+      "error": null,
+      "attempts": [],
+      "statements": []
+    },
+    {
+      "source_id": "HB-06",
+      "file": "HB-06_draft_sow.md",
+      "doc_type": "draft_sow",
+      "date": "2026-10-20",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1638,
+            "output_tokens": 1494,
+            "thinking_tokens": 1074
+          },
+          "cost_usd": 0.018216
+        }
+      ],
+      "statements": [
+        {
+          "quote": "The payout ledger connector will handle up to 12,000 payouts per day at launch.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-06-S01",
+          "source_id": "HB-06",
+          "doc_type": "draft_sow",
+          "date": "2026-10-20"
+        },
+        {
+          "quote": "Provider will provide NUSD wallet screening for HarbourPay Global payouts on Ethereum and Polygon through Elva's pre-built connector to Customer's configured blockchain analytics service, in accordance with the Wallet Screening Specification in Annex A.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-06-S02",
+          "source_id": "HB-06",
+          "doc_type": "draft_sow",
+          "date": "2026-10-20"
+        },
+        {
+          "quote": "The parties will hold a weekly project status meeting during implementation.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-06-S03",
+          "source_id": "HB-06",
+          "doc_type": "draft_sow",
+          "date": "2026-10-20"
+        },
+        {
+          "quote": "Ethereum: each recipient wallet is screened through the analytics integration in real time before the payout is released.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-06-S04",
+          "source_id": "HB-06",
+          "doc_type": "draft_sow",
+          "date": "2026-10-20"
+        },
+        {
+          "quote": "Polygon: recipient wallets are screened through the analytics integration in batches at hourly intervals.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-06-S05",
+          "source_id": "HB-06",
+          "doc_type": "draft_sow",
+          "date": "2026-10-20"
+        },
+        {
+          "quote": "A Polygon payout is released after the next completed screening batch returns a clear result.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-06-S06",
+          "source_id": "HB-06",
+          "doc_type": "draft_sow",
+          "date": "2026-10-20"
+        },
+        {
+          "quote": "This specification applies to NUSD payouts on Ethereum and Polygon.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-06-S07",
+          "source_id": "HB-06",
+          "doc_type": "draft_sow",
+          "date": "2026-10-20"
+        }
+      ],
+      "input_tokens": 1638,
+      "output_tokens": 1494,
+      "thinking_tokens": 1074,
+      "cost_usd": 0.018216
+    },
+    {
+      "source_id": "HB-07",
+      "file": "HB-07_draft_contract.md",
+      "doc_type": "draft_contract",
+      "date": "2026-10-23",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1486,
+            "output_tokens": 445,
+            "thinking_tokens": 334
+          },
+          "cost_usd": 0.007422
+        }
+      ],
+      "statements": [
+        {
+          "quote": "Provider will perform the services described in the Statement of Work dated 20 October 2026, including Annex A.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-07-S01",
+          "source_id": "HB-07",
+          "doc_type": "draft_contract",
+          "date": "2026-10-23"
+        },
+        {
+          "quote": "Provider will provide wallet screening services as described in SOW section 3.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "HB-07-S02",
+          "source_id": "HB-07",
+          "doc_type": "draft_contract",
+          "date": "2026-10-23"
+        }
+      ],
+      "input_tokens": 1486,
+      "output_tokens": 445,
+      "thinking_tokens": 334,
+      "cost_usd": 0.007422
+    },
+    {
+      "source_id": "HB-08",
+      "file": "HB-08_customer_email.md",
+      "doc_type": "customer_email",
+      "date": "2026-10-27",
+      "status": "skipped_reference_only",
+      "error": null,
+      "attempts": [],
+      "statements": []
+    }
+  ]
+}

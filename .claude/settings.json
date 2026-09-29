@@ -1,8 +1,11 @@
 {
   "permissions": {
+    "defaultMode": "default",
     "deny": [
       "Read(./data/coral_pay/**)",
-      "Edit(./data/coral_pay/**)"
+      "Edit(./data/coral_pay/**)",
+      "Read(./data/coral_pay.sha256)",
+      "Edit(./data/coral_pay.sha256)"
     ]
   }
 }
