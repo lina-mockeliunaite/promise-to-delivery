@@ -69,3 +69,13 @@
 **Failure:** My labels missed the weekly implementation meeting, so one reported false positive is a gap in the answer key. The detail-lost check also treated Annex A section numbers as missing commitment details; I kept the original score and recorded both problems.
 
 **Still unclear:** I cannot yet explain how to authorise the weekly meeting if the permitted internal evidence is silent. I also do not know whether Sonnet’s advantage on Harbour Bank will hold on the sealed deal.
+
+## 2026-09-30 — Day 7
+
+**Learned:** A regression test is a fixed set of labelled cases rerun after every change, with named rows that must never break, because a better headline score can hide the exact failure the product exists to catch. When a model keeps breaking a rule it has already been given, the rule usually lacks a boundary; defining "material term" fixed the pointer sentences where repeating the rule would not have.
+
+**Stuck on:** Keeping track of why each of the four code changes existed while Claude Code worked through them; I needed the map of the day restated before the runs.
+
+**Failure:** My own check 6 failed on every Day 6 run before I had changed anything — HB-07's two pointer sentences had been there all along. The only hard case the model got wrong was a sales-process step, the same type as all five remaining Harbour Bank false positives.
+
+**Still unclear:** Whether one clean run proves the pointer fix holds, and how Day 9 should keep sales-process steps off the decision screen without a second prompt change. The hard cases were written after the prompt, so I don't yet know how much 11 of 12 is worth.
