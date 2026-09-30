@@ -67,9 +67,9 @@ def prompt_hashes() -> dict:
 
 # --- Cost and usage ------------------------------------------------------
 
-def cost_usd(input_tokens: int, output_tokens: int) -> float | None:
+def cost_usd(input_tokens: int, output_tokens: int, model: str | None = None) -> float | None:
     """Cost from config prices; None if the model's prices are not set."""
-    prices = config.PRICE_PER_MTOK.get(config.EXTRACTION_MODEL) or {}
+    prices = config.PRICE_PER_MTOK.get(model or config.EXTRACTION_MODEL) or {}
     if prices.get("input") is None or prices.get("output") is None:
         return None
     return round((input_tokens * prices["input"] + output_tokens * prices["output"]) / 1_000_000, 6)
@@ -90,20 +90,46 @@ def _short(text: str, limit: int = 2000) -> str:
     return text if len(text) <= limit else text[:limit] + f"... [{len(text) - limit} more characters]"
 
 
+# --- Run settings --------------------------------------------------------
+
+THINKING_MODES = ("model_default", "off")
+
+
+def thinking_param(mode: str, model: str) -> dict | None:
+    """The `thinking` request parameter for a mode, or None to send none.
+
+    model_default sends no parameter. off sends {"type": "disabled"}, which only some models accept;
+    the rest would answer 400, so refuse before any call.
+    """
+    if mode == "model_default":
+        return None
+    if mode == "off":
+        if model not in config.THINKING_DISABLED_ACCEPTED:
+            raise ValueError(f"--thinking off is not supported for model {model!r}; "
+                             f"models known to accept thinking 'disabled': {config.THINKING_DISABLED_ACCEPTED}")
+        return {"type": "disabled"}
+    raise ValueError(f"THINKING_MODE {mode!r} is not implemented; only {list(THINKING_MODES)}")
+
+
 # --- One model call ------------------------------------------------------
 
-def attempt_extraction(client, doc_type: str, text: str, number: int) -> tuple[dict, DocExtraction | None]:
+def attempt_extraction(client, doc_type: str, text: str, number: int,
+                       model: str | None = None, thinking_mode: str | None = None) -> tuple[dict, DocExtraction | None]:
     """One call. Returns (attempt record for the run log, parsed result or None)."""
+    model = model or config.EXTRACTION_MODEL
+    thinking = thinking_param(thinking_mode or config.THINKING_MODE, model)
     record = {"attempt": number, "ok": False, "error_kind": None, "error": None,
               "stop_reason": None, "usage": None, "cost_usd": None}
     try:
-        # No `thinking` argument: THINKING_MODE is "model_default".
+        # No `thinking` argument in "model_default" mode; {"type": "disabled"} in "off" mode.
+        extra = {} if thinking is None else {"thinking": thinking}
         response = client.messages.create(
-            model=config.EXTRACTION_MODEL,
+            model=model,
             max_tokens=config.MAX_TOKENS,
             system=SYSTEM_PROMPT,
             messages=[{"role": "user", "content": USER_TEMPLATE.format(doc_type=doc_type, text=text)}],
             output_config={"format": OUTPUT_FORMAT},
+            **extra,
         )
     except anthropic.APIError as exc:  # the SDK has already retried transient network errors itself
         record.update(error_kind="api_error", error=_short(f"{type(exc).__name__}: {exc}"))
@@ -111,7 +137,7 @@ def attempt_extraction(client, doc_type: str, text: str, number: int) -> tuple[d
 
     record["stop_reason"] = response.stop_reason
     record["usage"] = usage_record(response.usage)
-    record["cost_usd"] = cost_usd(response.usage.input_tokens, response.usage.output_tokens)
+    record["cost_usd"] = cost_usd(response.usage.input_tokens, response.usage.output_tokens, model)
     reply = "".join(block.text for block in response.content if block.type == "text")
 
     if response.stop_reason == "max_tokens":
@@ -161,7 +187,7 @@ def stored_statements(entry: dict, parsed: DocExtraction) -> list[dict]:
     return rows
 
 
-def extract_document(client, deal: str, entry: dict) -> dict:
+def extract_document(client, deal: str, entry: dict, model: str | None = None, thinking_mode: str | None = None) -> dict:
     doc = {"source_id": entry["source_id"], "file": entry["file"], "doc_type": entry["doc_type"],
            "date": entry["date"], "status": None, "error": None, "attempts": [], "statements": []}
 
@@ -184,7 +210,7 @@ def extract_document(client, deal: str, entry: dict) -> dict:
 
     parsed = None
     for number in range(1, config.MAX_ATTEMPTS + 1):
-        attempt, parsed = attempt_extraction(client, entry["doc_type"], text, number)
+        attempt, parsed = attempt_extraction(client, entry["doc_type"], text, number, model, thinking_mode)
         doc["attempts"].append(attempt)
         if parsed is not None:
             break
@@ -203,13 +229,14 @@ def extract_document(client, deal: str, entry: dict) -> dict:
 
 # --- One run -------------------------------------------------------------
 
-def run_extraction(client, deal: str) -> dict:
+def run_extraction(client, deal: str, model: str | None = None, thinking_mode: str | None = None) -> dict:
     config.deal_dir(deal)  # guard: raises DealNotAllowed for any deal not in ALLOWED_DEALS, before any deal file is read
-    if config.THINKING_MODE != "model_default":
-        raise ValueError(f"THINKING_MODE {config.THINKING_MODE!r} is not implemented; only 'model_default'")
+    model = model or config.EXTRACTION_MODEL
+    thinking_mode = thinking_mode or config.THINKING_MODE
+    thinking = thinking_param(thinking_mode, model)  # raises ValueError before any file read or call
 
     manifest = json.loads(config.doc_path(deal, "manifest.json").read_text(encoding="utf-8"))
-    documents = [extract_document(client, deal, entry) for entry in manifest["documents"]]
+    documents = [extract_document(client, deal, entry, model, thinking_mode) for entry in manifest["documents"]]
 
     counts: dict[str, int] = {}
     for d in documents:
@@ -218,11 +245,12 @@ def run_extraction(client, deal: str) -> dict:
     return {
         "deal": deal,
         "timestamp_utc": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        "model": config.EXTRACTION_MODEL,
+        "model": model,
         "max_tokens": config.MAX_TOKENS,
-        "thinking_mode": config.THINKING_MODE,
+        "thinking_mode": thinking_mode,
+        "thinking_param_sent": thinking,  # the literal `thinking` request parameter; null = none sent
         "prompt_hashes": prompt_hashes(),
-        "price_per_mtok_usd": config.PRICE_PER_MTOK.get(config.EXTRACTION_MODEL),
+        "price_per_mtok_usd": config.PRICE_PER_MTOK.get(model),
         "status_counts": counts,
         "totals": _tokens_and_cost([a for d in called for a in d["attempts"]]),
         "documents": documents,
@@ -242,6 +270,10 @@ def save_run(run: dict) -> str:
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(description="Extract Elva commitments from a deal's documents.")
     parser.add_argument("deal")
+    parser.add_argument("--model", default=config.EXTRACTION_MODEL,
+                        help="model ID (default: config.EXTRACTION_MODEL)")
+    parser.add_argument("--thinking", choices=THINKING_MODES, default=config.THINKING_MODE,
+                        help="model_default sends no thinking parameter; off sends thinking={'type': 'disabled'}")
     args = parser.parse_args(argv[1:])
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 
@@ -250,17 +282,26 @@ def main(argv: list[str]) -> int:
     except config.DealNotAllowed as exc:
         print(f"Refused: {exc}")
         return 2
+    try:
+        thinking_param(args.thinking, args.model)
+    except ValueError as exc:
+        print(f"Refused: {exc}")
+        return 2
     if not os.environ.get("ANTHROPIC_API_KEY"):  # presence only; the value is never read or printed
         print("ANTHROPIC_API_KEY is not set.")
         return 2
 
-    run = run_extraction(anthropic.Anthropic(), args.deal)
+    run = run_extraction(anthropic.Anthropic(), args.deal, args.model, args.thinking)
     path = save_run(run)
 
     for d in run["documents"]:
         print(f"{d['source_id']}  {d['doc_type']:<22} {d['status']:<26} {len(d['statements'])} statements")
     t = run["totals"]
     print(f"\nTokens in/out: {t['input_tokens']}/{t['output_tokens']}  (thinking reported: {t['thinking_tokens']})  cost: {t['cost_usd']} USD")
+    if args.model not in config.PRICE_PER_MTOK:
+        print(f"No price configured for {args.model}; cost is null.")
+    if args.thinking == "off" and t["thinking_tokens"]:
+        print(f"WARNING: thinking was disabled but {t['thinking_tokens']} thinking tokens were reported.")
     print(f"Saved {path}")
     bad = {"incomplete", "flagged_unsupported_type"}
     return 1 if bad & set(run["status_counts"]) else 0

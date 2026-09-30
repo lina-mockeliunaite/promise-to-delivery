@@ -1,0 +1,103 @@
+{
+  "run_file": "extract_harbour_bank_20260930T042447Z.json",
+  "deal": "harbour_bank",
+  "labels_sha256": "4f4a018f2d2701acccd98d75b23dcbe71e57a489a87942c56815e7ab8aed3ab8",
+  "threshold": 0.8,
+  "near_miss_floor": 0.5,
+  "counts": {
+    "tp": 11,
+    "fp": 6,
+    "fn": 3,
+    "labels": 14,
+    "outputs": 17
+  },
+  "precision": 0.6470588235294118,
+  "recall": 0.7857142857142857,
+  "recall_firm": 0.7272727272727273,
+  "language_accuracy": 0.8181818181818182,
+  "language_confusion": {
+    "exploratory": {
+      "exploratory": 1
+    },
+    "conditional": {
+      "conditional": 2
+    },
+    "firm": {
+      "firm": 6,
+      "conditional": 2
+    }
+  },
+  "hedge_errors": [],
+  "non_complete_documents": [
+    {
+      "source_id": "HB-05",
+      "status": "skipped_reference_only",
+      "labels_affected": []
+    },
+    {
+      "source_id": "HB-08",
+      "status": "skipped_reference_only",
+      "labels_affected": []
+    }
+  ],
+  "false_positives": [
+    {
+      "statement_id": "HB-01-S03",
+      "source_id": "HB-01",
+      "language": "firm",
+      "quote": "We'll respond to your RFP within the window and follow with a proposal."
+    },
+    {
+      "statement_id": "HB-02-S02",
+      "source_id": "HB-02",
+      "language": "firm",
+      "quote": "Priya can walk your architects through the options after this call."
+    },
+    {
+      "statement_id": "HB-03-S02",
+      "source_id": "HB-03",
+      "language": "firm",
+      "quote": "we would confirm the configuration with your team during design."
+    },
+    {
+      "statement_id": "HB-07-S01",
+      "source_id": "HB-07",
+      "language": "firm",
+      "quote": "Provider will perform the services described in the Statement of Work dated 20 October 2026, including Annex A."
+    },
+    {
+      "statement_id": "HB-07-S02",
+      "source_id": "HB-07",
+      "language": "firm",
+      "quote": "Provider will provide wallet screening services as described in SOW section 3."
+    },
+    {
+      "statement_id": "HB-07-S03",
+      "source_id": "HB-07",
+      "language": "firm",
+      "quote": "This Agreement starts on the date of last signature and continues for three years."
+    }
+  ],
+  "false_negatives": [
+    {
+      "label_id": "S12",
+      "source_id": "HB-06",
+      "language": "firm",
+      "quote": "A.1 Ethereum: each recipient wallet is screened through the analytics integration in real time before the payout is released."
+    },
+    {
+      "label_id": "S13",
+      "source_id": "HB-06",
+      "language": "firm",
+      "quote": "A.2 Polygon: recipient wallets are screened through the analytics integration in batches at hourly intervals."
+    },
+    {
+      "label_id": "S14",
+      "source_id": "HB-06",
+      "language": "firm",
+      "quote": "A Polygon payout is released after the next completed screening batch returns a clear result."
+    }
+  ],
+  "near_misses": [],
+  "detail_lost": []
+}

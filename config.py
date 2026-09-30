@@ -14,18 +14,29 @@ RESULTS_DIR = ROOT / "results"
 EXTRACTION_MODEL = "claude-sonnet-5"
 MAX_TOKENS = 8000  # ceiling on the whole reply; any thinking tokens count against it
 
-# "model_default" = send no thinking parameter and let the model decide.
-# extract.py refuses any other value until that mode is implemented.
+# Default mode for extract.py. "model_default" = send no thinking parameter and let the model decide.
+# "off" is implemented and chosen per run with `extract.py --thinking off` (sends thinking={"type": "disabled"},
+# only for models in THINKING_DISABLED_ACCEPTED). The default here stays "model_default".
+# extract.py refuses any other value.
 THINKING_MODE = "model_default"
+
+# Models that accept thinking={"type": "disabled"}, which `extract.py --thinking off` sends.
+# Source: "Troubleshooting thinking", per-model table, platform.claude.com/docs/en/build-with-claude/thinking-troubleshooting,
+# fetched 2026-09-30. claude-sonnet-5 is named there as accepting "disabled". Haiku 4.5's entry is inferred
+# from its absence on the rejected list (the page says any value not listed as rejected is accepted); the page
+# does not state it explicitly. Not accepted: claude-sonnet-5-5 (needs "between_tools") and the always-on
+# models (Opus 5.5, Fable, Mythos).
+THINKING_DISABLED_ACCEPTED = ["claude-sonnet-5", "claude-haiku-4-5-20251001"]
 
 # One retry: the first attempt plus one more.
 MAX_ATTEMPTS = 2
 
 # USD per million tokens, standard (non-batch, no caching, global routing).
 # Checked by Lina against https://platform.claude.com/docs/en/about-claude/pricing
-# on 2026-09-29. Cost is null for any model with None here.
+# on 2026-09-29 (Haiku 4.5 on 2026-09-30). Cost is null for any model with None here or no entry.
 PRICE_PER_MTOK = {
     EXTRACTION_MODEL: {"input": 2.0, "output": 10.0},
+    "claude-haiku-4-5-20251001": {"input": 1.0, "output": 5.0},
 }
 
 # --- Document types ------------------------------------------------------

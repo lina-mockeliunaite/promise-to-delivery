@@ -244,6 +244,106 @@ class RunRecord(Base):
             extract.save_run(run)
 
 
+HAIKU = "claude-haiku-4-5-20251001"
+
+
+class RunOverrides(Base):
+    """--model and --thinking: argument handling and the arguments actually sent. Stub client only."""
+
+    def run_main(self, *args, client=None):
+        """Call main() with a stub client in place of anthropic.Anthropic; returns (exit code, client, factory mock)."""
+        client = client or StubClient(reply(GOOD))
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-not-real"}), \
+             mock.patch.object(extract.anthropic, "Anthropic", return_value=client) as factory, \
+             mock.patch("sys.stdout"):
+            code = extract.main(["extract.py", "test_deal", *args])
+        return code, client, factory
+
+    def saved_run(self):
+        (path,) = config.RESULTS_DIR.glob("extract_test_deal_*.json")
+        return json.loads(path.read_text())
+
+    def test_defaults_come_from_config_and_send_no_thinking(self):
+        self.write_manifest(("T-01", "t1.md", "proposal"))
+        code, client, _ = self.run_main()
+        self.assertEqual(code, 0)
+        self.assertEqual(client.calls[0]["model"], config.EXTRACTION_MODEL)
+        self.assertNotIn("thinking", client.calls[0])
+        run = self.saved_run()
+        self.assertEqual((run["model"], run["thinking_mode"], run["thinking_param_sent"]),
+                         (config.EXTRACTION_MODEL, "model_default", None))
+
+    def test_thinking_off_sends_disabled_and_model_override_is_used(self):
+        self.write_manifest(("T-01", "t1.md", "proposal"))
+        code, client, _ = self.run_main("--model", HAIKU, "--thinking", "off")
+        self.assertEqual(code, 0)
+        self.assertEqual(client.calls[0]["model"], HAIKU)
+        self.assertEqual(client.calls[0]["thinking"], {"type": "disabled"})   # Haiku gets it too
+        run = self.saved_run()
+        self.assertEqual((run["model"], run["thinking_mode"], run["thinking_param_sent"]),
+                         (HAIKU, "off", {"type": "disabled"}))
+        self.assertEqual(run["price_per_mtok_usd"], {"input": 1.0, "output": 5.0})
+
+    def test_thinking_off_on_the_default_model_sends_disabled(self):
+        self.write_manifest(("T-01", "t1.md", "proposal"))
+        with mock.patch.object(config, "EXTRACTION_MODEL", "claude-sonnet-5"):
+            code, client, _ = self.run_main("--thinking", "off")
+        self.assertEqual(code, 0)
+        self.assertEqual(client.calls[0]["thinking"], {"type": "disabled"})
+
+    def test_invalid_thinking_value_is_rejected_by_argparse(self):
+        with mock.patch("sys.stderr"), self.assertRaises(SystemExit) as ctx:
+            extract.main(["extract.py", "test_deal", "--thinking", "adaptive"])
+        self.assertEqual(ctx.exception.code, 2)
+
+    def test_off_on_a_model_that_rejects_disabled_is_refused_before_any_call(self):
+        self.write_manifest(("T-01", "t1.md", "proposal"))
+        for model in ("claude-sonnet-5-5", "claude-opus-5-5"):
+            code, client, factory = self.run_main("--model", model, "--thinking", "off")
+            self.assertEqual(code, 2, model)
+            factory.assert_not_called()
+            self.assertEqual(client.calls, [])
+        self.assertEqual(list(config.RESULTS_DIR.glob("*.json")) if config.RESULTS_DIR.exists() else [], [])
+
+    def test_off_is_refused_by_run_extraction_too(self):
+        self.write_manifest(("T-01", "t1.md", "proposal"))
+        client = StubClient()
+        with self.assertRaises(ValueError):
+            extract.run_extraction(client, "test_deal", model="claude-sonnet-5-5", thinking_mode="off")
+        self.assertEqual(client.calls, [])
+
+    def test_cost_for_haiku_and_null_for_a_model_without_a_price(self):
+        self.assertAlmostEqual(extract.cost_usd(1000, 500, HAIKU), 0.0035)   # 1000*1/1e6 + 500*5/1e6
+        self.write_manifest(("T-01", "t1.md", "proposal"))
+        run = extract.run_extraction(StubClient(reply(GOOD)), "test_deal", model="some-unpriced-model")
+        self.assertIsNone(run["totals"]["cost_usd"])
+        self.assertIsNone(run["price_per_mtok_usd"])
+        self.assertEqual(run["model"], "some-unpriced-model")
+
+    def test_run_records_reported_thinking_tokens_as_evidence(self):
+        self.write_manifest(("T-01", "t1.md", "proposal"))
+        client = StubClient(reply(GOOD, thinking=0))
+        run = extract.run_extraction(client, "test_deal", model=HAIKU, thinking_mode="off")
+        self.assertEqual(run["totals"]["thinking_tokens"], 0)
+        self.assertEqual(run["documents"][0]["attempts"][0]["usage"]["thinking_tokens"], 0)
+
+    def test_prompt_hashes_do_not_depend_on_model_or_thinking(self):
+        self.write_manifest(("T-01", "t1.md", "proposal"))
+        base = extract.run_extraction(StubClient(reply(GOOD)), "test_deal")["prompt_hashes"]
+        other = extract.run_extraction(StubClient(reply(GOOD)), "test_deal", model=HAIKU, thinking_mode="off")
+        self.assertEqual(other["prompt_hashes"], base)
+        self.assertEqual(base, extract.prompt_hashes())
+
+    def test_off_with_reported_thinking_tokens_prints_a_warning(self):
+        self.write_manifest(("T-01", "t1.md", "proposal"))
+        client = StubClient(reply(GOOD, thinking=50))
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-not-real"}), \
+             mock.patch.object(extract.anthropic, "Anthropic", return_value=client), \
+             mock.patch("builtins.print") as printed:
+            extract.main(["extract.py", "test_deal", "--model", HAIKU, "--thinking", "off"])
+        self.assertTrue(any("WARNING" in str(c.args[0]) for c in printed.call_args_list if c.args))
+
+
 class Guards(Base):
     def test_fake_deal_is_refused_before_any_read_or_call(self):
         client = StubClient()
