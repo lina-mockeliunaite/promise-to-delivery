@@ -27,6 +27,6 @@ Each commitment is tracked on three separate attributes: **language** (explorato
 
 ## Honest notes
 
-- All companies, people, products and deal terms are fictional. TRM Labs and Chainalysis are real blockchain analytics providers, named in the catalogue for realism only; no partnership or endorsement is claimed.
+- All companies, people, products and deal terms are fictional. TRM Labs and Chainalysis are real blockchain analytics providers, and BioCatch is a real behavioural intelligence provider; all three are named in the catalogue for realism only. Elva's integrations with them are fictional, and no partnership or endorsement is claimed.
 - Built with Claude Code as build partner. Claude drafted the fictional deal documents from my brief; the brief, labels and design decisions are mine.
 - Results will be reported on a small synthetic test set, including what fails.

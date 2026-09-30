@@ -1,5 +1,5 @@
 {
-  "as_of": "2026-09-28",
+  "as_of": "2026-09-30",
   "capabilities": [
     {
       "id": "CAP-001",
@@ -464,8 +464,47 @@
           "roadmap_date": "2027-06-30"
         }
       }
+    },
+    {
+      "id": "CAP-026",
+      "name": "Unsupervised anomaly detection for transaction monitoring",
+      "regions": {
+        "SG": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        },
+        "AU": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        }
+      }
+    },
+    {
+      "id": "CAP-027",
+      "name": "Third-party behavioural intelligence connector",
+      "prebuilt_integrations": [
+        "BioCatch"
+      ],
+      "regions": {
+        "SG": {
+          "status": "beta",
+          "sellable": "requires_named_approval",
+          "limits": {},
+          "roadmap_date": "2027-12-31"
+        },
+        "AU": {
+          "status": "beta",
+          "sellable": "requires_named_approval",
+          "limits": {},
+          "roadmap_date": "2027-12-31"
+        }
+      }
     }
   ],
   "schema_version": 2,
-  "schema_note": "For CAP-021 network integrations, the authoritative path is region -> network -> asset -> screening mode. Status, sellability, limits and roadmap_date live at the mode leaf. These fictional Elva integration states do not describe the upstream provider's standalone product. CAP-022 and CAP-025 are unused in this lean pack; IDs are not reassigned."
+  "schema_note": "For CAP-021 network integrations, the authoritative path is region -> network -> asset -> screening mode. Status, sellability, limits and roadmap_date live at the mode leaf. These fictional Elva integration states do not describe the upstream provider's standalone product. CAP-022 and CAP-025 are unused in this lean pack; IDs are not reassigned. CAP-026 identifies unusual patterns in ingested transaction data and produces scores or alerts for analyst review; it does not determine that activity is criminal or guarantee detection. CAP-027 ingests vendor-provided behavioural and device risk indicators or scores for use in fraud rules, alerts and case investigation; it is signal ingestion, not an Elva biometric authentication product. BioCatch is named as an illustrative provider only: the Elva connector and its status are fictional, and no partnership is implied."
 }
