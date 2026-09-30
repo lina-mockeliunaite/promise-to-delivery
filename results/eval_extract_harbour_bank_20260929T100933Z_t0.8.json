@@ -1,0 +1,127 @@
+{
+  "run_file": "extract_harbour_bank_20260929T100933Z.json",
+  "deal": "harbour_bank",
+  "threshold": 0.8,
+  "near_miss_floor": 0.5,
+  "counts": {
+    "tp": 14,
+    "fp": 9,
+    "fn": 0,
+    "labels": 14,
+    "outputs": 23
+  },
+  "precision": 0.6086956521739131,
+  "recall": 1.0,
+  "recall_firm": 1.0,
+  "language_accuracy": 1.0,
+  "language_confusion": {
+    "exploratory": {
+      "exploratory": 1
+    },
+    "conditional": {
+      "conditional": 2
+    },
+    "firm": {
+      "firm": 11
+    }
+  },
+  "hedge_errors": [],
+  "non_complete_documents": [
+    {
+      "source_id": "HB-05",
+      "status": "skipped_reference_only",
+      "labels_affected": []
+    },
+    {
+      "source_id": "HB-08",
+      "status": "skipped_reference_only",
+      "labels_affected": []
+    }
+  ],
+  "false_positives": [
+    {
+      "statement_id": "HB-01-S02",
+      "source_id": "HB-01",
+      "language": "firm",
+      "quote": "I'll bring our Product team to the next call so you hear it first-hand."
+    },
+    {
+      "statement_id": "HB-01-S04",
+      "source_id": "HB-01",
+      "language": "firm",
+      "quote": "We'll respond to your RFP within the window and follow with a proposal."
+    },
+    {
+      "statement_id": "HB-02-S02",
+      "source_id": "HB-02",
+      "language": "firm",
+      "quote": "Priya can walk your architects through the options after this call."
+    },
+    {
+      "statement_id": "HB-03-S02",
+      "source_id": "HB-03",
+      "language": "firm",
+      "quote": "Elva follows a phased methodology: discovery, configuration, testing and launch readiness."
+    },
+    {
+      "statement_id": "HB-03-S03",
+      "source_id": "HB-03",
+      "language": "firm",
+      "quote": "References are available on request."
+    },
+    {
+      "statement_id": "HB-06-S03",
+      "source_id": "HB-06",
+      "language": "firm",
+      "quote": "The parties will hold a weekly project status meeting during implementation."
+    },
+    {
+      "statement_id": "HB-06-S07",
+      "source_id": "HB-06",
+      "language": "firm",
+      "quote": "This specification applies to NUSD payouts on Ethereum and Polygon."
+    },
+    {
+      "statement_id": "HB-07-S01",
+      "source_id": "HB-07",
+      "language": "firm",
+      "quote": "Provider will perform the services described in the Statement of Work dated 20 October 2026, including Annex A."
+    },
+    {
+      "statement_id": "HB-07-S02",
+      "source_id": "HB-07",
+      "language": "firm",
+      "quote": "Provider will provide wallet screening services as described in SOW section 3."
+    }
+  ],
+  "false_negatives": [],
+  "near_misses": [],
+  "detail_lost": [
+    {
+      "score": 0.889,
+      "source_id": "HB-06",
+      "label_id": "S12",
+      "label_language": "firm",
+      "label_quote": "A.1 Ethereum: each recipient wallet is screened through the analytics integration in real time before the payout is released.",
+      "statement_id": "HB-06-S04",
+      "output_language": "firm",
+      "output_quote": "Ethereum: each recipient wallet is screened through the analytics integration in real time before the payout is released.",
+      "missing": [
+        "1"
+      ]
+    },
+    {
+      "score": 0.875,
+      "source_id": "HB-06",
+      "label_id": "S13",
+      "label_language": "firm",
+      "label_quote": "A.2 Polygon: recipient wallets are screened through the analytics integration in batches at hourly intervals.",
+      "statement_id": "HB-06-S05",
+      "output_language": "firm",
+      "output_quote": "Polygon: recipient wallets are screened through the analytics integration in batches at hourly intervals.",
+      "missing": [
+        "2"
+      ]
+    }
+  ]
+}

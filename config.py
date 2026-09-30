@@ -53,6 +53,11 @@ REFERENCE_ONLY_DOC_TYPES = [
 CALL_DOC_TYPES = ["call_transcript"]
 WRITTEN_DOC_SPEAKER = "Elva"
 
+# --- Evaluation ----------------------------------------------------------
+# Jaccard overlap of lowercase alphanumeric word sets (evaluate.py).
+MATCH_THRESHOLD = 0.8  # score >= this counts as a match
+NEAR_MISS_FLOOR = 0.5  # floor <= score < threshold is reported, not counted
+
 # --- Deal guard ----------------------------------------------------------
 # The sealed test deal is deliberately absent until it is released.
 ALLOWED_DEALS = ["harbour_bank"]
