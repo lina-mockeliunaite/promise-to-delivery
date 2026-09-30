@@ -9,9 +9,9 @@
 **Why you're doing it.** Two reasons, equally weighted:
 
 1. **To learn to build.** Not to become a software engineer, but to understand AI systems well enough to design, direct and defend one.
-2. **To have evidence.** For AI, solutions and customer-success leadership roles: a working product a business leader understands in thirty seconds, plus a public repo, honest results and the ability to explain every choice.
+2. **To have evidence.** A working product a business leader understands in thirty seconds, plus a public repo, honest results and the ability to explain every choice.
 
-**What changed in v3 (30 Sep).** After Day 7 the product was revised for a business and leadership audience. The evaluation story stays; a usable workspace sits on top of it. The distinctive behaviour is the **recheck**: after someone records a fix, the system shows which issues closed, which remain open and the evidence behind each. Scope grew, so the timeline grew with it: **50 committed hours including learning and logging (the 4 contingency hours pulled forward to 1–2 Oct are already inside this), plus 2 spare hours on 16 Oct and up to 4 on 22 Oct: 56 hours maximum, excluding optional Bali work**, technical checkpoint **Fri 16 Oct**, completion **Wed 21 Oct**, **hard stop Thu 22 Oct**. Nothing technical was cut.
+**What changed in v3 (30 Sep).** After Day 7 the product was revised for a business and leadership audience. The evaluation story stays; a usable workspace sits on top of it. The distinctive behaviour is the **recheck**: after someone records a fix, the system shows which issues closed, which remain open and the evidence behind each. Scope grew, so the timeline grew with it: **50 committed hours including learning and logging (the 4 contingency hours pulled forward to 1–2 Oct are already inside this), plus 2 spare hours on 16 Oct and up to 4 on 22 Oct: 56 hours maximum, excluding optional work during 6–11 Oct**, technical checkpoint **Fri 16 Oct**, completion **Wed 21 Oct**, **hard stop Thu 22 Oct**. Nothing technical was cut.
 
 **How to use this plan.**
 
@@ -183,7 +183,7 @@ Same loop, about 4 hours: **learn it, build it, check it.**
 | Build | ~150 min | Claude Code builds; you direct, read every change and run it |
 | Check | 30 min | Commit, log the decision and the learning, close-of-day quiz |
 
-**Depth labels.** **Understand**: explain it in an interview without notes. **Recognise**: know the symptom and where to look. **Just do**: follow the steps. Claude takes on most recognise and just-do work; the understand items stay yours.
+**Depth labels.** **Understand**: explain it without notes, under questioning. **Recognise**: know the symptom and where to look. **Just do**: follow the steps. Claude takes on most recognise and just-do work; the understand items stay yours.
 
 **Habits.** Type first, then delegate. Explain before you accept. Predict, then run. Break it on purpose once a day.
 
@@ -223,7 +223,7 @@ Anthropic Academy (anthropic.skilljar.com) inside the Learn blocks.
 | Thu 1 Oct | — | Plain-language: what an HTTP API is; frontend vs backend | Defend the architecture |
 | Sun 4 – Mon 5 Oct | Building with the Claude API | Tool Use; Anthropic Apps & Agents (chaining, routing, parallelisation) | Rules vs agent |
 | Mon 12 Oct | — | Human-in-the-loop design; idempotence and caching | Recheck and closure |
-| After 22 Oct | Intro to MCP; agent skills; subagents | Whole courses | Breadth for interviews |
+| After 22 Oct | Intro to MCP; agent skills; subagents | Whole courses | Breadth |
 
 **Agentic concepts to explain by 16 Oct (understand):** the agent loop · workflow vs agent · tool use · evaluating agents · human in the loop · when not to use an agent.
 **Recognise only:** MCP, subagents, RAG.
@@ -242,7 +242,7 @@ Anthropic Academy (anthropic.skilljar.com) inside the Learn blocks.
 
 ## Remaining schedule: 1 – 22 Oct
 
-**50 hours committed in the dated schedule, within the four-hour ceiling on every day.** This already includes the 4 contingency hours pulled forward to 1–2 Oct. Remaining spare capacity: 2 hours on 16 Oct and up to 4 hours on 22 Oct, so **56 hours maximum**, excluding optional Bali work. The hours include everything, not only building: each 4-hour day is roughly 45–60 minutes of learning, about 2.5 hours of directing and reviewing Claude Code, and 30 minutes of commit, decision log, learning log and quiz. That leaves roughly **30 hours of actual build time**. The 1 Oct audit tests whether that is enough, especially the single 4-hour Excel/PowerPoint block.
+**50 hours committed in the dated schedule, within the four-hour ceiling on every day.** This already includes the 4 contingency hours pulled forward to 1–2 Oct. Remaining spare capacity: 2 hours on 16 Oct and up to 4 hours on 22 Oct, so **56 hours maximum**, excluding optional work during 6–11 Oct. The hours include everything, not only building: each 4-hour day is roughly 45–60 minutes of learning, about 2.5 hours of directing and reviewing Claude Code, and 30 minutes of commit, decision log, learning log and quiz. That leaves roughly **30 hours of actual build time**. The 1 Oct audit tests whether that is enough, especially the single 4-hour Excel/PowerPoint block.
 
 **How the contingency works.** There are 6 spare hours inside the ceiling: 2 each on 1, 2 and 16 Oct. Spare hours cannot absorb an overrun on a day that is already at four hours, so they are used in two specific ways:
 
@@ -251,7 +251,7 @@ Anthropic Academy (anthropic.skilljar.com) inside the Learn blocks.
 
 Be clear about what this means: pulling work forward spends 4 of the 6 contingency hours before 3 Oct. From 3 Oct onwards, the only real buffer is the 2 hours on 16 Oct.
 
-**If a day still overruns, the work moves to the next day and the dates behind it move.** 3 Oct → 4 Oct → 5 Oct; anything left from 5 Oct moves to 12 Oct, and 12–14 Oct shift with it, including the unsealing. Bali time may take light tasks (reading a diff, copy, explanations) but is never counted on. The ceiling does not move; the date does.
+**If a day still overruns, the work moves to the next day and the dates behind it move.** 3 Oct → 4 Oct → 5 Oct; anything left from 5 Oct moves to 12 Oct, and 12–14 Oct shift with it, including the unsealing. Time during 6–11 Oct may take light tasks (reading a diff, copy, explanations) but is never counted on. The ceiling does not move; the date does.
 
 | Date | Hours | Work | Evidence by close | Understand |
 | --- | --- | --- | --- | --- |
@@ -260,7 +260,7 @@ Be clear about what this means: pulling work forward spends 4 of the 6 contingen
 | Sat 3 Oct | 4 | Sales-housekeeping filter; consolidation ("thirty thousand" = "30,000", terms and conditions preserved); ledger built to the approved schema; score grouping. | Grouping score vs labels; S15 preserved | How one promise worded three ways becomes one record |
 | Sun 4 Oct | 4 | **Decide `security_questionnaire`** (extract, reference-only or skip) and whether PDF/DOCX pricing notes count as evidence; log both. Write the rules-vs-agent decision rule **first**, with explicit cost and latency bounds. Material conflict, coverage and authorisation rules; citations; silent-note cases (C08, KC3 → needs review); incomplete/missing-reference handling. | Rule-based findings on Harbour Bank with citations | Why rules are enough for some conflicts |
 | Mon 5 Oct | 4 | Bounded catalogue-search agent; three fresh agent runs over the same Harbour Bank ledger (three sets of real agent calls); case-by-case comparison with rules. **Formal re-plan at close,** using actual build hours logged since 1 Oct. | Variation, cost, latency recorded; comparison table | Workflow vs agent; the agent loop |
-| Tue 6 – Thu 8 Oct | Optional | Bali: review screen copy, learn, read a prepared diff, practise explanations. No milestone. | — | — |
+| Tue 6 – Thu 8 Oct | Optional | Light tasks only: review screen copy, learn, read a prepared diff, practise explanations. No milestone. | — | — |
 | Fri 9 – Sun 11 Oct | 0 | Unallocated | — | — |
 | Mon 12 Oct | 4 | Resolution and recheck logic: three routes, one form; issue-level closure; extraction cache with the full key; source snapshots; five scenarios as labelled fixtures. **Candidate freeze of the evaluated pipeline at close** (extraction, filter, consolidation, rules, agent), recorded with hashes. Recheck, cache, UI and adapter work may continue after today without delaying unsealing, provided it does not change evaluated modules. | 5/5 scenarios behave as expected; candidate freeze recorded | Why a partial fix stays open; why the cache key makes recheck trustworthy |
 | Tue 13 Oct | 4 | Wire the UI to the live pipeline through the API: text/Markdown upload, doc-type selection, include/exclude, Review deal, saved results, freshness. **Integration checks on development data;** fix any backend bug they expose, then rerun regression and the downstream checks. **Record the final evaluated configuration** (commit and hashes). If the checks fail and can't be fixed today, **delay unsealing Coral Pay** rather than evaluate a known-broken pipeline. Check API credit; top up if needed. | A fictional deal runs end to end in the browser with live results, no mock data; final configuration recorded, or unsealing delayed with the reason logged | API/frontend separation, under questioning |
@@ -366,7 +366,7 @@ Score yourself on twelve skills on 25 Sep, 5 Oct, 16 Oct and 21 Oct (the two new
 ## Ground rules
 
 - **Scope is set by this plan (v3).** New ideas go on the Later list. No design review rounds once a day's design is committed.
-- **Four-hour ceiling,** weekends and Bali included.
+- **Four-hour ceiling,** weekends and 6–11 Oct included.
 - **Extraction is frozen.** Changes only through regression with logged hashes.
 - **Freeze for the sealed evaluation covers the evaluated pipeline only** (extraction, filter, consolidation, rules, agent): candidate freeze at close of 12 Oct; integration fixes on development data on 13 Oct, rechecked by regression and downstream checks; final evaluated configuration recorded before unsealing. If it isn't sound, unsealing waits.
 - **Seal across every entry point.** Deny rules, `ALLOWED_DEALS`, path containment. Serve only frontend build assets, never the repo or `data/`. No repository-wide scans. Do not connect or upload the repo to any UI builder before 14 Oct. Never seed Coral Pay in the UI.
@@ -437,7 +437,7 @@ Never commit a key, the SQLite database, uploaded documents, `node_modules` or t
 
 | When | What |
 | --- | --- |
-| Week of 19 Oct | Publish *What We Promised*. Add repo, demo and results to CV and applications. |
+| Week of 19 Oct | Publish *What We Promised* with the repo, demo and results. |
 | From 21 Oct | Validation conversations with 5–6 implementation, professional-services and pre-sales leaders: would you use this before signing, who could require it, is checking the fix worth more than a spreadsheet? |
 | Next build, if it holds | Post-signature tracking against the approved baseline. |
 

@@ -7,7 +7,7 @@ Revise the remaining plan around a working deal workspace. This is an authorised
 - Keep the agent experiment even if the evidence ultimately favours rules for the app.
 - Use a local browser application for the demonstration and recording. No public model-backed upload endpoint in this build.
 - Prefer a small React frontend with a thin Python HTTP wrapper, subject to repository inspection. Reuse the existing Python pipeline; do not substitute a builder's default model.
-- Work in Bali is optional buffer. The committed schedule does not depend on it.
+- Work during 6–11 Oct is optional buffer. The committed schedule does not depend on it.
 - Name research, domain checks, live connectors and generated resolution suggestions remain follow-on work after the core prototype is complete.
 The distinction between the milestones matters: on 16 October, demonstrate the working review/recheck journey and defend the evaluation. On 20 October, complete the supported document formats, saved handoff/export and final acceptance checks.
 2. Product specification
@@ -92,7 +92,7 @@ Fri 2 Oct	2	Checkpoint 1 paper story; log feedback; agree closure criteria and r
 Sat 3 Oct	4	Sales-housekeeping filter, consolidation and SQLite ledger; score grouping
 Sun 4 Oct	4	Material conflict/coverage and authorisation rules; citations and silent-note cases
 Mon 5 Oct	4	Bounded catalogue-search agent, three development runs and rules comparison
-Tue–Thu 6–8 Oct	Optional	Bali: review screen copy, learn, inspect a prepared diff or practise explanations; no required milestone
+Tue–Thu 6–8 Oct	Optional	Light tasks only: review screen copy, learn, inspect a prepared diff or practise explanations; no required milestone
 Fri–Sun 9–11 Oct	0 committed	Unallocated; no assumed availability
 Mon 12 Oct	4	Resolution/recheck domain logic; all five scenarios, source snapshots and closure checks
 Tue 13 Oct	4	Wire local UI to live pipeline; text/Markdown upload, saved results and freshness; freeze evaluation configuration
@@ -103,7 +103,7 @@ Mon 19 Oct	4	PDF/DOCX adapters, complete handoff/export and UI refinements
 Tue 20 Oct	4	Development acceptance checks, reopen/export verification, final record and write-up
 
 
-The remaining two hours on 1, 2 and 16 October provide the six-hour contingency. Optional Bali work can substitute for lightweight tasks; it is not additional promised capacity. Do not schedule heavy coding around travel or the sunrise excursion.
+The remaining two hours on 1, 2 and 16 October provide the six-hour contingency. Optional work during 6–11 Oct can substitute for lightweight tasks; it is not additional promised capacity.
 On 2 October, use the remaining hours for frontend scaffolding only if useful. Preserve the existing rule that consolidation starts after Checkpoint 1 feedback is recorded.
 If the repo audit exceeds this budget, move the completion target explicitly. Keep the evaluation and learning commitments. Report the actual state on 16 October; do not imply the 20 October features are already finished.
 7. Checkpoint 1: test the pivot before building it
