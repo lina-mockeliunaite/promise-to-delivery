@@ -1,0 +1,85 @@
+{
+  "_how_to": "Hard-case fixture commitments (Day 7), same fields as Harbour Bank. KC1 and KC6 give Day 9 its first development cases for the absolute-limit and authorised-but-absent paths.",
+  "commitments": [
+    {
+      "id": "KC1",
+      "name": "Real-time screening of NUSD payouts on Arbitrum for launch",
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-021/SG: Arbitrum not listed; KR-05: no named exceptions",
+      "contractual_presence": "absent",
+      "issues": [
+        "overcommitment",
+        "expectation_gap"
+      ],
+      "reason": "absolute_limit",
+      "customer_context": []
+    },
+    {
+      "id": "KC2",
+      "name": "Real-time Polygon screening on the roadmap for next year",
+      "authorisation": null,
+      "authorisation_evidence": "not applicable: K02 is conditional",
+      "contractual_presence": "absent",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "KC3",
+      "name": "Go-live on 1 March 2027",
+      "authorisation": "unknown_needs_review",
+      "authorisation_evidence": "Attempted match: catalogue has no go-live entries; KR-05 prices implementation (40 person-days) but names no date. Search terms: go-live, launch, 1 March 2027.",
+      "contractual_presence": "absent",
+      "issues": [
+        "needs_review",
+        "expectation_gap"
+      ],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "KC4",
+      "name": "Payout ledger connector up to 30,000 payouts/day at launch",
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-023/SG: max_payouts_per_day 25,000; KR-05: no named exceptions",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [
+        "overcommitment"
+      ],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "KC5",
+      "name": "VASP counterparty data exchange, subject to Product approval",
+      "authorisation": null,
+      "authorisation_evidence": "not applicable: K06 is conditional",
+      "contractual_presence": "absent",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "KC6",
+      "name": "Full case audit history for every alert",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-014/SG: generally_available, standard",
+      "contractual_presence": "absent",
+      "issues": [
+        "expectation_gap"
+      ],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "KC7",
+      "name": "Real-time screening of NUSD payouts on Ethereum",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-021/SG/Ethereum/NUSD/real_time: generally_available, standard",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    }
+  ]
+}

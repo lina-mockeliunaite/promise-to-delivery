@@ -110,11 +110,13 @@ def evaluate(run: dict, labels: list[dict], threshold: float, floor: float) -> d
 
     confusion: dict[str, dict[str, int]] = {}
     agree = 0
-    hedge_errors, lost = [], []
+    hedge_errors, mismatches, lost = [], [], []
     for s, l, o in matches:
         confusion.setdefault(l["language"], {}).setdefault(o["language"], 0)
         confusion[l["language"]][o["language"]] += 1
         agree += l["language"] == o["language"]
+        if l["language"] != o["language"]:
+            mismatches.append(_pair(s, l, o))
         if l["language"] in HEDGED and o["language"] == "firm":
             hedge_errors.append(_pair(s, l, o))
         missing = detail_lost(l["quote"], o["quote"])
@@ -131,6 +133,7 @@ def evaluate(run: dict, labels: list[dict], threshold: float, floor: float) -> d
         "recall_firm": ratio(firm_tp, len(firm)),
         "language_accuracy": ratio(agree, tp),
         "language_confusion": confusion,
+        "language_mismatches": mismatches,
         "hedge_errors": hedge_errors,
         "non_complete_documents": non_complete,
         "false_positives": [_out(o) for o in fp_list],
@@ -213,6 +216,8 @@ def print_report(rep: dict) -> None:
     pair = lambda p: (f"  [{p['source_id']}] score {p['score']} {p['label_id']} vs {p['statement_id']}\n"
                       f"    label:  {p['label_quote']}\n    output: {p['output_quote']}")
     section("Near-misses", rep["near_misses"], pair)
+    section("Language mismatches on matched pairs", rep["language_mismatches"],
+            lambda p: f"  [{p['source_id']}] {p['label_id']}: {p['label_language']} -> {p['output_language']}: {p['label_quote']}")
     section("Hedge errors", rep["hedge_errors"], pair)
     section("Detail lost", rep["detail_lost"],
             lambda p: pair(p) + f"\n    missing: {', '.join(p['missing'])}")

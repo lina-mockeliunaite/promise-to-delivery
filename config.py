@@ -71,7 +71,10 @@ NEAR_MISS_FLOOR = 0.5  # floor <= score < threshold is reported, not counted
 
 # --- Deal guard ----------------------------------------------------------
 # The sealed test deal is deliberately absent until it is released.
-ALLOWED_DEALS = ["harbour_bank"]
+ALLOWED_DEALS = [
+    "harbour_bank",
+    "hard_cases",  # development fixture deal, Day 7 (data/hard_cases/BRIEF.md)
+]
 
 
 class DealNotAllowed(Exception):

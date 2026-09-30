@@ -1,0 +1,244 @@
+{
+  "deal": "hard_cases",
+  "timestamp_utc": "2026-09-30T06:11:33+00:00",
+  "model": "claude-sonnet-5",
+  "max_tokens": 8000,
+  "thinking_mode": "model_default",
+  "thinking_param_sent": null,
+  "prompt_hashes": {
+    "system_prompt_sha256": "db9e892a315dab16e1dab527f2ab400f852750c9fc2c2eedef20afb305539e0a",
+    "user_template_sha256": "2afd3f1e5767267451f199f06d1ddcf1d6a3f2cdbf7acf4798939a4c18a398d4",
+    "schema_sha256": "a4debfaf8d03c75b41ab354d49451522b20119c90df1ee6643c5690a7fc0d5a8"
+  },
+  "price_per_mtok_usd": {
+    "input": 2.0,
+    "output": 10.0
+  },
+  "status_counts": {
+    "complete": 4,
+    "skipped_reference_only": 1
+  },
+  "totals": {
+    "input_tokens": 5913,
+    "output_tokens": 1500,
+    "thinking_tokens": 970,
+    "cost_usd": 0.026826
+  },
+  "documents": [
+    {
+      "source_id": "KR-01",
+      "file": "KR-01_call.md",
+      "doc_type": "call_transcript",
+      "date": "2026-11-02",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1551,
+            "output_tokens": 524,
+            "thinking_tokens": 382
+          },
+          "cost_usd": 0.008342
+        }
+      ],
+      "statements": [
+        {
+          "quote": "We'll have Arbitrum screening live for your launch.",
+          "speaker": "Ravi Menon",
+          "language": "firm",
+          "statement_id": "KR-01-S01",
+          "source_id": "KR-01",
+          "doc_type": "call_transcript",
+          "date": "2026-11-02"
+        },
+        {
+          "quote": "We'll send our security pack by Friday.",
+          "speaker": "Hana Wee",
+          "language": "firm",
+          "statement_id": "KR-01-S02",
+          "source_id": "KR-01",
+          "doc_type": "call_transcript",
+          "date": "2026-11-02"
+        },
+        {
+          "quote": "Real-time Polygon screening is on our roadmap for next year.",
+          "speaker": "Hana Wee",
+          "language": "conditional",
+          "statement_id": "KR-01-S03",
+          "source_id": "KR-01",
+          "doc_type": "call_transcript",
+          "date": "2026-11-02"
+        }
+      ],
+      "input_tokens": 1551,
+      "output_tokens": 524,
+      "thinking_tokens": 382,
+      "cost_usd": 0.008342
+    },
+    {
+      "source_id": "KR-02",
+      "file": "KR-02_proposal.md",
+      "doc_type": "proposal",
+      "date": "2026-11-09",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1505,
+            "output_tokens": 575,
+            "thinking_tokens": 305
+          },
+          "cost_usd": 0.00876
+        }
+      ],
+      "statements": [
+        {
+          "quote": "Elva will go live for Kestrel Remit on 1 March 2027.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "KR-02-S01",
+          "source_id": "KR-02",
+          "doc_type": "proposal",
+          "date": "2026-11-09"
+        },
+        {
+          "quote": "The payout ledger connector will handle up to thirty thousand payouts per day at launch.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "KR-02-S02",
+          "source_id": "KR-02",
+          "doc_type": "proposal",
+          "date": "2026-11-09"
+        },
+        {
+          "quote": "Elva will screen every NUSD payout on Arbitrum in real time before release.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "KR-02-S03",
+          "source_id": "KR-02",
+          "doc_type": "proposal",
+          "date": "2026-11-09"
+        },
+        {
+          "quote": "Elva will deliver VASP counterparty data exchange for Kestrel Remit, subject to Product approval.",
+          "speaker": "Elva",
+          "language": "conditional",
+          "statement_id": "KR-02-S04",
+          "source_id": "KR-02",
+          "doc_type": "proposal",
+          "date": "2026-11-09"
+        },
+        {
+          "quote": "Elva will provide full case audit history for every alert raised on Kestrel Remit payouts.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "KR-02-S05",
+          "source_id": "KR-02",
+          "doc_type": "proposal",
+          "date": "2026-11-09"
+        }
+      ],
+      "input_tokens": 1505,
+      "output_tokens": 575,
+      "thinking_tokens": 305,
+      "cost_usd": 0.00876
+    },
+    {
+      "source_id": "KR-05",
+      "file": "KR-05_pricing_services_note.md",
+      "doc_type": "pricing_services_note",
+      "date": "2026-11-12",
+      "status": "skipped_reference_only",
+      "error": null,
+      "attempts": [],
+      "statements": []
+    },
+    {
+      "source_id": "KR-03",
+      "file": "KR-03_draft_sow.md",
+      "doc_type": "draft_sow",
+      "date": "2026-11-16",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1424,
+            "output_tokens": 272,
+            "thinking_tokens": 164
+          },
+          "cost_usd": 0.005568
+        }
+      ],
+      "statements": [
+        {
+          "quote": "The payout ledger connector will handle up to 30,000 payouts per day at launch.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "KR-03-S01",
+          "source_id": "KR-03",
+          "doc_type": "draft_sow",
+          "date": "2026-11-16"
+        },
+        {
+          "quote": "Provider will screen NUSD payouts on Ethereum in real time before release.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "KR-03-S02",
+          "source_id": "KR-03",
+          "doc_type": "draft_sow",
+          "date": "2026-11-16"
+        }
+      ],
+      "input_tokens": 1424,
+      "output_tokens": 272,
+      "thinking_tokens": 164,
+      "cost_usd": 0.005568
+    },
+    {
+      "source_id": "KR-04",
+      "file": "KR-04_draft_contract.md",
+      "doc_type": "draft_contract",
+      "date": "2026-11-20",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1433,
+            "output_tokens": 129,
+            "thinking_tokens": 119
+          },
+          "cost_usd": 0.004156
+        }
+      ],
+      "statements": [],
+      "input_tokens": 1433,
+      "output_tokens": 129,
+      "thinking_tokens": 119,
+      "cost_usd": 0.004156
+    }
+  ]
+}

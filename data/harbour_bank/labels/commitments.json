@@ -1,5 +1,5 @@
 {
-  "_how_to": "One row per consolidated commitment (7). Fill authorisation with standard_authorised | exception_approved | no_approval_evidence | unknown_needs_review, or null for exploratory/conditional commitments (null means not applicable, not unknown). Add catalogue/pricing-note evidence, contractual presence (absent | included_in_draft_contract), issues (overcommitment | expectation_gap | contradiction | needs_review), reason if applicable, and customer_context items ({type: reliance | customer_obligation, source_id, quote}).",
+  "_how_to": "One row per consolidated commitment (8). Fill authorisation with standard_authorised | exception_approved | no_approval_evidence | unknown_needs_review, or null for exploratory/conditional commitments (null means not applicable, not unknown). Add catalogue/pricing-note evidence, contractual presence (absent | included_in_draft_contract), issues (overcommitment | expectation_gap | contradiction | needs_review), reason if applicable, and customer_context items ({type: reliance | customer_obligation, source_id, quote}).",
   "commitments": [
     {
       "id": "C01",
@@ -102,6 +102,18 @@
           "quote": "We can provide sandbox and testnet access by 10 November, not 15 November."
         }
       ]
+    },
+    {
+      "id": "C08",
+      "name": "Weekly project status meeting during implementation",
+      "authorisation": "unknown_needs_review",
+      "authorisation_evidence": "Attempted match: HB-05 priced services 'Implementation and configuration, HarbourPay Global launch scope, 60 person-days' does not name status meetings; catalogue lists capabilities, not services. Search terms: weekly, status meeting, governance, project management. Approval not inferred from implementation scope or from contractual inclusion.",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [
+        "needs_review"
+      ],
+      "reason": null,
+      "customer_context": []
     }
   ]
 }

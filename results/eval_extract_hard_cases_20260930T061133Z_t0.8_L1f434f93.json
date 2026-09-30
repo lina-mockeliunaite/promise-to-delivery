@@ -1,0 +1,46 @@
+{
+  "run_file": "extract_hard_cases_20260930T061133Z.json",
+  "deal": "hard_cases",
+  "labels_sha256": "1f434f9313dbae5064f453c9f15174769951039420f8e1974fda174474f98db6",
+  "threshold": 0.8,
+  "near_miss_floor": 0.5,
+  "counts": {
+    "tp": 9,
+    "fp": 1,
+    "fn": 0,
+    "labels": 9,
+    "outputs": 10
+  },
+  "precision": 0.9,
+  "recall": 1.0,
+  "recall_firm": 1.0,
+  "language_accuracy": 1.0,
+  "language_confusion": {
+    "firm": {
+      "firm": 7
+    },
+    "conditional": {
+      "conditional": 2
+    }
+  },
+  "language_mismatches": [],
+  "hedge_errors": [],
+  "non_complete_documents": [
+    {
+      "source_id": "KR-05",
+      "status": "skipped_reference_only",
+      "labels_affected": []
+    }
+  ],
+  "false_positives": [
+    {
+      "statement_id": "KR-01-S02",
+      "source_id": "KR-01",
+      "language": "firm",
+      "quote": "We'll send our security pack by Friday."
+    }
+  ],
+  "false_negatives": [],
+  "near_misses": [],
+  "detail_lost": []
+}

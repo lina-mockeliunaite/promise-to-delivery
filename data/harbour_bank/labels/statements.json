@@ -1,5 +1,5 @@
 {
-  "_how_to": "One row per vendor statement meeting the commitment definition. Copy each quote exactly from its source document. language = exploratory | conditional | firm. commitment_ids refer to C01-C07. A single statement may map to multiple commitments. Customer context belongs in commitments.json. Complete: 14 statements across HB-01 to HB-06. HB-05 (internal evidence), HB-07 (references only) and HB-08 (customer-authored) contain no Elva statements.",
+  "_how_to": "One row per vendor statement meeting the commitment definition. Copy each quote exactly from its source document. language = exploratory | conditional | firm. commitment_ids refer to C01-C08. A single statement may map to multiple commitments. Customer context belongs in commitments.json. Complete: 15 statements (S15 added Day 7, 30 Sep: label gap found on Day 6) across HB-01 to HB-06. HB-05 (internal evidence), HB-07 (references only) and HB-08 (customer-authored) contain no Elva statements.",
   "statements": [
     {
       "id": "S01",
@@ -141,6 +141,16 @@
       "language": "firm",
       "commitment_ids": [
         "C03"
+      ]
+    },
+    {
+      "id": "S15",
+      "source_id": "HB-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "The parties will hold a weekly project status meeting during implementation.",
+      "language": "firm",
+      "commitment_ids": [
+        "C08"
       ]
     }
   ]

@@ -27,7 +27,7 @@ SYSTEM_PROMPT = """You read one document from a vendor's sales record and list e
 What to extract
 - Only statements by Elva. Ignore statements by the customer, the customer's own obligations, questions, background, and descriptions that promise nothing.
 - A commitment is a statement in which Elva says it will do, deliver, provide, support or guarantee something, or states that a capability, date, volume, service or responsibility applies to this customer's deal.
-- A sentence that states its own terms is a statement even if it also points elsewhere for detail. A sentence that only points elsewhere (for example "see the annex") and states no terms itself is not a statement.
+- A sentence that points to another document or section for detail is a statement only if it also states at least one material term of its own, such as a network, asset, mode, volume, limit, date, frequency, region or price. Naming only the kind of work or service (for example "support will be provided as set out in the service guide") while taking every term from elsewhere makes it a pointer, not a statement.
 - Do not judge whether Elva is authorised to make the promise, or whether it is true. Only record what the document says.
 - If the document contains no such statements, return an empty list.
 

@@ -1,0 +1,66 @@
+{
+  "run_file": "extract_harbour_bank_20260930T061113Z.json",
+  "deal": "harbour_bank",
+  "model": "claude-sonnet-5",
+  "thinking_mode": "model_default",
+  "labels_sha256": "dbdc17a3d74cc6fbe6be751ffc176868c082eef850cca82054fc61357e8d34fd",
+  "prompt_hashes": {
+    "system_prompt_sha256": "db9e892a315dab16e1dab527f2ab400f852750c9fc2c2eedef20afb305539e0a",
+    "user_template_sha256": "2afd3f1e5767267451f199f06d1ddcf1d6a3f2cdbf7acf4798939a4c18a398d4",
+    "schema_sha256": "a4debfaf8d03c75b41ab354d49451522b20119c90df1ee6643c5690a7fc0d5a8"
+  },
+  "threshold": 0.8,
+  "metrics": {
+    "counts": {
+      "tp": 15,
+      "fp": 5,
+      "fn": 0,
+      "labels": 15,
+      "outputs": 20
+    },
+    "precision": 0.75,
+    "recall": 1.0,
+    "recall_firm": 1.0,
+    "language_accuracy": 1.0
+  },
+  "all_passed": true,
+  "failed_checks": [],
+  "checks": [
+    {
+      "name": "firm_labels_matched",
+      "title": "Every firm label is matched",
+      "passed": true,
+      "failing_rows": []
+    },
+    {
+      "name": "hedge_pair_output_firm",
+      "title": "S08 and S09 are matched and the output language is firm",
+      "passed": true,
+      "failing_rows": []
+    },
+    {
+      "name": "must_match",
+      "title": "S12, S13 and S14 are matched",
+      "passed": true,
+      "failing_rows": []
+    },
+    {
+      "name": "quotes_valid",
+      "title": "Every quote is valid (found word for word in its source)",
+      "passed": true,
+      "failing_rows": []
+    },
+    {
+      "name": "precision_floor",
+      "title": "Precision is at least 0.60",
+      "passed": true,
+      "failing_rows": []
+    },
+    {
+      "name": "excluded_sources",
+      "title": "No statements from HB-05, HB-07 or HB-08",
+      "passed": true,
+      "failing_rows": []
+    }
+  ]
+}

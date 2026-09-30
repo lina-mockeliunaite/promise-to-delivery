@@ -96,6 +96,22 @@ class Checks(unittest.TestCase):
         self.assertAlmostEqual(r["language_accuracy"], 0.5)
         self.assertEqual(len(r["hedge_errors"]), 1)
 
+    def test_language_mismatches_are_listed_with_label_and_source(self):
+        labels = [lab("L1", "X-01", "alpha beta gamma", "firm"),
+                  lab("L2", "X-02", "delta epsilon zeta", "conditional"),
+                  lab("L3", "X-01", "eta theta iota", "exploratory")]
+        stmts = [out("S1", "X-01", "alpha beta gamma", "conditional"),
+                 out("S2", "X-02", "delta epsilon zeta", "firm"),
+                 out("S3", "X-01", "eta theta iota", "exploratory")]
+        r = evaluate.evaluate(run_of(*stmts), labels, T, F)
+        got = {m["label_id"]: (m["source_id"], m["label_language"], m["output_language"], m["label_quote"])
+               for m in r["language_mismatches"]}
+        self.assertEqual(got, {"L1": ("X-01", "firm", "conditional", "alpha beta gamma"),
+                               "L2": ("X-02", "conditional", "firm", "delta epsilon zeta")})
+        self.assertAlmostEqual(r["language_accuracy"], 1 / 3)
+        self.assertEqual(len(r["language_mismatches"]), round(3 * (1 - r["language_accuracy"])))
+        self.assertEqual(len(r["hedge_errors"]), 1)   # L2 is a subset of the mismatches
+
     def test_non_complete_document_labels_are_fn_and_outputs_cannot_match(self):
         r = evaluate.evaluate(
             run_of(out("S1", "X-01", FULL), status="failed"), [lab("L1", "X-01", FULL)], T, F)

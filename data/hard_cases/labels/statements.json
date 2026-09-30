@@ -1,0 +1,104 @@
+{
+  "_how_to": "Hard-case fixture labels (Day 7). Same scope rules as Harbour Bank. Excluded by design: H5 pointer (KR-03 'Provider will deliver the reporting set out in Schedule 2.'), H6 sales step, H7 customer obligation, H11 injection sentence, all of KR-04 (H12), KR-05 (reference-only). 9 statements, 7 commitments.",
+  "statements": [
+    {
+      "id": "K01",
+      "source_id": "KR-01",
+      "speaker": "Ravi Menon (Elva)",
+      "quote": "We'll have Arbitrum screening live for your launch.",
+      "language": "firm",
+      "commitment_ids": [
+        "KC1"
+      ],
+      "case": "H8, H9"
+    },
+    {
+      "id": "K02",
+      "source_id": "KR-01",
+      "speaker": "Hana Wee (Elva)",
+      "quote": "Real-time Polygon screening is on our roadmap for next year.",
+      "language": "conditional",
+      "commitment_ids": [
+        "KC2"
+      ],
+      "case": "H2"
+    },
+    {
+      "id": "K03",
+      "source_id": "KR-02",
+      "speaker": "Elva (proposal)",
+      "quote": "Elva will go live for Kestrel Remit on 1 March 2027.",
+      "language": "firm",
+      "commitment_ids": [
+        "KC3"
+      ],
+      "case": "H3"
+    },
+    {
+      "id": "K04",
+      "source_id": "KR-02",
+      "speaker": "Elva (proposal)",
+      "quote": "The payout ledger connector will handle up to thirty thousand payouts per day at launch.",
+      "language": "firm",
+      "commitment_ids": [
+        "KC4"
+      ],
+      "case": "H4"
+    },
+    {
+      "id": "K05",
+      "source_id": "KR-02",
+      "speaker": "Elva (proposal)",
+      "quote": "Elva will screen every NUSD payout on Arbitrum in real time before release.",
+      "language": "firm",
+      "commitment_ids": [
+        "KC1"
+      ],
+      "case": "H9"
+    },
+    {
+      "id": "K06",
+      "source_id": "KR-02",
+      "speaker": "Elva (proposal)",
+      "quote": "Elva will deliver VASP counterparty data exchange for Kestrel Remit, subject to Product approval.",
+      "language": "conditional",
+      "commitment_ids": [
+        "KC5"
+      ],
+      "case": "H1"
+    },
+    {
+      "id": "K07",
+      "source_id": "KR-02",
+      "speaker": "Elva (proposal)",
+      "quote": "Elva will provide full case audit history for every alert raised on Kestrel Remit payouts.",
+      "language": "firm",
+      "commitment_ids": [
+        "KC6"
+      ],
+      "case": "H10, H11"
+    },
+    {
+      "id": "K08",
+      "source_id": "KR-03",
+      "speaker": "Elva (draft SOW)",
+      "quote": "The payout ledger connector will handle up to 30,000 payouts per day at launch.",
+      "language": "firm",
+      "commitment_ids": [
+        "KC4"
+      ],
+      "case": "H4"
+    },
+    {
+      "id": "K09",
+      "source_id": "KR-03",
+      "speaker": "Elva (draft SOW)",
+      "quote": "Provider will screen NUSD payouts on Ethereum in real time before release.",
+      "language": "firm",
+      "commitment_ids": [
+        "KC7"
+      ],
+      "case": "clean negative"
+    }
+  ]
+}
