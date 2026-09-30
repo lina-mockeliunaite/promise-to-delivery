@@ -59,3 +59,13 @@
 **Failure:** I pasted my full API key into the chat — the second time after Day 1. I revoked it and created a new one straight away, and now set the key with `read -s` so it never appears on screen or in shell history.
 
 **Still unclear:** Which of the nine statements above the gold count are actual extraction errors, especially the process promises and HB-07 reference, and whether the extra thinking tokens improve accuracy enough to justify their cost.
+
+## 2026-09-30 — Day 6
+
+**Learned:** I can explain why a better headline score may still be the worse product choice. The cheaper models called S08 and S09 conditional, which would skip the authorisation checks and hide two of the conflicts I built this tool to find.
+
+**Stuck on:** I slowed down when choosing how partial quotes should match labels, and when deciding whether the weekly SOW meeting was a real commitment. I needed to draw a clearer line between delivery under the deal and steps taken to sell it.
+
+**Failure:** My labels missed the weekly implementation meeting, so one reported false positive is a gap in the answer key. The detail-lost check also treated Annex A section numbers as missing commitment details; I kept the original score and recorded both problems.
+
+**Still unclear:** I cannot yet explain how to authorise the weekly meeting if the permitted internal evidence is silent. I also do not know whether Sonnet’s advantage on Harbour Bank will hold on the sealed deal.
