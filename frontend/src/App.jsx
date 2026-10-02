@@ -7,9 +7,19 @@ const humanise = (value) => {
   return text.charAt(0).toUpperCase() + text.slice(1);
 };
 
-const titleCase = (value) => String(value).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+const DOC_TYPE_LABELS = {
+  call_transcript: "Call transcript",
+  rfp_response: "RFP response",
+  proposal: "Proposal",
+  draft_sow: "Draft SOW",
+  draft_contract: "Draft contract",
+  pricing_services_note: "Pricing and services note",
+  customer_email: "Customer email",
+};
 
-// The API's "status" is eligibility by document type, not whether the latest run read the document.
+const titleCase =(value) => String(value).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+
+// The API's "eligibility" is by document type, not whether the latest run read the document.
 const ELIGIBILITY = {
   extracted: "Read for promises",
   reference_only: "Reference only",
@@ -99,9 +109,9 @@ function SourcesTable({ sources, documents }) {
               <tr key={s.source_id}>
                 <td className="nowrap">{s.source_id}</td>
                 <td>{s.file}</td>
-                <td>{humanise(s.doc_type)}</td>
+                <td>{DOC_TYPE_LABELS[s.doc_type] ?? humanise(s.doc_type)}</td>
                 <td className="nowrap">{s.date ?? "—"}</td>
-                <td>{ELIGIBILITY[s.status] ?? humanise(s.status)}</td>
+                <td>{ELIGIBILITY[s.eligibility] ?? humanise(s.eligibility)}</td>
                 <td>
                   <span className={run.problem ? "status status-problem" : "status"}>
                     {run.problem ? "! " : ""}

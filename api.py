@@ -30,7 +30,7 @@ def require_ui_deal(deal: str) -> str:
     return deal
 
 
-def source_status(doc_type) -> str:
+def source_eligibility(doc_type) -> str:
     if doc_type in config.EXTRACTABLE_DOC_TYPES:
         return "extracted"
     if doc_type in config.REFERENCE_ONLY_DOC_TYPES:
@@ -85,7 +85,7 @@ def create_app(dist_dir: Path = DIST_DIR) -> FastAPI:
                 "file": e.get("file"),
                 "doc_type": e.get("doc_type"),
                 "date": e.get("date"),
-                "status": source_status(e.get("doc_type")),
+                "eligibility": source_eligibility(e.get("doc_type")),
             }
             for e in entries
             if isinstance(e, dict)

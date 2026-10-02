@@ -60,10 +60,12 @@ The product was revised before Day 8 into a local deal workspace with resolution
 
 ## Next
 
-1. Thu 1 Oct: step two of the revision — the local UI/API scaffold showing the permitted Harbour Bank source list and saved extraction results, labelled as intermediate. Needs its own go-ahead.
-2. Fri 2 Oct, Checkpoint 1 (revised): a paper test of the pivot, not a walk through extraction scores. Show the three Harbour Bank steps (real-time promise conflicts with the hourly-batch SOW and needs approval; approval recorded, SOW discrepancy stays open; both supported, the finding closes). Log objections and acceptance criteria.
-3. Check actual API spend (credit was $19.79 on 30 Sep; today's runs cost about $0.10). Re-check on 12 Oct.
-4. Sat 3 Oct onwards: see the plan's remaining schedule.
+*Updated 2 Oct, close. Done: 1 Oct scaffold (commit 0beaa38) and 2 Oct schema design (commit 3ca0e7c, `docs/LEDGER_SCHEMA.md`). Checkpoint 1 was a simulated review; the real one is due by 5 Oct (DECISIONS 2026-10-02).*
+
+1. **3 Oct block (Day 9).** Started early on 2 Oct evening (about 1 h 10): quiz retry passed; small fixes done (`status` → `eligibility` on the source list; doc-type label map); seal surface test tightened (97/97 with and without `frontend/dist`); brief signed off. **Start 3 Oct with `docs/BRIEF_2026-10-03.md`, change set 1** (schema link table, DDL, `LEDGER_DEALS`, ledger seal tests), then 2 → 5 in order. Full 4-hour ceiling available on 3 Oct.
+2. Book a real Checkpoint 1 reviewer before 5 Oct; use the revised reviewer pack.
+3. 4 Oct decisions: `security_questionnaire` (extract / reference-only / skip) and whether PDF/DOCX pricing notes count as approval evidence.
+4. Check actual API spend before 12 Oct (credit was $19.79 on 30 Sep).
 
 ## Local app launch
 

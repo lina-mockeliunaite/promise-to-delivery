@@ -13,7 +13,10 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
 from fastapi.testclient import TestClient
+from starlette.routing import Mount
 
 import api
 import config
@@ -63,12 +66,33 @@ def result_file(timestamp, quote):
     }
 
 
+def is_frontend_mount(route, dist_dir) -> bool:
+    return (
+        dist_dir is not None
+        and isinstance(route, Mount)
+        and route.name == "frontend"
+        and isinstance(route.app, StaticFiles)
+        and Path(route.app.directory).resolve() == Path(dist_dir).resolve()
+    )
+
+
+def path_param_violations(app, dist_dir=None):
+    """Routes with path parameters that are neither {deal} only nor the frontend mount of dist_dir."""
+    bad = []
+    for route in app.routes:
+        names = set(getattr(route, "param_convertors", {}))
+        if names and names != {"deal"} and not is_frontend_mount(route, dist_dir):
+            bad.append(route.path)
+    return bad
+
+
 class ApiTestCase(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         root = Path(tmp.name)
         data, results, dist = root / "data", root / "results", root / "dist"
+        self.root, self.data, self.dist = root, data, dist
 
         (data / "harbour_bank" / "docs").mkdir(parents=True)
         (data / "harbour_bank" / "docs" / "manifest.json").write_text(json.dumps(MANIFEST))
@@ -129,10 +153,10 @@ class TestHappyPath(ApiTestCase):
         self.assertEqual(r.status_code, 200)
         self.assert_clean(r)
         rows = {s["source_id"]: s for s in r.json()["sources"]}
-        self.assertEqual(rows["HB-01"]["status"], "extracted")
-        self.assertEqual(rows["HB-05"]["status"], "reference_only")
-        self.assertEqual(rows["HB-09"]["status"], "unclassified")
-        self.assertEqual(set(rows["HB-01"]), {"source_id", "file", "doc_type", "date", "status"})
+        self.assertEqual(rows["HB-01"]["eligibility"], "extracted")
+        self.assertEqual(rows["HB-05"]["eligibility"], "reference_only")
+        self.assertEqual(rows["HB-09"]["eligibility"], "unclassified")
+        self.assertEqual(set(rows["HB-01"]), {"source_id", "file", "doc_type", "date", "eligibility"})
 
     def test_latest_is_highest_filename_timestamp_and_labelled_intermediate(self):
         r = self.client.get("/api/deals/harbour_bank/results/latest")
@@ -226,6 +250,26 @@ class TestSeal(ApiTestCase):
             self.assertEqual(r.status_code, 404, path)
             self.assert_clean(r)
 
+    def test_5b_static_mount_cannot_reach_the_decoy_sealed_deal(self):
+        """The decoy sits beside the temp dist, so a working traversal would reach it.
+
+        The client normalises the literal /../ case to /data/..., so only the encoded variants exercise
+        the server's own path handling.
+        """
+        self.assertEqual(self.client.get("/").status_code, 200)  # the mount is live
+        paths = (
+            "/../data/coral_pay/canary.txt",
+            "/%2e%2e/data/coral_pay/canary.txt",
+            "/..%2fdata/coral_pay/canary.txt",
+            "/..%2Fdata%2Fcoral_pay%2Fcanary.txt",
+            "/%2e%2e%2fdata/coral_pay/manifest.json",
+            "/data/coral_pay/canary.txt",
+        )
+        for path in paths:
+            r = self.client.get(path)
+            self.assertNotEqual(r.status_code, 200, path)
+            self.assert_clean(r)
+
     def test_6_ui_deals_subset_of_allowed_and_excludes_coral_pay(self):
         self.assertTrue(set(config.UI_DEALS) <= set(config.ALLOWED_DEALS))
         self.assertNotIn("coral_pay", config.UI_DEALS)
@@ -243,10 +287,23 @@ class TestSurface(ApiTestCase):
             r = getattr(self.client, method)("/api/deals")
             self.assertIn(r.status_code, (404, 405), method)
 
-    def test_no_route_takes_a_path_parameter_other_than_deal(self):
-        for route in api.app.routes:
-            for name in getattr(route, "param_convertors", {}):
-                self.assertEqual(name, "deal", route.path)
+    def test_no_dist_means_no_mount_and_no_path_parameter_other_than_deal(self):
+        app = api.create_app(dist_dir=self.root / "missing")
+        self.assertEqual(path_param_violations(app), [])
+        self.assertEqual([r for r in app.routes if isinstance(r, Mount)], [])
+
+    def test_with_dist_only_the_frontend_mount_of_that_dist_takes_a_path_parameter(self):
+        app = self.client.app
+        self.assertEqual(path_param_violations(app, self.dist), [])
+        self.assertEqual(len([r for r in app.routes if is_frontend_mount(r, self.dist)]), 1)
+
+    def test_path_parameter_rule_flags_foreign_mounts(self):
+        other = self.root / "other"
+        other.mkdir()
+        for name in ("frontend", "assets"):
+            app = FastAPI()
+            app.mount("/", StaticFiles(directory=other), name=name)
+            self.assertEqual(len(path_param_violations(app, self.dist)), 1, name)
 
     def test_api_docs_are_disabled(self):
         for path in ("/docs", "/redoc", "/openapi.json"):

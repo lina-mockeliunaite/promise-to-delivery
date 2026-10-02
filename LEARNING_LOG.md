@@ -92,7 +92,7 @@
 
 ## 2026-10-02 — Scaffold, simulated Checkpoint 1 and ledger schema design
 
-**Hours (build log):** 1 Oct — [__] h total ([__] learning, [__] build). 2 Oct — about 2 h so far (about 0.5 learning, 1.5 build and review).
+**Hours (build log):** 1 Oct — 2.5 h total (mostly learning: HTTP APIs, frontend vs backend, scratch server). 2 Oct — about 2 h (about 0.5 learning, 1.5 build and review); about 2 h of the ceiling unused.
 
 **Learned:** The seal has two layers. Deny rules protect my build workflow; the running app is protected by design — it only answers routes I wrote, no route takes a path, and each layer has its own allowlist. Tests use a decoy deal with a canary so they check content, not just status codes.
 
@@ -101,3 +101,15 @@
 **Failure:** The 1 Oct block slipped a day, so the contingency hours were spent without lightening 3 Oct. My Checkpoint 1 review was simulated, so it confirmed my design instead of testing it.
 
 **Still unclear:** Whether a real reviewer will find rechecking more useful than a spreadsheet, and how the 17-table schema will feel when I have to explain it under pressure.
+
+## 2026-10-02 (evening) — 3 Oct block started early: consolidation, link table, seal test
+
+**Hours:** 2 Oct evening, about 1 h 10: approximately 20 minutes learning and 50 minutes building, reviewing and drafting tomorrow’s brief.
+
+**Learned:** Consolidation needs the material terms pulled out of a quote, not a comparison of whole sentences. Missing required terms must lead to `terms_incomplete` and needs review, while the link table lets one exact statement support several commitments without losing contract coverage.
+
+**Stuck on:** I initially treated normalisation as if it solved matching. Turning “thirty thousand” into “30000” helps, but I still need to identify the volume, unit and period before deciding whether two promises are the same.
+
+**Failure:** The seal test had been passing because nothing had been built that could leak, so the pass gave false reassurance. I learned why it needs decoy content, checks that the canary never appears in responses, and a negative control that demonstrates the test can detect a leak.
+
+**Still unclear:** I still need to work through which terms are required for each capability and how to preserve explicit network/asset pairings. I also need to understand how reference resolution supplies S11’s missing mode from Annex A while preserving the original quote and its provenance.
