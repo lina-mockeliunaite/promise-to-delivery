@@ -316,3 +316,43 @@ Days 1–7 and every entry above stand unchanged. The entries below add to them.
 | 21 Oct: acceptance, docs | ~3 | 2.5 | Medium |
 
 Total about 43–52 hours against about 30. Even the 56-hour maximum leaves about 36 hours of build. Reasons for the largest gaps: 12 Oct feeds the sealed run; the Excel and PowerPoint block needs two adapters, a canonical text form that survives the frozen prompt, sheet/cell and slide location tracing, script-generated fixtures (formula cells read as empty without stored values) and extraction runs; the frontend has about 5 hours scheduled across 13 and 15 Oct against about 8–10 needed. Mitigations that need no scope change: define the adapter interface and snapshot columns during the 2 Oct schema session; write the Excel and PowerPoint canonical-text specification on 2 Oct as a document only.
+
+## 2026-10-02 — 1 Oct block completed; Checkpoint 1 run as a simulated review
+
+**Schedule slip.** The 1 Oct block (scaffold) was not finished on 1 Oct; it was completed on 2 Oct. The 4 contingency hours pulled forward to 1–2 Oct were spent without lightening 3 Oct as intended. From here the only buffer is the 2 hours on 16 Oct.
+
+**Scaffold (step two).** Chose: read-only FastAPI app (`api.py`) bound to 127.0.0.1 plus a React page, Harbour Bank only via `UI_DEALS` (a checked subset of `ALLOWED_DEALS`). Seal tested at runtime against a decoy `coral_pay` folder with a canary string in a temporary data directory, never the real path. Rejected: testing against the real `data/coral_pay/`. Why: a guard bug would read the sealed deal during the test itself, CLAUDE.md forbids touching the path, and a canary lets the test assert on content, not only on status codes. 94/94 tests pass; schema hash unchanged (a4debfaf).
+
+**Known limits found today (not fixed).**
+- The `.claude/settings.json` deny rules cover Claude Code's Read and Edit tools, not shell commands; for those the seal relies on the CLAUDE.md instruction.
+- `regression.py` copies prompt hashes from the run file rather than verifying them. A hash-verification check is needed before the 12 Oct candidate freeze.
+- Two 404 bodies exist: the deal guard returns "Not found", unknown routes return FastAPI's "Not Found". Not a seal leak (all rejected deals share one body), but noted.
+- The API field `status` means document-type eligibility on the sources route and run outcome on the results route. Rename to `eligibility` on 3 Oct, before issue statuses arrive.
+- UI copy: document-type labels ("Rfp response", "Draft sow", "Pricing services note") to be corrected on 3 Oct.
+
+**Checkpoint 1: simulated review, not the real checkpoint.** The reviewer pack was run as a simulated Delivery/CS review. Chose: log it as design input only; Checkpoint 1 stays open until a real CS, implementation or pre-sales leader reviews the revised pack, **deadline 5 Oct**. Rejected: counting the simulation as Checkpoint 1. Why: it cannot answer whether checking the fix beats a spreadsheet for a real team, and it restated an existing decision (issue-level closure), so it confirmed rather than tested the design.
+
+**Deviation from the plan.** The plan allows schema design only after Checkpoint 1 feedback is logged. Chose: design the schema on 2 Oct from the simulated review's inputs. Why: the schema is design-only and cheap to change; waiting would move 3 Oct with no benefit. Risk: the schema rests on assumptions no real reviewer has tested; capped by the 5 Oct deadline.
+
+**Design inputs adopted from the simulated review (acceptance criteria for the schema):**
+1. Approval closes an approval issue only if it covers the promised terms *and* conditions (for example launch date and beta conditions), not the capability alone.
+2. A contract gap closes only when the annex version currently incorporated by the contract matches the promise, including screening before release. Sources therefore carry versions, and references record which version they resolve to.
+3. Commitments can be linked: a commitment that is clean on its own (Polygon hourly batch) can be the contract side of another commitment's open issue, and the register must show that link.
+4. Closing one commitment leaves every other finding visible with its owner and outstanding action; the handoff lists unresolved commitments.
+5. Closure records the evidence checked and the reason it passed; a partial or mismatched fix states what remains unmet.
+6. "Resolved" means the documented gap is closed. It does not establish operational readiness for launch; the UI and handoff say so.
+7. The handoff record lets a recipient establish the final promise, conditions, owner, approval and remaining actions, with traceable source versions.
+
+**Not adopted:** changing the tagline. The simulation said it conveys detection more than rechecking; one simulated opinion is not enough. Test it with real reviewers by asking what they expect the product to do before explaining it.
+
+**Reviewer pack changed:** the leading line in Step 2 was replaced with "What would happen next in your current process?", and the hourly-batch row now shows its link to the open Polygon issue.
+
+**Ledger schema approved (design only): `docs/LEDGER_SCHEMA.md`.** 17 tables and 3 derived views; DDL written once on 3 Oct, behaviour built in tranches (3 Oct: write path from imported run files; 4 Oct: issues and references; 12 Oct: fixes, closure checks, cache reuse, links). Key choices:
+- Issue state and commitment status are derived views, never stored columns: state follows the latest closure check, so a resolved issue reopens if a later recheck fails, and a commitment is Resolved only when all its issues are. Rejected: stored status fields. Why: a stored status goes stale when one issue changes and another is overlooked.
+- Authorisation and contractual presence are stored per review (`commitment_assessments`), not on the commitment. Why: they change between steps; overwriting them loses the audit trail.
+- References resolve by source plus cited date: a re-dated SOW leaves the contract pointing at the old version and the gap open.
+- Every recheck reassesses every commitment and issue. Rejected: reassessing only commitments whose evidence changed. Why: the rules are deterministic and cost nothing at this scale; change-tracking code could silently skip a commitment that should have been rechecked.
+- C01 keeps three issues as labelled (labels are frozen); the UI groups contract gap and contradiction under one "Contract" heading.
+- Imported rows from the frozen run file are `reusable = 0` (it lacks the content hash, context field and cache-format version), so the app's first review makes six model calls (~$0.07).
+- **New allowlist `LEDGER_DEALS`, separate from `ALLOWED_DEALS`.** Why: on 14 Oct `ALLOWED_DEALS` must be widened for the sealed run; a ledger that trusted it would admit Coral Pay the same day. Each layer keeps its own allowlist. The sealed run's output stays in `results/` only, never in the ledger or UI.
+- Risk: the schema rests on the simulated review; the database is disposable until 13 Oct (rebuilt from sources plus cache, no migrations).

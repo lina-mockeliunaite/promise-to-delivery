@@ -89,3 +89,15 @@
 **Failure:** The earlier schedule understated committed hours and described already allocated contingency as spare capacity. Reviewing it exposed those planning errors before implementation.
 
 **Still unclear:** I still need to understand how the API, ledger and cache fit together in working code, especially how an agent-found issue retains its identity and is closed with evidence.
+
+## 2026-10-02 — Scaffold, simulated Checkpoint 1 and ledger schema design
+
+**Hours (build log):** 1 Oct — [__] h total ([__] learning, [__] build). 2 Oct — about 2 h so far (about 0.5 learning, 1.5 build and review).
+
+**Learned:** The seal has two layers. Deny rules protect my build workflow; the running app is protected by design — it only answers routes I wrote, no route takes a path, and each layer has its own allowlist. Tests use a decoy deal with a canary so they check content, not just status codes.
+
+**Stuck on:** Reading Claude Code's proposals fast enough to spot what was wrong, and knowing which of its questions were mine to decide.
+
+**Failure:** The 1 Oct block slipped a day, so the contingency hours were spent without lightening 3 Oct. My Checkpoint 1 review was simulated, so it confirmed my design instead of testing it.
+
+**Still unclear:** Whether a real reviewer will find rechecking more useful than a spreadsheet, and how the 17-table schema will feel when I have to explain it under pressure.
