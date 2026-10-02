@@ -1,0 +1,170 @@
+:root {
+  --bg: #f6f7f8;
+  --surface: #ffffff;
+  --text: #1d2329;
+  --muted: #5b6670;
+  --line: #dde1e5;
+  --head: #eef0f2;
+  --accent: #1f5f7a;
+  --accent-soft: #e6f0f4;
+  color-scheme: light dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #15191d;
+    --surface: #1d2227;
+    --text: #e6e9ec;
+    --muted: #9aa5ae;
+    --line: #333b43;
+    --head: #252b31;
+    --accent: #7fb7cf;
+    --accent-soft: #1f3138;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 15px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 16px 64px;
+}
+
+header {
+  margin-bottom: 28px;
+}
+
+.eyebrow {
+  margin: 0 0 4px;
+  color: var(--accent);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0 0 4px;
+  font-size: 28px;
+  font-weight: 650;
+}
+
+h2 {
+  margin: 32px 0 10px;
+  font-size: 18px;
+  font-weight: 650;
+}
+
+.muted {
+  margin: 4px 0 12px;
+  color: var(--muted);
+}
+
+.banner {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  background: var(--accent-soft);
+  border-left: 4px solid var(--accent);
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.notice {
+  margin: 0;
+  padding: 14px;
+  background: var(--surface);
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  color: var(--muted);
+}
+
+.notice-error {
+  border: 1px solid var(--accent);
+  border-left-width: 4px;
+  color: var(--text);
+}
+
+.notice p {
+  margin: 0 0 8px;
+}
+
+.notice p:last-child {
+  margin-bottom: 0;
+}
+
+button {
+  padding: 5px 12px;
+  background: var(--surface);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  font: inherit;
+  cursor: pointer;
+}
+
+button:hover {
+  background: var(--accent-soft);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+th,
+td {
+  padding: 7px 12px;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  background: var(--head);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.nowrap {
+  white-space: nowrap;
+}
+
+.quote {
+  min-width: 280px;
+  max-width: 560px;
+}
+
+.status-problem {
+  font-weight: 700;
+  color: var(--accent);
+}

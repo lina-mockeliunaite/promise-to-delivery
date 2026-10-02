@@ -79,3 +79,13 @@
 **Failure:** My own check 6 failed on every Day 6 run before I had changed anything — HB-07's two pointer sentences had been there all along. The only hard case the model got wrong was a sales-process step, the same type as all five remaining Harbour Bank false positives.
 
 **Still unclear:** Whether one clean run proves the pointer fix holds, and how Day 9 should keep sales-process steps off the decision screen without a second prompt change. The hard cases were written after the prompt, so I don't yet know how much 11 of 12 is worth.
+
+## 2026-09-30 — Revision v3 (product and plan revision, before Day 8)
+
+**Learned:** A fix must resolve each issue attached to a commitment. Internal approval can be settled while the contractual gap remains open, so completing one action cannot clear the whole finding.
+
+**Stuck on:** I needed help understanding how a web frontend connects to the Python pipeline, and how to add the workspace while preserving evaluation and learning time.
+
+**Failure:** The earlier schedule understated committed hours and described already allocated contingency as spare capacity. Reviewing it exposed those planning errors before implementation.
+
+**Still unclear:** I still need to understand how the API, ledger and cache fit together in working code, especially how an agent-found issue retains its identity and is closed with evidence.

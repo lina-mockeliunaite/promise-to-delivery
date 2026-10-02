@@ -77,6 +77,22 @@ ALLOWED_DEALS = [
 ]
 
 
+# Deals the local web UI may show. Narrower than ALLOWED_DEALS: hard_cases is for the pipeline only.
+UI_DEALS = [
+    "harbour_bank",
+]
+
+
+def check_ui_deals(ui_deals: list, allowed_deals: list) -> None:
+    """Raise if any UI deal is not also an allowed deal."""
+    extra = [d for d in ui_deals if d not in allowed_deals]
+    if extra:
+        raise RuntimeError(f"UI_DEALS must be a subset of ALLOWED_DEALS; not allowed: {extra}")
+
+
+check_ui_deals(UI_DEALS, ALLOWED_DEALS)
+
+
 class DealNotAllowed(Exception):
     """Raised when a deal name is not in ALLOWED_DEALS."""
 

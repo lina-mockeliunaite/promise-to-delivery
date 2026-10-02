@@ -4,7 +4,7 @@
 
 ## Revision v3 (30 Sep, same day)
 
-The product was revised before Day 8 into a local deal workspace with resolution checking. Days 1–7 below are unchanged. `docs/PLAN_v3.3.md` is the schedule and governs; `docs/REVISION_BRIEF_2026-09-30.md` is the specification; DESIGN.md ("Revision v3") and DECISIONS.md (2026-09-30, Revision v3) record the design and choices. Completion Wed 21 Oct, hard stop Thu 22 Oct. Work is now planned by date, not Day number.
+The product was revised before Day 8 into a local deal workspace with resolution checking. Days 1–7 below are unchanged. `docs/PLAN_v3.4.md` is the schedule and governs; `docs/REVISION_BRIEF_2026-09-30.md` is the specification; DESIGN.md ("Revision v3") and DECISIONS.md (2026-09-30, Revision v3) record the design and choices. Completion Wed 21 Oct, hard stop Thu 22 Oct. Work is now planned by date, not Day number.
 
 **Open items from the revision**
 
@@ -16,8 +16,8 @@ The product was revised before Day 8 into a local deal workspace with resolution
 - **Freeze scope:** the 12 Oct candidate freeze covers extraction, filter, consolidation, rules and agent only. Plan v3.3 still says "candidate backend freeze" and needs a matching edit.
 - **Cut order at the 22 Oct hard stop (reported unfinished, not deleted):** PowerPoint, then visual refinement, then Excel.
 - **Actual build hours:** log per block from 1 Oct. Formal re-plan at the close of 5 Oct.
-- **Environment:** Node v26.10.0 and npm 11.19.1 are installed. Web and adapter dependencies are not yet installed.
-- **Local app launch:** added here once the step-two scaffold exists. There is no web layer yet.
+- **Environment:** Node v26.10.0 and npm 11.19.1 are installed. Web dependencies are installed (fastapi, uvicorn, httpx in `.venv`; react and vite in `frontend/`). Adapter dependencies are not.
+- **Local app launch:** see the "Local app launch" section below. The step-two scaffold is read-only, makes no model calls and shows Harbour Bank only.
 
 ## What works
 
@@ -64,6 +64,41 @@ The product was revised before Day 8 into a local deal workspace with resolution
 2. Fri 2 Oct, Checkpoint 1 (revised): a paper test of the pivot, not a walk through extraction scores. Show the three Harbour Bank steps (real-time promise conflicts with the hourly-batch SOW and needs approval; approval recorded, SOW discrepancy stays open; both supported, the finding closes). Log objections and acceptance criteria.
 3. Check actual API spend (credit was $19.79 on 30 Sep; today's runs cost about $0.10). Re-check on 12 Oct.
 4. Sat 3 Oct onwards: see the plan's remaining schedule.
+
+## Local app launch
+
+Read-only scaffold: `api.py` (FastAPI, GET routes only) and `frontend/` (React with Vite). Both bind to `127.0.0.1`. No API key is needed and no model is called.
+
+First time only, from the repo root:
+
+```
+source .venv/bin/activate
+pip install -r requirements.txt
+cd frontend && npm ci && cd ..
+```
+
+**Dev mode** (two terminals; the page hot-reloads):
+
+```
+# terminal 1, repo root
+.venv/bin/python -m uvicorn api:app --host 127.0.0.1 --port 8000
+
+# terminal 2
+cd frontend && npm run dev
+```
+
+Open http://127.0.0.1:5173. Vite proxies `/api` to port 8000.
+
+**Built mode** (one server; FastAPI serves `frontend/dist/`):
+
+```
+cd frontend && npm run build && cd ..
+.venv/bin/python -m uvicorn api:app --host 127.0.0.1 --port 8000
+```
+
+Open http://127.0.0.1:8000. Rebuild after any frontend change; the server notices `frontend/dist/` only at start-up, so restart it after the first build.
+
+Check: `.venv/bin/python -m unittest discover tests` runs the API seal tests with the rest.
 
 ## First commands on 12 October
 
