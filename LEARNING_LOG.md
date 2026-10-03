@@ -116,28 +116,42 @@
 
 ## 2026-10-03 — Ledger, parser, filter, consolidation, grouping score
 
-*Drafted by Claude at Lina's request from the day's work; Lina to confirm or edit.*
+*Rewritten by Lina in her own words, 3 Oct 13:48 (replaces Claude's draft).*
 
 **Hours:** 3 Oct, about 2 h 10 (07:41–09:51): about 15 minutes of quiz and learning, the rest directing and reviewing five change sets. Plus about 1 h 10 on 2 Oct evening.
 
-**Learned:** Consolidation is only as good as the terms you can see: ignoring an unlisted network would have hidden an absolute limit, and treating go-live as "no capability" would have made date drift impossible to catch. NULL should mean one thing only; "not yet assessed" needs its own value. A database rule protects every future writer, not just today's code.
+**Learned:** The same promise can appear in different words, so grouping has to compare its material terms, not the whole sentence. One statement can support several commitments, so the ledger needs a link table while preserving the original quote.
 
-**Stuck on:** Keeping the two seal tests apart: the route rule and the canary/traversal test each have their own negative control, and I mixed them up three times.
+**Stuck on:** I needed help deciding when the parsed terms were complete enough to group statements. S11 names Ethereum and Polygon but leaves the screening mode to an annex, so the quote alone cannot establish the full match.
 
-**Failure:** I skipped predicting results before runs, including the grouping score, even though I had everything I needed to predict 14/15 and 8/9. I also pushed two commits with "..." as the message by pasting placeholders.
+**Failure:** I skipped predicting the results before running the code and moved on without explaining the changes myself. The build progressed faster than my understanding.
 
-**Still unclear:** How reference resolution will give S11 its mode from Annex A while keeping the quote and its provenance intact, and how the 4 Oct rules should treat a commitment that is incomplete but clearly firm.
+**Still unclear:** I still need to explain which missing terms require `terms_incomplete` and needs review, and when the available evidence supports a conclusion anyway. I also want to walk one statement through the filter, parser, grouping and ledger links without notes.
 
 ## 2026-10-03 (late morning) — 4 Oct block built early: rules, references, evidence decisions
 
-*Drafted by Claude at Lina's request from the session; Lina to confirm or edit.*
+*Rewritten by Lina in her own words, 3 Oct 13:50 (replaces Claude's draft).*
 
 **Hours:** 3 Oct, about 10:05–11:10, roughly 1 h 05, all directing and reviewing; no separate learning block. Day total about 3 h 15, inside the ceiling.
 
-**Learned:** A missing detail should block a conclusion only when it could change that conclusion, and the conclusion must then say exactly what was and was not checked. "Not in the catalogue" is not automatically "prohibited"; it becomes an absolute limit only when the catalogue says so in its own words.
+**Learned:** The contract’s wording is not the whole story: an incorporated SOW and annex can supply the actual terms, so the reference chain matters. Approval is a separate question, answered from the catalogue and pricing note—not from how confidently something was promised.
 
-**Stuck on:** Deciding where promises and approvals actually live. Security questionnaires and Excel deal-desk sheets were first excluded for testing convenience; both are real places where commitments and approvals sit.
+**Stuck on:** I needed help understanding when missing terms prevent a verdict. A missing detail should block the conclusion it could change; a volume check can still pass if the promise fits every relevant limit.
 
-**Failure:** I skipped the quiz and the learning block to move faster, so today's UNDERSTAND item (why rules are enough for some conflicts) is not yet tested. Claude listed the sealed folder's directory contents while surveying the repo; no file was read, and it is logged.
+**Failure:** The initial evidence boundary excluded security questionnaires and Excel pricing notes. That could hide customer promises or approval evidence, so we corrected the scope.
 
-**Still unclear:** Whether the agent can show any value when the rules already score 100% on practice data, and whether the new practice set, drafted by Claude knowing the rules' blind spots, is a fair enough test.
+**Still unclear:** I still need to explain how missing or ambiguous references become needs review rather than confirmed gaps. I also need to defend why an unlisted capability can be prohibited by our complete fictional catalogue, while omission from an incomplete uploaded catalogue proves nothing.
+
+## 2026-10-03 (afternoon) — 5, 12 and 13 Oct blocks built early: agent result, recheck and scenarios, workspace screens
+
+*Dictated by Lina, 3 Oct 13:52.*
+
+**Hours:** About 2 hours (rough estimate).
+
+**Learned:** An agent identifying the right problem is not enough: its evidence must also be valid and traceable. Recheck tests each issue separately, so fixing approval alone leaves the contract gap open.
+
+**Stuck on:** I could follow fix-and-recheck on screen more easily than I could explain the steps underneath it. I still needed help tracing how the recorded evidence, cached extraction and issue states fit together.
+
+**Failure:** The agent was right in substance but failed the evidence checks in every run, so the rules power the demo. Browser testing also exposed a threading bug despite the automated checks passing; it was fixed.
+
+**Still unclear:** I need to understand the threading fix well enough to explain it myself. The five scenarios passed with the real model, but I still need to explain what they establish about resolution correctness and what remains untested on new deals.
