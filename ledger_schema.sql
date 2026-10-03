@@ -295,6 +295,9 @@ CREATE TABLE commitment_assessments (
     presence_detail        TEXT,
     support_state          TEXT NOT NULL CHECK (support_state IN ('supported', 'unsupported')),
     rationale              TEXT,
+    -- Consolidation snapshot: the group key (null when incomplete), terms_incomplete and what is missing, each
+    -- member's term set and attributes (dates, cadence, go-live date), and the hash of the rules that built it.
+    terms                  TEXT CHECK (terms IS NULL OR json_valid(terms)),
     UNIQUE (review_id, commitment_id)
 );
 
