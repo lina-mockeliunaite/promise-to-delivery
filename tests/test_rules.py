@@ -124,6 +124,15 @@ class TestAuthorisation(unittest.TestCase):
         self.assertIn("Checked: capability, volume, milestone", evidence)
         self.assertIn("the deal's own region is not checked here", evidence)
 
+    def test_another_capabilitys_no_exception_row_is_not_cited_as_a_deal_wide_statement(self):
+        """Found by the 3 Oct agent comparison: a Polygon row was cited as evidence for a sanctions-volume verdict."""
+        quote = ("Elva will provide sanctions screening of up to 120,000 screenings per day.", "firm")
+        _, a = deal([quote], [])
+        x = next(v for k, v in a.items() if "Sanctions" in k)
+        self.assertEqual(x.authorisation, "no_approval_evidence")
+        self.assertNotIn("Polygon", x.authorisation_evidence)
+        self.assertIn("names no approval for this scope", x.authorisation_evidence)
+
     def test_an_approval_for_a_different_scope_does_not_count(self):
         note = "| CAP-021 On-chain wallet screening integration | Singapore, NUSD on Polygon, batch | Exception approved for this customer; approved by J. Tan |"
         _, a = deal([POLYGON_RT], [POLYGON_RT], note=note)

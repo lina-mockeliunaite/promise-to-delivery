@@ -167,7 +167,8 @@ def note_finding(notes: list, ts: dict, cap_name: str):
                     return "approval_without_approver", row, note
                 return "exception_approved", row, note
         for line in note.text.splitlines():
-            if GLOBAL_NO_EXCEPTION.search(line):
+            # A deal-wide statement only: a table row, or a line about a named capability, speaks for that row alone.
+            if GLOBAL_NO_EXCEPTION.search(line) and "|" not in line and not re.search(r"\bCAP-\d+", line):
                 return "no_approval_evidence", line.strip(), note
     if notes:
         return "no_approval_evidence", None, notes[0]

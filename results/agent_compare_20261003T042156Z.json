@@ -1,0 +1,2426 @@
+{
+  "timestamp_utc": "2026-10-03T04:21:56+00:00",
+  "model": "claude-sonnet-5",
+  "runs_per_deal": 3,
+  "bounds": {
+    "cost_usd": 0.1,
+    "latency_s": 60,
+    "tool_calls_per_commitment": 6,
+    "tool_calls_per_deal": 40
+  },
+  "deals": {
+    "harbour_bank": {
+      "escalated": [
+        "C08"
+      ],
+      "rules_metrics": {
+        "authorisation": {
+          "exact": 8,
+          "of": 8
+        },
+        "presence": {
+          "exact": 8,
+          "of": 8
+        },
+        "issue_sets": {
+          "exact": 8,
+          "of": 8
+        },
+        "issues": {
+          "true_positive": 8,
+          "false_positive": 0,
+          "false_negative": 0
+        },
+        "absolute_limit": {
+          "exact": 8,
+          "of": 8
+        },
+        "false_flags_on_clean_commitments": 0,
+        "commitments_with_issues_reaching_review": {
+          "found": 4,
+          "of": 4
+        }
+      },
+      "judged": [
+        {
+          "added_material": [],
+          "false_flags": [],
+          "unsupported": [],
+          "uncited": [],
+          "disagreements_with_labels": [],
+          "final_authorisation": {
+            "C08": "unknown_needs_review"
+          },
+          "cost_usd": 0.012692,
+          "seconds": 7.47,
+          "status": "complete",
+          "tool_calls": 1,
+          "turns": 1
+        },
+        {
+          "added_material": [],
+          "false_flags": [],
+          "unsupported": [],
+          "uncited": [],
+          "disagreements_with_labels": [],
+          "final_authorisation": {
+            "C08": "unknown_needs_review"
+          },
+          "cost_usd": 0.010922,
+          "seconds": 4.87,
+          "status": "complete",
+          "tool_calls": 1,
+          "turns": 1
+        },
+        {
+          "added_material": [],
+          "false_flags": [],
+          "unsupported": [],
+          "uncited": [],
+          "disagreements_with_labels": [],
+          "final_authorisation": {
+            "C08": "unknown_needs_review"
+          },
+          "cost_usd": 0.011912,
+          "seconds": 5.74,
+          "status": "complete",
+          "tool_calls": 1,
+          "turns": 1
+        }
+      ],
+      "variation": {
+        "C08": [
+          "unknown_needs_review"
+        ]
+      },
+      "runs": [
+        {
+          "model": "claude-sonnet-5",
+          "escalated": [
+            "C08"
+          ],
+          "tool_calls": 1,
+          "turns": 1,
+          "tool_call_cap": 6,
+          "status": "complete",
+          "usage": {
+            "input_tokens": 2496,
+            "output_tokens": 770
+          },
+          "verdicts": {
+            "C08": {
+              "submitted": {
+                "commitment_key": "C08",
+                "capability_id": null,
+                "term_evidence": [
+                  {
+                    "term": "weekly project status meeting",
+                    "phrase": "The parties will hold a weekly project status meeting during implementation."
+                  }
+                ],
+                "catalogue_path": null,
+                "authorisation": "unknown_needs_review",
+                "rationale": "This commitment promises a recurring governance/status meeting during implementation. It is not a product or technical capability described anywhere in the catalogue (which covers monitoring, screening, case management, reporting, integrations, etc.), and it has no mapping to any CAP-xxx entry. Since this is not a catalogue capability at all, authorisation cannot be determined from the catalogue or pricing note — it falls outside the scope of what this review process can validate.",
+                "asset": null,
+                "region": null,
+                "network": null,
+                "mode": null,
+                "quantity": null,
+                "pricing_note_line": null
+              },
+              "validation": {
+                "accepted": true,
+                "problems": [],
+                "expected": "unknown_needs_review",
+                "absolute_limit": false,
+                "catalogue_paths": []
+              }
+            }
+          },
+          "duplicate_submissions": [],
+          "log": [
+            {
+              "turn": 1,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C08",
+                "capability_id": null,
+                "term_evidence": [
+                  {
+                    "term": "weekly project status meeting",
+                    "phrase": "The parties will hold a weekly project status meeting during implementation."
+                  }
+                ],
+                "catalogue_path": null,
+                "authorisation": "unknown_needs_review",
+                "rationale": "This commitment promises a recurring governance/status meeting during implementation. It is not a product or technical capability described anywhere in the catalogue (which covers monitoring, screening, case management, reporting, integrations, etc.), and it has no mapping to any CAP-xxx entry. Since this is not a catalogue capability at all, authorisation cannot be determined from the catalogue or pricing note — it falls outside the scope of what this review process can validate.",
+                "asset": null,
+                "region": null,
+                "network": null,
+                "mode": null,
+                "quantity": null,
+                "pricing_note_line": null
+              }
+            }
+          ],
+          "seconds": 7.47,
+          "cost_usd": 0.012692
+        },
+        {
+          "model": "claude-sonnet-5",
+          "escalated": [
+            "C08"
+          ],
+          "tool_calls": 1,
+          "turns": 1,
+          "tool_call_cap": 6,
+          "status": "complete",
+          "usage": {
+            "input_tokens": 2496,
+            "output_tokens": 593
+          },
+          "verdicts": {
+            "C08": {
+              "submitted": {
+                "commitment_key": "C08",
+                "capability_id": null,
+                "term_evidence": [
+                  {
+                    "term": "weekly project status meeting",
+                    "phrase": "The parties will hold a weekly project status meeting during implementation."
+                  }
+                ],
+                "catalogue_path": null,
+                "authorisation": "unknown_needs_review",
+                "rationale": "This commitment promises a project governance activity (a weekly status meeting during implementation), not a product feature or service scope listed in the catalogue. There is no corresponding capability to evaluate for sellability or limits, so authorisation cannot be determined from the catalogue or pricing note.",
+                "asset": null,
+                "mode": null,
+                "network": null,
+                "region": null,
+                "quantity": null,
+                "pricing_note_line": null
+              },
+              "validation": {
+                "accepted": true,
+                "problems": [],
+                "expected": "unknown_needs_review",
+                "absolute_limit": false,
+                "catalogue_paths": []
+              }
+            }
+          },
+          "duplicate_submissions": [],
+          "log": [
+            {
+              "turn": 1,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C08",
+                "capability_id": null,
+                "term_evidence": [
+                  {
+                    "term": "weekly project status meeting",
+                    "phrase": "The parties will hold a weekly project status meeting during implementation."
+                  }
+                ],
+                "catalogue_path": null,
+                "authorisation": "unknown_needs_review",
+                "rationale": "This commitment promises a project governance activity (a weekly status meeting during implementation), not a product feature or service scope listed in the catalogue. There is no corresponding capability to evaluate for sellability or limits, so authorisation cannot be determined from the catalogue or pricing note.",
+                "asset": null,
+                "mode": null,
+                "network": null,
+                "region": null,
+                "quantity": null,
+                "pricing_note_line": null
+              }
+            }
+          ],
+          "seconds": 4.87,
+          "cost_usd": 0.010922
+        },
+        {
+          "model": "claude-sonnet-5",
+          "escalated": [
+            "C08"
+          ],
+          "tool_calls": 1,
+          "turns": 1,
+          "tool_call_cap": 6,
+          "status": "complete",
+          "usage": {
+            "input_tokens": 2496,
+            "output_tokens": 692
+          },
+          "verdicts": {
+            "C08": {
+              "submitted": {
+                "commitment_key": "C08",
+                "capability_id": null,
+                "catalogue_path": null,
+                "authorisation": "unknown_needs_review",
+                "rationale": "The commitment promises a weekly project status meeting during implementation, which is a governance/project-management activity, not an AML product capability. It does not correspond to any entry in the catalogue (CAP-001 through CAP-027), so there is no scope to check against limits or approvals. Per the rules, a promise that is not a catalogue capability must be marked unknown_needs_review.",
+                "term_evidence": [
+                  {
+                    "term": "weekly project status meeting",
+                    "phrase": "The parties will hold a weekly project status meeting during implementation."
+                  }
+                ],
+                "region": null,
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "pricing_note_line": null
+              },
+              "validation": {
+                "accepted": true,
+                "problems": [],
+                "expected": "unknown_needs_review",
+                "absolute_limit": false,
+                "catalogue_paths": []
+              }
+            }
+          },
+          "duplicate_submissions": [],
+          "log": [
+            {
+              "turn": 1,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C08",
+                "capability_id": null,
+                "catalogue_path": null,
+                "authorisation": "unknown_needs_review",
+                "rationale": "The commitment promises a weekly project status meeting during implementation, which is a governance/project-management activity, not an AML product capability. It does not correspond to any entry in the catalogue (CAP-001 through CAP-027), so there is no scope to check against limits or approvals. Per the rules, a promise that is not a catalogue capability must be marked unknown_needs_review.",
+                "term_evidence": [
+                  {
+                    "term": "weekly project status meeting",
+                    "phrase": "The parties will hold a weekly project status meeting during implementation."
+                  }
+                ],
+                "region": null,
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "pricing_note_line": null
+              }
+            }
+          ],
+          "seconds": 5.74,
+          "cost_usd": 0.011912
+        }
+      ]
+    },
+    "hard_cases": {
+      "escalated": [
+        "C03"
+      ],
+      "rules_metrics": {
+        "authorisation": {
+          "exact": 7,
+          "of": 7
+        },
+        "presence": {
+          "exact": 7,
+          "of": 7
+        },
+        "issue_sets": {
+          "exact": 7,
+          "of": 7
+        },
+        "issues": {
+          "true_positive": 6,
+          "false_positive": 0,
+          "false_negative": 0
+        },
+        "absolute_limit": {
+          "exact": 7,
+          "of": 7
+        },
+        "false_flags_on_clean_commitments": 0,
+        "commitments_with_issues_reaching_review": {
+          "found": 4,
+          "of": 4
+        }
+      },
+      "judged": [
+        {
+          "added_material": [],
+          "false_flags": [],
+          "unsupported": [],
+          "uncited": [],
+          "disagreements_with_labels": [],
+          "final_authorisation": {
+            "C03": "unknown_needs_review"
+          },
+          "cost_usd": 0.01033,
+          "seconds": 4.5,
+          "status": "complete",
+          "tool_calls": 1,
+          "turns": 1
+        },
+        {
+          "added_material": [],
+          "false_flags": [],
+          "unsupported": [],
+          "uncited": [],
+          "disagreements_with_labels": [],
+          "final_authorisation": {
+            "C03": "unknown_needs_review"
+          },
+          "cost_usd": 0.00981,
+          "seconds": 3.92,
+          "status": "complete",
+          "tool_calls": 1,
+          "turns": 1
+        },
+        {
+          "added_material": [],
+          "false_flags": [],
+          "unsupported": [],
+          "uncited": [],
+          "disagreements_with_labels": [],
+          "final_authorisation": {
+            "C03": "unknown_needs_review"
+          },
+          "cost_usd": 0.01041,
+          "seconds": 4.38,
+          "status": "complete",
+          "tool_calls": 1,
+          "turns": 1
+        }
+      ],
+      "variation": {
+        "C03": [
+          "unknown_needs_review"
+        ]
+      },
+      "runs": [
+        {
+          "model": "claude-sonnet-5",
+          "escalated": [
+            "C03"
+          ],
+          "tool_calls": 1,
+          "turns": 1,
+          "tool_call_cap": 6,
+          "status": "complete",
+          "usage": {
+            "input_tokens": 2495,
+            "output_tokens": 534
+          },
+          "verdicts": {
+            "C03": {
+              "submitted": {
+                "commitment_key": "C03",
+                "capability_id": null,
+                "term_evidence": [
+                  {
+                    "term": "go live date",
+                    "phrase": "Elva will go live for Kestrel Remit on 1 March 2027."
+                  }
+                ],
+                "catalogue_path": null,
+                "authorisation": "unknown_needs_review",
+                "rationale": "The commitment promises a specific go-live date for the customer Kestrel Remit, but does not describe any particular catalogue capability, scope, mode, network, or region that can be checked against the catalogue or pricing note. There is no identifiable capability or limit to validate, so authorisation cannot be determined from the catalogue alone.",
+                "asset": null,
+                "mode": null,
+                "network": null,
+                "region": null,
+                "quantity": null,
+                "pricing_note_line": null
+              },
+              "validation": {
+                "accepted": true,
+                "problems": [],
+                "expected": "unknown_needs_review",
+                "absolute_limit": false,
+                "catalogue_paths": []
+              }
+            }
+          },
+          "duplicate_submissions": [],
+          "log": [
+            {
+              "turn": 1,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C03",
+                "capability_id": null,
+                "term_evidence": [
+                  {
+                    "term": "go live date",
+                    "phrase": "Elva will go live for Kestrel Remit on 1 March 2027."
+                  }
+                ],
+                "catalogue_path": null,
+                "authorisation": "unknown_needs_review",
+                "rationale": "The commitment promises a specific go-live date for the customer Kestrel Remit, but does not describe any particular catalogue capability, scope, mode, network, or region that can be checked against the catalogue or pricing note. There is no identifiable capability or limit to validate, so authorisation cannot be determined from the catalogue alone.",
+                "asset": null,
+                "mode": null,
+                "network": null,
+                "region": null,
+                "quantity": null,
+                "pricing_note_line": null
+              }
+            }
+          ],
+          "seconds": 4.5,
+          "cost_usd": 0.01033
+        },
+        {
+          "model": "claude-sonnet-5",
+          "escalated": [
+            "C03"
+          ],
+          "tool_calls": 1,
+          "turns": 1,
+          "tool_call_cap": 6,
+          "status": "complete",
+          "usage": {
+            "input_tokens": 2495,
+            "output_tokens": 482
+          },
+          "verdicts": {
+            "C03": {
+              "submitted": {
+                "commitment_key": "C03",
+                "capability_id": null,
+                "term_evidence": [
+                  {
+                    "term": "go live date",
+                    "phrase": "Elva will go live for Kestrel Remit on 1 March 2027."
+                  }
+                ],
+                "catalogue_path": null,
+                "authorisation": "unknown_needs_review",
+                "rationale": "The statement only commits to a go-live date for the customer and does not reference any specific catalogue capability, scope, region, network, or mode. There is no identifiable product scope to check against the catalogue or pricing note, so authorisation cannot be determined.",
+                "mode": null,
+                "network": null,
+                "region": null,
+                "asset": null,
+                "quantity": null,
+                "pricing_note_line": null
+              },
+              "validation": {
+                "accepted": true,
+                "problems": [],
+                "expected": "unknown_needs_review",
+                "absolute_limit": false,
+                "catalogue_paths": []
+              }
+            }
+          },
+          "duplicate_submissions": [],
+          "log": [
+            {
+              "turn": 1,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C03",
+                "capability_id": null,
+                "term_evidence": [
+                  {
+                    "term": "go live date",
+                    "phrase": "Elva will go live for Kestrel Remit on 1 March 2027."
+                  }
+                ],
+                "catalogue_path": null,
+                "authorisation": "unknown_needs_review",
+                "rationale": "The statement only commits to a go-live date for the customer and does not reference any specific catalogue capability, scope, region, network, or mode. There is no identifiable product scope to check against the catalogue or pricing note, so authorisation cannot be determined.",
+                "mode": null,
+                "network": null,
+                "region": null,
+                "asset": null,
+                "quantity": null,
+                "pricing_note_line": null
+              }
+            }
+          ],
+          "seconds": 3.92,
+          "cost_usd": 0.00981
+        },
+        {
+          "model": "claude-sonnet-5",
+          "escalated": [
+            "C03"
+          ],
+          "tool_calls": 1,
+          "turns": 1,
+          "tool_call_cap": 6,
+          "status": "complete",
+          "usage": {
+            "input_tokens": 2495,
+            "output_tokens": 542
+          },
+          "verdicts": {
+            "C03": {
+              "submitted": {
+                "commitment_key": "C03",
+                "capability_id": null,
+                "term_evidence": [
+                  {
+                    "term": "go-live date",
+                    "phrase": "Elva will go live for Kestrel Remit on 1 March 2027"
+                  }
+                ],
+                "catalogue_path": null,
+                "authorisation": "unknown_needs_review",
+                "rationale": "The commitment only states a go-live date for the customer (\"Elva will go live for Kestrel Remit on 1 March 2027\") and does not describe any specific product capability, region, network, mode, or quantity that maps to a catalogue entry. There is no scope to check against the catalogue or pricing note, so authorisation cannot be determined from available evidence.",
+                "mode": null,
+                "network": null,
+                "region": null,
+                "asset": null,
+                "quantity": null,
+                "pricing_note_line": null
+              },
+              "validation": {
+                "accepted": true,
+                "problems": [],
+                "expected": "unknown_needs_review",
+                "absolute_limit": false,
+                "catalogue_paths": []
+              }
+            }
+          },
+          "duplicate_submissions": [],
+          "log": [
+            {
+              "turn": 1,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C03",
+                "capability_id": null,
+                "term_evidence": [
+                  {
+                    "term": "go-live date",
+                    "phrase": "Elva will go live for Kestrel Remit on 1 March 2027"
+                  }
+                ],
+                "catalogue_path": null,
+                "authorisation": "unknown_needs_review",
+                "rationale": "The commitment only states a go-live date for the customer (\"Elva will go live for Kestrel Remit on 1 March 2027\") and does not describe any specific product capability, region, network, mode, or quantity that maps to a catalogue entry. There is no scope to check against the catalogue or pricing note, so authorisation cannot be determined from available evidence.",
+                "mode": null,
+                "network": null,
+                "region": null,
+                "asset": null,
+                "quantity": null,
+                "pricing_note_line": null
+              }
+            }
+          ],
+          "seconds": 4.38,
+          "cost_usd": 0.01041
+        }
+      ]
+    },
+    "practice_cases": {
+      "escalated": [
+        "C01",
+        "C02",
+        "C05",
+        "C06",
+        "C07",
+        "C08",
+        "C09"
+      ],
+      "rules_metrics": {
+        "authorisation": {
+          "exact": 7,
+          "of": 12
+        },
+        "presence": {
+          "exact": 12,
+          "of": 12
+        },
+        "issue_sets": {
+          "exact": 7,
+          "of": 12
+        },
+        "issues": {
+          "true_positive": 0,
+          "false_positive": 5,
+          "false_negative": 12
+        },
+        "absolute_limit": {
+          "exact": 11,
+          "of": 12
+        },
+        "false_flags_on_clean_commitments": 0,
+        "commitments_with_issues_reaching_review": {
+          "found": 5,
+          "of": 5
+        }
+      },
+      "judged": [
+        {
+          "added_material": [],
+          "false_flags": [],
+          "unsupported": [
+            {
+              "commitment": "C01",
+              "label": "PC1",
+              "problems": [
+                "term 'asset' has no evidence phrase",
+                "term 'region' has no evidence phrase",
+                "term 'capability' has no evidence phrase"
+              ]
+            },
+            {
+              "commitment": "C02",
+              "label": "PC3",
+              "problems": [
+                "term 'region' has no evidence phrase",
+                "term 'capability' has no evidence phrase"
+              ]
+            },
+            {
+              "commitment": "C05",
+              "label": null,
+              "problems": [
+                "term 'asset' has no evidence phrase",
+                "term 'region' has no evidence phrase",
+                "term 'capability' has no evidence phrase"
+              ]
+            },
+            {
+              "commitment": "C06",
+              "label": "PC9",
+              "problems": [
+                "term 'region' has no evidence phrase",
+                "term 'capability' has no evidence phrase",
+                "pricing-note line does not match the line the rules would cite"
+              ]
+            },
+            {
+              "commitment": "C07",
+              "label": "PC7",
+              "problems": [
+                "term 'region' has no evidence phrase",
+                "term 'capability' has no evidence phrase",
+                "pricing-note line does not match the line the rules would cite"
+              ]
+            },
+            {
+              "commitment": "C08",
+              "label": "PC10",
+              "problems": [
+                "term 'region' has no evidence phrase"
+              ]
+            },
+            {
+              "commitment": "C09",
+              "label": null,
+              "problems": [
+                "authorisation None is not what its own terms and evidence give (standard_authorised)"
+              ]
+            }
+          ],
+          "uncited": [],
+          "disagreements_with_labels": [],
+          "final_authorisation": {
+            "C01": "unknown_needs_review",
+            "C02": "unknown_needs_review",
+            "C05": "unknown_needs_review",
+            "C06": "unknown_needs_review",
+            "C07": "unknown_needs_review",
+            "C08": "unknown_needs_review",
+            "C09": "unknown_needs_review"
+          },
+          "cost_usd": 0.063422,
+          "seconds": 30.9,
+          "status": "complete",
+          "tool_calls": 13,
+          "turns": 2
+        },
+        {
+          "added_material": [],
+          "false_flags": [],
+          "unsupported": [
+            {
+              "commitment": "C01",
+              "label": "PC1",
+              "problems": [
+                "term 'region' has no evidence phrase",
+                "term 'capability' has no evidence phrase"
+              ]
+            },
+            {
+              "commitment": "C02",
+              "label": "PC3",
+              "problems": [
+                "term 'region' has no evidence phrase",
+                "term 'capability' has no evidence phrase"
+              ]
+            },
+            {
+              "commitment": "C05",
+              "label": null,
+              "problems": [
+                "term 'asset' has no evidence phrase",
+                "term 'region' has no evidence phrase",
+                "term 'capability' has no evidence phrase"
+              ]
+            },
+            {
+              "commitment": "C06",
+              "label": "PC9",
+              "problems": [
+                "term 'region' has no evidence phrase",
+                "term 'capability' has no evidence phrase"
+              ]
+            },
+            {
+              "commitment": "C07",
+              "label": "PC7",
+              "problems": [
+                "term 'region' has no evidence phrase",
+                "term 'capability' has no evidence phrase",
+                "authorisation None is not what its own terms and evidence give (standard_authorised)"
+              ]
+            },
+            {
+              "commitment": "C08",
+              "label": "PC10",
+              "problems": [
+                "term 'capability' has no evidence phrase"
+              ]
+            },
+            {
+              "commitment": "C09",
+              "label": null,
+              "problems": [
+                "term 'region' has no evidence phrase"
+              ]
+            }
+          ],
+          "uncited": [],
+          "disagreements_with_labels": [],
+          "final_authorisation": {
+            "C01": "unknown_needs_review",
+            "C02": "unknown_needs_review",
+            "C05": "unknown_needs_review",
+            "C06": "unknown_needs_review",
+            "C07": "unknown_needs_review",
+            "C08": "unknown_needs_review",
+            "C09": "unknown_needs_review"
+          },
+          "cost_usd": 0.1026,
+          "seconds": 46.79,
+          "status": "complete",
+          "tool_calls": 14,
+          "turns": 3
+        },
+        {
+          "added_material": [],
+          "false_flags": [],
+          "unsupported": [
+            {
+              "commitment": "C01",
+              "label": "PC1",
+              "problems": [
+                "term 'asset' has no evidence phrase",
+                "term 'region' has no evidence phrase",
+                "term 'capability' has no evidence phrase"
+              ]
+            },
+            {
+              "commitment": "C02",
+              "label": "PC3",
+              "problems": [
+                "term 'region' has no evidence phrase",
+                "term 'capability' has no evidence phrase"
+              ]
+            },
+            {
+              "commitment": "C05",
+              "label": null,
+              "problems": [
+                "term 'asset' has no evidence phrase",
+                "term 'region' has no evidence phrase",
+                "term 'capability' has no evidence phrase"
+              ]
+            },
+            {
+              "commitment": "C06",
+              "label": "PC9",
+              "problems": [
+                "term 'region' has no evidence phrase",
+                "term 'quantity' has no evidence phrase",
+                "term 'capability' has no evidence phrase",
+                "pricing-note line does not match the line the rules would cite"
+              ]
+            },
+            {
+              "commitment": "C07",
+              "label": "PC7",
+              "problems": [
+                "term 'region' has no evidence phrase",
+                "term 'quantity' has no evidence phrase",
+                "term 'capability' has no evidence phrase",
+                "pricing-note line does not match the line the rules would cite"
+              ]
+            },
+            {
+              "commitment": "C08",
+              "label": "PC10",
+              "problems": [
+                "term 'region' has no evidence phrase"
+              ]
+            },
+            {
+              "commitment": "C09",
+              "label": null,
+              "problems": [
+                "catalogue path 'CAP-014' is not the path for the stated terms ['CAP-014/AU', 'CAP-014/SG']"
+              ]
+            }
+          ],
+          "uncited": [],
+          "disagreements_with_labels": [],
+          "final_authorisation": {
+            "C01": "unknown_needs_review",
+            "C02": "unknown_needs_review",
+            "C05": "unknown_needs_review",
+            "C06": "unknown_needs_review",
+            "C07": "unknown_needs_review",
+            "C08": "unknown_needs_review",
+            "C09": "unknown_needs_review"
+          },
+          "cost_usd": 0.102436,
+          "seconds": 42.44,
+          "status": "complete",
+          "tool_calls": 13,
+          "turns": 4
+        }
+      ],
+      "variation": {
+        "C01": [
+          "unknown_needs_review"
+        ],
+        "C02": [
+          "unknown_needs_review"
+        ],
+        "C05": [
+          "unknown_needs_review"
+        ],
+        "C06": [
+          "unknown_needs_review"
+        ],
+        "C07": [
+          "unknown_needs_review"
+        ],
+        "C08": [
+          "unknown_needs_review"
+        ],
+        "C09": [
+          "unknown_needs_review"
+        ]
+      },
+      "runs": [
+        {
+          "model": "claude-sonnet-5",
+          "escalated": [
+            "C01",
+            "C02",
+            "C05",
+            "C06",
+            "C07",
+            "C08",
+            "C09"
+          ],
+          "tool_calls": 13,
+          "turns": 2,
+          "tool_call_cap": 40,
+          "status": "complete",
+          "usage": {
+            "input_tokens": 8891,
+            "output_tokens": 4564
+          },
+          "verdicts": {
+            "C01": {
+              "submitted": {
+                "commitment_key": "C01",
+                "capability_id": "CAP-021",
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Polygon wallet"
+                  },
+                  {
+                    "term": "mode",
+                    "phrase": "instant risk check before funds move"
+                  }
+                ],
+                "catalogue_path": "CAP-021/SG/Polygon/NUSD/real_time",
+                "authorisation": "no_approval_evidence",
+                "rationale": "Real-time on-chain wallet screening for NUSD on Polygon in SG is in beta and requires named approval; the pricing note records no named exception approved for this scope, only the batch mode is standard.",
+                "region": "SG",
+                "network": "Polygon",
+                "asset": "NUSD",
+                "mode": "real_time",
+                "quantity": null,
+                "pricing_note_line": "CAP-021 On-chain wallet screening integration | Singapore, NUSD on Polygon, real-time | Beta; requires named approval | No named exception approved for Tidewater Pay"
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'asset' has no evidence phrase",
+                  "term 'region' has no evidence phrase",
+                  "term 'capability' has no evidence phrase"
+                ],
+                "expected": "no_approval_evidence",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-021/SG/Polygon/NUSD/real_time"
+                ]
+              }
+            },
+            "C02": {
+              "submitted": {
+                "commitment_key": "C02",
+                "capability_id": "CAP-021",
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Tron wallets will be covered"
+                  }
+                ],
+                "catalogue_path": "CAP-021/SG/Tron",
+                "authorisation": "no_approval_evidence",
+                "rationale": "Tron is not a network listed under CAP-021 for SG (only Ethereum and Polygon are present); the catalogue states unlisted networks are not offered and cannot be sold under exception.",
+                "region": "SG",
+                "network": "Tron",
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "pricing_note_line": null
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'region' has no evidence phrase",
+                  "term 'capability' has no evidence phrase"
+                ],
+                "expected": "no_approval_evidence",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-021/SG/Tron"
+                ]
+              }
+            },
+            "C05": {
+              "submitted": {
+                "commitment_key": "C05",
+                "capability_id": "CAP-021",
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Ethereum payouts"
+                  },
+                  {
+                    "term": "mode",
+                    "phrase": "risk-checked live before release"
+                  }
+                ],
+                "catalogue_path": "CAP-021/SG/Ethereum/NUSD/real_time",
+                "authorisation": "standard_authorised",
+                "rationale": "Real-time on-chain wallet screening for NUSD on Ethereum in SG is generally available and standard sellable, matching the pricing note's confirmation that no exception is needed for this scope.",
+                "region": "SG",
+                "network": "Ethereum",
+                "asset": "NUSD",
+                "mode": "real_time",
+                "quantity": null,
+                "pricing_note_line": "CAP-021 On-chain wallet screening integration | Singapore, NUSD on Ethereum, real-time | Generally available; standard | No exception needed"
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'asset' has no evidence phrase",
+                  "term 'region' has no evidence phrase",
+                  "term 'capability' has no evidence phrase"
+                ],
+                "expected": "standard_authorised",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-021/SG/Ethereum/NUSD/real_time"
+                ]
+              }
+            },
+            "C06": {
+              "submitted": {
+                "commitment_key": "C06",
+                "capability_id": "CAP-007",
+                "term_evidence": [
+                  {
+                    "term": "quantity",
+                    "phrase": "up to 120,000 sanctions checks every day"
+                  }
+                ],
+                "catalogue_path": "CAP-007/SG",
+                "authorisation": "no_approval_evidence",
+                "rationale": "The SG sanctions screening API limit is 100,000 screenings per day; the promised 120,000/day exceeds this, and the pricing note records no approval for volumes above 100,000/day.",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": {
+                  "value": 120000,
+                  "unit": "screenings",
+                  "period": "day"
+                },
+                "pricing_note_line": "CAP-007 Sanctions screening API | Singapore | Maximum 100,000 screenings per day | No approval above 100,000/day"
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'region' has no evidence phrase",
+                  "term 'capability' has no evidence phrase",
+                  "pricing-note line does not match the line the rules would cite"
+                ],
+                "expected": "no_approval_evidence",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-007/SG"
+                ]
+              }
+            },
+            "C07": {
+              "submitted": {
+                "commitment_key": "C07",
+                "capability_id": "CAP-023",
+                "term_evidence": [
+                  {
+                    "term": "quantity",
+                    "phrase": "around 30k payouts a day"
+                  }
+                ],
+                "catalogue_path": "CAP-023/SG",
+                "authorisation": "no_approval_evidence",
+                "rationale": "The SG payout ledger connector limit is 25,000 payouts per day; the promised ~30,000/day exceeds this, and the pricing note records no approval above 25,000/day.",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": {
+                  "value": 30000,
+                  "unit": "payouts",
+                  "period": "day"
+                },
+                "pricing_note_line": "CAP-023 Payout ledger connector | Singapore | Maximum 25,000 payouts per day | No approval above 25,000/day"
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'region' has no evidence phrase",
+                  "term 'capability' has no evidence phrase",
+                  "pricing-note line does not match the line the rules would cite"
+                ],
+                "expected": "no_approval_evidence",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-023/SG"
+                ]
+              }
+            },
+            "C08": {
+              "submitted": {
+                "commitment_key": "C08",
+                "capability_id": "CAP-024",
+                "term_evidence": [
+                  {
+                    "term": "capability",
+                    "phrase": "Counterparty data sharing with exchanges will be switched on"
+                  },
+                  {
+                    "term": "date",
+                    "phrase": "by the end of Q1 2027"
+                  }
+                ],
+                "catalogue_path": "CAP-024/SG",
+                "authorisation": "no_approval_evidence",
+                "rationale": "VASP counterparty data exchange in SG is on the roadmap (target 2027-06-30) and requires named approval; the pricing note records no named exception approved for this scope, so the Q1 2027 go-live promise lacks authorisation.",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "pricing_note_line": "CAP-024 VASP counterparty data exchange | Singapore | Roadmap; requires named approval | No named exception approved for Tidewater Pay"
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'region' has no evidence phrase"
+                ],
+                "expected": "no_approval_evidence",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-024/SG"
+                ]
+              }
+            },
+            "C09": {
+              "submitted": {
+                "commitment_key": "C09",
+                "capability_id": "CAP-014",
+                "term_evidence": [
+                  {
+                    "term": "capability",
+                    "phrase": "full audit trail on every case"
+                  }
+                ],
+                "catalogue_path": "CAP-014/SG"
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "authorisation None is not what its own terms and evidence give (standard_authorised)"
+                ],
+                "expected": "standard_authorised",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-014/AU",
+                  "CAP-014/SG"
+                ]
+              }
+            }
+          },
+          "duplicate_submissions": [],
+          "log": [
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-021"
+              }
+            },
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-007"
+              }
+            },
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-023"
+              }
+            },
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-024"
+              }
+            },
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-014"
+              }
+            },
+            {
+              "turn": 1,
+              "tool": "get_pricing_note",
+              "input": {}
+            },
+            {
+              "turn": 2,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C01",
+                "capability_id": "CAP-021",
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Polygon wallet"
+                  },
+                  {
+                    "term": "mode",
+                    "phrase": "instant risk check before funds move"
+                  }
+                ],
+                "catalogue_path": "CAP-021/SG/Polygon/NUSD/real_time",
+                "authorisation": "no_approval_evidence",
+                "rationale": "Real-time on-chain wallet screening for NUSD on Polygon in SG is in beta and requires named approval; the pricing note records no named exception approved for this scope, only the batch mode is standard.",
+                "region": "SG",
+                "network": "Polygon",
+                "asset": "NUSD",
+                "mode": "real_time",
+                "quantity": null,
+                "pricing_note_line": "CAP-021 On-chain wallet screening integration | Singapore, NUSD on Polygon, real-time | Beta; requires named approval | No named exception approved for Tidewater Pay"
+              }
+            },
+            {
+              "turn": 2,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C02",
+                "capability_id": "CAP-021",
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Tron wallets will be covered"
+                  }
+                ],
+                "catalogue_path": "CAP-021/SG/Tron",
+                "authorisation": "no_approval_evidence",
+                "rationale": "Tron is not a network listed under CAP-021 for SG (only Ethereum and Polygon are present); the catalogue states unlisted networks are not offered and cannot be sold under exception.",
+                "region": "SG",
+                "network": "Tron",
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "pricing_note_line": null
+              }
+            },
+            {
+              "turn": 2,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C05",
+                "capability_id": "CAP-021",
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Ethereum payouts"
+                  },
+                  {
+                    "term": "mode",
+                    "phrase": "risk-checked live before release"
+                  }
+                ],
+                "catalogue_path": "CAP-021/SG/Ethereum/NUSD/real_time",
+                "authorisation": "standard_authorised",
+                "rationale": "Real-time on-chain wallet screening for NUSD on Ethereum in SG is generally available and standard sellable, matching the pricing note's confirmation that no exception is needed for this scope.",
+                "region": "SG",
+                "network": "Ethereum",
+                "asset": "NUSD",
+                "mode": "real_time",
+                "quantity": null,
+                "pricing_note_line": "CAP-021 On-chain wallet screening integration | Singapore, NUSD on Ethereum, real-time | Generally available; standard | No exception needed"
+              }
+            },
+            {
+              "turn": 2,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C06",
+                "capability_id": "CAP-007",
+                "term_evidence": [
+                  {
+                    "term": "quantity",
+                    "phrase": "up to 120,000 sanctions checks every day"
+                  }
+                ],
+                "catalogue_path": "CAP-007/SG",
+                "authorisation": "no_approval_evidence",
+                "rationale": "The SG sanctions screening API limit is 100,000 screenings per day; the promised 120,000/day exceeds this, and the pricing note records no approval for volumes above 100,000/day.",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": {
+                  "value": 120000,
+                  "unit": "screenings",
+                  "period": "day"
+                },
+                "pricing_note_line": "CAP-007 Sanctions screening API | Singapore | Maximum 100,000 screenings per day | No approval above 100,000/day"
+              }
+            },
+            {
+              "turn": 2,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C07",
+                "capability_id": "CAP-023",
+                "term_evidence": [
+                  {
+                    "term": "quantity",
+                    "phrase": "around 30k payouts a day"
+                  }
+                ],
+                "catalogue_path": "CAP-023/SG",
+                "authorisation": "no_approval_evidence",
+                "rationale": "The SG payout ledger connector limit is 25,000 payouts per day; the promised ~30,000/day exceeds this, and the pricing note records no approval above 25,000/day.",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": {
+                  "value": 30000,
+                  "unit": "payouts",
+                  "period": "day"
+                },
+                "pricing_note_line": "CAP-023 Payout ledger connector | Singapore | Maximum 25,000 payouts per day | No approval above 25,000/day"
+              }
+            },
+            {
+              "turn": 2,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C08",
+                "capability_id": "CAP-024",
+                "term_evidence": [
+                  {
+                    "term": "capability",
+                    "phrase": "Counterparty data sharing with exchanges will be switched on"
+                  },
+                  {
+                    "term": "date",
+                    "phrase": "by the end of Q1 2027"
+                  }
+                ],
+                "catalogue_path": "CAP-024/SG",
+                "authorisation": "no_approval_evidence",
+                "rationale": "VASP counterparty data exchange in SG is on the roadmap (target 2027-06-30) and requires named approval; the pricing note records no named exception approved for this scope, so the Q1 2027 go-live promise lacks authorisation.",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "pricing_note_line": "CAP-024 VASP counterparty data exchange | Singapore | Roadmap; requires named approval | No named exception approved for Tidewater Pay"
+              }
+            },
+            {
+              "turn": 2,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C09",
+                "capability_id": "CAP-014",
+                "term_evidence": [
+                  {
+                    "term": "capability",
+                    "phrase": "full audit trail on every case"
+                  }
+                ],
+                "catalogue_path": "CAP-014/SG"
+              }
+            }
+          ],
+          "seconds": 30.9,
+          "cost_usd": 0.063422
+        },
+        {
+          "model": "claude-sonnet-5",
+          "escalated": [
+            "C01",
+            "C02",
+            "C05",
+            "C06",
+            "C07",
+            "C08",
+            "C09"
+          ],
+          "tool_calls": 14,
+          "turns": 3,
+          "tool_call_cap": 40,
+          "status": "complete",
+          "usage": {
+            "input_tokens": 19030,
+            "output_tokens": 6454
+          },
+          "verdicts": {
+            "C01": {
+              "submitted": {
+                "commitment_key": "C01",
+                "capability_id": "CAP-021",
+                "catalogue_path": "CAP-021/SG/Polygon/NUSD/real_time",
+                "region": "SG",
+                "network": "Polygon",
+                "asset": "NUSD",
+                "mode": "real_time",
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Polygon wallet"
+                  },
+                  {
+                    "term": "mode",
+                    "phrase": "instant risk check before funds move"
+                  },
+                  {
+                    "term": "asset",
+                    "phrase": "We pay out NUSD to Polygon, Ethereum and some Tron wallets."
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "rationale": "The promise is real-time wallet screening on Polygon payouts (NUSD), i.e. CAP-021/SG/Polygon/NUSD/real_time. The catalogue marks this scope as beta/requires_named_approval, and the pricing note explicitly states 'No named exception approved for Tidewater Pay' for Singapore/Polygon/real-time. No approval evidence exists, so this cannot be sold as promised."
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'region' has no evidence phrase",
+                  "term 'capability' has no evidence phrase"
+                ],
+                "expected": "no_approval_evidence",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-021/SG/Polygon/NUSD/real_time"
+                ]
+              }
+            },
+            "C02": {
+              "submitted": {
+                "commitment_key": "C02",
+                "capability_id": "CAP-021",
+                "catalogue_path": "CAP-021/SG/Tron",
+                "region": "SG",
+                "network": "Tron",
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Tron wallets will be covered by the same pre-release checks."
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "rationale": "Tron is not a network listed under CAP-021 for any region (only Ethereum and Polygon appear). The catalogue's unlisted_rule states that a network absent from the catalogue is not offered and cannot be sold under a named exception. The pricing note contains no line for Tron either, so there is no approval evidence for this scope."
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'region' has no evidence phrase",
+                  "term 'capability' has no evidence phrase"
+                ],
+                "expected": "no_approval_evidence",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-021/SG/Tron"
+                ]
+              }
+            },
+            "C05": {
+              "submitted": {
+                "commitment_key": "C05",
+                "capability_id": "CAP-021",
+                "catalogue_path": "CAP-021/SG/Ethereum/NUSD/real_time",
+                "region": "SG",
+                "network": "Ethereum",
+                "asset": "NUSD",
+                "mode": "real_time",
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Ethereum payouts are risk-checked live before release."
+                  },
+                  {
+                    "term": "mode",
+                    "phrase": "risk-checked live before release"
+                  }
+                ],
+                "authorisation": "standard_authorised",
+                "rationale": "The promise matches CAP-021/SG/Ethereum/NUSD/real_time, which the catalogue lists as generally_available and sellable as standard, with no limits. The pricing note confirms 'No exception needed' for this exact scope, so it is standard authorised."
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'asset' has no evidence phrase",
+                  "term 'region' has no evidence phrase",
+                  "term 'capability' has no evidence phrase"
+                ],
+                "expected": "standard_authorised",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-021/SG/Ethereum/NUSD/real_time"
+                ]
+              }
+            },
+            "C06": {
+              "submitted": {
+                "commitment_key": "C06",
+                "capability_id": "CAP-007",
+                "catalogue_path": "CAP-007/SG",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": {
+                  "value": 120000,
+                  "unit": "screenings",
+                  "period": "day"
+                },
+                "term_evidence": [
+                  {
+                    "term": "quantity",
+                    "phrase": "up to 120,000 sanctions checks every day"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "rationale": "CAP-007 Sanctions screening API in Singapore has a limit of max_screenings_per_day = 100,000. The promised 120,000/day exceeds this limit, and the pricing note states 'No approval above 100,000/day' for Singapore, so there is no approval evidence for the higher volume."
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'region' has no evidence phrase",
+                  "term 'capability' has no evidence phrase"
+                ],
+                "expected": "no_approval_evidence",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-007/SG"
+                ]
+              }
+            },
+            "C07": {
+              "submitted": {
+                "commitment_key": "C07",
+                "capability_id": "CAP-023",
+                "catalogue_path": "CAP-023/SG",
+                "region": "SG",
+                "network": null
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'region' has no evidence phrase",
+                  "term 'capability' has no evidence phrase",
+                  "authorisation None is not what its own terms and evidence give (standard_authorised)"
+                ],
+                "expected": "standard_authorised",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-023/SG"
+                ]
+              }
+            },
+            "C08": {
+              "submitted": {
+                "commitment_key": "C08",
+                "capability_id": "CAP-024",
+                "catalogue_path": "CAP-024/SG",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "region",
+                    "phrase": "Counterparty data sharing with exchanges will be switched on in Singapore"
+                  },
+                  {
+                    "term": "roadmap_date",
+                    "phrase": "by the end of Q1 2027"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "rationale": "CAP-024 VASP counterparty data exchange in Singapore is status 'roadmap' with sellable 'requires_named_approval' (roadmap_date 2027-06-30). The pricing note states 'No named exception approved for Tidewater Pay' for this capability, so there is no approval evidence to promise it switched on by Q1 2027."
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'capability' has no evidence phrase"
+                ],
+                "expected": "no_approval_evidence",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-024/SG"
+                ]
+              }
+            },
+            "C09": {
+              "submitted": {
+                "commitment_key": "C09",
+                "capability_id": "CAP-014",
+                "catalogue_path": "CAP-014/SG",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "capability",
+                    "phrase": "Analysts get a full audit trail on every case."
+                  }
+                ],
+                "authorisation": "standard_authorised",
+                "rationale": "The promise of a full audit trail on every case matches CAP-014 Case audit history, which is generally_available and sellable as standard in Singapore (and AU) with no limits, requiring no special approval."
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'region' has no evidence phrase"
+                ],
+                "expected": "standard_authorised",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-014/SG"
+                ]
+              }
+            }
+          },
+          "duplicate_submissions": [
+            "C07"
+          ],
+          "log": [
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-021"
+              }
+            },
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-007"
+              }
+            },
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-023"
+              }
+            },
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-024"
+              }
+            },
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-014"
+              }
+            },
+            {
+              "turn": 1,
+              "tool": "get_pricing_note",
+              "input": {}
+            },
+            {
+              "turn": 2,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C01",
+                "capability_id": "CAP-021",
+                "catalogue_path": "CAP-021/SG/Polygon/NUSD/real_time",
+                "region": "SG",
+                "network": "Polygon",
+                "asset": "NUSD",
+                "mode": "real_time",
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Polygon wallet"
+                  },
+                  {
+                    "term": "mode",
+                    "phrase": "instant risk check before funds move"
+                  },
+                  {
+                    "term": "asset",
+                    "phrase": "We pay out NUSD to Polygon, Ethereum and some Tron wallets."
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "rationale": "The promise is real-time wallet screening on Polygon payouts (NUSD), i.e. CAP-021/SG/Polygon/NUSD/real_time. The catalogue marks this scope as beta/requires_named_approval, and the pricing note explicitly states 'No named exception approved for Tidewater Pay' for Singapore/Polygon/real-time. No approval evidence exists, so this cannot be sold as promised."
+              }
+            },
+            {
+              "turn": 2,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C02",
+                "capability_id": "CAP-021",
+                "catalogue_path": "CAP-021/SG/Tron",
+                "region": "SG",
+                "network": "Tron",
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Tron wallets will be covered by the same pre-release checks."
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "rationale": "Tron is not a network listed under CAP-021 for any region (only Ethereum and Polygon appear). The catalogue's unlisted_rule states that a network absent from the catalogue is not offered and cannot be sold under a named exception. The pricing note contains no line for Tron either, so there is no approval evidence for this scope."
+              }
+            },
+            {
+              "turn": 2,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C05",
+                "capability_id": "CAP-021",
+                "catalogue_path": "CAP-021/SG/Ethereum/NUSD/real_time",
+                "region": "SG",
+                "network": "Ethereum",
+                "asset": "NUSD",
+                "mode": "real_time",
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Ethereum payouts are risk-checked live before release."
+                  },
+                  {
+                    "term": "mode",
+                    "phrase": "risk-checked live before release"
+                  }
+                ],
+                "authorisation": "standard_authorised",
+                "rationale": "The promise matches CAP-021/SG/Ethereum/NUSD/real_time, which the catalogue lists as generally_available and sellable as standard, with no limits. The pricing note confirms 'No exception needed' for this exact scope, so it is standard authorised."
+              }
+            },
+            {
+              "turn": 2,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C06",
+                "capability_id": "CAP-007",
+                "catalogue_path": "CAP-007/SG",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": {
+                  "value": 120000,
+                  "unit": "screenings",
+                  "period": "day"
+                },
+                "term_evidence": [
+                  {
+                    "term": "quantity",
+                    "phrase": "up to 120,000 sanctions checks every day"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "rationale": "CAP-007 Sanctions screening API in Singapore has a limit of max_screenings_per_day = 100,000. The promised 120,000/day exceeds this limit, and the pricing note states 'No approval above 100,000/day' for Singapore, so there is no approval evidence for the higher volume."
+              }
+            },
+            {
+              "turn": 2,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C07",
+                "capability_id": "CAP-023",
+                "catalogue_path": "CAP-023/SG",
+                "region": "SG",
+                "network": null
+              }
+            },
+            {
+              "turn": 3,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C07",
+                "capability_id": "CAP-023",
+                "catalogue_path": "CAP-023/SG",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": {
+                  "value": 30000,
+                  "unit": "payouts",
+                  "period": "day"
+                },
+                "term_evidence": [
+                  {
+                    "term": "quantity",
+                    "phrase": "around 30k payouts a day"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "rationale": "CAP-023 Payout ledger connector in Singapore has a limit of max_payouts_per_day = 25,000. The promised 'around 30k payouts a day' exceeds this, and the pricing note states 'No approval above 25,000/day' for Singapore, so there is no approval evidence for the higher volume."
+              }
+            },
+            {
+              "turn": 3,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C08",
+                "capability_id": "CAP-024",
+                "catalogue_path": "CAP-024/SG",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "region",
+                    "phrase": "Counterparty data sharing with exchanges will be switched on in Singapore"
+                  },
+                  {
+                    "term": "roadmap_date",
+                    "phrase": "by the end of Q1 2027"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "rationale": "CAP-024 VASP counterparty data exchange in Singapore is status 'roadmap' with sellable 'requires_named_approval' (roadmap_date 2027-06-30). The pricing note states 'No named exception approved for Tidewater Pay' for this capability, so there is no approval evidence to promise it switched on by Q1 2027."
+              }
+            },
+            {
+              "turn": 3,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C09",
+                "capability_id": "CAP-014",
+                "catalogue_path": "CAP-014/SG",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "capability",
+                    "phrase": "Analysts get a full audit trail on every case."
+                  }
+                ],
+                "authorisation": "standard_authorised",
+                "rationale": "The promise of a full audit trail on every case matches CAP-014 Case audit history, which is generally_available and sellable as standard in Singapore (and AU) with no limits, requiring no special approval."
+              }
+            }
+          ],
+          "seconds": 46.79,
+          "cost_usd": 0.1026
+        },
+        {
+          "model": "claude-sonnet-5",
+          "escalated": [
+            "C01",
+            "C02",
+            "C05",
+            "C06",
+            "C07",
+            "C08",
+            "C09"
+          ],
+          "tool_calls": 13,
+          "turns": 4,
+          "tool_call_cap": 40,
+          "status": "complete",
+          "usage": {
+            "input_tokens": 23308,
+            "output_tokens": 5582
+          },
+          "verdicts": {
+            "C01": {
+              "submitted": {
+                "commitment_key": "C01",
+                "capability_id": "CAP-021",
+                "catalogue_path": "CAP-021/SG/Polygon/NUSD/real_time",
+                "region": "SG",
+                "network": "Polygon",
+                "asset": "NUSD",
+                "mode": "real_time",
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "payout to a Polygon wallet"
+                  },
+                  {
+                    "term": "mode",
+                    "phrase": "instant risk check before funds move"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "pricing_note_line": "CAP-021 On-chain wallet screening integration | Singapore, NUSD on Polygon, real-time | Beta; requires named approval | No named exception approved for Tidewater Pay",
+                "rationale": "The promise is real-time (pre-funds-move) wallet screening for Polygon NUSD payouts in SG. Catalogue marks CAP-021 SG/Polygon/NUSD/real_time as beta, requiring named approval, and the pricing note records no named exception approved for this scope, so it is unauthorised to promise as firm/standard."
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'asset' has no evidence phrase",
+                  "term 'region' has no evidence phrase",
+                  "term 'capability' has no evidence phrase"
+                ],
+                "expected": "no_approval_evidence",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-021/SG/Polygon/NUSD/real_time"
+                ]
+              }
+            },
+            "C02": {
+              "submitted": {
+                "commitment_key": "C02",
+                "capability_id": "CAP-021",
+                "catalogue_path": "CAP-021/SG/Tron",
+                "region": "SG",
+                "network": "Tron",
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Tron wallets will be covered"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "pricing_note_line": null,
+                "rationale": "Tron is not listed as a network under CAP-021 (On-chain wallet screening integration) for SG; only Ethereum and Polygon appear. The catalogue rule states an absent network is not offered and cannot be sold under a named exception, so this promise has no approval evidence."
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'region' has no evidence phrase",
+                  "term 'capability' has no evidence phrase"
+                ],
+                "expected": "no_approval_evidence",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-021/SG/Tron"
+                ]
+              }
+            },
+            "C05": {
+              "submitted": {
+                "commitment_key": "C05",
+                "capability_id": "CAP-021",
+                "catalogue_path": "CAP-021/SG/Ethereum/NUSD/real_time",
+                "region": "SG",
+                "network": "Ethereum",
+                "asset": "NUSD",
+                "mode": "real_time",
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Ethereum payouts"
+                  },
+                  {
+                    "term": "mode",
+                    "phrase": "risk-checked live before release"
+                  }
+                ],
+                "authorisation": "standard_authorised",
+                "pricing_note_line": "CAP-021 On-chain wallet screening integration | Singapore, NUSD on Ethereum, real-time | Generally available; standard | No exception needed",
+                "rationale": "Real-time (live) wallet-risk checking for Ethereum NUSD payouts in SG matches CAP-021 SG/Ethereum/NUSD/real_time, which is generally available and sellable as standard, confirmed by the pricing note as needing no exception."
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'asset' has no evidence phrase",
+                  "term 'region' has no evidence phrase",
+                  "term 'capability' has no evidence phrase"
+                ],
+                "expected": "standard_authorised",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-021/SG/Ethereum/NUSD/real_time"
+                ]
+              }
+            },
+            "C06": {
+              "submitted": {
+                "commitment_key": "C06",
+                "capability_id": "CAP-007",
+                "catalogue_path": "CAP-007/SG",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": {
+                  "value": 120000,
+                  "unit": "screenings",
+                  "period": "day"
+                },
+                "term_evidence": [
+                  {
+                    "term": "limit",
+                    "phrase": "up to 120,000 sanctions checks every day"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "pricing_note_line": "CAP-007 Sanctions screening API | Singapore | Maximum 100,000 screenings per day | No approval above 100,000/day",
+                "rationale": "CAP-007 Sanctions screening API for SG has a limit of max_screenings_per_day = 100,000. The promised 120,000/day exceeds this limit, and the pricing note confirms no approval exists above 100,000/day."
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'region' has no evidence phrase",
+                  "term 'quantity' has no evidence phrase",
+                  "term 'capability' has no evidence phrase",
+                  "pricing-note line does not match the line the rules would cite"
+                ],
+                "expected": "no_approval_evidence",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-007/SG"
+                ]
+              }
+            },
+            "C07": {
+              "submitted": {
+                "commitment_key": "C07",
+                "capability_id": "CAP-023",
+                "catalogue_path": "CAP-023/SG",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": {
+                  "value": 30000,
+                  "unit": "payouts",
+                  "period": "day"
+                },
+                "term_evidence": [
+                  {
+                    "term": "limit",
+                    "phrase": "around 30k payouts a day"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "pricing_note_line": "CAP-023 Payout ledger connector | Singapore | Maximum 25,000 payouts per day | No approval above 25,000/day"
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'region' has no evidence phrase",
+                  "term 'quantity' has no evidence phrase",
+                  "term 'capability' has no evidence phrase",
+                  "pricing-note line does not match the line the rules would cite"
+                ],
+                "expected": "no_approval_evidence",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-023/SG"
+                ]
+              }
+            },
+            "C08": {
+              "submitted": {
+                "commitment_key": "C08",
+                "capability_id": "CAP-024",
+                "catalogue_path": "CAP-024/SG",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "capability",
+                    "phrase": "Counterparty data sharing with exchanges will be switched on in Singapore"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "pricing_note_line": "CAP-024 VASP counterparty data exchange | Singapore | Roadmap; requires named approval | No named exception approved for Tidewater Pay",
+                "rationale": "CAP-024 VASP counterparty data exchange for SG is on roadmap status (target 2027-06-30) requiring named approval, and the pricing note confirms no named exception has been approved, so committing to a Q1 2027 switch-on date is unauthorised."
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "term 'region' has no evidence phrase"
+                ],
+                "expected": "no_approval_evidence",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-024/SG"
+                ]
+              }
+            },
+            "C09": {
+              "submitted": {
+                "commitment_key": "C09",
+                "capability_id": "CAP-014",
+                "catalogue_path": "CAP-014",
+                "region": null,
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "capability",
+                    "phrase": "full audit trail on every case"
+                  }
+                ],
+                "authorisation": "standard_authorised",
+                "pricing_note_line": null,
+                "rationale": "CAP-014 Case audit history is generally available and sellable as standard in both AU and SG, with no limits, matching the promise of a full audit trail on every case."
+              },
+              "validation": {
+                "accepted": false,
+                "problems": [
+                  "catalogue path 'CAP-014' is not the path for the stated terms ['CAP-014/AU', 'CAP-014/SG']"
+                ],
+                "expected": "standard_authorised",
+                "absolute_limit": false,
+                "catalogue_paths": [
+                  "CAP-014/AU",
+                  "CAP-014/SG"
+                ]
+              }
+            }
+          },
+          "duplicate_submissions": [],
+          "log": [
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-021"
+              }
+            },
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-007"
+              }
+            },
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-024"
+              }
+            },
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-014"
+              }
+            },
+            {
+              "turn": 1,
+              "tool": "get_capability",
+              "input": {
+                "capability_id": "CAP-023"
+              }
+            },
+            {
+              "turn": 2,
+              "tool": "get_pricing_note",
+              "input": {}
+            },
+            {
+              "turn": 3,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C01",
+                "capability_id": "CAP-021",
+                "catalogue_path": "CAP-021/SG/Polygon/NUSD/real_time",
+                "region": "SG",
+                "network": "Polygon",
+                "asset": "NUSD",
+                "mode": "real_time",
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "payout to a Polygon wallet"
+                  },
+                  {
+                    "term": "mode",
+                    "phrase": "instant risk check before funds move"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "pricing_note_line": "CAP-021 On-chain wallet screening integration | Singapore, NUSD on Polygon, real-time | Beta; requires named approval | No named exception approved for Tidewater Pay",
+                "rationale": "The promise is real-time (pre-funds-move) wallet screening for Polygon NUSD payouts in SG. Catalogue marks CAP-021 SG/Polygon/NUSD/real_time as beta, requiring named approval, and the pricing note records no named exception approved for this scope, so it is unauthorised to promise as firm/standard."
+              }
+            },
+            {
+              "turn": 3,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C02",
+                "capability_id": "CAP-021",
+                "catalogue_path": "CAP-021/SG/Tron",
+                "region": "SG",
+                "network": "Tron",
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Tron wallets will be covered"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "pricing_note_line": null,
+                "rationale": "Tron is not listed as a network under CAP-021 (On-chain wallet screening integration) for SG; only Ethereum and Polygon appear. The catalogue rule states an absent network is not offered and cannot be sold under a named exception, so this promise has no approval evidence."
+              }
+            },
+            {
+              "turn": 3,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C05",
+                "capability_id": "CAP-021",
+                "catalogue_path": "CAP-021/SG/Ethereum/NUSD/real_time",
+                "region": "SG",
+                "network": "Ethereum",
+                "asset": "NUSD",
+                "mode": "real_time",
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "network",
+                    "phrase": "Ethereum payouts"
+                  },
+                  {
+                    "term": "mode",
+                    "phrase": "risk-checked live before release"
+                  }
+                ],
+                "authorisation": "standard_authorised",
+                "pricing_note_line": "CAP-021 On-chain wallet screening integration | Singapore, NUSD on Ethereum, real-time | Generally available; standard | No exception needed",
+                "rationale": "Real-time (live) wallet-risk checking for Ethereum NUSD payouts in SG matches CAP-021 SG/Ethereum/NUSD/real_time, which is generally available and sellable as standard, confirmed by the pricing note as needing no exception."
+              }
+            },
+            {
+              "turn": 3,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C06",
+                "capability_id": "CAP-007",
+                "catalogue_path": "CAP-007/SG",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": {
+                  "value": 120000,
+                  "unit": "screenings",
+                  "period": "day"
+                },
+                "term_evidence": [
+                  {
+                    "term": "limit",
+                    "phrase": "up to 120,000 sanctions checks every day"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "pricing_note_line": "CAP-007 Sanctions screening API | Singapore | Maximum 100,000 screenings per day | No approval above 100,000/day",
+                "rationale": "CAP-007 Sanctions screening API for SG has a limit of max_screenings_per_day = 100,000. The promised 120,000/day exceeds this limit, and the pricing note confirms no approval exists above 100,000/day."
+              }
+            },
+            {
+              "turn": 3,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C07",
+                "capability_id": "CAP-023",
+                "catalogue_path": "CAP-023/SG",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": {
+                  "value": 30000,
+                  "unit": "payouts",
+                  "period": "day"
+                },
+                "term_evidence": [
+                  {
+                    "term": "limit",
+                    "phrase": "around 30k payouts a day"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "pricing_note_line": "CAP-023 Payout ledger connector | Singapore | Maximum 25,000 payouts per day | No approval above 25,000/day"
+              }
+            },
+            {
+              "turn": 4,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C08",
+                "capability_id": "CAP-024",
+                "catalogue_path": "CAP-024/SG",
+                "region": "SG",
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "capability",
+                    "phrase": "Counterparty data sharing with exchanges will be switched on in Singapore"
+                  }
+                ],
+                "authorisation": "no_approval_evidence",
+                "pricing_note_line": "CAP-024 VASP counterparty data exchange | Singapore | Roadmap; requires named approval | No named exception approved for Tidewater Pay",
+                "rationale": "CAP-024 VASP counterparty data exchange for SG is on roadmap status (target 2027-06-30) requiring named approval, and the pricing note confirms no named exception has been approved, so committing to a Q1 2027 switch-on date is unauthorised."
+              }
+            },
+            {
+              "turn": 4,
+              "tool": "submit_verdict",
+              "input": {
+                "commitment_key": "C09",
+                "capability_id": "CAP-014",
+                "catalogue_path": "CAP-014",
+                "region": null,
+                "network": null,
+                "asset": null,
+                "mode": null,
+                "quantity": null,
+                "term_evidence": [
+                  {
+                    "term": "capability",
+                    "phrase": "full audit trail on every case"
+                  }
+                ],
+                "authorisation": "standard_authorised",
+                "pricing_note_line": null,
+                "rationale": "CAP-014 Case audit history is generally available and sellable as standard in both AU and SG, with no limits, matching the promise of a full audit trail on every case."
+              }
+            }
+          ],
+          "seconds": 42.44,
+          "cost_usd": 0.102436
+        }
+      ]
+    }
+  },
+  "decision": {
+    "condition_1_adds_material_issue": false,
+    "condition_2_no_unsupported_or_uncited": false,
+    "condition_3_within_bounds": true,
+    "bounds_per_deal": {
+      "harbour_bank": {
+        "mean_cost_usd": 0.011842,
+        "max_cost_usd": 0.012692,
+        "mean_seconds": 6.03,
+        "max_seconds": 7.47,
+        "within_bounds": true
+      },
+      "hard_cases": {
+        "mean_cost_usd": 0.010183,
+        "max_cost_usd": 0.01041,
+        "mean_seconds": 4.27,
+        "max_seconds": 4.5,
+        "within_bounds": true
+      },
+      "practice_cases": {
+        "mean_cost_usd": 0.089486,
+        "max_cost_usd": 0.1026,
+        "mean_seconds": 40.04,
+        "max_seconds": 46.79,
+        "within_bounds": true
+      }
+    },
+    "keep_agent": false,
+    "conclusion": "The rules power the demo: the agent did not meet all three conditions on the tested cases."
+  }
+}
