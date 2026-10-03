@@ -1,10 +1,34 @@
-// GET-only client for the local API. Error messages are generic on purpose: the status code, nothing else.
-async function getJson(path) {
-  const response = await fetch(path, { headers: { Accept: "application/json" } });
-  if (!response.ok) throw new Error(`The request failed (status ${response.status}).`);
-  return response.json();
+// Client for the local API. Errors show the server's plain message, never internals.
+async function handle(response) {
+  if (response.ok) return response.json();
+  let detail = `The request failed (status ${response.status}).`;
+  try {
+    const body = await response.json();
+    if (body && typeof body.detail === "string") detail = body.detail;
+  } catch {
+    /* keep the generic message */
+  }
+  throw new Error(detail);
 }
 
-export const fetchDeals = () => getJson("/api/deals");
-export const fetchSources = (deal) => getJson(`/api/deals/${encodeURIComponent(deal)}/sources`);
-export const fetchLatestResults = (deal) => getJson(`/api/deals/${encodeURIComponent(deal)}/results/latest`);
+const getJson = (path) => fetch(path, { headers: { Accept: "application/json" } }).then(handle);
+
+// Writes carry a custom header: the server refuses writes without it, which blocks cross-site posts.
+const postJson = (path, body) =>
+  fetch(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json", "X-Requested-With": "deal-workspace" },
+    body: JSON.stringify(body ?? {}),
+  }).then(handle);
+
+const d = (deal) => `/api/deals/${encodeURIComponent(deal)}`;
+
+export const fetchDeals = () => getJson("/api/workspace/deals");
+export const createDeal = (name) => postJson("/api/user-deals", { name });
+export const fetchDocuments = (deal) => getJson(`${d(deal)}/documents`);
+export const addDocument = (deal, body) => postJson(`${d(deal)}/documents`, body);
+export const setIncluded = (deal, source_key, included) => postJson(`${d(deal)}/documents/include`, { source_key, included });
+export const fetchRegister = (deal) => getJson(`${d(deal)}/register`);
+export const reviewDeal = (deal, fix_id) => postJson(`${d(deal)}/review`, fix_id ? { fix_id } : {});
+export const recordFix = (deal, body) => postJson(`${d(deal)}/fixes`, body);
+export const updateIssue = (deal, body) => postJson(`${d(deal)}/issues`, body);

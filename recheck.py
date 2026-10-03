@@ -39,12 +39,11 @@ def _quote_sha(quote: str) -> str:
     return hashlib.sha256(quote.encode("utf-8")).hexdigest()
 
 
-def _latest_review(conn, did: int) -> int:
+def _latest_review(conn, did: int):
+    """The latest complete assessed review, or None for a deal never reviewed (a user deal's first review)."""
     row = conn.execute("SELECT MAX(a.review_id) FROM commitment_assessments a JOIN reviews r ON r.id = a.review_id"
                        " WHERE r.deal_id = ? AND r.status = 'complete'", (did,)).fetchone()
-    if row is None or row[0] is None:
-        raise RecheckError("no assessed review to recheck; run ledger_consolidate.py first")
-    return row[0]
+    return row[0] if row and row[0] is not None else None
 
 
 def _previous_members(conn, review_id: int) -> dict:
@@ -124,17 +123,19 @@ def recheck(conn: sqlite3.Connection, slug: str, fix_id=None, client=None, catal
 
 
 def _recheck(conn, did, slug, prev_review, fix, client, vocab, catalogue, config_sha):
-    run_kind = "recheck_after_fix" if fix else "unchanged_input_rerun"
+    run_kind = "recheck_after_fix" if fix else ("unchanged_input_rerun" if prev_review else "review")
     review_id = conn.execute(
         "INSERT INTO reviews (deal_id, run_kind, checker, config_sha256, source_set_sha256, decision_evidence_sha256,"
         " triggered_by_fix_id, status, note) VALUES (?, ?, 'rules', ?, ?, ?, ?, 'running', ?)",
         (did, run_kind, config_sha, ledger_fixes.source_set_sha256(conn, did),
-         ledger_fixes.decision_evidence_sha256(conn, did), fix[0] if fix else None, f"recheck of review {prev_review}"),
+         ledger_fixes.decision_evidence_sha256(conn, did), fix[0] if fix else None,
+         f"recheck of review {prev_review}" if prev_review else "first review"),
     ).lastrowid
 
     # --- Sources and extraction ---
     prev_sources = {v: (e, o) for v, e, o in conn.execute(
-        "SELECT source_version_id, extraction_id, cache_outcome FROM review_sources WHERE review_id = ?", (prev_review,))}
+        "SELECT source_version_id, extraction_id, cache_outcome FROM review_sources WHERE review_id = ?", (prev_review,))
+    } if prev_review else {}
     rows = conn.execute(
         "SELECT v.id, so.source_key, v.version_no, v.doc_type, v.doc_date, v.canonical_text, v.canonical_sha256"
         " FROM source_versions v JOIN sources so ON so.id = v.source_id WHERE so.deal_id = ? AND v.included = 1"
@@ -169,7 +170,7 @@ def _recheck(conn, did, slug, prev_review, fix, client, vocab, catalogue, config
     # --- Consolidation with identities kept ---
     plan = lc.plan_review(statements, vocab, config_sha, lc.referenced_sections(statements, versions))
     existing = dict(conn.execute("SELECT id, commitment_key FROM commitments WHERE deal_id = ?", (did,)).fetchall())
-    identity = _assign_identities(plan, by_sid, _previous_members(conn, prev_review), existing)
+    identity = _assign_identities(plan, by_sid, _previous_members(conn, prev_review) if prev_review else {}, existing)
     next_n = len(existing)
     for o in plan["statements"]:
         conn.execute("INSERT INTO review_statements (review_id, statement_id, source_version_id, kept, filter_rule)"

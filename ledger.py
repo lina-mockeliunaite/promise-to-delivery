@@ -18,11 +18,15 @@ class LedgerDealNotAllowed(Exception):
     """Raised when a development deal slug is not in config.LEDGER_DEALS."""
 
 
-def connect(db_path=None) -> sqlite3.Connection:
-    """Open the ledger database with foreign keys on. Defaults to config.LEDGER_DB_PATH."""
+def connect(db_path=None, check_same_thread: bool = True) -> sqlite3.Connection:
+    """Open the ledger database with foreign keys on. Defaults to config.LEDGER_DB_PATH.
+
+    check_same_thread=False is for the API only: one connection per request, opened by a dependency that the web
+    framework may run on a different worker thread from the endpoint. The connection is never shared between requests.
+    """
     path = Path(db_path) if db_path is not None else config.LEDGER_DB_PATH
     path.parent.mkdir(parents=True, exist_ok=True)
-    conn = sqlite3.connect(path)
+    conn = sqlite3.connect(path, check_same_thread=check_same_thread)
     conn.execute("PRAGMA foreign_keys = ON")
     return conn
 

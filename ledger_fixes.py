@@ -7,6 +7,8 @@ immutable (database triggers); a change is a new version.
 """
 
 import json
+import re
+import secrets
 import sqlite3
 
 import config
@@ -20,12 +22,88 @@ class FixError(Exception):
     pass
 
 
+USER_SLUG = re.compile(r"u_[0-9a-f]{16}")
+
+
 def deal_id(conn: sqlite3.Connection, slug: str) -> int:
-    ledger.require_ledger_deal(slug)
-    row = conn.execute("SELECT id FROM deals WHERE slug = ?", (slug,)).fetchone()
+    """The deal's id. A development slug must be in LEDGER_DEALS; a user slug must exist with kind 'user'."""
+    if USER_SLUG.fullmatch(slug or ""):
+        row = conn.execute("SELECT id FROM deals WHERE slug = ? AND kind = 'user'", (slug,)).fetchone()
+    else:
+        ledger.require_ledger_deal(slug)
+        row = conn.execute("SELECT id FROM deals WHERE slug = ? AND kind = 'development'", (slug,)).fetchone()
     if row is None:
         raise FixError(f"{slug}: not in the ledger")
     return row[0]
+
+
+def create_user_deal(conn, display_name: str, commit: bool = True) -> str:
+    """A user deal with a server-generated slug (u_ + 16 hex). The name is display text only, never a path."""
+    name = (display_name or "").strip()
+    if not name or len(name) > 120:
+        raise FixError("a deal needs a name of 1 to 120 characters")
+    slug = "u_" + secrets.token_hex(8)
+    conn.execute("INSERT INTO deals (slug, kind, display_name) VALUES (?, 'user', ?)", (slug, name))
+    if commit:
+        conn.commit()
+    return slug
+
+
+def add_source(conn, slug: str, display_name: str, text: str, filename: str, doc_type: str, doc_date: str,
+               commit: bool = True) -> int:
+    """A new source with its first version. Returns the version id. Text/Markdown only in this build."""
+    did = deal_id(conn, slug)
+    if doc_type not in config.EXTRACTABLE_DOC_TYPES + config.REFERENCE_ONLY_DOC_TYPES:
+        raise FixError(f"unknown document type {doc_type!r}")
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", doc_date or ""):
+        raise FixError("a document date is needed as YYYY-MM-DD")
+    if not text or not text.strip():
+        raise FixError("the document is empty")
+    n = conn.execute("SELECT COUNT(*) FROM sources WHERE deal_id = ?", (did,)).fetchone()[0]
+    key = f"D-{n + 1:02d}"
+    raw = text.encode("utf-8")
+    adapted = ledger_import.markdown_adapter(raw)
+    try:
+        source_id = conn.execute("INSERT INTO sources (deal_id, source_key, display_name) VALUES (?, ?, ?)",
+                                 (did, key, (display_name or filename or key)[:200])).lastrowid
+        vid = conn.execute(
+            "INSERT INTO source_versions (source_id, version_no, original_sha256, canonical_sha256, adapter_name,"
+            " adapter_version, doc_type, doc_date, original_filename, canonical_text, location_map, included)"
+            " VALUES (?, 1, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
+            (source_id, ledger_import.sha256_hex(raw), ledger_import.sha256_hex(adapted["canonical_text"]),
+             adapted["adapter_name"], adapted["adapter_version"], doc_type, doc_date, (filename or key)[:200],
+             adapted["canonical_text"], adapted["location_map"])).lastrowid
+    except BaseException:
+        conn.rollback()
+        raise
+    if commit:
+        conn.commit()
+    return vid
+
+
+def set_included(conn, slug: str, source_key: str, included: bool, commit: bool = True) -> None:
+    """Include or exclude a source's latest version. Excluding never closes an issue; the review goes out of date."""
+    did = deal_id(conn, slug)
+    row = conn.execute("SELECT v.id FROM source_versions v JOIN sources s ON s.id = v.source_id WHERE s.deal_id = ?"
+                       " AND s.source_key = ? ORDER BY v.version_no DESC LIMIT 1", (did, source_key)).fetchone()
+    if row is None:
+        raise FixError(f"no source {source_key}")
+    conn.execute("UPDATE source_versions SET included = ? WHERE id = ?", (1 if included else 0, row[0]))
+    if commit:
+        conn.commit()
+
+
+def freshness(conn, did: int) -> dict:
+    """'Not reviewed', 'Review out of date' or 'Up to date', from the source-set and decision-evidence hashes."""
+    row = conn.execute(
+        "SELECT r.id, r.source_set_sha256, r.decision_evidence_sha256, r.finished_at, r.run_kind FROM reviews r"
+        " WHERE r.deal_id = ? AND r.status = 'complete' AND EXISTS (SELECT 1 FROM commitment_assessments a"
+        " WHERE a.review_id = r.id) ORDER BY r.id DESC LIMIT 1", (did,)).fetchone()
+    if row is None:
+        return {"state": "Not reviewed", "review_id": None, "finished_at": None, "run_kind": None}
+    current = (source_set_sha256(conn, did), decision_evidence_sha256(conn, did))
+    state = "Up to date" if current == (row[1], row[2]) else "Review out of date"
+    return {"state": state, "review_id": row[0], "finished_at": row[3], "run_kind": row[4]}
 
 
 def add_source_version(conn, slug: str, source_key: str, text: str, filename: str, doc_type=None, doc_date=None,

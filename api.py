@@ -1,20 +1,34 @@
-"""Read-only local API for the Harbour Bank scaffold (step two).
+"""Local API for the deal workspace. Bound to 127.0.0.1; no public model-backed endpoint.
 
 Run: uvicorn api:app --host 127.0.0.1 --port 8000
 
-GET routes only. No model calls, no uploads, no route takes a file path. The UI deal check
-(config.UI_DEALS) runs before any filesystem call; config.py reads happen at call time.
+Step two (read-only) routes are unchanged. The workspace routes (13 Oct block, built 3 Oct) read and write the ledger:
+documents (text/Markdown upload, include/exclude), Review deal, the register, fixes and issue owner/notes. Rules:
+- No route takes a file path; the only path parameter is {deal}. Everything else travels in a JSON body.
+- A deal is either in config.UI_DEALS or a user deal (u_ + 16 hex) that exists in the ledger; anything else is one
+  generic 404, checked before any database or filesystem access. Coral Pay is never in either.
+- Writes need a JSON body and the header X-Requested-With: deal-workspace, which forces a CORS preflight that this
+  server never grants, so another website in the same browser cannot post to it.
+- A review that needs new extraction uses the API key from the server's environment only; the browser never sees it.
 """
 
 import json
 import re
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+import os
+import sqlite3
+
+from fastapi import Body, Depends, FastAPI, Header, HTTPException
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 import config
+import extraction_cache
+import ledger
+import ledger_fixes
+import recheck
+import workspace
 
 DIST_DIR = config.ROOT / "frontend" / "dist"
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
@@ -63,7 +77,7 @@ def latest_result_path(deal: str):
     return best[1] if best else None
 
 
-def create_app(dist_dir: Path = DIST_DIR) -> FastAPI:
+def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     app.router.redirect_slashes = False
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
@@ -129,6 +143,138 @@ def create_app(dist_dir: Path = DIST_DIR) -> FastAPI:
             "documents": documents,
             "statements": statements,
         }
+
+    # --- Workspace (ledger-backed) -------------------------------------------------------------------------
+    def db():
+        path = ledger_path if ledger_path is not None else config.LEDGER_DB_PATH
+        if not Path(path).exists():
+            raise HTTPException(status_code=503, detail="The workspace database is not built yet.")
+        conn = ledger.connect(path, check_same_thread=False)
+        try:
+            yield conn
+        finally:
+            conn.close()
+
+    def workspace_deal(deal: str, conn) -> str:
+        if deal in config.UI_DEALS:
+            if conn.execute("SELECT 1 FROM deals WHERE slug = ? AND kind = 'development'", (deal,)).fetchone():
+                return deal
+        elif ledger_fixes.USER_SLUG.fullmatch(deal or ""):
+            if conn.execute("SELECT 1 FROM deals WHERE slug = ? AND kind = 'user'", (deal,)).fetchone():
+                return deal
+        raise HTTPException(status_code=404, detail=NOT_FOUND)
+
+    def write_guard(x_requested_with: str | None = Header(default=None), content_type: str | None = Header(default=None)):
+        if x_requested_with != "deal-workspace" or not (content_type or "").startswith("application/json"):
+            raise HTTPException(status_code=403, detail="Forbidden")
+
+    def bad_request(exc):
+        return HTTPException(status_code=400, detail=str(exc))
+
+    def model_client():
+        if not os.environ.get("ANTHROPIC_API_KEY"):  # presence only; the value is never read here or returned
+            return None
+        import anthropic
+        return anthropic.Anthropic()
+
+    @app.get("/api/workspace/deals")
+    def ws_deals(conn=Depends(db)):
+        return {"deals": workspace.deal_list(conn)}
+
+    @app.post("/api/user-deals", dependencies=[Depends(write_guard)])
+    def ws_create_deal(body: dict = Body(...), conn=Depends(db)):
+        try:
+            return {"deal": ledger_fixes.create_user_deal(conn, str(body.get("name", "")))}
+        except ledger_fixes.FixError as exc:
+            raise bad_request(exc) from None
+
+    @app.get("/api/deals/{deal}/documents")
+    def ws_documents(deal: str, conn=Depends(db)):
+        workspace_deal(deal, conn)
+        return {"deal": deal, "documents": workspace.documents(conn, deal),
+                "doc_types": [{"value": k, "label": v} for k, v in workspace.DOC_TYPE_LABELS.items()]}
+
+    @app.post("/api/deals/{deal}/documents", dependencies=[Depends(write_guard)])
+    def ws_add_document(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        text = body.get("text")
+        if not isinstance(text, str) or len(text.encode("utf-8")) > 1_000_000:
+            raise HTTPException(status_code=400, detail="Send the document as text, up to 1 MB.")
+        try:
+            if body.get("source_key"):
+                vid = ledger_fixes.add_source_version(conn, deal, str(body["source_key"]), text,
+                                                      str(body.get("filename") or "upload.md")[:200],
+                                                      body.get("doc_type") or None, body.get("doc_date") or None)
+            else:
+                vid = ledger_fixes.add_source(conn, deal, str(body.get("name") or ""), text,
+                                              str(body.get("filename") or "upload.md")[:200],
+                                              str(body.get("doc_type") or ""), str(body.get("doc_date") or ""))
+        except ledger_fixes.FixError as exc:
+            raise bad_request(exc) from None
+        return {"source_version_id": vid}
+
+    @app.post("/api/deals/{deal}/documents/include", dependencies=[Depends(write_guard)])
+    def ws_include(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        try:
+            ledger_fixes.set_included(conn, deal, str(body.get("source_key", "")), bool(body.get("included")))
+        except ledger_fixes.FixError as exc:
+            raise bad_request(exc) from None
+        return {"ok": True}
+
+    @app.post("/api/deals/{deal}/review", dependencies=[Depends(write_guard)])
+    def ws_review(deal: str, body: dict = Body(default={}), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        fix_id = body.get("fix_id")
+        try:
+            result = recheck.recheck(conn, deal, int(fix_id) if fix_id is not None else None, model_client())
+        except extraction_cache.ExtractionFailed:
+            raise HTTPException(status_code=409, detail=(
+                "This review needs the model to read new or changed documents. Restart the server with the API key "
+                "set in its terminal, then review again.")) from None
+        except (recheck.RecheckError, ledger_fixes.FixError) as exc:
+            raise bad_request(exc) from None
+        return {"review": {k: result[k] for k in ("run_kind", "model_calls", "cost_usd", "checks")}}
+
+    @app.get("/api/deals/{deal}/register")
+    def ws_register(deal: str, conn=Depends(db)):
+        workspace_deal(deal, conn)
+        return workspace.register(conn, deal)
+
+    @app.post("/api/deals/{deal}/fixes", dependencies=[Depends(write_guard)])
+    def ws_fix(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        try:
+            evidence = [(int(e["source_version_id"]), str(e.get("locator") or "whole document")[:200], None)
+                        for e in body.get("evidence") or []]
+            fix_id = ledger_fixes.create_fix(conn, deal, str(body.get("route", "")), str(body.get("owner", "")),
+                                             str(body.get("rationale", "")), [int(i) for i in body.get("issue_ids") or []],
+                                             evidence)
+            ledger_fixes.approve_fix(conn, fix_id, str(body.get("approved_by", "")))
+        except (ledger_fixes.FixError, KeyError, ValueError, TypeError) as exc:
+            raise bad_request(exc) from None
+        except sqlite3.IntegrityError as exc:
+            raise HTTPException(status_code=400, detail=f"Refused by the ledger: {exc}") from None
+        return {"fix_id": fix_id}
+
+    @app.post("/api/deals/{deal}/issues", dependencies=[Depends(write_guard)])
+    def ws_issue(deal: str, body: dict = Body(...), conn=Depends(db)):
+        """Owner and note only. Neither marks the review out of date; neither can change an issue's state."""
+        workspace_deal(deal, conn)
+        did = ledger_fixes.deal_id(conn, deal)
+        iid = body.get("issue_id")
+        if not conn.execute("SELECT 1 FROM issues i JOIN commitments c ON c.id = i.commitment_id WHERE i.id = ?"
+                            " AND c.deal_id = ?", (iid, did)).fetchone():
+            raise HTTPException(status_code=404, detail=NOT_FOUND)
+        try:
+            if "owner" in body:
+                conn.execute("UPDATE issues SET owner_function = ? WHERE id = ?", (str(body["owner"]), iid))
+            if "note" in body:
+                conn.execute("UPDATE issues SET note = ? WHERE id = ?", (str(body["note"])[:2000], iid))
+            conn.commit()
+        except sqlite3.IntegrityError as exc:
+            raise HTTPException(status_code=400, detail=f"Refused by the ledger: {exc}") from None
+        return {"ok": True}
 
     # Mounted last so the /api routes win. Only the built frontend is served; skipped if not built yet.
     if dist_dir.is_dir():

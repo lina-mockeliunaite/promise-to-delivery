@@ -485,3 +485,15 @@ The 30-minute small-fix box overran by 10 minutes because of the seal bug. I acc
 **Scenarios.** Five expected outcomes written before the recheck code ran on them (`data/scenarios/scenarios.json`). With a scripted extractor: 5 of 5 and the unchanged-input control pass; 390 tests pass. The real-model run (two SOW extractions) is Lina's.
 
 **Scenarios with the real model, 3 Oct 12:51** (`results/scenarios_20261003T045108Z.json`, after commit a3827e1 pre-registered the expected outcomes): control (unchanged-input rerun, no model client) passes; **5 of 5 scenarios as expected**; $0.029 for the two revised-SOW extractions. Plan metric "Resolution correctness: 5 of 5" met on development fixtures; written by Claude with the rules in view, so it shows the design works as specified, not that it generalises.
+
+## 2026-10-03 (afternoon, working ahead) — 13 Oct block, first part: workspace API and screens
+
+**What exists.** `workspace.py` (read model in plain language), new routes in `api.py` (documents with text/Markdown upload and include/exclude, Review deal, register, fixes, issue owner and note, user deals), `review_freshness` computed from the source-set and decision-evidence hashes ("Up to date", "Review out of date", "Not reviewed"), and a rebuilt React workspace (deal list, documents, register, commitment card with quotes, issues, next step, owner and note, and one fix form that records the fix and rechecks). Recheck now also runs a deal's first review (user deals). 399 tests pass.
+
+**Security choices.** The only path parameter stays `{deal}`; everything else is in a JSON body. A deal is either in `UI_DEALS` or an existing user deal (`u_` + 16 hex); anything else is one generic 404 (hard cases and Coral Pay included). Writes need `X-Requested-With: deal-workspace` and a JSON body, which forces a CORS preflight the server never grants, so another website cannot post to the local app. The model key stays in the server's environment; a review that needs extraction without it answers 409 with a plain instruction.
+
+**Bug found by driving the real browser, not by the tests.** The database connection was opened by a FastAPI dependency on one worker thread and used on another; SQLite refused. TestClient did not show it. Fixed with one connection per request opened with `check_same_thread=False` (API only).
+
+**Checked in a real browser (Claude's side, headless Chromium):** register loads with no console errors; uploading HB-05 v2 marks the review out of date; recording the approval fix and rechecking closes only the approval issue, leaves the contract gap and conflict open, and returns the deal to "Up to date". Copies of the code and development data were moved to Claude's side for this in a temporary archive (no labels, no Coral Pay), then deleted.
+
+**Open for 13 Oct:** integration checks on development data, then record the final evaluated configuration; CSV and readable handoff export (19 Oct); internal keys such as "C07" still appear inside some evidence text.
