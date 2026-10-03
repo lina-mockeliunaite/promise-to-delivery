@@ -118,6 +118,18 @@ LEDGER_DEALS = [
 
 LEDGER_DB_PATH = ROOT / "workspace" / "ledger.sqlite"
 
+# Resolution scenarios (12 Oct block, built 3 Oct): new versions of development sources, plus expected outcomes.
+SCENARIOS_DIR = DATA_DIR / "scenarios"
+
+
+def scenario_path(filename: str) -> Path:
+    """A file inside data/scenarios/, or ValueError if it resolves outside it. Never a deal folder."""
+    base = (DATA_DIR / "scenarios").resolve()
+    path = (base / filename).resolve()
+    if not path.is_relative_to(base):
+        raise ValueError(f"{filename!r} resolves outside the scenarios folder")
+    return path
+
 # Frozen run files the development import reads (docs/BRIEF_2026-10-03.md), pinned by file name. A newer
 # run file never replaces these silently: the import refuses until the pin is changed on purpose.
 LEDGER_IMPORT_RUN_FILES = {

@@ -22,6 +22,11 @@ import rules
 import terms
 
 AUTHORISATIONS = ("standard_authorised", "exception_approved", "no_approval_evidence", "unknown_needs_review")
+# v1 (3 Oct, run on development data): failed the evidence contract in every run (DECISIONS 2026-10-03, 12:24).
+# v2 (3 Oct, after the run; not re-run on the practice set): the tool schema names the allowed term labels, requires a
+# phrase for the capability itself, says to leave unstated terms null, and that a path always includes its region.
+AGENT_VERSION = 2
+TERM_LABELS = ("capability", "network", "asset", "mode", "region", "quantity")
 
 SYSTEM_PROMPT = """You check whether a vendor's sales promises are authorised. The vendor is Elva, an AML platform.
 
@@ -36,8 +41,12 @@ Rules you must follow:
   records none, or the scope is not in the catalogue and the catalogue says unlisted items are not offered.
   exception_approved: the pricing note names an approver for this exact scope. unknown_needs_review: the promise is not
   a catalogue capability, or you cannot tell which scope it means.
-- Every term you state must be backed by a phrase copied exactly from the commitment's quotes or context.
-- Catalogue paths look like CAP-021/SG/Polygon/NUSD/real_time, CAP-023/SG or, for an unlisted network, CAP-021/SG/Tron.
+- Every term you state must be backed by a phrase copied exactly from the commitment's quotes or context, labelled
+  with one of: capability, network, asset, mode, region, quantity. The capability itself needs a phrase too.
+- Leave a term null if the quotes do not state it. Do not fill in a region or an asset the promise does not mention;
+  the code checks every catalogue value for unstated terms.
+- Catalogue paths always include the region: CAP-021/SG/Polygon/NUSD/real_time, CAP-023/SG, CAP-014/SG or, for an
+  unlisted network, CAP-021/SG/Tron.
 - State quantities in the catalogue's limit units: a limit named max_payouts_per_day means unit "payouts", period "day".
 - If unsure, choose unknown_needs_review. A wrong verdict is worse than an honest unknown.
 - Budget: few tool calls. Look up each capability once; submit one verdict per commitment."""
@@ -67,7 +76,9 @@ TOOLS = [
              "quantity": {"type": ["object", "null"], "properties": {
                  "value": {"type": "number"}, "unit": {"type": "string"}, "period": {"type": "string"}}},
              "term_evidence": {"type": "array", "items": {"type": "object", "properties": {
-                 "term": {"type": "string"}, "phrase": {"type": "string"}}, "required": ["term", "phrase"]}},
+                 "term": {"type": "string", "enum": list(TERM_LABELS)},
+                 "phrase": {"type": "string", "description": "Copied exactly from the quotes or context."}},
+                 "required": ["term", "phrase"]}},
              "catalogue_path": {"type": ["string", "null"]},
              "pricing_note_line": {"type": ["string", "null"]},
              "authorisation": {"type": "string", "enum": list(AUTHORISATIONS)},
@@ -187,7 +198,7 @@ def run_agent(client, items: list, catalogue: dict, vocab: terms.Vocabulary, not
     """One fresh agent run over the escalated commitments of one deal. Returns verdicts, validation, usage, timing."""
     model = model or config.AGENT_MODEL
     cap_calls = min(config.AGENT_MAX_TOOL_CALLS_PER_DEAL, config.AGENT_MAX_TOOL_CALLS_PER_COMMITMENT * max(len(items), 1))
-    record = {"model": model, "escalated": [i["commitment_key"] for i in items], "tool_calls": 0, "turns": 0,
+    record = {"agent_version": AGENT_VERSION, "model": model, "escalated": [i["commitment_key"] for i in items], "tool_calls": 0, "turns": 0,
               "tool_call_cap": cap_calls, "status": "complete", "usage": {"input_tokens": 0, "output_tokens": 0},
               "verdicts": {}, "duplicate_submissions": [], "log": []}
     if not items:

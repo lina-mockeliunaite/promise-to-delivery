@@ -1,0 +1,211 @@
+{
+  "_how_to": "Five resolution scenarios (plan v3.4). Fixture documents are new versions of development sources; the originals in data/<deal>/docs and all labels are untouched. Each scenario starts from a freshly built ledger. Expected states are written from the rules and the closure criteria, before any recheck code was run on them (3 Oct).",
+  "scenarios": [
+    {
+      "id": "S1",
+      "name": "Approval added; hourly-batch SOW remains",
+      "deal": "harbour_bank",
+      "steps": [
+        {
+          "new_version": {
+            "source": "HB-05",
+            "file": "HB-05_v2_named_exception.md"
+          },
+          "fix": {
+            "route": "allowed_exception",
+            "owner": "Product",
+            "rationale": "Named exception for Polygon real-time beta recorded by Product.",
+            "issues": [
+              {
+                "commitment": "Polygon, real time",
+                "type": "approval"
+              }
+            ],
+            "evidence": "new_version",
+            "approved_by": "Daniel Koh"
+          }
+        }
+      ],
+      "expect": {
+        "Polygon, real time": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Resolved",
+            "contract_gap/contract": "Needs action",
+            "conflicting_terms/conflict:*": "Needs action"
+          }
+        }
+      }
+    },
+    {
+      "id": "S2",
+      "name": "SOW aligned; required approval still missing",
+      "deal": "harbour_bank",
+      "steps": [
+        {
+          "new_version": {
+            "source": "HB-06",
+            "file": "HB-06_v2_annex_aligned.md"
+          },
+          "fix": {
+            "route": "align_documents",
+            "owner": "Commercial",
+            "rationale": "Annex A revised: Polygon screened in real time before release.",
+            "issues": [
+              {
+                "commitment": "Polygon, real time",
+                "type": "contract_gap"
+              },
+              {
+                "commitment": "Polygon, real time",
+                "type": "conflicting_terms"
+              }
+            ],
+            "evidence": "new_version",
+            "approved_by": "Commercial lead"
+          }
+        }
+      ],
+      "expect": {
+        "Polygon, real time": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action",
+            "contract_gap/contract": "Resolved",
+            "conflicting_terms/conflict:*": "Resolved"
+          }
+        },
+        "Polygon, batch": {
+          "status": "Not in current documents",
+          "issues": {}
+        }
+      }
+    },
+    {
+      "id": "S3",
+      "name": "Both issues supported with evidence",
+      "deal": "harbour_bank",
+      "steps": [
+        {
+          "new_version": {
+            "source": "HB-05",
+            "file": "HB-05_v2_named_exception.md"
+          },
+          "fix": {
+            "route": "allowed_exception",
+            "owner": "Product",
+            "rationale": "Named exception for Polygon real-time beta recorded by Product.",
+            "issues": [
+              {
+                "commitment": "Polygon, real time",
+                "type": "approval"
+              }
+            ],
+            "evidence": "new_version",
+            "approved_by": "Daniel Koh"
+          }
+        },
+        {
+          "new_version": {
+            "source": "HB-06",
+            "file": "HB-06_v2_annex_aligned.md"
+          },
+          "fix": {
+            "route": "align_documents",
+            "owner": "Commercial",
+            "rationale": "Annex A revised: Polygon screened in real time before release.",
+            "issues": [
+              {
+                "commitment": "Polygon, real time",
+                "type": "contract_gap"
+              },
+              {
+                "commitment": "Polygon, real time",
+                "type": "conflicting_terms"
+              }
+            ],
+            "evidence": "new_version",
+            "approved_by": "Commercial lead"
+          }
+        }
+      ],
+      "expect": {
+        "Polygon, real time": {
+          "status": "Resolved",
+          "issues": {
+            "approval/authorisation": "Resolved",
+            "contract_gap/contract": "Resolved",
+            "conflicting_terms/conflict:*": "Resolved"
+          }
+        }
+      }
+    },
+    {
+      "id": "S4",
+      "name": "Absolute limit plus an attempted exception",
+      "deal": "hard_cases",
+      "steps": [
+        {
+          "new_version": {
+            "source": "KR-05",
+            "file": "KR-05_v2_attempted_exception.md"
+          },
+          "fix": {
+            "route": "allowed_exception",
+            "owner": "Commercial",
+            "rationale": "Sales Director approved Arbitrum real-time for Kestrel Remit.",
+            "issues": [
+              {
+                "commitment": "Arbitrum, real time",
+                "type": "approval"
+              }
+            ],
+            "evidence": "new_version",
+            "approved_by": "Priya Nair"
+          }
+        }
+      ],
+      "expect": {
+        "Arbitrum, real time": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action",
+            "contract_gap/contract": "Needs action"
+          }
+        }
+      }
+    },
+    {
+      "id": "S5",
+      "name": "Insufficient evidence",
+      "deal": "harbour_bank",
+      "steps": [
+        {
+          "fix": {
+            "route": "allowed_exception",
+            "owner": "Delivery",
+            "rationale": "The proposal mentions implementation; treat the weekly meeting as approved.",
+            "issues": [
+              {
+                "commitment": "weekly project status",
+                "type": "insufficient_evidence"
+              }
+            ],
+            "evidence": {
+              "source": "HB-04"
+            },
+            "approved_by": "Delivery lead"
+          }
+        }
+      ],
+      "expect": {
+        "weekly project status": {
+          "status": "Needs evidence",
+          "issues": {
+            "insufficient_evidence/authorisation": "Needs evidence"
+          }
+        }
+      }
+    }
+  ]
+}

@@ -121,6 +121,15 @@ class AgentCase(unittest.TestCase):
             return agent_compare.compare(None, self.conn, runs, data_dir=REAL_DATA, results_dir=REAL_RESULTS)
 
 
+class TestVersion2(unittest.TestCase):
+    def test_the_v2_schema_names_the_term_labels_and_the_run_records_its_version(self):
+        submit = next(t for t in agent.TOOLS if t["name"] == "submit_verdict")
+        labels = submit["input_schema"]["properties"]["term_evidence"]["items"]["properties"]["term"]["enum"]
+        self.assertEqual(labels, list(agent.TERM_LABELS))
+        self.assertIn("The capability itself needs a phrase", agent.SYSTEM_PROMPT)
+        self.assertEqual(agent.run_agent(None, [], {}, None, [])["agent_version"], 2)
+
+
 class TestEscalation(AgentCase):
     def test_only_firm_unknown_commitments_are_escalated_with_their_context(self):
         self.assertEqual(len(self.items), 7)

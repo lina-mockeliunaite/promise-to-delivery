@@ -469,3 +469,17 @@ The 30-minute small-fix box overran by 10 minutes because of the seal bug. I acc
 **A real rules defect the comparison exposed.** For the sanctions and payout volumes, the rules (and so the validator's expected citation) cited the Polygon row "No named exception approved for Tidewater Pay" as if it were a deal-wide statement. The verdict was still right (no approval recorded), but the citation was wrong. Fixed after the run in `rules.note_finding`: a deal-wide "no exceptions" line must not be a table row or name a capability. Test added. Development scores unchanged (377 → 378 tests).
 
 **What this means, said plainly.** On these cases the agent read the paraphrases correctly but could not yet back its reading with evidence in the form the code checks. It earns no place on development data. The agent stays in the repository as an escalation step with its interface defect recorded; any change to its interface is a new, versioned configuration, and it is not re-judged on the practice set (now seen). Whether the agent runs on Coral Pay on 14 Oct is decided before 12 Oct and recorded with its configuration.
+
+## 2026-10-03 (afternoon, working ahead) — Agent v2 interface; 12 Oct block built early: fixes, cache, recheck, scenarios
+
+**Agent v2 (not re-run on the practice set).** The tool schema now lists the allowed term labels, requires a phrase for the capability itself, says to leave unstated terms null, and that a catalogue path always includes its region; runs record `agent_version`. Why: v1's failure was partly an interface defect (DECISIONS 12:24). Rejected: re-running on the practice set (now seen; that would be tuning to the test). Whether v2 runs on Coral Pay is decided before 12 Oct.
+
+**Closure is a decision about evidence.** An issue is met only when the recheck no longer finds it and its own closure condition holds with cited evidence (table in `docs/BRIEF_2026-10-12.md`). Rejected: "met when not re-raised". Why: that would let a change of checker, or a removed document, close an issue; the plan says closure is about evidence, not about which checker ran last.
+
+**Identity across reviews by largest statement overlap.** Rejected: matching by term key. Why: the key is exactly what a fix changes (an annex moving from batch to real time); the quotes that made the promise are what persist.
+
+**Withdrawal closes only with replacing versions.** A commitment with no statement left closes its issues only if every source that made it has a newer included version without it. Why: deleting or excluding a document must never look like withdrawing a promise.
+
+**Development rechecks reuse extraction by version identity.** An unchanged source version reuses the extraction its previous review used (for development deals, the imported run-file rows, which stay non-reusable by key). A changed extractable version goes through the full-key cache. Why: the same version is the same text and the same frozen run; calling the model again would only add variation.
+
+**Scenarios.** Five expected outcomes written before the recheck code ran on them (`data/scenarios/scenarios.json`). With a scripted extractor: 5 of 5 and the unchanged-input control pass; 390 tests pass. The real-model run (two SOW extractions) is Lina's.
