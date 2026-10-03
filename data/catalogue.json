@@ -1,5 +1,7 @@
 {
   "as_of": "2026-09-30",
+  "coverage": "complete",
+  "unlisted_rule": "A region, network, asset or mode absent from this catalogue is not offered. It cannot be sold under a named exception; only changing or withdrawing the promise resolves it.",
   "capabilities": [
     {
       "id": "CAP-001",

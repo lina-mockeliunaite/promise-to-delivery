@@ -246,6 +246,7 @@ class TermSet:
     when: list = field(default_factory=list)   # milestones tied to a volume: launch, end_of_first_year, dates
     go_live_date: str | None = None   # go_live only: an attribute, never part of the key
     missing: list = field(default_factory=list)
+    filled: dict | None = None     # terms taken from a referenced section (ledger_consolidate.fill_from_reference)
     key: str | None = None         # None when incomplete: an incomplete set never merges with another
 
     def as_dict(self):

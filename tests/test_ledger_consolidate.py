@@ -31,14 +31,12 @@ GOLDEN = {
     'harbour_bank': [
         ('C01', 'On-chain wallet screening integration: Polygon, real time', ('HB-01-S01', 'HB-02-S01', 'HB-03-S01', 'HB-04-S01'), (), 'firm', 'supported'),
         ('C02', 'Go-live', ('HB-01-S03',), (), 'conditional', 'supported'),
-        ('C03', 'On-chain wallet screening integration: Ethereum, real time', ('HB-03-S01', 'HB-04-S02', 'HB-06-S04'), (), 'firm', 'supported'),
+        ('C03', 'On-chain wallet screening integration: Ethereum, real time', ('HB-03-S01', 'HB-04-S02', 'HB-06-S02', 'HB-06-S04'), (), 'firm', 'supported'),
         ('C04', 'Payout ledger connector: up to 12,000 payouts per day, at launch', ('HB-04-S03', 'HB-06-S01'), (), 'firm', 'supported'),
         ('C05', 'Payout ledger connector: up to 40,000 payouts per day, by end of first year', ('HB-04-S04',), (), 'firm', 'supported'),
         ('C06', 'VASP counterparty data exchange', ('HB-04-S05',), (), 'firm', 'supported'),
-        ('C07', 'On-chain wallet screening integration: Ethereum [terms incomplete: mode; HB-06-S02]', ('HB-06-S02',), ('mode',), 'firm', 'supported'),
-        ('C08', 'On-chain wallet screening integration: Polygon [terms incomplete: mode; HB-06-S02]', ('HB-06-S02',), ('mode',), 'firm', 'supported'),
-        ('C09', 'Unclassified promise: The parties will hold a weekly project status meet [terms incomplete: capability; HB-06-S03]', ('HB-06-S03',), ('capability',), 'firm', 'supported'),
-        ('C10', 'On-chain wallet screening integration: Polygon, batch', ('HB-06-S05', 'HB-06-S06'), (), 'firm', 'supported'),
+        ('C07', 'On-chain wallet screening integration: Polygon, batch', ('HB-06-S02', 'HB-06-S05', 'HB-06-S06'), (), 'firm', 'supported'),
+        ('C08', 'Unclassified promise: The parties will hold a weekly project status meet [terms incomplete: capability; HB-06-S03]', ('HB-06-S03',), ('capability',), 'firm', 'supported'),
     ],
     'hard_cases': [
         ('C01', 'On-chain wallet screening integration: Arbitrum [terms incomplete: mode; KR-01-S01]', ('KR-01-S01',), ('mode',), 'firm', 'supported'),
@@ -59,7 +57,7 @@ EXPECTED_DROPPED = {
     },
     "hard_cases": {"KR-01-S02": "sales_security_pack"},
 }
-CONSOLIDATED_COUNTS = {"review_statements": 30, "commitments": 18, "review_statement_commitments": 26, "commitment_assessments": 18}
+CONSOLIDATED_COUNTS = {"review_statements": 30, "commitments": 16, "review_statement_commitments": 26, "commitment_assessments": 16}
 CONSOLIDATION_TABLES = ("review_statements", "commitments", "review_statement_commitments", "commitment_assessments")
 RANK = {"exploratory": 0, "conditional": 1, "firm": 2}
 
@@ -106,7 +104,7 @@ class TestConsolidation(ConsolidateCase):
 
     def test_counts(self):
         self.assertEqual(self.consolidation_counts(), CONSOLIDATED_COUNTS)
-        self.assertEqual({s: len(p["commitments"]) for s, p in self.plans.items()}, {"harbour_bank": 10, "hard_cases": 8})
+        self.assertEqual({s: len(p["commitments"]) for s, p in self.plans.items()}, {"harbour_bank": 8, "hard_cases": 8})
         self.assertEqual(self.conn.execute("SELECT COUNT(*) FROM commitment_links").fetchone()[0], 0)
 
     def test_commitments_match_the_golden_table(self):
@@ -136,10 +134,23 @@ class TestConsolidation(ConsolidateCase):
         self.assertEqual(len(linked), 2)
         self.assertTrue(any("Polygon, real time" in c for c in linked) and any("Ethereum, real time" in c for c in linked))
 
-    def test_a_statement_with_no_mode_gives_two_incomplete_commitments(self):
+    def test_a_pointer_statement_takes_its_mode_from_the_annex_it_cites(self):
+        """HB-06-S02 names Ethereum and Polygon but no mode; it cites Annex A, which gives one mode per network."""
         linked = self.commitments_of("HB-06-S02")
-        self.assertEqual(len(linked), 2)
-        self.assertTrue(all("terms incomplete: mode" in c for c in linked))
+        self.assertEqual(linked, ["C03 On-chain wallet screening integration: Ethereum, real time",
+                                  "C07 On-chain wallet screening integration: Polygon, batch"])
+        filled = [
+            m["term_set"]["filled"] for (terms_json,) in self.conn.execute(
+                "SELECT a.terms FROM commitment_assessments a JOIN commitments c ON c.id = a.commitment_id"
+                " JOIN deals d ON d.id = c.deal_id WHERE d.slug = 'harbour_bank'")
+            for m in json.loads(terms_json)["members"] if m["statement_key"] == "HB-06-S02"
+        ]
+        self.assertEqual(filled, [
+            {"mode": {"value": "real_time", "from": ["HB-06-S04"], "via": "Annex A (HB-06)"}},
+            {"mode": {"value": "batch", "from": ["HB-06-S05", "HB-06-S06"], "via": "Annex A (HB-06)"}},
+        ])
+        quote = self.conn.execute("SELECT quote FROM statements WHERE statement_key = 'HB-06-S02'").fetchone()[0]
+        self.assertIn("in accordance with the Wallet Screening Specification in Annex A", quote)
 
     def test_differing_terms_are_never_merged(self):
         for slug in DEALS:
@@ -182,7 +193,7 @@ class TestConsolidation(ConsolidateCase):
         rows = self.conn.execute(
             "SELECT authorisation, contractual_presence, evidence_refs, authorisation_evidence, presence_detail,"
             " rationale, name FROM commitment_assessments").fetchall()
-        self.assertEqual(len(rows), 18)
+        self.assertEqual(len(rows), 16)
         for authorisation, presence, refs, auth_evidence, detail, rationale, name in rows:
             self.assertEqual((authorisation, presence, refs, auth_evidence, detail),
                              ("not_assessed", "not_assessed", None, None, None))
@@ -414,7 +425,7 @@ class TestCli(ConsolidateCase):
         ledger_import.build(self.target)
         code, out, _ = self.run_main()
         self.assertEqual(code, 0)
-        self.assertIn("harbour_bank: 20 statements (15 kept), 10 commitments", out)
+        self.assertIn("harbour_bank: 20 statements (15 kept), 8 commitments", out)
         self.assertIn("hard_cases: 10 statements (9 kept), 8 commitments", out)
         before = self.target.read_bytes()
         code, _, err = self.run_main()
@@ -457,10 +468,11 @@ class TestLabels(ConsolidateCase):
         self.assertEqual(len(linked), 2)
         self.assertTrue(any("Polygon, real time" in c for c in linked) and any("Ethereum, real time" in c for c in linked))
 
-    def test_label_s11_is_the_known_miss_two_incomplete_commitments(self):
+    def test_label_s11_joins_the_ethereum_real_time_and_polygon_batch_commitments(self):
         linked = self.commitments_of(self.statement_for("harbour_bank", "S11"))
         self.assertEqual(len(linked), 2)
-        self.assertTrue(all("terms incomplete: mode" in c for c in linked))
+        self.assertTrue(any("Ethereum, real time" in c for c in linked) and any("Polygon, batch" in c for c in linked))
+        self.assertFalse(any("terms incomplete" in c for c in linked))
 
     def test_labels_k04_and_k08_share_one_commitment(self):
         k04 = self.commitments_of(self.statement_for("hard_cases", "K04"))

@@ -15,6 +15,7 @@ const DOC_TYPE_LABELS = {
   draft_contract: "Draft contract",
   pricing_services_note: "Pricing and services note",
   customer_email: "Customer email",
+  security_questionnaire: "Security questionnaire",
 };
 
 const titleCase =(value) => String(value).replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());

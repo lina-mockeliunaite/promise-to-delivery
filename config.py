@@ -47,6 +47,9 @@ EXTRACTABLE_DOC_TYPES = [
     "proposal",
     "draft_sow",
     "draft_contract",
+    # Decided 3 Oct (Lina): security answers (SSO, MFA, encryption, certifications) are commitments Delivery and
+    # Security inherit. The extraction prompt is generic (doc type passed as text), so no frozen hash changes.
+    "security_questionnaire",
 ]
 
 # Known but deliberately not extracted in v1. Recorded as skipped, not flagged.

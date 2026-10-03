@@ -142,7 +142,7 @@ class Extraction(Base):
         self.assertEqual(doc["status"], "complete")
 
     def test_unsupported_type_is_flagged_and_reference_only_is_skipped_without_calls(self):
-        self.write_manifest(("T-01", "t1.md", "security_questionnaire"),
+        self.write_manifest(("T-01", "t1.md", "board_minutes"),
                             ("T-02", "t2.md", "pricing_services_note"),
                             ("T-03", "t3.md", "customer_email"))
         client = StubClient()
@@ -151,7 +151,11 @@ class Extraction(Base):
         statuses = [d["status"] for d in run["documents"]]
         self.assertEqual(statuses, ["flagged_unsupported_type", "skipped_reference_only", "skipped_reference_only"])
         self.assertEqual(client.calls, [])
-        self.assertTrue(any("security_questionnaire" in line for line in logs.output))
+        self.assertTrue(any("board_minutes" in line for line in logs.output))
+
+    def test_a_security_questionnaire_is_extracted(self):
+        self.assertIn("security_questionnaire", config.EXTRACTABLE_DOC_TYPES)
+        self.assertNotIn("security_questionnaire", config.REFERENCE_ONLY_DOC_TYPES)
 
 
 class RunRecord(Base):

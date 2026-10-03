@@ -261,18 +261,14 @@ class ScoreCase(ConsolidateCase):
 class TestScoreTheStoredLedger(ScoreCase):
     def test_both_metrics_per_deal(self):
         report = self.report()["deals"]
-        self.assertEqual(report["harbour_bank"]["metrics"], {"statements": {"exact": 14, "of": 15}, "commitments": {"exact": 6, "of": 8}})
+        self.assertEqual(report["harbour_bank"]["metrics"], {"statements": {"exact": 15, "of": 15}, "commitments": {"exact": 8, "of": 8}})
         self.assertEqual(report["hard_cases"]["metrics"], {"statements": {"exact": 8, "of": 9}, "commitments": {"exact": 6, "of": 7}})
 
     def test_every_mismatch_is_listed_with_its_reasons(self):
         report = self.report()["deals"]
         miss = {slug: [s for s in d["statements"] if not s["exact"]] for slug, d in report.items()}
-        self.assertEqual([s["label_statement"] for s in miss["harbour_bank"]], ["S11"])
+        self.assertEqual([s["label_statement"] for s in miss["harbour_bank"]], [])  # S11 fixed 3 Oct (Annex A)
         self.assertEqual([s["label_statement"] for s in miss["hard_cases"]], ["K01"])
-        s11 = miss["harbour_bank"][0]
-        self.assertEqual((s11["ledger_statement"], s11["predicted_groups"]), ("HB-06-S02", ["C07", "C08"]))
-        self.assertTrue(all(s11["reasons"]))
-        self.assertTrue(any("terms incomplete: mode" in r for r in s11["reasons"]))
         k01 = miss["hard_cases"][0]
         self.assertTrue(any("terms incomplete: mode" in r and "unmatched predicted group" in r for r in k01["reasons"]))
 
@@ -282,11 +278,11 @@ class TestScoreTheStoredLedger(ScoreCase):
         self.assertEqual(hard["unmatched_predicted_groups"], ["C01"])
         self.assertEqual(hard["unmatched_labelled_commitments"], [])
 
-    def test_unmatched_groups_on_harbour_bank_are_the_two_incomplete_ones(self):
+    def test_every_group_on_harbour_bank_is_matched(self):
         harbour = self.report()["deals"]["harbour_bank"]
-        self.assertEqual(harbour["unmatched_predicted_groups"], ["C07", "C08"])
+        self.assertEqual(harbour["unmatched_predicted_groups"], [])
         self.assertEqual(harbour["unmatched_labelled_commitments"], [])
-        self.assertEqual(harbour["predicted_groups"], 10)
+        self.assertEqual(harbour["predicted_groups"], 8)
 
     def test_every_must_hold_passes(self):
         report = self.report()
@@ -308,7 +304,7 @@ class TestScoreTheStoredLedger(ScoreCase):
         reader = sg.open_read_only(copy_path)
         self.addCleanup(reader.close)
         report = sg.build_report(reader, data_dir=REAL_DATA, results_dir=REAL_RESULTS)["deals"]["harbour_bank"]
-        self.assertLess(report["metrics"]["statements"]["exact"], 14)
+        self.assertLess(report["metrics"]["statements"]["exact"], 15)
 
     def test_labels_are_read_through_the_deal_guard(self):
         with self.assertRaises(config.DealNotAllowed):
@@ -383,9 +379,9 @@ class TestCli(ScoreCase):
     def test_it_scores_prints_both_metrics_and_writes_one_file(self):
         code, out, _ = self.run_main()
         self.assertEqual(code, 0)
-        self.assertIn("statements 14 of 15 exact; commitments 6 of 8 exact", out)
+        self.assertIn("statements 15 of 15 exact; commitments 8 of 8 exact", out)
         self.assertIn("statements 8 of 9 exact; commitments 6 of 7 exact", out)
-        self.assertIn("MISMATCH S11", out)
+        self.assertIn("MISMATCH K01", out)
         self.assertEqual(len(self.written()), 1)
 
     def test_a_failed_must_hold_exits_1_and_still_writes_the_report(self):

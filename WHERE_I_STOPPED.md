@@ -60,18 +60,20 @@ The product was revised before Day 8 into a local deal workspace with resolution
 
 ## Next
 
-*Updated 3 Oct, close. 3 Oct block done in about 2 h 10 (all five change sets of `docs/BRIEF_2026-10-03.md`). Commits 1137e4c (ledger DDL, LEDGER_DEALS, seal tests), import, parser and filter, 04065c2 (consolidation), 20d2216 (grouping score). 297 tests pass.*
+*Updated 3 Oct, late morning. The 4 Oct block was built early on 3 Oct, by Claude at Lina's request (fast-forward day: Claude built, Lina monitored). Brief: `docs/BRIEF_2026-10-04.md`. Decisions: DECISIONS.md 2026-10-03 (working ahead). Not yet committed.*
 
-**State of the ledger.** `workspace/ledger.sqlite` (gitignored; rebuild with `.venv/bin/python ledger_import.py --rebuild` then `.venv/bin/python ledger_consolidate.py`): Harbour Bank 10 commitments, hard cases 8; all assessments `not_assessed` for authorisation and contractual presence; no issues yet. Grouping score: HB 14/15 statements, 6/8 commitments; hard cases 8/9, 6/7; misses S11 (no mode, needs Annex A) and K01 (Arbitrum, no mode).
+**What now exists.** `references.py` (contract chain: the draft contract plus everything it incorporates, by cited date; Annex/Schedule/section headings; resolved / unresolved / missing). `rules.py` (authorisation with citations, absolute limits, quantity limits, silent-note cases → unknown, contractual presence through the chain, contract gap, conflicting terms with a `contract_side_of` link, insufficient evidence). Consolidation now fills a pointer's missing terms from the section it cites (S11). `ledger_consolidate.py` runs the rules in the same review and transaction. `score_rules.py` scores the rules against the labels. 356 tests pass.
 
-1. **4 Oct block (Day 10).** Start with the quiz retry (below). Then, per the plan:
-   - Decide `security_questionnaire` (extract / reference-only / skip) and whether PDF/DOCX pricing notes count as approval evidence; log both.
-   - Write the rules-vs-agent decision rule first, with explicit cost and latency bounds.
-   - Rules: material conflict, coverage (reference resolution through the draft contract → SOW → Annex A; S11 should gain its mode and join the Ethereum real-time and Polygon batch commitments), authorisation with citations, absolute limit for unlisted networks (`in_catalogue = false`), silent-note cases (C08, KC3 → needs review), `terms_incomplete` → needs review never a confirmed gap, `not_assessed` handled explicitly.
-   - Issue creation must write its `raised` closure check in the same transaction (tested).
-2. **Quiz retry for 4 Oct:** the two seal tests are different. Route rule (negative control: wrong-directory mount is flagged) vs canary/traversal (negative control added 3 Oct: a decoy-serving app makes the canary check fail). Explain both without mixing them.
-3. Book a real Checkpoint 1 reviewer before 5 Oct (still not booked as of 3 Oct).
-4. Check actual API spend before 12 Oct (credit was $19.79 on 30 Sep; 3 Oct used no model calls).
+**State of the ledger.** `workspace/ledger.sqlite`: 16 commitments, 16 issues (13 Needs action, 3 Needs evidence), 16 raised closure checks, 7 reference resolutions, 1 link. Rebuild: `.venv/bin/python ledger_import.py --rebuild && .venv/bin/python ledger_consolidate.py`. Scores: grouping HB 15/15 and 8/8, hard cases 8/9 and 6/7 (`results/grouping_score_20261003T025653Z.json`); rules 100% on both deals (`results/rules_score_20261003T025653Z.json`) — designed with these documents in view, so not evidence of generalisation.
+
+1. **Decisions settled (3 Oct, 10:40):** security questionnaires are extracted; Excel, PDF and DOCX pricing notes all count as approval evidence (Excel from 20 Oct: hidden cells kept with a visibility flag and assessed like any other; missing or error formula values need evidence); decision rule and `terms_incomplete` interpretation confirmed. **Open:** a fictional security-questionnaire fixture in `hard_cases`, its labels (Lina) and one extraction run (about $0.01, needs the API key), before the 12 Oct candidate freeze.
+2. **Verify on the Mac:** `.venv/bin/python -m unittest discover tests` (expect 361 OK); rebuild the ledger with the two commands above; `.venv/bin/python score_rules.py`.
+3. **Commit** (Lina; files listed in the chat).
+4. **Before agent code on 5 Oct:** Claude drafts a separate practice set (paraphrased and out-of-vocabulary promises); Lina labels it; hash and freeze it before either checker runs (DECISIONS 2026-10-03, 11:00). Catalogue hash is now 2d2d96a0 (explicit `unlisted_rule`).
+5. **5 Oct block (Day 11):** bounded catalogue-search agent, three fresh runs per development deal on the same ledger, case-by-case comparison with the rules against the decision rule above; record cost, latency and variation. Then the **formal re-plan** at close, from actual hours.
+6. **Checkpoint 1:** real reviewer booked for Monday 5 Oct. Use the Harbour Bank register now in the ledger for the paper test.
+7. The frontend has a new label for `security_questionnaire`; rebuild `frontend/dist` before the next built-mode run.
+8. Check actual API spend before 12 Oct (credit was $19.79 on 30 Sep; 3 Oct used no model calls).
 
 ## Local app launch
 
