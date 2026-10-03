@@ -445,3 +445,15 @@ The 30-minute small-fix box overran by 10 minutes because of the seal bug. I acc
 **Frozen.** `data/practice_cases.sha256`: the five documents, the manifest (it decides which documents enter a run) and both label files; verified immediately after creation. BRIEF.md, labels, DECISIONS.md and the fingerprint file are never extraction or checker inputs. Labels are not changed after extraction or checker results; misses and disagreements are recorded against them.
 
 **Practice deal extracted and pinned, 3 Oct 11:44.** One run on Lina's Mac: `results/extract_practice_cases_20261003T034401Z.json` (PC-01 4, PC-02 6, PC-04 5, PC-05 0 statements; PC-03 skipped as reference-only; $0.031). Pinned in `LEDGER_IMPORT_RUN_FILES`; `practice_cases` added to `LEDGER_DEALS` (subset check of `ALLOWED_DEALS` holds). The import tests for the two original deals now pin `LEDGER_DEALS` to those deals; a separate test covers the practice deal's fingerprints, import and raised checks, and asserts no score. No result on this deal has been looked at yet.
+
+## 2026-10-03 (working ahead, past the ceiling at Lina's request) — 5 Oct block: bounded agent, fair comparison set up
+
+**Rules baseline on the practice set, recorded before agent code** (`results/rules_score_20261003T035110Z.json`): 0 of 5 approval issues found on Tidewater Pay; all five reach review as *Needs evidence*; no false flags on clean commitments. This is the blind spot the set was built to expose (bias disclosed).
+
+**Agent as escalation, not replacement.** Chose: the agent sees only firm commitments the rules leave *unknown / needs review*. Rejected: the agent assessing every commitment (more cost and latency for verdicts the rules already make with citations, and more chances of an unsupported flag). Why: rules where the reference data is authoritative, a model only where language is ambiguous.
+
+**The agent interprets; code verifies.** Chose: the agent proposes catalogue terms with verbatim evidence phrases and citations; code recomputes the verdict from those terms with the same rule functions and rejects anything its own evidence does not support. Rejected: trusting the agent's verdict with a citation check only. Why: a citation can exist and still not support the conclusion; recomputing makes "no unsupported findings" checkable, not a matter of reading rationales. Consequence: the agent's contribution is mapping paraphrase to catalogue terms; it cannot invent policy.
+
+**Same model as extraction** (`config.AGENT_MODEL = EXTRACTION_MODEL`), bounds in `config.py` as fixed on 3 Oct. Tests use a scripted fake client (no spend): a careful script finds the 5 missed approval issues with no false flags; one over-reaching verdict fails condition 2; a looping agent is capped and fails condition 3; variation across runs is recorded. These test the code, not the model. 377 tests pass.
+
+**Scoring now covers every ledger deal** (`score_grouping.build_report`, `score_rules.build_report` iterate `config.LEDGER_DEALS`); the deal-specific grouping must-holds are unchanged.

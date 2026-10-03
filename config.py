@@ -28,6 +28,17 @@ THINKING_MODE = "model_default"
 # models (Opus 5.5, Fable, Mythos).
 THINKING_DISABLED_ACCEPTED = ["claude-sonnet-5", "claude-haiku-4-5-20251001"]
 
+# Agent (5 Oct block, rules-vs-agent comparison). Same model as extraction so the comparison is about the method,
+# not the model. Bounds from the decision rule (DECISIONS 2026-10-03): tool calls per commitment and per deal.
+AGENT_MODEL = EXTRACTION_MODEL
+AGENT_MAX_TOKENS = 4000
+AGENT_MAX_TOOL_CALLS_PER_COMMITMENT = 6
+AGENT_MAX_TOOL_CALLS_PER_DEAL = 40
+AGENT_MAX_TURNS = 15
+# Decision-rule bounds: extra cost and latency per deal review (means of three runs; no single run above 2x).
+AGENT_BOUND_COST_USD = 0.10
+AGENT_BOUND_LATENCY_S = 60
+
 # One retry: the first attempt plus one more.
 MAX_ATTEMPTS = 2
 

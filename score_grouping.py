@@ -26,7 +26,7 @@ from pathlib import Path
 import config
 import evaluate
 
-DEALS = ("harbour_bank", "hard_cases")
+DEALS = ("harbour_bank", "hard_cases")  # deals with grouping must-holds; scoring covers every LEDGER_DEALS deal
 TIE_BREAK = "equal overlap: complete-key group before incomplete, then lower predicted id, then lower labelled id"
 
 
@@ -326,7 +326,7 @@ def render(report: dict) -> str:
 
 def build_report(conn: sqlite3.Connection, data_dir=None, results_dir=None) -> dict:
     deals = {}
-    for slug in DEALS:
+    for slug in config.LEDGER_DEALS:
         ledger = read_ledger_deal(conn, slug)
         labels = read_labels(slug, data_dir)
         deal = score_deal(slug, ledger, labels, pinned_run_quotes(slug, results_dir))

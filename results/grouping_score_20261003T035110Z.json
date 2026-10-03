@@ -1,0 +1,1397 @@
+{
+  "timestamp_utc": "2026-10-03T03:51:10+00:00",
+  "tie_break": "equal overlap: complete-key group before incomplete, then lower predicted id, then lower labelled id",
+  "deals": {
+    "harbour_bank": {
+      "deal": "harbour_bank",
+      "review_id": 1,
+      "metrics": {
+        "statements": {
+          "exact": 15,
+          "of": 15
+        },
+        "commitments": {
+          "exact": 8,
+          "of": 8
+        }
+      },
+      "predicted_groups": 8,
+      "unmatched_predicted_groups": [],
+      "unmatched_labelled_commitments": [],
+      "mapping": {
+        "C01": "C01",
+        "C02": "C07",
+        "C03": "C02",
+        "C04": "C04",
+        "C05": "C05",
+        "C06": "C06",
+        "C07": "C03",
+        "C08": "C08"
+      },
+      "statements": [
+        {
+          "label_statement": "S01",
+          "ledger_statement": "HB-01-S01",
+          "labelled_commitments": [
+            "C01"
+          ],
+          "predicted_groups": [
+            "C01"
+          ],
+          "mapped_to": [
+            "C01"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "S02",
+          "ledger_statement": "HB-01-S03",
+          "labelled_commitments": [
+            "C07"
+          ],
+          "predicted_groups": [
+            "C02"
+          ],
+          "mapped_to": [
+            "C07"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "S03",
+          "ledger_statement": "HB-02-S01",
+          "labelled_commitments": [
+            "C01"
+          ],
+          "predicted_groups": [
+            "C01"
+          ],
+          "mapped_to": [
+            "C01"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "S04",
+          "ledger_statement": "HB-03-S01",
+          "labelled_commitments": [
+            "C01",
+            "C02"
+          ],
+          "predicted_groups": [
+            "C01",
+            "C03"
+          ],
+          "mapped_to": [
+            "C01",
+            "C02"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "S05",
+          "ledger_statement": "HB-04-S01",
+          "labelled_commitments": [
+            "C01"
+          ],
+          "predicted_groups": [
+            "C01"
+          ],
+          "mapped_to": [
+            "C01"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "S06",
+          "ledger_statement": "HB-04-S02",
+          "labelled_commitments": [
+            "C02"
+          ],
+          "predicted_groups": [
+            "C03"
+          ],
+          "mapped_to": [
+            "C02"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "S07",
+          "ledger_statement": "HB-04-S03",
+          "labelled_commitments": [
+            "C04"
+          ],
+          "predicted_groups": [
+            "C04"
+          ],
+          "mapped_to": [
+            "C04"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "S08",
+          "ledger_statement": "HB-04-S04",
+          "labelled_commitments": [
+            "C05"
+          ],
+          "predicted_groups": [
+            "C05"
+          ],
+          "mapped_to": [
+            "C05"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "S09",
+          "ledger_statement": "HB-04-S05",
+          "labelled_commitments": [
+            "C06"
+          ],
+          "predicted_groups": [
+            "C06"
+          ],
+          "mapped_to": [
+            "C06"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "S10",
+          "ledger_statement": "HB-06-S01",
+          "labelled_commitments": [
+            "C04"
+          ],
+          "predicted_groups": [
+            "C04"
+          ],
+          "mapped_to": [
+            "C04"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "S11",
+          "ledger_statement": "HB-06-S02",
+          "labelled_commitments": [
+            "C02",
+            "C03"
+          ],
+          "predicted_groups": [
+            "C03",
+            "C07"
+          ],
+          "mapped_to": [
+            "C02",
+            "C03"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "S12",
+          "ledger_statement": "HB-06-S04",
+          "labelled_commitments": [
+            "C02"
+          ],
+          "predicted_groups": [
+            "C03"
+          ],
+          "mapped_to": [
+            "C02"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "S13",
+          "ledger_statement": "HB-06-S05",
+          "labelled_commitments": [
+            "C03"
+          ],
+          "predicted_groups": [
+            "C07"
+          ],
+          "mapped_to": [
+            "C03"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "S14",
+          "ledger_statement": "HB-06-S06",
+          "labelled_commitments": [
+            "C03"
+          ],
+          "predicted_groups": [
+            "C07"
+          ],
+          "mapped_to": [
+            "C03"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "S15",
+          "ledger_statement": "HB-06-S03",
+          "labelled_commitments": [
+            "C08"
+          ],
+          "predicted_groups": [
+            "C08"
+          ],
+          "mapped_to": [
+            "C08"
+          ],
+          "exact": true,
+          "reasons": []
+        }
+      ],
+      "groups": {
+        "labelled_commitments": [
+          {
+            "labelled": "C01",
+            "name": "NUSD payouts on Polygon screened in real time before release",
+            "members": [
+              "HB-01-S01",
+              "HB-02-S01",
+              "HB-03-S01",
+              "HB-04-S01"
+            ],
+            "partner": "C01",
+            "exact_membership": true
+          },
+          {
+            "labelled": "C02",
+            "name": "NUSD payouts on Ethereum screened in real time before release",
+            "members": [
+              "HB-03-S01",
+              "HB-04-S02",
+              "HB-06-S02",
+              "HB-06-S04"
+            ],
+            "partner": "C03",
+            "exact_membership": true
+          },
+          {
+            "labelled": "C03",
+            "name": "NUSD payouts on Polygon screened in hourly batches and released after a clear result",
+            "members": [
+              "HB-06-S02",
+              "HB-06-S05",
+              "HB-06-S06"
+            ],
+            "partner": "C07",
+            "exact_membership": true
+          },
+          {
+            "labelled": "C04",
+            "name": "Payout ledger connector up to 12,000 payouts/day at launch",
+            "members": [
+              "HB-04-S03",
+              "HB-06-S01"
+            ],
+            "partner": "C04",
+            "exact_membership": true
+          },
+          {
+            "labelled": "C05",
+            "name": "Payout ledger connector up to 40,000 payouts/day by end of year one",
+            "members": [
+              "HB-04-S04"
+            ],
+            "partner": "C05",
+            "exact_membership": true
+          },
+          {
+            "labelled": "C06",
+            "name": "VASP counterparty data exchange generally available in Singapore by 31 March 2027",
+            "members": [
+              "HB-04-S05"
+            ],
+            "partner": "C06",
+            "exact_membership": true
+          },
+          {
+            "labelled": "C07",
+            "name": "1 December go-live, conditional on sandbox/testnet access by 15 November",
+            "members": [
+              "HB-01-S03"
+            ],
+            "partner": "C02",
+            "exact_membership": true
+          },
+          {
+            "labelled": "C08",
+            "name": "Weekly project status meeting during implementation",
+            "members": [
+              "HB-06-S03"
+            ],
+            "partner": "C08",
+            "exact_membership": true
+          }
+        ],
+        "predicted_groups": [
+          {
+            "predicted": "C01",
+            "name": "On-chain wallet screening integration: Polygon, real time",
+            "members": [
+              "HB-01-S01",
+              "HB-02-S01",
+              "HB-03-S01",
+              "HB-04-S01"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "C01"
+          },
+          {
+            "predicted": "C02",
+            "name": "Go-live",
+            "members": [
+              "HB-01-S03"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "C07"
+          },
+          {
+            "predicted": "C03",
+            "name": "On-chain wallet screening integration: Ethereum, real time",
+            "members": [
+              "HB-03-S01",
+              "HB-04-S02",
+              "HB-06-S02",
+              "HB-06-S04"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "C02"
+          },
+          {
+            "predicted": "C04",
+            "name": "Payout ledger connector: up to 12,000 payouts per day, at launch",
+            "members": [
+              "HB-04-S03",
+              "HB-06-S01"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "C04"
+          },
+          {
+            "predicted": "C05",
+            "name": "Payout ledger connector: up to 40,000 payouts per day, by end of first year",
+            "members": [
+              "HB-04-S04"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "C05"
+          },
+          {
+            "predicted": "C06",
+            "name": "VASP counterparty data exchange",
+            "members": [
+              "HB-04-S05"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "C06"
+          },
+          {
+            "predicted": "C07",
+            "name": "On-chain wallet screening integration: Polygon, batch",
+            "members": [
+              "HB-06-S02",
+              "HB-06-S05",
+              "HB-06-S06"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "C03"
+          },
+          {
+            "predicted": "C08",
+            "name": "Unclassified promise: The parties will hold a weekly project status meet [terms incomplete: capability; HB-06-S03]",
+            "members": [
+              "HB-06-S03"
+            ],
+            "terms_incomplete": true,
+            "missing": [
+              "capability"
+            ],
+            "partner": "C08"
+          }
+        ]
+      },
+      "must_hold": [
+        {
+          "must_hold": "no labelled statement is dropped by the filter",
+          "passed": true,
+          "detail": "dropped: ['HB-01-S02', 'HB-01-S04', 'HB-02-S02', 'HB-03-S02', 'HB-04-S06']; labelled among them: []"
+        },
+        {
+          "must_hold": "differing terms are never collapsed into one commitment (every complete group has one key)",
+          "passed": true,
+          "detail": "complete groups 7, groups with mixed keys []"
+        },
+        {
+          "must_hold": "exactly the five sales-process statements are dropped",
+          "passed": true,
+          "detail": "dropped 5: ['HB-01-S02', 'HB-01-S04', 'HB-02-S02', 'HB-03-S02', 'HB-04-S06']"
+        },
+        {
+          "must_hold": "S15 (weekly project status meeting) is kept and linked",
+          "passed": true,
+          "detail": "S15 = HB-06-S03"
+        },
+        {
+          "must_hold": "S04 is linked to both the C01 and C02 groups",
+          "passed": true,
+          "detail": "S04 = HB-03-S01; its groups ['C01', 'C03'] map to labelled ['C01', 'C02']"
+        },
+        {
+          "must_hold": "C01 (real-time Polygon) and C03 (hourly-batch Polygon) are never merged",
+          "passed": true,
+          "detail": "groups holding statements exclusive to both: []"
+        }
+      ],
+      "labels_sha256": {
+        "statements": "dbdc17a3d74cc6fbe6be751ffc176868c082eef850cca82054fc61357e8d34fd",
+        "commitments": "89743fe28a0f90c361957cc252d6db1ee030330b205147f50bad7d66b608d3a2"
+      },
+      "rules_sha256": [
+        "25d8ff5b782ba59e5ad36725702bf2f4469f96f1feaee8e6c55b2f3016d10c8c"
+      ]
+    },
+    "hard_cases": {
+      "deal": "hard_cases",
+      "review_id": 2,
+      "metrics": {
+        "statements": {
+          "exact": 8,
+          "of": 9
+        },
+        "commitments": {
+          "exact": 6,
+          "of": 7
+        }
+      },
+      "predicted_groups": 8,
+      "unmatched_predicted_groups": [
+        "C01"
+      ],
+      "unmatched_labelled_commitments": [],
+      "mapping": {
+        "C02": "KC2",
+        "C03": "KC3",
+        "C04": "KC4",
+        "C05": "KC1",
+        "C06": "KC5",
+        "C07": "KC6",
+        "C08": "KC7"
+      },
+      "statements": [
+        {
+          "label_statement": "K01",
+          "ledger_statement": "KR-01-S01",
+          "labelled_commitments": [
+            "KC1"
+          ],
+          "predicted_groups": [
+            "C01"
+          ],
+          "mapped_to": [],
+          "exact": false,
+          "reasons": [
+            "labelled KC1 is matched to predicted C05, which does not contain this statement",
+            "predicted C01 (terms incomplete: mode) has no labelled counterpart (unmatched predicted group)"
+          ]
+        },
+        {
+          "label_statement": "K02",
+          "ledger_statement": "KR-01-S03",
+          "labelled_commitments": [
+            "KC2"
+          ],
+          "predicted_groups": [
+            "C02"
+          ],
+          "mapped_to": [
+            "KC2"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "K03",
+          "ledger_statement": "KR-02-S01",
+          "labelled_commitments": [
+            "KC3"
+          ],
+          "predicted_groups": [
+            "C03"
+          ],
+          "mapped_to": [
+            "KC3"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "K04",
+          "ledger_statement": "KR-02-S02",
+          "labelled_commitments": [
+            "KC4"
+          ],
+          "predicted_groups": [
+            "C04"
+          ],
+          "mapped_to": [
+            "KC4"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "K05",
+          "ledger_statement": "KR-02-S03",
+          "labelled_commitments": [
+            "KC1"
+          ],
+          "predicted_groups": [
+            "C05"
+          ],
+          "mapped_to": [
+            "KC1"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "K06",
+          "ledger_statement": "KR-02-S04",
+          "labelled_commitments": [
+            "KC5"
+          ],
+          "predicted_groups": [
+            "C06"
+          ],
+          "mapped_to": [
+            "KC5"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "K07",
+          "ledger_statement": "KR-02-S05",
+          "labelled_commitments": [
+            "KC6"
+          ],
+          "predicted_groups": [
+            "C07"
+          ],
+          "mapped_to": [
+            "KC6"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "K08",
+          "ledger_statement": "KR-03-S01",
+          "labelled_commitments": [
+            "KC4"
+          ],
+          "predicted_groups": [
+            "C04"
+          ],
+          "mapped_to": [
+            "KC4"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "K09",
+          "ledger_statement": "KR-03-S02",
+          "labelled_commitments": [
+            "KC7"
+          ],
+          "predicted_groups": [
+            "C08"
+          ],
+          "mapped_to": [
+            "KC7"
+          ],
+          "exact": true,
+          "reasons": []
+        }
+      ],
+      "groups": {
+        "labelled_commitments": [
+          {
+            "labelled": "KC1",
+            "name": "Real-time screening of NUSD payouts on Arbitrum for launch",
+            "members": [
+              "KR-01-S01",
+              "KR-02-S03"
+            ],
+            "partner": "C05",
+            "exact_membership": false,
+            "note": "predicted C05 lacks KR-01-S01; held by unmatched predicted C01"
+          },
+          {
+            "labelled": "KC2",
+            "name": "Real-time Polygon screening on the roadmap for next year",
+            "members": [
+              "KR-01-S03"
+            ],
+            "partner": "C02",
+            "exact_membership": true
+          },
+          {
+            "labelled": "KC3",
+            "name": "Go-live on 1 March 2027",
+            "members": [
+              "KR-02-S01"
+            ],
+            "partner": "C03",
+            "exact_membership": true
+          },
+          {
+            "labelled": "KC4",
+            "name": "Payout ledger connector up to 30,000 payouts/day at launch",
+            "members": [
+              "KR-02-S02",
+              "KR-03-S01"
+            ],
+            "partner": "C04",
+            "exact_membership": true
+          },
+          {
+            "labelled": "KC5",
+            "name": "VASP counterparty data exchange, subject to Product approval",
+            "members": [
+              "KR-02-S04"
+            ],
+            "partner": "C06",
+            "exact_membership": true
+          },
+          {
+            "labelled": "KC6",
+            "name": "Full case audit history for every alert",
+            "members": [
+              "KR-02-S05"
+            ],
+            "partner": "C07",
+            "exact_membership": true
+          },
+          {
+            "labelled": "KC7",
+            "name": "Real-time screening of NUSD payouts on Ethereum",
+            "members": [
+              "KR-03-S02"
+            ],
+            "partner": "C08",
+            "exact_membership": true
+          }
+        ],
+        "predicted_groups": [
+          {
+            "predicted": "C01",
+            "name": "On-chain wallet screening integration: Arbitrum [terms incomplete: mode; KR-01-S01]",
+            "members": [
+              "KR-01-S01"
+            ],
+            "terms_incomplete": true,
+            "missing": [
+              "mode"
+            ],
+            "partner": null,
+            "note": "unmatched predicted group (counts as a mismatch); shares ['KR-01-S01'] with labelled KC1 (matched to predicted C05)"
+          },
+          {
+            "predicted": "C02",
+            "name": "On-chain wallet screening integration: Polygon, real time",
+            "members": [
+              "KR-01-S03"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "KC2"
+          },
+          {
+            "predicted": "C03",
+            "name": "Go-live",
+            "members": [
+              "KR-02-S01"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "KC3"
+          },
+          {
+            "predicted": "C04",
+            "name": "Payout ledger connector: up to 30,000 payouts per day, at launch",
+            "members": [
+              "KR-02-S02",
+              "KR-03-S01"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "KC4"
+          },
+          {
+            "predicted": "C05",
+            "name": "On-chain wallet screening integration: Arbitrum, real time",
+            "members": [
+              "KR-02-S03"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "KC1"
+          },
+          {
+            "predicted": "C06",
+            "name": "VASP counterparty data exchange",
+            "members": [
+              "KR-02-S04"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "KC5"
+          },
+          {
+            "predicted": "C07",
+            "name": "Case audit history",
+            "members": [
+              "KR-02-S05"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "KC6"
+          },
+          {
+            "predicted": "C08",
+            "name": "On-chain wallet screening integration: Ethereum, real time",
+            "members": [
+              "KR-03-S02"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "KC7"
+          }
+        ]
+      },
+      "must_hold": [
+        {
+          "must_hold": "no labelled statement is dropped by the filter",
+          "passed": true,
+          "detail": "dropped: ['KR-01-S02']; labelled among them: []"
+        },
+        {
+          "must_hold": "differing terms are never collapsed into one commitment (every complete group has one key)",
+          "passed": true,
+          "detail": "complete groups 7, groups with mixed keys []"
+        },
+        {
+          "must_hold": "K04 (\"thirty thousand\") and K08 (\"30,000\") share one commitment",
+          "passed": true,
+          "detail": "K04 = KR-02-S02, K08 = KR-03-S01; shared groups ['C04']"
+        },
+        {
+          "must_hold": "K04 and K08 quotes are stored verbatim",
+          "passed": true,
+          "detail": "byte-identical to the pinned run file: KR-02-S02, KR-03-S01"
+        }
+      ],
+      "labels_sha256": {
+        "statements": "1f434f9313dbae5064f453c9f15174769951039420f8e1974fda174474f98db6",
+        "commitments": "31a170799e6a9340b17c66840bbdd61b5a52b91b17f0e024cddfc27c48cb39b1"
+      },
+      "rules_sha256": [
+        "25d8ff5b782ba59e5ad36725702bf2f4469f96f1feaee8e6c55b2f3016d10c8c"
+      ]
+    },
+    "practice_cases": {
+      "deal": "practice_cases",
+      "review_id": 3,
+      "metrics": {
+        "statements": {
+          "exact": 13,
+          "of": 15
+        },
+        "commitments": {
+          "exact": 10,
+          "of": 12
+        }
+      },
+      "predicted_groups": 14,
+      "unmatched_predicted_groups": [
+        "C05",
+        "C09"
+      ],
+      "unmatched_labelled_commitments": [],
+      "mapping": {
+        "C01": "PC1",
+        "C02": "PC3",
+        "C03": "PC4",
+        "C04": "PC5",
+        "C06": "PC9",
+        "C07": "PC7",
+        "C08": "PC10",
+        "C10": "PC12",
+        "C11": "PC6",
+        "C12": "PC2",
+        "C13": "PC11",
+        "C14": "PC8"
+      },
+      "statements": [
+        {
+          "label_statement": "P01",
+          "ledger_statement": "PC-01-S01",
+          "labelled_commitments": [
+            "PC1"
+          ],
+          "predicted_groups": [
+            "C01"
+          ],
+          "mapped_to": [
+            "PC1"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "P02",
+          "ledger_statement": "PC-01-S02",
+          "labelled_commitments": [
+            "PC3"
+          ],
+          "predicted_groups": [
+            "C02"
+          ],
+          "mapped_to": [
+            "PC3"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "P03",
+          "ledger_statement": "PC-01-S03",
+          "labelled_commitments": [
+            "PC4"
+          ],
+          "predicted_groups": [
+            "C03"
+          ],
+          "mapped_to": [
+            "PC4"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "P04",
+          "ledger_statement": "PC-01-S04",
+          "labelled_commitments": [
+            "PC5"
+          ],
+          "predicted_groups": [
+            "C04"
+          ],
+          "mapped_to": [
+            "PC5"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "P05",
+          "ledger_statement": "PC-02-S01",
+          "labelled_commitments": [
+            "PC6"
+          ],
+          "predicted_groups": [
+            "C05"
+          ],
+          "mapped_to": [],
+          "exact": false,
+          "reasons": [
+            "labelled PC6 is matched to predicted C11, which does not contain this statement",
+            "predicted C05 (terms incomplete: capability) has no labelled counterpart (unmatched predicted group)"
+          ]
+        },
+        {
+          "label_statement": "P06",
+          "ledger_statement": "PC-02-S02",
+          "labelled_commitments": [
+            "PC9"
+          ],
+          "predicted_groups": [
+            "C06"
+          ],
+          "mapped_to": [
+            "PC9"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "P07",
+          "ledger_statement": "PC-02-S03",
+          "labelled_commitments": [
+            "PC7"
+          ],
+          "predicted_groups": [
+            "C07"
+          ],
+          "mapped_to": [
+            "PC7"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "P08",
+          "ledger_statement": "PC-02-S04",
+          "labelled_commitments": [
+            "PC10"
+          ],
+          "predicted_groups": [
+            "C08"
+          ],
+          "mapped_to": [
+            "PC10"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "P09",
+          "ledger_statement": "PC-02-S05",
+          "labelled_commitments": [
+            "PC11"
+          ],
+          "predicted_groups": [
+            "C09"
+          ],
+          "mapped_to": [],
+          "exact": false,
+          "reasons": [
+            "labelled PC11 is matched to predicted C13, which does not contain this statement",
+            "predicted C09 (terms incomplete: capability) has no labelled counterpart (unmatched predicted group)"
+          ]
+        },
+        {
+          "label_statement": "P10",
+          "ledger_statement": "PC-02-S06",
+          "labelled_commitments": [
+            "PC12"
+          ],
+          "predicted_groups": [
+            "C10"
+          ],
+          "mapped_to": [
+            "PC12"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "P11",
+          "ledger_statement": "PC-04-S01",
+          "labelled_commitments": [
+            "PC6"
+          ],
+          "predicted_groups": [
+            "C11"
+          ],
+          "mapped_to": [
+            "PC6"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "P12",
+          "ledger_statement": "PC-04-S02",
+          "labelled_commitments": [
+            "PC2"
+          ],
+          "predicted_groups": [
+            "C12"
+          ],
+          "mapped_to": [
+            "PC2"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "P13",
+          "ledger_statement": "PC-04-S03",
+          "labelled_commitments": [
+            "PC11"
+          ],
+          "predicted_groups": [
+            "C13"
+          ],
+          "mapped_to": [
+            "PC11"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "P14",
+          "ledger_statement": "PC-04-S04",
+          "labelled_commitments": [
+            "PC12"
+          ],
+          "predicted_groups": [
+            "C10"
+          ],
+          "mapped_to": [
+            "PC12"
+          ],
+          "exact": true,
+          "reasons": []
+        },
+        {
+          "label_statement": "P15",
+          "ledger_statement": "PC-04-S05",
+          "labelled_commitments": [
+            "PC8"
+          ],
+          "predicted_groups": [
+            "C14"
+          ],
+          "mapped_to": [
+            "PC8"
+          ],
+          "exact": true,
+          "reasons": []
+        }
+      ],
+      "groups": {
+        "labelled_commitments": [
+          {
+            "labelled": "PC1",
+            "name": "NUSD payouts on Polygon screened in real time ('instant risk check') before release",
+            "members": [
+              "PC-01-S01"
+            ],
+            "partner": "C01",
+            "exact_membership": true
+          },
+          {
+            "labelled": "PC10",
+            "name": "VASP counterparty data exchange live in Singapore by end of Q1 2027",
+            "members": [
+              "PC-02-S04"
+            ],
+            "partner": "C08",
+            "exact_membership": true
+          },
+          {
+            "labelled": "PC11",
+            "name": "Full case audit history for every case",
+            "members": [
+              "PC-02-S05",
+              "PC-04-S03"
+            ],
+            "partner": "C13",
+            "exact_membership": false,
+            "note": "predicted C13 lacks PC-02-S05; held by unmatched predicted C09"
+          },
+          {
+            "labelled": "PC12",
+            "name": "Alert assignment and SLA tracking for the operations team",
+            "members": [
+              "PC-02-S06",
+              "PC-04-S04"
+            ],
+            "partner": "C10",
+            "exact_membership": true
+          },
+          {
+            "labelled": "PC2",
+            "name": "NUSD payouts on Polygon screened in hourly batches before release",
+            "members": [
+              "PC-04-S02"
+            ],
+            "partner": "C12",
+            "exact_membership": true
+          },
+          {
+            "labelled": "PC3",
+            "name": "Tron wallets screened before release (the same pre-release checks as the preceding turn)",
+            "members": [
+              "PC-01-S02"
+            ],
+            "partner": "C02",
+            "exact_membership": true
+          },
+          {
+            "labelled": "PC4",
+            "name": "Avalanche support explored",
+            "members": [
+              "PC-01-S03"
+            ],
+            "partner": "C03",
+            "exact_membership": true
+          },
+          {
+            "labelled": "PC5",
+            "name": "Network-graph analytics trial, subject to Product sign-off",
+            "members": [
+              "PC-01-S04"
+            ],
+            "partner": "C04",
+            "exact_membership": true
+          },
+          {
+            "labelled": "PC6",
+            "name": "NUSD payouts on Ethereum screened in real time before release",
+            "members": [
+              "PC-02-S01",
+              "PC-04-S01"
+            ],
+            "partner": "C11",
+            "exact_membership": false,
+            "note": "predicted C11 lacks PC-02-S01; held by unmatched predicted C05"
+          },
+          {
+            "labelled": "PC7",
+            "name": "Payout ledger connector about 30,000 payouts/day from launch",
+            "members": [
+              "PC-02-S03"
+            ],
+            "partner": "C07",
+            "exact_membership": true
+          },
+          {
+            "labelled": "PC8",
+            "name": "Payout ledger connector up to 20,000 payouts/day",
+            "members": [
+              "PC-04-S05"
+            ],
+            "partner": "C14",
+            "exact_membership": true
+          },
+          {
+            "labelled": "PC9",
+            "name": "Sanctions screening up to 120,000 checks per day",
+            "members": [
+              "PC-02-S02"
+            ],
+            "partner": "C06",
+            "exact_membership": true
+          }
+        ],
+        "predicted_groups": [
+          {
+            "predicted": "C01",
+            "name": "Unclassified promise: Every payout to a Polygon wallet gets an instant r [terms incomplete: capability; PC-01-S01]",
+            "members": [
+              "PC-01-S01"
+            ],
+            "terms_incomplete": true,
+            "missing": [
+              "capability"
+            ],
+            "partner": "PC1"
+          },
+          {
+            "predicted": "C02",
+            "name": "Unclassified promise: Tron wallets will be covered by the same pre-relea [terms incomplete: capability; PC-01-S02]",
+            "members": [
+              "PC-01-S02"
+            ],
+            "terms_incomplete": true,
+            "missing": [
+              "capability"
+            ],
+            "partner": "PC3"
+          },
+          {
+            "predicted": "C03",
+            "name": "Unclassified promise: We're looking at whether Avalanche support could b [terms incomplete: capability; PC-01-S03]",
+            "members": [
+              "PC-01-S03"
+            ],
+            "terms_incomplete": true,
+            "missing": [
+              "capability"
+            ],
+            "partner": "PC4"
+          },
+          {
+            "predicted": "C04",
+            "name": "Unclassified promise: Subject to Product sign-off, our network-graph ana [terms incomplete: capability; PC-01-S04]",
+            "members": [
+              "PC-01-S04"
+            ],
+            "terms_incomplete": true,
+            "missing": [
+              "capability"
+            ],
+            "partner": "PC5"
+          },
+          {
+            "predicted": "C05",
+            "name": "Unclassified promise: Ethereum payouts are risk-checked live before rele [terms incomplete: capability; PC-02-S01]",
+            "members": [
+              "PC-02-S01"
+            ],
+            "terms_incomplete": true,
+            "missing": [
+              "capability"
+            ],
+            "partner": null,
+            "note": "unmatched predicted group (counts as a mismatch); shares ['PC-02-S01'] with labelled PC6 (matched to predicted C11)"
+          },
+          {
+            "predicted": "C06",
+            "name": "Unclassified promise: Our service handles up to 120,000 sanctions checks [terms incomplete: capability, unit; PC-02-S02]",
+            "members": [
+              "PC-02-S02"
+            ],
+            "terms_incomplete": true,
+            "missing": [
+              "capability",
+              "unit"
+            ],
+            "partner": "PC9"
+          },
+          {
+            "predicted": "C07",
+            "name": "Unclassified promise: We will comfortably absorb around 30k payouts a da [terms incomplete: capability; PC-02-S03]",
+            "members": [
+              "PC-02-S03"
+            ],
+            "terms_incomplete": true,
+            "missing": [
+              "capability"
+            ],
+            "partner": "PC7"
+          },
+          {
+            "predicted": "C08",
+            "name": "Unclassified promise: Counterparty data sharing with exchanges will be s [terms incomplete: capability; PC-02-S04]",
+            "members": [
+              "PC-02-S04"
+            ],
+            "terms_incomplete": true,
+            "missing": [
+              "capability"
+            ],
+            "partner": "PC10"
+          },
+          {
+            "predicted": "C09",
+            "name": "Unclassified promise: Analysts get a full audit trail on every case. [terms incomplete: capability; PC-02-S05]",
+            "members": [
+              "PC-02-S05"
+            ],
+            "terms_incomplete": true,
+            "missing": [
+              "capability"
+            ],
+            "partner": null,
+            "note": "unmatched predicted group (counts as a mismatch); shares ['PC-02-S05'] with labelled PC11 (matched to predicted C13)"
+          },
+          {
+            "predicted": "C10",
+            "name": "Alert assignment and SLA tracking",
+            "members": [
+              "PC-02-S06",
+              "PC-04-S04"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "PC12"
+          },
+          {
+            "predicted": "C11",
+            "name": "On-chain wallet screening integration: Ethereum, real time",
+            "members": [
+              "PC-04-S01"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "PC6"
+          },
+          {
+            "predicted": "C12",
+            "name": "On-chain wallet screening integration: Polygon, batch",
+            "members": [
+              "PC-04-S02"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "PC2"
+          },
+          {
+            "predicted": "C13",
+            "name": "Case audit history",
+            "members": [
+              "PC-04-S03"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "PC11"
+          },
+          {
+            "predicted": "C14",
+            "name": "Payout ledger connector: up to 20,000 payouts per day",
+            "members": [
+              "PC-04-S05"
+            ],
+            "terms_incomplete": false,
+            "missing": [],
+            "partner": "PC8"
+          }
+        ]
+      },
+      "must_hold": [
+        {
+          "must_hold": "no labelled statement is dropped by the filter",
+          "passed": true,
+          "detail": "dropped: []; labelled among them: []"
+        },
+        {
+          "must_hold": "differing terms are never collapsed into one commitment (every complete group has one key)",
+          "passed": true,
+          "detail": "complete groups 5, groups with mixed keys []"
+        }
+      ],
+      "labels_sha256": {
+        "statements": "785bafb1dd4a994410ec53e4ba7aa09e67fce7169ba00d833c2f3a7a677a01b3",
+        "commitments": "6ab85e724f262dbd09fd128f60cc596616efaeff874602bd1af8e10801809240"
+      },
+      "rules_sha256": [
+        "25d8ff5b782ba59e5ad36725702bf2f4469f96f1feaee8e6c55b2f3016d10c8c"
+      ]
+    }
+  }
+}

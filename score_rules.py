@@ -94,7 +94,7 @@ def score_deal(slug: str, conn, data_dir=None, results_dir=None) -> dict:
 
 
 def build_report(conn, data_dir=None, results_dir=None) -> dict:
-    return {"deals": {slug: score_deal(slug, conn, data_dir, results_dir) for slug in sg.DEALS}}
+    return {"deals": {slug: score_deal(slug, conn, data_dir, results_dir) for slug in config.LEDGER_DEALS}}
 
 
 def render(report: dict) -> str:

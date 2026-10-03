@@ -1,0 +1,945 @@
+{
+  "timestamp_utc": "2026-10-03T03:51:10+00:00",
+  "deals": {
+    "harbour_bank": {
+      "deal": "harbour_bank",
+      "review_id": 1,
+      "grouping": {
+        "statements": {
+          "exact": 15,
+          "of": 15
+        },
+        "commitments": {
+          "exact": 8,
+          "of": 8
+        }
+      },
+      "metrics": {
+        "authorisation": {
+          "exact": 8,
+          "of": 8
+        },
+        "presence": {
+          "exact": 8,
+          "of": 8
+        },
+        "issue_sets": {
+          "exact": 8,
+          "of": 8
+        },
+        "issues": {
+          "true_positive": 8,
+          "false_positive": 0,
+          "false_negative": 0
+        },
+        "absolute_limit": {
+          "exact": 8,
+          "of": 8
+        },
+        "false_flags_on_clean_commitments": 0,
+        "commitments_with_issues_reaching_review": {
+          "found": 4,
+          "of": 4
+        }
+      },
+      "issues_on_unmatched_predicted_groups": [],
+      "commitments": [
+        {
+          "label": "C01",
+          "name": "NUSD payouts on Polygon screened in real time before release",
+          "predicted": "C01",
+          "authorisation": {
+            "label": "no_approval_evidence",
+            "rules": "no_approval_evidence",
+            "match": true
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [
+              "approval",
+              "conflicting_terms",
+              "contract_gap"
+            ],
+            "rules": [
+              "approval",
+              "conflicting_terms",
+              "contract_gap"
+            ],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "C02",
+          "name": "NUSD payouts on Ethereum screened in real time before release",
+          "predicted": "C03",
+          "authorisation": {
+            "label": "standard_authorised",
+            "rules": "standard_authorised",
+            "match": true
+          },
+          "presence": {
+            "label": "included_in_draft_contract",
+            "rules": "included_in_draft_contract",
+            "match": true
+          },
+          "issues": {
+            "label": [],
+            "rules": [],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "C03",
+          "name": "NUSD payouts on Polygon screened in hourly batches and released after a clear result",
+          "predicted": "C07",
+          "authorisation": {
+            "label": "standard_authorised",
+            "rules": "standard_authorised",
+            "match": true
+          },
+          "presence": {
+            "label": "included_in_draft_contract",
+            "rules": "included_in_draft_contract",
+            "match": true
+          },
+          "issues": {
+            "label": [],
+            "rules": [],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "C04",
+          "name": "Payout ledger connector up to 12,000 payouts/day at launch",
+          "predicted": "C04",
+          "authorisation": {
+            "label": "standard_authorised",
+            "rules": "standard_authorised",
+            "match": true
+          },
+          "presence": {
+            "label": "included_in_draft_contract",
+            "rules": "included_in_draft_contract",
+            "match": true
+          },
+          "issues": {
+            "label": [],
+            "rules": [],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "C05",
+          "name": "Payout ledger connector up to 40,000 payouts/day by end of year one",
+          "predicted": "C05",
+          "authorisation": {
+            "label": "no_approval_evidence",
+            "rules": "no_approval_evidence",
+            "match": true
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [
+              "approval",
+              "contract_gap"
+            ],
+            "rules": [
+              "approval",
+              "contract_gap"
+            ],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "C06",
+          "name": "VASP counterparty data exchange generally available in Singapore by 31 March 2027",
+          "predicted": "C06",
+          "authorisation": {
+            "label": "no_approval_evidence",
+            "rules": "no_approval_evidence",
+            "match": true
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [
+              "approval",
+              "contract_gap"
+            ],
+            "rules": [
+              "approval",
+              "contract_gap"
+            ],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "C07",
+          "name": "1 December go-live, conditional on sandbox/testnet access by 15 November",
+          "predicted": "C02",
+          "authorisation": {
+            "label": null,
+            "rules": null,
+            "match": true
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [],
+            "rules": [],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "C08",
+          "name": "Weekly project status meeting during implementation",
+          "predicted": "C08",
+          "authorisation": {
+            "label": "unknown_needs_review",
+            "rules": "unknown_needs_review",
+            "match": true
+          },
+          "presence": {
+            "label": "included_in_draft_contract",
+            "rules": "included_in_draft_contract",
+            "match": true
+          },
+          "issues": {
+            "label": [
+              "insufficient_evidence"
+            ],
+            "rules": [
+              "insufficient_evidence"
+            ],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        }
+      ],
+      "labels_sha256": {
+        "statements": "dbdc17a3d74cc6fbe6be751ffc176868c082eef850cca82054fc61357e8d34fd",
+        "commitments": "89743fe28a0f90c361957cc252d6db1ee030330b205147f50bad7d66b608d3a2"
+      }
+    },
+    "hard_cases": {
+      "deal": "hard_cases",
+      "review_id": 2,
+      "grouping": {
+        "statements": {
+          "exact": 8,
+          "of": 9
+        },
+        "commitments": {
+          "exact": 6,
+          "of": 7
+        }
+      },
+      "metrics": {
+        "authorisation": {
+          "exact": 7,
+          "of": 7
+        },
+        "presence": {
+          "exact": 7,
+          "of": 7
+        },
+        "issue_sets": {
+          "exact": 7,
+          "of": 7
+        },
+        "issues": {
+          "true_positive": 6,
+          "false_positive": 0,
+          "false_negative": 0
+        },
+        "absolute_limit": {
+          "exact": 7,
+          "of": 7
+        },
+        "false_flags_on_clean_commitments": 0,
+        "commitments_with_issues_reaching_review": {
+          "found": 4,
+          "of": 4
+        }
+      },
+      "issues_on_unmatched_predicted_groups": [
+        {
+          "predicted": "C01",
+          "issues": [
+            [
+              "approval",
+              "authorisation",
+              1
+            ],
+            [
+              "insufficient_evidence",
+              "contract",
+              0
+            ]
+          ]
+        }
+      ],
+      "commitments": [
+        {
+          "label": "KC1",
+          "name": "Real-time screening of NUSD payouts on Arbitrum for launch",
+          "predicted": "C05",
+          "authorisation": {
+            "label": "no_approval_evidence",
+            "rules": "no_approval_evidence",
+            "match": true
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [
+              "approval",
+              "contract_gap"
+            ],
+            "rules": [
+              "approval",
+              "contract_gap"
+            ],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": true,
+            "rules": true,
+            "match": true
+          }
+        },
+        {
+          "label": "KC2",
+          "name": "Real-time Polygon screening on the roadmap for next year",
+          "predicted": "C02",
+          "authorisation": {
+            "label": null,
+            "rules": null,
+            "match": true
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [],
+            "rules": [],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "KC3",
+          "name": "Go-live on 1 March 2027",
+          "predicted": "C03",
+          "authorisation": {
+            "label": "unknown_needs_review",
+            "rules": "unknown_needs_review",
+            "match": true
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [
+              "contract_gap",
+              "insufficient_evidence"
+            ],
+            "rules": [
+              "contract_gap",
+              "insufficient_evidence"
+            ],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "KC4",
+          "name": "Payout ledger connector up to 30,000 payouts/day at launch",
+          "predicted": "C04",
+          "authorisation": {
+            "label": "no_approval_evidence",
+            "rules": "no_approval_evidence",
+            "match": true
+          },
+          "presence": {
+            "label": "included_in_draft_contract",
+            "rules": "included_in_draft_contract",
+            "match": true
+          },
+          "issues": {
+            "label": [
+              "approval"
+            ],
+            "rules": [
+              "approval"
+            ],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "KC5",
+          "name": "VASP counterparty data exchange, subject to Product approval",
+          "predicted": "C06",
+          "authorisation": {
+            "label": null,
+            "rules": null,
+            "match": true
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [],
+            "rules": [],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "KC6",
+          "name": "Full case audit history for every alert",
+          "predicted": "C07",
+          "authorisation": {
+            "label": "standard_authorised",
+            "rules": "standard_authorised",
+            "match": true
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [
+              "contract_gap"
+            ],
+            "rules": [
+              "contract_gap"
+            ],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "KC7",
+          "name": "Real-time screening of NUSD payouts on Ethereum",
+          "predicted": "C08",
+          "authorisation": {
+            "label": "standard_authorised",
+            "rules": "standard_authorised",
+            "match": true
+          },
+          "presence": {
+            "label": "included_in_draft_contract",
+            "rules": "included_in_draft_contract",
+            "match": true
+          },
+          "issues": {
+            "label": [],
+            "rules": [],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        }
+      ],
+      "labels_sha256": {
+        "statements": "1f434f9313dbae5064f453c9f15174769951039420f8e1974fda174474f98db6",
+        "commitments": "31a170799e6a9340b17c66840bbdd61b5a52b91b17f0e024cddfc27c48cb39b1"
+      }
+    },
+    "practice_cases": {
+      "deal": "practice_cases",
+      "review_id": 3,
+      "grouping": {
+        "statements": {
+          "exact": 13,
+          "of": 15
+        },
+        "commitments": {
+          "exact": 10,
+          "of": 12
+        }
+      },
+      "metrics": {
+        "authorisation": {
+          "exact": 7,
+          "of": 12
+        },
+        "presence": {
+          "exact": 12,
+          "of": 12
+        },
+        "issue_sets": {
+          "exact": 7,
+          "of": 12
+        },
+        "issues": {
+          "true_positive": 0,
+          "false_positive": 5,
+          "false_negative": 12
+        },
+        "absolute_limit": {
+          "exact": 11,
+          "of": 12
+        },
+        "false_flags_on_clean_commitments": 0,
+        "commitments_with_issues_reaching_review": {
+          "found": 5,
+          "of": 5
+        }
+      },
+      "issues_on_unmatched_predicted_groups": [
+        {
+          "predicted": "C05",
+          "issues": [
+            [
+              "insufficient_evidence",
+              "authorisation",
+              0
+            ],
+            [
+              "insufficient_evidence",
+              "contract",
+              0
+            ]
+          ]
+        },
+        {
+          "predicted": "C09",
+          "issues": [
+            [
+              "insufficient_evidence",
+              "authorisation",
+              0
+            ],
+            [
+              "insufficient_evidence",
+              "contract",
+              0
+            ]
+          ]
+        }
+      ],
+      "commitments": [
+        {
+          "label": "PC1",
+          "name": "NUSD payouts on Polygon screened in real time ('instant risk check') before release",
+          "predicted": "C01",
+          "authorisation": {
+            "label": "no_approval_evidence",
+            "rules": "unknown_needs_review",
+            "match": false
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [
+              "approval",
+              "conflicting_terms",
+              "contract_gap"
+            ],
+            "rules": [
+              "insufficient_evidence"
+            ],
+            "match": false
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "PC2",
+          "name": "NUSD payouts on Polygon screened in hourly batches before release",
+          "predicted": "C12",
+          "authorisation": {
+            "label": "standard_authorised",
+            "rules": "standard_authorised",
+            "match": true
+          },
+          "presence": {
+            "label": "included_in_draft_contract",
+            "rules": "included_in_draft_contract",
+            "match": true
+          },
+          "issues": {
+            "label": [],
+            "rules": [],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "PC3",
+          "name": "Tron wallets screened before release (the same pre-release checks as the preceding turn)",
+          "predicted": "C02",
+          "authorisation": {
+            "label": "no_approval_evidence",
+            "rules": "unknown_needs_review",
+            "match": false
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [
+              "approval",
+              "contract_gap"
+            ],
+            "rules": [
+              "insufficient_evidence"
+            ],
+            "match": false
+          },
+          "absolute_limit": {
+            "label": true,
+            "rules": false,
+            "match": false
+          }
+        },
+        {
+          "label": "PC4",
+          "name": "Avalanche support explored",
+          "predicted": "C03",
+          "authorisation": {
+            "label": null,
+            "rules": null,
+            "match": true
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [],
+            "rules": [],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "PC5",
+          "name": "Network-graph analytics trial, subject to Product sign-off",
+          "predicted": "C04",
+          "authorisation": {
+            "label": null,
+            "rules": null,
+            "match": true
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [],
+            "rules": [],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "PC6",
+          "name": "NUSD payouts on Ethereum screened in real time before release",
+          "predicted": "C11",
+          "authorisation": {
+            "label": "standard_authorised",
+            "rules": "standard_authorised",
+            "match": true
+          },
+          "presence": {
+            "label": "included_in_draft_contract",
+            "rules": "included_in_draft_contract",
+            "match": true
+          },
+          "issues": {
+            "label": [],
+            "rules": [],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "PC7",
+          "name": "Payout ledger connector about 30,000 payouts/day from launch",
+          "predicted": "C07",
+          "authorisation": {
+            "label": "no_approval_evidence",
+            "rules": "unknown_needs_review",
+            "match": false
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [
+              "approval",
+              "conflicting_terms",
+              "contract_gap"
+            ],
+            "rules": [
+              "insufficient_evidence"
+            ],
+            "match": false
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "PC8",
+          "name": "Payout ledger connector up to 20,000 payouts/day",
+          "predicted": "C14",
+          "authorisation": {
+            "label": "standard_authorised",
+            "rules": "standard_authorised",
+            "match": true
+          },
+          "presence": {
+            "label": "included_in_draft_contract",
+            "rules": "included_in_draft_contract",
+            "match": true
+          },
+          "issues": {
+            "label": [],
+            "rules": [],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "PC9",
+          "name": "Sanctions screening up to 120,000 checks per day",
+          "predicted": "C06",
+          "authorisation": {
+            "label": "no_approval_evidence",
+            "rules": "unknown_needs_review",
+            "match": false
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [
+              "approval",
+              "contract_gap"
+            ],
+            "rules": [
+              "insufficient_evidence"
+            ],
+            "match": false
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "PC10",
+          "name": "VASP counterparty data exchange live in Singapore by end of Q1 2027",
+          "predicted": "C08",
+          "authorisation": {
+            "label": "no_approval_evidence",
+            "rules": "unknown_needs_review",
+            "match": false
+          },
+          "presence": {
+            "label": "absent",
+            "rules": "absent",
+            "match": true
+          },
+          "issues": {
+            "label": [
+              "approval",
+              "contract_gap"
+            ],
+            "rules": [
+              "insufficient_evidence"
+            ],
+            "match": false
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "PC11",
+          "name": "Full case audit history for every case",
+          "predicted": "C13",
+          "authorisation": {
+            "label": "standard_authorised",
+            "rules": "standard_authorised",
+            "match": true
+          },
+          "presence": {
+            "label": "included_in_draft_contract",
+            "rules": "included_in_draft_contract",
+            "match": true
+          },
+          "issues": {
+            "label": [],
+            "rules": [],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        },
+        {
+          "label": "PC12",
+          "name": "Alert assignment and SLA tracking for the operations team",
+          "predicted": "C10",
+          "authorisation": {
+            "label": "standard_authorised",
+            "rules": "standard_authorised",
+            "match": true
+          },
+          "presence": {
+            "label": "included_in_draft_contract",
+            "rules": "included_in_draft_contract",
+            "match": true
+          },
+          "issues": {
+            "label": [],
+            "rules": [],
+            "match": true
+          },
+          "absolute_limit": {
+            "label": false,
+            "rules": false,
+            "match": true
+          }
+        }
+      ],
+      "labels_sha256": {
+        "statements": "785bafb1dd4a994410ec53e4ba7aa09e67fce7169ba00d833c2f3a7a677a01b3",
+        "commitments": "6ab85e724f262dbd09fd128f60cc596616efaeff874602bd1af8e10801809240"
+      }
+    }
+  }
+}
