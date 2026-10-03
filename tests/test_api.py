@@ -270,6 +270,16 @@ class TestSeal(ApiTestCase):
             self.assertNotEqual(r.status_code, 200, path)
             self.assert_clean(r)
 
+    def test_5c_negative_control_the_canary_check_fails_when_the_decoy_is_served(self):
+        # Throwaway app that serves the decoy folder directly: the check must catch it.
+        leaky = FastAPI()
+        leaky.mount("/", StaticFiles(directory=self.data / "coral_pay"), name="leaky")
+        r = TestClient(leaky, base_url="http://127.0.0.1").get("/canary.txt")
+        self.assertEqual(r.status_code, 200)
+        self.assertIn(CANARY, r.text)
+        with self.assertRaises(AssertionError):
+            self.assert_clean(r)
+
     def test_6_ui_deals_subset_of_allowed_and_excludes_coral_pay(self):
         self.assertTrue(set(config.UI_DEALS) <= set(config.ALLOWED_DEALS))
         self.assertNotIn("coral_pay", config.UI_DEALS)

@@ -92,6 +92,26 @@ def check_ui_deals(ui_deals: list, allowed_deals: list) -> None:
 
 check_ui_deals(UI_DEALS, ALLOWED_DEALS)
 
+# --- Ledger --------------------------------------------------------------
+# Development deals the ledger may hold. An allowlist of its own, not ALLOWED_DEALS: widening
+# ALLOWED_DEALS for extract.py must never let another deal into the ledger.
+LEDGER_DEALS = [
+    "harbour_bank",
+    "hard_cases",
+]
+
+LEDGER_DB_PATH = ROOT / "workspace" / "ledger.sqlite"
+
+
+def check_ledger_deals(ledger_deals: list, allowed_deals: list) -> None:
+    """Raise if any ledger deal is not also an allowed deal."""
+    extra = [d for d in ledger_deals if d not in allowed_deals]
+    if extra:
+        raise RuntimeError(f"LEDGER_DEALS must be a subset of ALLOWED_DEALS; not allowed: {extra}")
+
+
+check_ledger_deals(LEDGER_DEALS, ALLOWED_DEALS)
+
 
 class DealNotAllowed(Exception):
     """Raised when a deal name is not in ALLOWED_DEALS."""
