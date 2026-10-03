@@ -366,3 +366,23 @@ I chose the `review_statement_commitments` link table because one statement can 
 I chose to tighten the seal test rather than skip it. The bug: in built mode, the static frontend mount takes a `{path}` parameter, and the old test checked the module-level app, so its result depended on whether `frontend/dist` existed. The new tests build both cases themselves and allow a path-taking route only if it is the mount named `frontend` serving exactly the built frontend folder. A negative control, a mount on a different directory, proves the rule fails when it should. A separate test sends six traversal requests at a decoy Coral Pay folder: none may return 200, and its canary must never appear in any response body, since checking only the status code could miss a leak. I rejected testing against the real sealed folder because a broken guard could expose the evaluation data. 97/97 tests pass with and without the built frontend. The ledger gate and its seal tests remain planned for 3 October.
 
 The 30-minute small-fix box overran by 10 minutes because of the seal bug. I accepted that overrun to address the bug and strengthen the test, rather than carry forward weak evidence of protection. The overrun is recorded; tomorrow’s four-hour ceiling and cut order remain unchanged.
+
+## 2026-10-03 — 3 Oct block: ledger, parser, filter, consolidation, grouping score
+
+*Drafted by Claude from the day's decisions; reviewed and accepted by Lina.*
+
+**Unlisted networks stay visible.** Chose: recognise blockchain network names from a small general list and record any network outside the catalogue as a term with `in_catalogue = false`. Rejected: ignoring anything the catalogue does not list (Claude Code's first proposal). Why: an unlisted network is an absolute limit, and the 4 Oct rule can only flag what the parser can see; ignoring Arbitrum would have turned KC1 from "not authorised: absolute limit" into a vague needs review.
+
+**Go-live as a non-catalogue promise type.** Chose: a `go_live` promise type keyed on the type alone, with the date stored as an attribute. Rejected: treating every promise outside the catalogue as permanently incomplete. Why: date drift is a core finding; with the date outside the key, a go-live that moves between documents becomes one commitment with conflicting dates for the rules to flag. Recurring service obligations (the weekly status meeting) stay `terms_incomplete` for now.
+
+**`not_assessed` as an explicit value.** Chose: `contractual_presence` stays NOT NULL with `'not_assessed'` added; `authorisation` also accepts `'not_assessed'`, and NULL keeps meaning "not applicable" only. Rejected: a nullable `contractual_presence` where NULL means "not yet assessed". Why: NULL must mean one thing; two columns reading NULL differently would let an unassessed commitment look clean or absent. Rules must handle `'not_assessed'` explicitly and never treat it as absent.
+
+**Commitment status order.** Chose: Needs action, Needs evidence, Not in current documents, Resolved, No issues raised. Rejected: checking `unsupported` first (the DDL as first written). Why: removing a source must never hide an open issue.
+
+**Many-to-many links enforced in the database.** Chose: triggers that refuse a link to any statement not kept in that review, and refuse dropping a statement that is linked. Why: the Python write path already respects this, but future routes, imports and scripts could miss it; the database rule applies to every writer.
+
+**Import pinned and refusing re-runs.** Chose: the development import reads only the two run files named in config, and refuses if the deal is already imported (`--rebuild` builds into a temporary file and swaps it in). Rejected: "latest run file" and merge-if-equal. Why: the ledger's inputs change only by a deliberate, committed config change, never by a new run appearing; the same principle as the extraction cache key.
+
+**Result.** Grouping score (`results/grouping_score_20261003T012724Z.json`): Harbour Bank 14/15 statements and 6/8 commitments exact; hard cases 8/9 and 6/7; all 10 must-holds pass. The two misses are accepted under-merges, not tuned away: S11 (SOW sentence with no mode of its own; due to be resolved through Annex A on 4 Oct) and K01 ("Arbitrum screening live for your launch", no mode, so it stays apart from K05). 297 tests pass.
+
+**Process.** Closed in about 2 h 10 against a 4-hour ceiling; the brief's cut order was not needed.

@@ -113,3 +113,17 @@
 **Failure:** The seal test had been passing because nothing had been built that could leak, so the pass gave false reassurance. I learned why it needs decoy content, checks that the canary never appears in responses, and a negative control that demonstrates the test can detect a leak.
 
 **Still unclear:** I still need to work through which terms are required for each capability and how to preserve explicit network/asset pairings. I also need to understand how reference resolution supplies S11’s missing mode from Annex A while preserving the original quote and its provenance.
+
+## 2026-10-03 — Ledger, parser, filter, consolidation, grouping score
+
+*Drafted by Claude at Lina's request from the day's work; Lina to confirm or edit.*
+
+**Hours:** 3 Oct, about 2 h 10 (07:41–09:51): about 15 minutes of quiz and learning, the rest directing and reviewing five change sets. Plus about 1 h 10 on 2 Oct evening.
+
+**Learned:** Consolidation is only as good as the terms you can see: ignoring an unlisted network would have hidden an absolute limit, and treating go-live as "no capability" would have made date drift impossible to catch. NULL should mean one thing only; "not yet assessed" needs its own value. A database rule protects every future writer, not just today's code.
+
+**Stuck on:** Keeping the two seal tests apart: the route rule and the canary/traversal test each have their own negative control, and I mixed them up three times.
+
+**Failure:** I skipped predicting results before runs, including the grouping score, even though I had everything I needed to predict 14/15 and 8/9. I also pushed two commits with "..." as the message by pasting placeholders.
+
+**Still unclear:** How reference resolution will give S11 its mode from Annex A while keeping the quote and its provenance intact, and how the 4 Oct rules should treat a commitment that is incomplete but clearly firm.

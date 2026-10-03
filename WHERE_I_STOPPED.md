@@ -60,12 +60,18 @@ The product was revised before Day 8 into a local deal workspace with resolution
 
 ## Next
 
-*Updated 2 Oct, close. Done: 1 Oct scaffold (commit 0beaa38) and 2 Oct schema design (commit 3ca0e7c, `docs/LEDGER_SCHEMA.md`). Checkpoint 1 was a simulated review; the real one is due by 5 Oct (DECISIONS 2026-10-02).*
+*Updated 3 Oct, close. 3 Oct block done in about 2 h 10 (all five change sets of `docs/BRIEF_2026-10-03.md`). Commits 1137e4c (ledger DDL, LEDGER_DEALS, seal tests), import, parser and filter, 04065c2 (consolidation), 20d2216 (grouping score). 297 tests pass.*
 
-1. **3 Oct block (Day 9).** Started early on 2 Oct evening (about 1 h 10): quiz retry passed; small fixes done (`status` → `eligibility` on the source list; doc-type label map); seal surface test tightened (97/97 with and without `frontend/dist`); brief signed off. **Start 3 Oct with `docs/BRIEF_2026-10-03.md`, change set 1** (schema link table, DDL, `LEDGER_DEALS`, ledger seal tests), then 2 → 5 in order. Full 4-hour ceiling available on 3 Oct.
-2. Book a real Checkpoint 1 reviewer before 5 Oct; use the revised reviewer pack.
-3. 4 Oct decisions: `security_questionnaire` (extract / reference-only / skip) and whether PDF/DOCX pricing notes count as approval evidence.
-4. Check actual API spend before 12 Oct (credit was $19.79 on 30 Sep).
+**State of the ledger.** `workspace/ledger.sqlite` (gitignored; rebuild with `.venv/bin/python ledger_import.py --rebuild` then `.venv/bin/python ledger_consolidate.py`): Harbour Bank 10 commitments, hard cases 8; all assessments `not_assessed` for authorisation and contractual presence; no issues yet. Grouping score: HB 14/15 statements, 6/8 commitments; hard cases 8/9, 6/7; misses S11 (no mode, needs Annex A) and K01 (Arbitrum, no mode).
+
+1. **4 Oct block (Day 10).** Start with the quiz retry (below). Then, per the plan:
+   - Decide `security_questionnaire` (extract / reference-only / skip) and whether PDF/DOCX pricing notes count as approval evidence; log both.
+   - Write the rules-vs-agent decision rule first, with explicit cost and latency bounds.
+   - Rules: material conflict, coverage (reference resolution through the draft contract → SOW → Annex A; S11 should gain its mode and join the Ethereum real-time and Polygon batch commitments), authorisation with citations, absolute limit for unlisted networks (`in_catalogue = false`), silent-note cases (C08, KC3 → needs review), `terms_incomplete` → needs review never a confirmed gap, `not_assessed` handled explicitly.
+   - Issue creation must write its `raised` closure check in the same transaction (tested).
+2. **Quiz retry for 4 Oct:** the two seal tests are different. Route rule (negative control: wrong-directory mount is flagged) vs canary/traversal (negative control added 3 Oct: a decoy-serving app makes the canary check fail). Explain both without mixing them.
+3. Book a real Checkpoint 1 reviewer before 5 Oct (still not booked as of 3 Oct).
+4. Check actual API spend before 12 Oct (credit was $19.79 on 30 Sep; 3 Oct used no model calls).
 
 ## Local app launch
 
