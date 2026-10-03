@@ -86,6 +86,7 @@ Types: `id` is `INTEGER PRIMARY KEY`; `*_id` are foreign keys; `TEXT` JSON colum
 - `key_sha256` is the SHA-256 of the key fields as canonical JSON (sorted keys, no whitespace), the same style as the schema hash in `extract.py`.
 - UNIQUE index on `key_sha256` **WHERE `reusable = 1`**. Fresh runs and imports can therefore store output without overwriting a reusable entry, and repeatability measurements can keep several outputs for one key.
 - CHECK: `reusable = 1` requires every key field and `key_sha256` NOT NULL, `origin = 'model_call'`, and a complete extraction. Only complete extractions are cached. A hit's cost is recorded as cached (review level); the original `cost_usd` stays for audit.
+- For `model_call` rows `output_json` is the model's reply. For `imported_run_file` rows it is the run file's stored statements for that document (with the code-attached fields), because the run file does not keep the raw reply. `thinking_param_sent` is `none` when the run file records null.
 - On a hit, `source_id` and `date` are rebuilt from the source version, as DECISIONS 2026-09-30 specifies.
 
 ### 3.8 `statements`

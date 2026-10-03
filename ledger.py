@@ -54,15 +54,25 @@ def open_ledger(db_path=None) -> sqlite3.Connection:
     return conn
 
 
-def create_development_deal(conn: sqlite3.Connection, slug: str, display_name=None) -> int:
-    """Insert a development deal and return its id. The slug must be in config.LEDGER_DEALS."""
+def require_ledger_deal(slug: str) -> str:
+    """Return the slug if it is in config.LEDGER_DEALS, else raise. Exact match; ALLOWED_DEALS is never consulted."""
     if slug not in config.LEDGER_DEALS:
         raise LedgerDealNotAllowed(f"Deal {slug!r} is not in LEDGER_DEALS {config.LEDGER_DEALS}; refusing to write it.")
+    return slug
+
+
+def create_development_deal(conn: sqlite3.Connection, slug: str, display_name=None, commit: bool = True) -> int:
+    """Insert a development deal and return its id. The slug must be in config.LEDGER_DEALS.
+
+    commit=False leaves the transaction open, so a caller can write a whole import atomically.
+    """
+    require_ledger_deal(slug)
     cur = conn.execute(
         "INSERT INTO deals (slug, kind, display_name) VALUES (?, 'development', ?)",
         (slug, display_name or slug),
     )
-    conn.commit()
+    if commit:
+        conn.commit()
     return cur.lastrowid
 
 

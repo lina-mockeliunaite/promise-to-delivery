@@ -102,6 +102,13 @@ LEDGER_DEALS = [
 
 LEDGER_DB_PATH = ROOT / "workspace" / "ledger.sqlite"
 
+# Frozen run files the development import reads (docs/BRIEF_2026-10-03.md), pinned by file name. A newer
+# run file never replaces these silently: the import refuses until the pin is changed on purpose.
+LEDGER_IMPORT_RUN_FILES = {
+    "harbour_bank": "extract_harbour_bank_20260930T061113Z.json",
+    "hard_cases": "extract_hard_cases_20260930T061133Z.json",
+}
+
 
 def check_ledger_deals(ledger_deals: list, allowed_deals: list) -> None:
     """Raise if any ledger deal is not also an allowed deal."""
