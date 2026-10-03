@@ -1,0 +1,289 @@
+{
+  "deal": "practice_cases",
+  "timestamp_utc": "2026-10-03T03:44:01+00:00",
+  "model": "claude-sonnet-5",
+  "max_tokens": 8000,
+  "thinking_mode": "model_default",
+  "thinking_param_sent": null,
+  "prompt_hashes": {
+    "system_prompt_sha256": "db9e892a315dab16e1dab527f2ab400f852750c9fc2c2eedef20afb305539e0a",
+    "user_template_sha256": "2afd3f1e5767267451f199f06d1ddcf1d6a3f2cdbf7acf4798939a4c18a398d4",
+    "schema_sha256": "a4debfaf8d03c75b41ab354d49451522b20119c90df1ee6643c5690a7fc0d5a8"
+  },
+  "price_per_mtok_usd": {
+    "input": 2.0,
+    "output": 10.0
+  },
+  "status_counts": {
+    "complete": 4,
+    "skipped_reference_only": 1
+  },
+  "totals": {
+    "input_tokens": 5929,
+    "output_tokens": 1947,
+    "thinking_tokens": 1208,
+    "cost_usd": 0.031328
+  },
+  "documents": [
+    {
+      "source_id": "PC-01",
+      "file": "PC-01_call.md",
+      "doc_type": "call_transcript",
+      "date": "2026-11-03",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1546,
+            "output_tokens": 512,
+            "thinking_tokens": 298
+          },
+          "cost_usd": 0.008212
+        }
+      ],
+      "statements": [
+        {
+          "quote": "Every payout to a Polygon wallet gets an instant risk check before funds move.",
+          "speaker": "Arjun Rao",
+          "language": "firm",
+          "statement_id": "PC-01-S01",
+          "source_id": "PC-01",
+          "doc_type": "call_transcript",
+          "date": "2026-11-03"
+        },
+        {
+          "quote": "Tron wallets will be covered by the same pre-release checks.",
+          "speaker": "Arjun Rao",
+          "language": "firm",
+          "statement_id": "PC-01-S02",
+          "source_id": "PC-01",
+          "doc_type": "call_transcript",
+          "date": "2026-11-03"
+        },
+        {
+          "quote": "We're looking at whether Avalanche support could be added later.",
+          "speaker": "Mei Lin",
+          "language": "exploratory",
+          "statement_id": "PC-01-S03",
+          "source_id": "PC-01",
+          "doc_type": "call_transcript",
+          "date": "2026-11-03"
+        },
+        {
+          "quote": "Subject to Product sign-off, our network-graph analytics could be trialled on your data next year.",
+          "speaker": "Arjun Rao",
+          "language": "conditional",
+          "statement_id": "PC-01-S04",
+          "source_id": "PC-01",
+          "doc_type": "call_transcript",
+          "date": "2026-11-03"
+        }
+      ],
+      "input_tokens": 1546,
+      "output_tokens": 512,
+      "thinking_tokens": 298,
+      "cost_usd": 0.008212
+    },
+    {
+      "source_id": "PC-02",
+      "file": "PC-02_proposal.md",
+      "doc_type": "proposal",
+      "date": "2026-11-10",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1483,
+            "output_tokens": 712,
+            "thinking_tokens": 429
+          },
+          "cost_usd": 0.010086
+        }
+      ],
+      "statements": [
+        {
+          "quote": "Ethereum payouts are risk-checked live before release.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "PC-02-S01",
+          "source_id": "PC-02",
+          "doc_type": "proposal",
+          "date": "2026-11-10"
+        },
+        {
+          "quote": "Our service handles up to 120,000 sanctions checks every day.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "PC-02-S02",
+          "source_id": "PC-02",
+          "doc_type": "proposal",
+          "date": "2026-11-10"
+        },
+        {
+          "quote": "We will comfortably absorb around 30k payouts a day from launch.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "PC-02-S03",
+          "source_id": "PC-02",
+          "doc_type": "proposal",
+          "date": "2026-11-10"
+        },
+        {
+          "quote": "Counterparty data sharing with exchanges will be switched on in Singapore by the end of Q1 2027.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "PC-02-S04",
+          "source_id": "PC-02",
+          "doc_type": "proposal",
+          "date": "2026-11-10"
+        },
+        {
+          "quote": "Analysts get a full audit trail on every case.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "PC-02-S05",
+          "source_id": "PC-02",
+          "doc_type": "proposal",
+          "date": "2026-11-10"
+        },
+        {
+          "quote": "Elva will provide alert assignment and SLA tracking for your operations team.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "PC-02-S06",
+          "source_id": "PC-02",
+          "doc_type": "proposal",
+          "date": "2026-11-10"
+        }
+      ],
+      "input_tokens": 1483,
+      "output_tokens": 712,
+      "thinking_tokens": 429,
+      "cost_usd": 0.010086
+    },
+    {
+      "source_id": "PC-03",
+      "file": "PC-03_pricing_services_note.md",
+      "doc_type": "pricing_services_note",
+      "date": "2026-11-12",
+      "status": "skipped_reference_only",
+      "error": null,
+      "attempts": [],
+      "statements": []
+    },
+    {
+      "source_id": "PC-04",
+      "file": "PC-04_draft_sow.md",
+      "doc_type": "draft_sow",
+      "date": "2026-11-16",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1458,
+            "output_tokens": 464,
+            "thinking_tokens": 232
+          },
+          "cost_usd": 0.007556
+        }
+      ],
+      "statements": [
+        {
+          "quote": "Ethereum: each recipient wallet is screened in real time before the payout is released.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "PC-04-S01",
+          "source_id": "PC-04",
+          "doc_type": "draft_sow",
+          "date": "2026-11-16"
+        },
+        {
+          "quote": "Polygon: recipient wallets are screened in hourly batches before release.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "PC-04-S02",
+          "source_id": "PC-04",
+          "doc_type": "draft_sow",
+          "date": "2026-11-16"
+        },
+        {
+          "quote": "Case audit history is provided for every case.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "PC-04-S03",
+          "source_id": "PC-04",
+          "doc_type": "draft_sow",
+          "date": "2026-11-16"
+        },
+        {
+          "quote": "Alert assignment and SLA tracking is configured for the operations team.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "PC-04-S04",
+          "source_id": "PC-04",
+          "doc_type": "draft_sow",
+          "date": "2026-11-16"
+        },
+        {
+          "quote": "The payout ledger connector will handle up to 20,000 payouts per day.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "PC-04-S05",
+          "source_id": "PC-04",
+          "doc_type": "draft_sow",
+          "date": "2026-11-16"
+        }
+      ],
+      "input_tokens": 1458,
+      "output_tokens": 464,
+      "thinking_tokens": 232,
+      "cost_usd": 0.007556
+    },
+    {
+      "source_id": "PC-05",
+      "file": "PC-05_draft_contract.md",
+      "doc_type": "draft_contract",
+      "date": "2026-11-20",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1442,
+            "output_tokens": 259,
+            "thinking_tokens": 249
+          },
+          "cost_usd": 0.005474
+        }
+      ],
+      "statements": [],
+      "input_tokens": 1442,
+      "output_tokens": 259,
+      "thinking_tokens": 249,
+      "cost_usd": 0.005474
+    }
+  ]
+}

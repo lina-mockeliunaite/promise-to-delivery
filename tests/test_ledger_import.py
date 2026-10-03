@@ -77,7 +77,8 @@ class ImportCase(unittest.TestCase):
         self.decoy_run = self.results / f"extract_{DECOY}_20260930T000000Z.json"
         self.decoy_run.write_text(json.dumps({"deal": DECOY, "documents": [], "note": CANARY}))
 
-        for name, value in (("DATA_DIR", self.data), ("RESULTS_DIR", self.results)):
+        # These tests are about the two original development deals; other ledger deals have their own tests.
+        for name, value in (("DATA_DIR", self.data), ("RESULTS_DIR", self.results), ("LEDGER_DEALS", list(DEALS))):
             patcher = mock.patch.object(config, name, value)
             patcher.start()
             self.addCleanup(patcher.stop)
@@ -276,7 +277,7 @@ class TestImportSeal(ImportCase):
         with mock.patch.object(Path, "read_text", spy):
             ledger_import.import_all(self.conn)
         self.assertNotIn(self.decoy_run.name, opened)
-        self.assertEqual({n for n in opened if n.startswith("extract_")}, set(config.LEDGER_IMPORT_RUN_FILES.values()))
+        self.assertEqual({n for n in opened if n.startswith("extract_")}, {config.LEDGER_IMPORT_RUN_FILES[d] for d in config.LEDGER_DEALS})
         assert_no_canary(self, self.conn, self.db_path)
 
     def test_negative_control_the_canary_check_detects_a_leak(self):

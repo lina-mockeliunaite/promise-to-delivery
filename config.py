@@ -77,7 +77,7 @@ NEAR_MISS_FLOOR = 0.5  # floor <= score < threshold is reported, not counted
 ALLOWED_DEALS = [
     "harbour_bank",
     "hard_cases",  # development fixture deal, Day 7 (data/hard_cases/BRIEF.md)
-    "practice_cases",  # rules-vs-agent practice set, 3 Oct (data/practice_cases/BRIEF.md); not in LEDGER_DEALS until pinned
+    "practice_cases",  # rules-vs-agent practice set, 3 Oct (data/practice_cases/BRIEF.md)
 ]
 
 
@@ -102,6 +102,7 @@ check_ui_deals(UI_DEALS, ALLOWED_DEALS)
 LEDGER_DEALS = [
     "harbour_bank",
     "hard_cases",
+    "practice_cases",  # frozen 3 Oct (data/practice_cases.sha256); run file pinned below
 ]
 
 LEDGER_DB_PATH = ROOT / "workspace" / "ledger.sqlite"
@@ -111,6 +112,7 @@ LEDGER_DB_PATH = ROOT / "workspace" / "ledger.sqlite"
 LEDGER_IMPORT_RUN_FILES = {
     "harbour_bank": "extract_harbour_bank_20260930T061113Z.json",
     "hard_cases": "extract_hard_cases_20260930T061133Z.json",
+    "practice_cases": "extract_practice_cases_20261003T034401Z.json",  # 3 Oct, $0.031, Lina's Mac
 }
 
 
