@@ -77,6 +77,7 @@ NEAR_MISS_FLOOR = 0.5  # floor <= score < threshold is reported, not counted
 ALLOWED_DEALS = [
     "harbour_bank",
     "hard_cases",  # development fixture deal, Day 7 (data/hard_cases/BRIEF.md)
+    "practice_cases",  # rules-vs-agent practice set, 3 Oct (data/practice_cases/BRIEF.md); not in LEDGER_DEALS until pinned
 ]
 
 

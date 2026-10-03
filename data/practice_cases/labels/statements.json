@@ -1,0 +1,175 @@
+{
+  "_how_to": "Confirmed by Lina, 3 Oct 2026 (sign-off file applied; DECISIONS 2026-10-03, 11:40). Drafted by Claude knowing the rules' vocabulary, so the set leans towards wording the rules miss; that bias is disclosed with any result. A targeted development comparison, not an independent generalisation result. Excluded by design: the customer's question, 'A draft Statement of Work will follow.' (sales step), all of PC-05 (pointer and boilerplate), PC-03 (reference-only). 15 statements, 12 commitments. Frozen in data/practice_cases.sha256; never edited after extraction or checker results.",
+  "statements": [
+    {
+      "id": "P01",
+      "source_id": "PC-01",
+      "speaker": "Arjun Rao (Elva)",
+      "quote": "Every payout to a Polygon wallet gets an instant risk check before funds move.",
+      "language": "firm",
+      "commitment_ids": [
+        "PC1"
+      ],
+      "case": "'instant risk check' = real-time screening; out-of-vocabulary mode and capability wording"
+    },
+    {
+      "id": "P02",
+      "source_id": "PC-01",
+      "speaker": "Arjun Rao (Elva)",
+      "quote": "Tron wallets will be covered by the same pre-release checks.",
+      "language": "firm",
+      "commitment_ids": [
+        "PC3"
+      ],
+      "case": "firm screening promise by reference to the preceding turn; Tron is recorded explicitly as the network and is not listed in the catalogue",
+      "context": {
+        "source_id": "PC-01",
+        "quote": "Every payout to a Polygon wallet gets an instant risk check before funds move.",
+        "why": "'the same pre-release checks' refers to the screening described in the immediately preceding turn"
+      }
+    },
+    {
+      "id": "P03",
+      "source_id": "PC-01",
+      "speaker": "Mei Lin (Elva)",
+      "quote": "We're looking at whether Avalanche support could be added later.",
+      "language": "exploratory",
+      "commitment_ids": [
+        "PC4"
+      ],
+      "case": "exploratory unlisted network: must not be flagged"
+    },
+    {
+      "id": "P04",
+      "source_id": "PC-01",
+      "speaker": "Arjun Rao (Elva)",
+      "quote": "Subject to Product sign-off, our network-graph analytics could be trialled on your data next year.",
+      "language": "conditional",
+      "commitment_ids": [
+        "PC5"
+      ],
+      "case": "conditional roadmap capability (CAP-020) in paraphrase: must not be flagged"
+    },
+    {
+      "id": "P05",
+      "source_id": "PC-02",
+      "speaker": "Elva (proposal)",
+      "quote": "Ethereum payouts are risk-checked live before release.",
+      "language": "firm",
+      "commitment_ids": [
+        "PC6"
+      ],
+      "case": "clean promise in paraphrase ('live' = real time)"
+    },
+    {
+      "id": "P06",
+      "source_id": "PC-02",
+      "speaker": "Elva (proposal)",
+      "quote": "Our service handles up to 120,000 sanctions checks every day.",
+      "language": "firm",
+      "commitment_ids": [
+        "PC9"
+      ],
+      "case": "CAP-007 limit 100,000 screenings/day; 'sanctions checks' names the capability, 'checks' is not the catalogue unit (corrected 3 Oct)"
+    },
+    {
+      "id": "P07",
+      "source_id": "PC-02",
+      "speaker": "Elva (proposal)",
+      "quote": "We will comfortably absorb around 30k payouts a day from launch.",
+      "language": "firm",
+      "commitment_ids": [
+        "PC7"
+      ],
+      "case": "CAP-023 limit 25,000/day; connector not named; '30k'"
+    },
+    {
+      "id": "P08",
+      "source_id": "PC-02",
+      "speaker": "Elva (proposal)",
+      "quote": "Counterparty data sharing with exchanges will be switched on in Singapore by the end of Q1 2027.",
+      "language": "firm",
+      "commitment_ids": [
+        "PC10"
+      ],
+      "case": "CAP-024 roadmap, planned GA 30 June 2027; paraphrased name; quarter date"
+    },
+    {
+      "id": "P09",
+      "source_id": "PC-02",
+      "speaker": "Elva (proposal)",
+      "quote": "Analysts get a full audit trail on every case.",
+      "language": "firm",
+      "commitment_ids": [
+        "PC11"
+      ],
+      "case": "clean CAP-014 in paraphrase; the SOW states it in catalogue wording"
+    },
+    {
+      "id": "P10",
+      "source_id": "PC-02",
+      "speaker": "Elva (proposal)",
+      "quote": "Elva will provide alert assignment and SLA tracking for your operations team.",
+      "language": "firm",
+      "commitment_ids": [
+        "PC12"
+      ],
+      "case": "control: catalogue wording, clean"
+    },
+    {
+      "id": "P11",
+      "source_id": "PC-04",
+      "speaker": "Elva",
+      "quote": "Ethereum: each recipient wallet is screened in real time before the payout is released.",
+      "language": "firm",
+      "commitment_ids": [
+        "PC6"
+      ],
+      "case": "contract side of PC6"
+    },
+    {
+      "id": "P12",
+      "source_id": "PC-04",
+      "speaker": "Elva",
+      "quote": "Polygon: recipient wallets are screened in hourly batches before release.",
+      "language": "firm",
+      "commitment_ids": [
+        "PC2"
+      ],
+      "case": "contract side of PC1 (different mode)"
+    },
+    {
+      "id": "P13",
+      "source_id": "PC-04",
+      "speaker": "Elva",
+      "quote": "Case audit history is provided for every case.",
+      "language": "firm",
+      "commitment_ids": [
+        "PC11"
+      ],
+      "case": "contract side of PC11, catalogue wording; scope 'every case' matches the proposal (corrected 3 Oct)"
+    },
+    {
+      "id": "P14",
+      "source_id": "PC-04",
+      "speaker": "Elva",
+      "quote": "Alert assignment and SLA tracking is configured for the operations team.",
+      "language": "firm",
+      "commitment_ids": [
+        "PC12"
+      ],
+      "case": "contract side of PC12"
+    },
+    {
+      "id": "P15",
+      "source_id": "PC-04",
+      "speaker": "Elva",
+      "quote": "The payout ledger connector will handle up to 20,000 payouts per day.",
+      "language": "firm",
+      "commitment_ids": [
+        "PC8"
+      ],
+      "case": "contract side of PC7 (different volume, no milestone stated)"
+    }
+  ]
+}

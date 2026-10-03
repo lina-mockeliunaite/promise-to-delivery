@@ -1,0 +1,10 @@
+{
+  "deal": "practice_cases",
+  "documents": [
+    {"source_id": "PC-01", "file": "PC-01_call.md",                   "doc_type": "call_transcript",       "date": "2026-11-03"},
+    {"source_id": "PC-02", "file": "PC-02_proposal.md",               "doc_type": "proposal",              "date": "2026-11-10"},
+    {"source_id": "PC-03", "file": "PC-03_pricing_services_note.md",  "doc_type": "pricing_services_note", "date": "2026-11-12"},
+    {"source_id": "PC-04", "file": "PC-04_draft_sow.md",              "doc_type": "draft_sow",             "date": "2026-11-16"},
+    {"source_id": "PC-05", "file": "PC-05_draft_contract.md",         "doc_type": "draft_contract",        "date": "2026-11-20"}
+  ]
+}

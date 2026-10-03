@@ -1,0 +1,150 @@
+{
+  "_how_to": "Confirmed by Lina, 3 Oct 2026. Same fields as Harbour Bank, plus 'interpretation', 'condition' and 'terms' where a judgement was recorded. 5 commitments with issues, 7 without (2 non-firm, 5 clean firm). Frozen in data/practice_cases.sha256.",
+  "commitments": [
+    {
+      "id": "PC1",
+      "name": "NUSD payouts on Polygon screened in real time ('instant risk check') before release",
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-021/SG/Polygon/NUSD/real_time: beta, requires named approval; PC-03: no named exception approved",
+      "contractual_presence": "absent",
+      "issues": [
+        "overcommitment",
+        "expectation_gap",
+        "contradiction"
+      ],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "PC2",
+      "name": "NUSD payouts on Polygon screened in hourly batches before release",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-021/SG/Polygon/NUSD/batch: generally available, standard; PC-03: no exception needed",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "PC3",
+      "name": "Tron wallets screened before release (the same pre-release checks as the preceding turn)",
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-021/SG: Tron not listed under any region, asset or mode; catalogue coverage 'complete' with unlisted_rule: not offered and not open to a named exception; PC-03 has no Tron row",
+      "contractual_presence": "absent",
+      "issues": [
+        "overcommitment",
+        "expectation_gap"
+      ],
+      "reason": "absolute_limit",
+      "customer_context": [],
+      "terms": {
+        "capability": "CAP-021",
+        "network": "Tron",
+        "network_in_catalogue": false
+      },
+      "interpretation": "'Covered by the same pre-release checks' is a firm screening promise by reference to the preceding turn (P01); the context quote is preserved on P02."
+    },
+    {
+      "id": "PC4",
+      "name": "Avalanche support explored",
+      "authorisation": null,
+      "authorisation_evidence": "not applicable: exploratory",
+      "contractual_presence": "absent",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "PC5",
+      "name": "Network-graph analytics trial, subject to Product sign-off",
+      "authorisation": null,
+      "authorisation_evidence": "not applicable: conditional ('Subject to Product sign-off', 'could be trialled'); CAP-020 Enhanced graph detection is roadmap in SG, requires named approval, planned GA 2027-09-30",
+      "contractual_presence": "absent",
+      "issues": [],
+      "reason": null,
+      "customer_context": [],
+      "condition": "Product sign-off (approval dependency kept visible; not an approved delivery commitment)"
+    },
+    {
+      "id": "PC6",
+      "name": "NUSD payouts on Ethereum screened in real time before release",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-021/SG/Ethereum/NUSD/real_time: generally available, standard; PC-03: no exception needed",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "PC7",
+      "name": "Payout ledger connector about 30,000 payouts/day from launch",
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-023/SG: max 25,000 payouts/day; PC-03: no approval above 25,000/day",
+      "contractual_presence": "absent",
+      "issues": [
+        "overcommitment",
+        "expectation_gap",
+        "contradiction"
+      ],
+      "reason": null,
+      "customer_context": [],
+      "interpretation": "Contractual contradiction: the SOW's unqualified 'up to 20,000 payouts per day' defines contracted capacity from service start, with no separate phase or later milestone; the proposal promises about 30k/day from launch. The 25,000/day authorisation limit is a separate issue (overcommitment)."
+    },
+    {
+      "id": "PC8",
+      "name": "Payout ledger connector up to 20,000 payouts/day",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-023/SG: within 25,000/day",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "PC9",
+      "name": "Sanctions screening up to 120,000 checks per day",
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-007/SG: max 100,000 screenings/day; PC-03: no approval above 100,000/day",
+      "contractual_presence": "absent",
+      "issues": [
+        "overcommitment",
+        "expectation_gap"
+      ],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "PC10",
+      "name": "VASP counterparty data exchange live in Singapore by end of Q1 2027",
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-024/SG: roadmap, requires named approval, planned GA 2027-06-30; promised by end of Q1 2027 (31 Mar 2027), earlier than planned GA; PC-03: no named exception approved",
+      "contractual_presence": "absent",
+      "issues": [
+        "overcommitment",
+        "expectation_gap"
+      ],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "PC11",
+      "name": "Full case audit history for every case",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-014/SG: generally available, standard; the SOW states the same scope ('every case')",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "PC12",
+      "name": "Alert assignment and SLA tracking for the operations team",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-010/SG: generally available, standard",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    }
+  ]
+}

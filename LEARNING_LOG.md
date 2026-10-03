@@ -127,3 +127,17 @@
 **Failure:** I skipped predicting results before runs, including the grouping score, even though I had everything I needed to predict 14/15 and 8/9. I also pushed two commits with "..." as the message by pasting placeholders.
 
 **Still unclear:** How reference resolution will give S11 its mode from Annex A while keeping the quote and its provenance intact, and how the 4 Oct rules should treat a commitment that is incomplete but clearly firm.
+
+## 2026-10-03 (late morning) — 4 Oct block built early: rules, references, evidence decisions
+
+*Drafted by Claude at Lina's request from the session; Lina to confirm or edit.*
+
+**Hours:** 3 Oct, about 10:05–11:10, roughly 1 h 05, all directing and reviewing; no separate learning block. Day total about 3 h 15, inside the ceiling.
+
+**Learned:** A missing detail should block a conclusion only when it could change that conclusion, and the conclusion must then say exactly what was and was not checked. "Not in the catalogue" is not automatically "prohibited"; it becomes an absolute limit only when the catalogue says so in its own words.
+
+**Stuck on:** Deciding where promises and approvals actually live. Security questionnaires and Excel deal-desk sheets were first excluded for testing convenience; both are real places where commitments and approvals sit.
+
+**Failure:** I skipped the quiz and the learning block to move faster, so today's UNDERSTAND item (why rules are enough for some conflicts) is not yet tested. Claude listed the sealed folder's directory contents while surveying the repo; no file was read, and it is logged.
+
+**Still unclear:** Whether the agent can show any value when the rules already score 100% on practice data, and whether the new practice set, drafted by Claude knowing the rules' blind spots, is a fair enough test.
