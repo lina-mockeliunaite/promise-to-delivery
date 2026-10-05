@@ -520,3 +520,87 @@ The 30-minute small-fix box overran by 10 minutes because of the seal bug. I acc
 
 **Process note (5 Oct).** While reading the codebase for this change I ran `ls data`, which printed the name of the Coral Pay folder. Its contents were never read or listed and nothing inside it was opened. The listing was a slip against the sealed-test-set rule; the seal itself (the four deny rules) was not tested or bypassed.
 
+
+## 2026-10-05 — Simulated reviews, integrity rules and signing-brief hypotheses (`docs/BRIEF_2026-10-06_integrity.md`)
+
+**Evidence and credit.** Claude ran the simulated implementation review with a simulated reviewer persona (Priya). Codex/ChatGPT supplied the founder-perspective critique and interactive mock-ups. Lina directed the exploration and owns the decisions. Neither exercise is real user validation.
+
+Step 2 did not establish unaided issue discovery. The open issues were named before the simulated reviewer reacted; a successful approval-only fix followed by recheck was not observed in that exercise. No claim can be made that a real reviewer independently found the remaining contract issues.
+
+The simulated ownership answers suggested that Product and Commercial address approval and contract gaps, and that the document-gathering function could run the review. These are hypotheses, not observed workflow fit.
+
+Real Checkpoint 1 is booked for Tuesday 6 October 2026. Complete the unaided step 2 before showing the corrected design concepts. Record what the reviewer actually finds and whom they name as accountable. The freeze remains dependent on the real checkpoint.
+
+**What I chose — integrity work now.** Inspect and preserve the following guarantees, implementing only the gaps found:
+
+- Accepting a risk leaves the finding open and does not reduce the open count.
+- Human impact assessments, accountable names and deadlines do not change finding status.
+- Accepted risks and signing decisions are bound to the evidence reviewed.
+- Saved handoffs retain their original contents and state after later changes.
+- Ownership carries forward only when recheck identifies the same issue.
+
+These rules hold whether the person using the product is a founder, an implementation lead or someone assembling the deal packet. They do not depend on validating a new layout.
+
+**What I chose — test before building.** Test the signing-brief layout, consequence categories, founder as recipient, and proposed accountability/deadline fields at the real checkpoint. Show the concepts only after the unaided issue-discovery test. Record both useful and unhelpful reactions; do not treat endorsement of a concept as demonstrated use.
+
+Describe responsibilities as functions: gather documents, review findings, make corrections, decide whether to proceed, and receive the handoff. One person may perform several functions in a small company.
+
+The founder is a possible decision-maker, not an established primary user. The signing brief and Delivery handoff should use the same commitment record. Test whether that workflow fits before building the layout.
+
+**Business-impact hypothesis to test.** The documents support the finding; a person assesses its business consequence.
+
+An empty assessment shows "Business impact: not assessed." It must not contain a system-written consequence sentence. Proposed unselected categories are:
+
+- Launch date pressure
+- Extra delivery work
+- Scope disagreement
+- Roadmap change
+- Pricing or commercial terms
+
+The reviewer selects applicable categories and adds an explanatory note. Also provide "Assessed: no material impact", with reviewer attribution, so a completed assessment is distinguishable from nobody having assessed it. This is the reviewer's judgement, not a system assurance.
+
+Impact confirmation records the evidence context. Changed evidence makes the earlier assessment require reassessment; it is not silently presented as current.
+
+**Escalation and ordering hypothesis to test.** At signing, the brief's issue list contains every open issue and every applicable accepted-risk decision, without duplicate rows.
+
+An accepted-risk decision is applicable when it was made on this deal for an issue still open in the current review. Show whether it is current or needs re-confirmation. Acceptance associated with an issue that is now closed remains in history rather than appearing as a current open risk. Superseded decisions remain in history too.
+
+No importance judgement is required for inclusion. Unassessed issues still appear. Default ordering is "Not prioritised · Commitment name A–Z." Any later human prioritisation needs a recorded reason.
+
+**Version-binding rule and pre-implementation inspections.** Accepted risks and signing decisions record both the source-set hash and the decision-evidence hash of the completed review they concern. Impact confirmations retain the relevant evidence binding as well.
+
+If either bound hash changes, earlier accepted risks and signing decisions become "Needs re-confirmation". Earlier impact confirmations become "Needs reassessment". Preserve the original records and evidence context; re-confirmation or reassessment creates a new record. Historical handoffs are not rewritten.
+
+Before implementation, inspect:
+
+1. Hash coverage: how each hash is calculated; whether the catalogue, pricing/approval evidence and other inputs affecting findings or decisions are included; and whether the hashes are deal-level or issue-level. Do not assume the catalogue is covered. Define and close any coverage gap before relying on the binding.
+2. Issue identity: how the ledger creates issue IDs and reconciles findings after recheck. Establish how it distinguishes the same continuing issue from a new issue, including changed terms, a different issue type, and an issue that closed then reappeared. Do not assume that the same capability or similar wording establishes identity.
+
+An accountable person and deadline belong to the issue. They may carry forward only for a verified continuing issue. New or ambiguous issues must not silently inherit them. Carrying ownership forward never makes an earlier risk acceptance or impact assessment current.
+
+**What I rejected, and why.**
+
+| Rejected | Why |
+| --- | --- |
+| System-written business-impact conclusions | The current document checks do not establish business consequences; a person must assess them. Hedging a generated sentence does not make it assessed. |
+| Numerical risk score | There is no defensible calculation or validation basis. |
+| Separate founder application with a second commitment record | Duplicated records could drift; prefer views of the same ledger. |
+| Claims of delivery readiness | The engine does not assess staffing, implementation effort or delivery capacity. |
+| Building the proposed layout from simulation alone | A simulation can generate hypotheses but cannot establish reviewer behaviour or workflow fit. |
+
+**Acceptance checks — predicted outcomes, not test results.**
+
+| Check | Predicted result |
+| --- | --- |
+| Accept a risk | The finding remains open and the open count is unchanged. |
+| Confirm impact, including "no material impact", or name an accountable person | Assessment/ownership metadata changes; no finding's status changes. |
+| Make later decisions after saving a handoff | The earlier handoff retains its original contents and state. |
+| Add a new contract version | Earlier signing decisions and accepted risks need re-confirmation; original records remain available. |
+| Open the proposed signing brief | Its issue list contains every open issue and applicable accepted risk, without duplicate rows; closed and superseded acceptances remain in history. |
+| Recheck a continuing issue, then a genuinely new or ambiguous issue | Ownership/deadline carry forward only for the verified continuing issue. |
+| Change an issue's supporting evidence after confirming its impact | The earlier assessment needs reassessment; its original version is preserved and no finding is closed by that assessment. |
+| Change catalogue or approval evidence affecting a decision | The verified hash binding detects the change and prevents the earlier decision or impact assessment appearing current. |
+
+**Schedule.** The hours ceiling is lifted. The 22 October hard stop, Coral Pay seal until 14 October, and end-of-day learning close remain unchanged.
+
+The next implementation brief covers only integrity rules and the two pre-implementation inspections (`docs/BRIEF_2026-10-06_integrity.md`). Layout and recipient choices await the real checkpoint. No integrity change requires opening Coral Pay before the sealed evaluation.
