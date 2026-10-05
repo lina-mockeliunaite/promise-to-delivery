@@ -2,6 +2,7 @@
 
 Run: uvicorn api:app --host 127.0.0.1 --port 8000
 
+Handoff routes (5 Oct) save and export an immutable snapshot of a review; the saved version travels as ?version=N.
 Step two (read-only) routes are unchanged. The workspace routes (13 Oct block, built 3 Oct) read and write the ledger:
 documents (text/Markdown upload, include/exclude), Review deal, the register, fixes and issue owner/notes. Rules:
 - No route takes a file path; the only path parameter is {deal}. Everything else travels in a JSON body.
@@ -19,12 +20,14 @@ from pathlib import Path
 import os
 import sqlite3
 
-from fastapi import Body, Depends, FastAPI, Header, HTTPException
+from fastapi import Body, Depends, FastAPI, Header, HTTPException, Query
+from fastapi.responses import Response
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 import config
 import extraction_cache
+import handoff
 import ledger
 import ledger_fixes
 import recheck
@@ -275,6 +278,54 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
         except sqlite3.IntegrityError as exc:
             raise HTTPException(status_code=400, detail=f"Refused by the ledger: {exc}") from None
         return {"ok": True}
+
+    # --- Handoff (saved snapshots and exports) --------------------------------------------------------------
+    def saved_version(deal: str, version, conn):
+        found = handoff.get_version(conn, deal, version)
+        if found is None:
+            raise HTTPException(status_code=404, detail=NOT_FOUND)
+        return found
+
+    @app.post("/api/deals/{deal}/handoffs", dependencies=[Depends(write_guard)])
+    def ws_handoff_save(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        review_id = body.get("review_id")
+        try:
+            saved = handoff.save(conn, deal, body.get("decision"), body.get("reviewer"), body.get("note"),
+                                 body.get("confirmed_issue_ids") or [], int(review_id) if review_id is not None else None)
+        except handoff.HandoffError as exc:
+            raise HTTPException(status_code=exc.status, detail=str(exc)) from None
+        except (ValueError, TypeError):
+            raise HTTPException(status_code=400, detail="The request was not understood.") from None
+        except sqlite3.IntegrityError:
+            raise HTTPException(status_code=409, detail="Another handoff was saved at the same time. Try again.") from None
+        return saved
+
+    @app.get("/api/deals/{deal}/handoffs")
+    def ws_handoff_list(deal: str, conn=Depends(db)):
+        workspace_deal(deal, conn)
+        return {"versions": handoff.list_versions(conn, deal)}
+
+    @app.get("/api/deals/{deal}/handoffs/view")
+    def ws_handoff_view(deal: str, version: int | None = Query(default=None), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        return saved_version(deal, version, conn)
+
+    @app.get("/api/deals/{deal}/handoffs/export.csv")
+    def ws_handoff_csv(deal: str, version: int | None = Query(default=None), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        found = saved_version(deal, version, conn)
+        name = handoff.export_filename(found["handoff"], found["version"], "csv")
+        return Response(handoff.render_csv(found["handoff"]), media_type="text/csv; charset=utf-8",
+                        headers={"Content-Disposition": f'attachment; filename="{name}"', "X-Content-Type-Options": "nosniff"})
+
+    @app.get("/api/deals/{deal}/handoffs/summary")
+    def ws_handoff_summary(deal: str, version: int | None = Query(default=None), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        found = saved_version(deal, version, conn)
+        return Response(handoff.render_html(found["handoff"], found["version"]), media_type="text/html; charset=utf-8",
+                        headers={"Content-Security-Policy": "default-src 'none'; style-src 'unsafe-inline'",
+                                 "X-Content-Type-Options": "nosniff"})
 
     # Mounted last so the /api routes win. Only the built frontend is served; skipped if not built yet.
     if dist_dir.is_dir():

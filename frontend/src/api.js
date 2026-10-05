@@ -32,3 +32,9 @@ export const fetchRegister = (deal) => getJson(`${d(deal)}/register`);
 export const reviewDeal = (deal, fix_id) => postJson(`${d(deal)}/review`, fix_id ? { fix_id } : {});
 export const recordFix = (deal, body) => postJson(`${d(deal)}/fixes`, body);
 export const updateIssue = (deal, body) => postJson(`${d(deal)}/issues`, body);
+
+export const saveHandoff = (deal, body) => postJson(`${d(deal)}/handoffs`, body);
+export const fetchHandoffs = (deal) => getJson(`${d(deal)}/handoffs`);
+export const fetchHandoff = (deal, version) => getJson(`${d(deal)}/handoffs/view?version=${encodeURIComponent(version)}`);
+export const handoffCsvUrl = (deal, version) => `${d(deal)}/handoffs/export.csv?version=${encodeURIComponent(version)}`;
+export const handoffSummaryUrl = (deal, version) => `${d(deal)}/handoffs/summary?version=${encodeURIComponent(version)}`;

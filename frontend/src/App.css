@@ -131,3 +131,13 @@ cite { display: block; font-style: normal; font-size: 12px; color: var(--muted);
 .issue-edit label { min-width: 160px; }
 .issue-edit .grow { flex: 1; }
 .fix { border-top: 1px solid var(--line); margin-top: 16px; padding-top: 6px; }
+
+.handoff-view { margin-top: 12px; }
+.handoff-head h3 { margin: 0 0 4px; }
+.handoff-head p { margin: 4px 0; }
+.version-pick { margin-top: 16px; max-width: 520px; }
+.docs-line { margin: 4px 0 8px; color: var(--muted); }
+.progression { margin: 0 0 8px; font-size: 13px; color: var(--muted); }
+.recheck-line { margin: 10px 0 0; padding: 8px 12px; border: 1px solid var(--line); border-left: 4px solid var(--accent); border-radius: 6px; background: var(--accent-soft); font-weight: 550; }
+.card { scroll-margin-top: 12px; }
+.card:focus { outline: none; }

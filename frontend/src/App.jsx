@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import * as api from "./api.js";
+import Handoff from "./Handoff.jsx";
+import { fmtDate, fmtDateTime, recheckLine } from "./format.js";
 
 const OWNERS = ["Product", "Commercial", "Delivery", "Customer Success", "Support"];
 const ROUTES = [
@@ -84,11 +86,14 @@ function readFile(file) {
   });
 }
 
-function Documents({ deal, data, onChanged }) {
-  const [form, setForm] = useState({ source_key: "", name: "", doc_type: "proposal", doc_date: "", file: null });
+function Documents({ deal, data, onChanged, startOpen }) {
+  const [open, setOpen] = useState(startOpen);
+  const [form, setForm] = useState({ source_key: "", doc_type: "proposal", doc_date: "", file: null });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const set = (k) => (e) => setForm({ ...form, [k]: k === "file" ? e.target.files[0] : e.target.value });
+  const includedCount = data.documents.filter((d) => d.included).length;
+  const excludedCount = data.documents.length - includedCount;
 
   const toggle = async (doc) => {
     setError(null);
@@ -108,9 +113,9 @@ function Documents({ deal, data, onChanged }) {
       const text = await readFile(form.file);
       const body = form.source_key
         ? { source_key: form.source_key, filename: form.file.name, text }
-        : { name: form.name || form.file.name, filename: form.file.name, doc_type: form.doc_type, doc_date: form.doc_date, text };
+        : { name: form.file.name, filename: form.file.name, doc_type: form.doc_type, doc_date: form.doc_date, text };
       await api.addDocument(deal, body);
-      setForm({ ...form, file: null, name: "" });
+      setForm({ ...form, file: null });
       e.target.reset();
       onChanged();
     } catch (err) {
@@ -123,7 +128,14 @@ function Documents({ deal, data, onChanged }) {
   return (
     <section className="panel">
       <h2>Documents</h2>
-      {data.documents.length === 0 ? (
+      <p className="docs-line">
+        {includedCount} document{includedCount === 1 ? "" : "s"} included
+        {excludedCount > 0 ? `, ${excludedCount} excluded` : ""} ·{" "}
+        <button type="button" className="link" aria-expanded={open} onClick={() => setOpen(!open)}>
+          {open ? "Hide" : "Show"}
+        </button>
+      </p>
+      {!open ? null : data.documents.length === 0 ? (
         <Notice>No documents yet. Upload the deal's paper trail: calls, RFP response, proposal, SOW, contract and the internal pricing note.</Notice>
       ) : (
         <div className="table-wrap">
@@ -132,7 +144,6 @@ function Documents({ deal, data, onChanged }) {
               <tr>
                 <th>Include</th>
                 <th>Document</th>
-                <th>Type</th>
                 <th>Date</th>
                 <th>Used as</th>
               </tr>
@@ -141,14 +152,12 @@ function Documents({ deal, data, onChanged }) {
               {data.documents.map((doc) => (
                 <tr key={doc.source_key} className={doc.included ? "" : "excluded"}>
                   <td>
-                    <input type="checkbox" checked={doc.included} onChange={() => toggle(doc)} aria-label={`Include ${doc.name}`} />
+                    <input type="checkbox" checked={doc.included} onChange={() => toggle(doc)} aria-label={`Include ${doc.name}, version ${doc.version}`} />
                   </td>
                   <td>
-                    {doc.name}
-                    {doc.version > 1 && <span className="tag">version {doc.version}</span>}
+                    {doc.name}, version {doc.version}
                   </td>
-                  <td>{doc.doc_type_label}</td>
-                  <td className="nowrap">{doc.date}</td>
+                  <td className="nowrap">{fmtDate(doc.date)}</td>
                   <td>{doc.role}</td>
                 </tr>
               ))}
@@ -156,6 +165,7 @@ function Documents({ deal, data, onChanged }) {
           </table>
         </div>
       )}
+      {open && (
       <details className="upload">
         <summary>Upload a document or a new version</summary>
         <form onSubmit={upload} className="grid-form">
@@ -165,17 +175,13 @@ function Documents({ deal, data, onChanged }) {
               <option value="">A new document</option>
               {data.documents.map((doc) => (
                 <option key={doc.source_key} value={doc.source_key}>
-                  New version of {doc.name}
+                  New version of {doc.name} (now version {doc.version})
                 </option>
               ))}
             </select>
           </label>
           {!form.source_key && (
             <>
-              <label>
-                Name
-                <input value={form.name} onChange={set("name")} placeholder="e.g. Proposal v2" />
-              </label>
               <label>
                 Type
                 <select value={form.doc_type} onChange={set("doc_type")}>
@@ -202,12 +208,13 @@ function Documents({ deal, data, onChanged }) {
         </form>
         <p className="hint">This build reads text and Markdown. PDF, Word, Excel and PowerPoint follow.</p>
       </details>
+      )}
       {error && <Notice kind="error">{error}</Notice>}
     </section>
   );
 }
 
-function FixForm({ deal, commitment, documents, onDone }) {
+function FixForm({ deal, commitment, documents, onStart, onDone }) {
   const open = commitment.issues.filter((i) => i.state !== "Resolved");
   const [form, setForm] = useState({
     route: "allowed_exception",
@@ -229,9 +236,12 @@ function FixForm({ deal, commitment, documents, onDone }) {
     setBusy(true);
     try {
       const evidence = form.evidence ? [{ source_version_id: Number(form.evidence), locator: "whole document" }] : [];
+      onStart();
       const { fix_id } = await api.recordFix(deal, { ...form, evidence });
-      const result = await api.reviewDeal(deal, fix_id);
-      onDone(result.review);
+      await api.reviewDeal(deal, fix_id);
+      const fresh = await api.fetchRegister(deal);
+      const now = fresh.commitments.find((x) => x.id === commitment.id);
+      onDone(recheckLine(open, now ? now.issues : []));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -277,7 +287,7 @@ function FixForm({ deal, commitment, documents, onDone }) {
             .filter((d) => d.included)
             .map((d) => (
               <option key={d.source_version_id} value={d.source_version_id}>
-                {d.name} (version {d.version})
+                {d.name}, version {d.version}
               </option>
             ))}
         </select>
@@ -299,9 +309,10 @@ function FixForm({ deal, commitment, documents, onDone }) {
   );
 }
 
-function IssueRow({ deal, issue, onChanged }) {
+function IssueRow({ deal, issue, onChanged, onEdit }) {
   const [note, setNote] = useState(issue.note ?? "");
   const save = async (body) => {
+    onEdit();
     await api.updateIssue(deal, { issue_id: issue.id, ...body });
     onChanged();
   };
@@ -332,14 +343,19 @@ function IssueRow({ deal, issue, onChanged }) {
   );
 }
 
-function CommitmentCard({ deal, c, documents, onChanged }) {
-  const [message, setMessage] = useState(null);
+function CommitmentCard({ deal, c, documents, onChanged, result, setResult }) {
+  const clear = () => setResult(null);
   return (
-    <article className="card" id="commitment-card">
+    <article className="card" id="commitment-card" tabIndex={-1}>
       <header className="card-head">
         <h3>{c.name}</h3>
         <Status value={c.status} />
       </header>
+      {result && result.id === c.id && (
+        <p className="recheck-line" role="status">
+          {result.text}
+        </p>
+      )}
       <dl className="facts">
         <div>
           <dt>Language</dt>
@@ -355,13 +371,13 @@ function CommitmentCard({ deal, c, documents, onChanged }) {
         </div>
       </dl>
       <h4>What was said</h4>
+      {c.progression && <p className="progression">{c.progression}</p>}
       <ul className="quotes">
         {c.statements.map((s, n) => (
           <li key={n}>
             <blockquote>“{s.quote}”</blockquote>
             <cite>
-              {s.source_name} · {s.doc_type_label}
-              {s.version > 1 ? ` · version ${s.version}` : ""} · {s.language}
+              {s.source_name}, version {s.version} · {s.language}
             </cite>
           </li>
         ))}
@@ -377,7 +393,7 @@ function CommitmentCard({ deal, c, documents, onChanged }) {
           <h4>Issues</h4>
           <ul className="issues">
             {c.issues.map((i) => (
-              <IssueRow key={i.id} deal={deal} issue={i} onChanged={onChanged} />
+              <IssueRow key={i.id} deal={deal} issue={i} onChanged={onChanged} onEdit={clear} />
             ))}
           </ul>
         </>
@@ -387,22 +403,43 @@ function CommitmentCard({ deal, c, documents, onChanged }) {
         deal={deal}
         commitment={c}
         documents={documents}
-        onDone={(review) => {
-          setMessage(`Recheck complete: ${review.checks.met} closed, ${review.checks.open_action + review.checks.open_evidence} still open.`);
+        onStart={clear}
+        onDone={(text) => {
+          setResult({ id: c.id, text });
           onChanged();
         }}
       />
-      {message && <Notice>{message}</Notice>}
     </article>
   );
 }
 
-function Register({ deal, reg, documents, onChanged }) {
+function Register({ deal, reg, documents, onChanged, result, setResult }) {
   const [selected, setSelected] = useState(null);
+  const [scrollTick, setScrollTick] = useState(0);
   const current = reg.commitments.find((c) => c.id === selected) ?? null;
+  // Every click scrolls, including a second click on the same row after the reader has scrolled away.
+  const pick = (id) => {
+    setSelected(id);
+    setScrollTick((t) => t + 1);
+  };
   useEffect(() => {
-    if (selected) document.getElementById("commitment-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [selected]);
+    if (!scrollTick) return;
+    // Put the card's top near the top of the viewport (16px of air). Two frames, so the card has rendered and
+    // laid out; an instant jump, so a re-render cannot cancel a smooth scroll half-way.
+    let second;
+    const first = requestAnimationFrame(() => {
+      second = requestAnimationFrame(() => {
+        const card = document.getElementById("commitment-card");
+        if (!card) return;
+        window.scrollTo({ top: Math.max(0, card.getBoundingClientRect().top + window.scrollY - 16), behavior: "auto" });
+        card.focus({ preventScroll: true });
+      });
+    });
+    return () => {
+      cancelAnimationFrame(first);
+      if (second) cancelAnimationFrame(second);
+    };
+  }, [scrollTick]);
   return (
     <section className="panel">
       <h2>Commitments</h2>
@@ -423,9 +460,9 @@ function Register({ deal, reg, documents, onChanged }) {
           </thead>
           <tbody>
             {reg.commitments.map((c) => (
-              <tr key={c.id} className={c.id === selected ? "selected" : ""} onClick={() => setSelected(c.id)}>
+              <tr key={c.id} className={c.id === selected ? "selected" : ""} onClick={() => pick(c.id)}>
                 <td>
-                  <button type="button" className="link" onClick={() => setSelected(c.id)}>
+                  <button type="button" className="link">
                     {c.name}
                   </button>
                 </td>
@@ -439,7 +476,7 @@ function Register({ deal, reg, documents, onChanged }) {
           </tbody>
         </table>
       </div>
-      {current && <CommitmentCard deal={deal} c={current} documents={documents} onChanged={onChanged} />}
+      {current && <CommitmentCard deal={deal} c={current} documents={documents} onChanged={onChanged} result={result} setResult={setResult} />}
     </section>
   );
 }
@@ -448,6 +485,7 @@ function Workspace({ deal, onDealsChanged }) {
   const [state, setState] = useState({ loading: true });
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState(null);
+  const [result, setResult] = useState(null);  // the last recheck's one-line result, until the next action
 
   const load = useCallback(async () => {
     try {
@@ -468,6 +506,7 @@ function Workspace({ deal, onDealsChanged }) {
   const review = async () => {
     setBusy(true);
     setMessage(null);
+    setResult(null);
     try {
       const { review: r } = await api.reviewDeal(deal);
       setMessage({ kind: "info", text: `Review complete. ${r.model_calls ? `${r.model_calls} document(s) read by the model.` : "No new documents to read."}` });
@@ -490,7 +529,7 @@ function Workspace({ deal, onDealsChanged }) {
           <h2 className="deal-title">{reg.name}</h2>
           <p>
             <strong>{fresh.state}</strong>
-            {fresh.finished_at ? ` · last review ${fresh.finished_at.replace("T", " ").replace("Z", " UTC")}` : ""}
+            {fresh.finished_at ? ` · last review ${fmtDateTime(fresh.finished_at)}` : ""}
           </p>
           <p className="hint">{reg.scope_note}</p>
         </div>
@@ -499,12 +538,13 @@ function Workspace({ deal, onDealsChanged }) {
         </button>
       </div>
       {message && <Notice kind={message.kind}>{message.text}</Notice>}
-      <Documents deal={deal} data={docs} onChanged={load} />
       {reg.commitments.length > 0 ? (
-        <Register deal={deal} reg={reg} documents={docs.documents} onChanged={load} />
+        <Register deal={deal} reg={reg} documents={docs.documents} onChanged={load} result={result} setResult={setResult} />
       ) : (
         <Notice>No review yet. Add documents, then choose Review deal.</Notice>
       )}
+      <Documents deal={deal} data={docs} onChanged={() => { setResult(null); load(); }} startOpen={reg.commitments.length === 0 || docs.documents.length === 0} />
+      {reg.commitments.length > 0 && <Handoff deal={deal} reg={reg} />}
       <p className="hint footer-note">{reg.resolved_means}</p>
     </div>
   );
