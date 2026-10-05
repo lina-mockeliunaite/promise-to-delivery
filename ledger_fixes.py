@@ -11,6 +11,7 @@ import re
 import secrets
 import sqlite3
 
+import adapters
 import config
 import ledger
 import ledger_import
@@ -50,19 +51,25 @@ def create_user_deal(conn, display_name: str, commit: bool = True) -> str:
 
 
 def add_source(conn, slug: str, display_name: str, text: str, filename: str, doc_type: str, doc_date: str,
-               commit: bool = True) -> int:
-    """A new source with its first version. Returns the version id. Text/Markdown only in this build."""
+               commit: bool = True, raw: bytes | None = None, adapted: dict | None = None) -> int:
+    """A new source with its first version. Returns the version id.
+
+    Text and Markdown come in as `text`. A document read by an adapter (adapters.adapt: PDF, Word) comes in as the
+    original `raw` bytes and its `adapted` result; its problems are stored with the version."""
     did = deal_id(conn, slug)
     if doc_type not in config.EXTRACTABLE_DOC_TYPES + config.REFERENCE_ONLY_DOC_TYPES:
         raise FixError(f"unknown document type {doc_type!r}")
     if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", doc_date or ""):
         raise FixError("a document date is needed as YYYY-MM-DD")
-    if not text or not text.strip():
+    if adapted is None and (not text or not text.strip()):
         raise FixError("the document is empty")
     n = conn.execute("SELECT COUNT(*) FROM sources WHERE deal_id = ?", (did,)).fetchone()[0]
     key = f"D-{n + 1:02d}"
-    raw = text.encode("utf-8")
-    adapted = ledger_import.markdown_adapter(raw)
+    if adapted is None:
+        raw = text.encode("utf-8")
+        adapted = ledger_import.markdown_adapter(raw)
+    if adapted.get("problems"):
+        adapters.ensure_notes_schema(conn)
     try:
         source_id = conn.execute("INSERT INTO sources (deal_id, source_key, display_name) VALUES (?, ?, ?)",
                                  (did, key, (display_name or filename or key)[:200])).lastrowid
@@ -73,6 +80,7 @@ def add_source(conn, slug: str, display_name: str, text: str, filename: str, doc
             (source_id, ledger_import.sha256_hex(raw), ledger_import.sha256_hex(adapted["canonical_text"]),
              adapted["adapter_name"], adapted["adapter_version"], doc_type, doc_date, (filename or key)[:200],
              adapted["canonical_text"], adapted["location_map"])).lastrowid
+        adapters.save_notes(conn, vid, adapted.get("problems") or [])
     except BaseException:
         conn.rollback()
         raise
@@ -107,7 +115,7 @@ def freshness(conn, did: int) -> dict:
 
 
 def add_source_version(conn, slug: str, source_key: str, text: str, filename: str, doc_type=None, doc_date=None,
-                       commit: bool = True) -> int:
+                       commit: bool = True, raw: bytes | None = None, adapted: dict | None = None) -> int:
     """A new version of an existing source, included in place of the previous one. Returns the new version id.
 
     Document type and date default to the previous version's: a revised SOW keeps its date unless the user says
@@ -124,8 +132,11 @@ def add_source_version(conn, slug: str, source_key: str, text: str, filename: st
     doc_type = doc_type or prev[1]
     if doc_type not in config.EXTRACTABLE_DOC_TYPES + config.REFERENCE_ONLY_DOC_TYPES:
         raise FixError(f"unknown document type {doc_type!r}")
-    raw = text.encode("utf-8")
-    adapted = ledger_import.markdown_adapter(raw)
+    if adapted is None:
+        raw = text.encode("utf-8")
+        adapted = ledger_import.markdown_adapter(raw)
+    elif adapted.get("problems"):
+        adapters.ensure_notes_schema(conn)
     try:
         conn.execute("UPDATE source_versions SET included = 0 WHERE source_id = ?", (source_id,))
         version_id = conn.execute(
@@ -136,6 +147,7 @@ def add_source_version(conn, slug: str, source_key: str, text: str, filename: st
              adapted["adapter_name"], adapted["adapter_version"], doc_type, doc_date or prev[2], filename,
              adapted["canonical_text"], adapted["location_map"]),
         ).lastrowid
+        adapters.save_notes(conn, version_id, adapted.get("problems") or [])
     except BaseException:
         conn.rollback()
         raise

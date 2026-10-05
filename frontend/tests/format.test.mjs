@@ -31,3 +31,18 @@ test("the recheck line says none when nothing closed or nothing is left", () => 
   assert.equal(recheckLine(before, []), "Recheck: closed — A, B. Nothing still open.");
   assert.equal(recheckLine([], []), "Recheck: nothing closed. Nothing still open.");
 });
+
+import { checkUpload, uploadKind } from "../src/format.js";
+
+test("uploads: PDF and Word are sent as base64, Markdown and text as text, anything else is refused up front", () => {
+  assert.equal(uploadKind("Proposal.PDF"), "binary");
+  assert.equal(uploadKind("sow.docx"), "binary");
+  assert.equal(uploadKind("notes.md"), "text");
+  assert.equal(uploadKind("notes.txt"), "text");
+  assert.equal(uploadKind("archive.zip"), null);
+  assert.equal(uploadKind("noextension"), null);
+  assert.equal(checkUpload("a.pdf", 1000), null);
+  assert.equal(checkUpload("a.pdf", 10 * 1024 * 1024 + 1), "The file is larger than 10 MB.");
+  assert.match(checkUpload("old.doc", 10), /Save the document as \.docx/);
+  assert.match(checkUpload("x.exe", 10), /PDF, Word \(\.docx\), Markdown and text/);
+});

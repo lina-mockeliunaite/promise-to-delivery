@@ -7,6 +7,7 @@ never appear in anything this module returns.
 import json
 import re
 
+import adapters
 import config
 import evidence_text
 import ledger_fixes
@@ -91,8 +92,8 @@ def document_labels(conn, did: int) -> dict:
     return labels
 
 
-def version_label(label: str, version) -> str:
-    return f"{label}, version {version}"
+def version_label(label: str, version, page=None) -> str:
+    return f"{label}, version {version}" + (f", page {page}" if page else "")
 
 
 # Rules and recheck phrasing that reads as system talk, in plain words. Applied by plain() to reason and detail text.
@@ -138,12 +139,15 @@ def documents(conn, slug: str) -> list:
     did = ledger_fixes.deal_id(conn, slug)
     labels = document_labels(conn, did)
     out = []
-    for key, vid, version_no, doc_type, date, included in conn.execute(
-        "SELECT s.source_key, v.id, v.version_no, v.doc_type, v.doc_date, v.included"
+    rows = conn.execute(
+        "SELECT s.source_key, v.id, v.version_no, v.doc_type, v.doc_date, v.included, v.adapter_name, v.original_filename"
         " FROM sources s JOIN source_versions v ON v.source_id = s.id WHERE s.deal_id = ? AND v.version_no ="
-        " (SELECT MAX(version_no) FROM source_versions WHERE source_id = s.id) ORDER BY v.doc_date, s.source_key", (did,)):
+        " (SELECT MAX(version_no) FROM source_versions WHERE source_id = s.id) ORDER BY v.doc_date, s.source_key", (did,)).fetchall()
+    notes = adapters.notes_for(conn, [r[1] for r in rows])
+    for key, vid, version_no, doc_type, date, included, adapter_name, filename in rows:
         out.append({
             "source_key": key, "name": labels[key], "source_version_id": vid, "version": version_no,
+            "format": adapters.format_label(adapter_name, filename), "problems": notes.get(vid, []),
             "doc_type": doc_type, "doc_type_label": DOC_TYPE_LABELS.get(doc_type, doc_type), "date": date,
             "included": bool(included),
             "role": ("Read for promises" if doc_type in config.EXTRACTABLE_DOC_TYPES
@@ -269,9 +273,12 @@ def register(conn, slug: str) -> dict:
             cname = prev[0] if prev else cname
         statements = [
             {"source_name": names[sk], "doc_type_label": DOC_TYPE_LABELS.get(dt, dt), "version": vn,
-             "quote": q, "language": lang, "date": dd}
-            for sk, dt, vn, q, lang, dd in conn.execute(
-                "SELECT so.source_key, v.doc_type, v.version_no, st.quote, st.language, v.doc_date"
+             "quote": q, "language": lang, "date": dd,
+             "page": adapters.locate_page(canon, lmap, q) if canon else None}
+            for sk, dt, vn, q, lang, dd, canon, lmap in conn.execute(
+                "SELECT so.source_key, v.doc_type, v.version_no, st.quote, st.language, v.doc_date,"
+                " CASE WHEN v.adapter_name = 'pdf-text' THEN v.canonical_text END,"
+                " CASE WHEN v.adapter_name = 'pdf-text' THEN v.location_map END"
                 " FROM review_statement_commitments l JOIN statements st ON st.id = l.statement_id"
                 " JOIN source_versions v ON v.id = l.source_version_id JOIN sources so ON so.id = v.source_id"
                 " WHERE l.commitment_id = ? AND l.review_id = (SELECT MAX(review_id) FROM review_statement_commitments"

@@ -24,3 +24,20 @@ export function recheckLine(before, after) {
   const second = stillOpen.length ? `Still open — ${list(stillOpen)}.` : "Nothing still open.";
   return `Recheck: ${first} ${second}`;
 }
+
+// Uploads: PDF and Word travel as base64 inside the JSON body; Markdown and text as text. The server checks again.
+export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
+
+export function uploadKind(name) {
+  const ext = (/\.[^./\\]+$/.exec(name ?? "")?.[0] ?? "").toLowerCase();
+  if (ext === ".md" || ext === ".txt") return "text";
+  if (ext === ".pdf" || ext === ".docx") return "binary";
+  return null;
+}
+
+export function checkUpload(name, size) {
+  if (/\.doc$/i.test(name ?? "")) return "Older Word files (.doc) are not supported. Save the document as .docx and upload that.";
+  if (!uploadKind(name)) return "This build reads PDF, Word (.docx), Markdown and text files.";
+  if (size > MAX_UPLOAD_BYTES) return "The file is larger than 10 MB.";
+  return null;
+}

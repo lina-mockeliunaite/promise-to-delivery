@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import * as api from "./api.js";
 import Handoff from "./Handoff.jsx";
-import { fmtDate, fmtDateTime, recheckLine } from "./format.js";
+import { checkUpload, fmtDate, fmtDateTime, recheckLine, uploadKind } from "./format.js";
 
 const OWNERS = ["Product", "Commercial", "Delivery", "Customer Success", "Support"];
 const ROUTES = [
@@ -77,6 +77,15 @@ function DealList({ deals, current, onPick, onCreated }) {
   );
 }
 
+function readBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result).split(",", 2)[1] ?? "");
+    reader.onerror = () => reject(new Error("The file could not be read."));
+    reader.readAsDataURL(file);
+  });
+}
+
 function readFile(file) {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -107,13 +116,15 @@ function Documents({ deal, data, onChanged, startOpen }) {
   const upload = async (e) => {
     e.preventDefault();
     setError(null);
-    if (!form.file) return setError("Choose a text or Markdown file.");
+    if (!form.file) return setError("Choose a PDF, Word, Markdown or text file.");
+    const refused = checkUpload(form.file.name, form.file.size);
+    if (refused) return setError(refused);
     setBusy(true);
     try {
-      const text = await readFile(form.file);
+      const content = uploadKind(form.file.name) === "binary" ? { file_base64: await readBase64(form.file) } : { text: await readFile(form.file) };
       const body = form.source_key
-        ? { source_key: form.source_key, filename: form.file.name, text }
-        : { name: form.file.name, filename: form.file.name, doc_type: form.doc_type, doc_date: form.doc_date, text };
+        ? { source_key: form.source_key, filename: form.file.name, ...content }
+        : { name: form.file.name, filename: form.file.name, doc_type: form.doc_type, doc_date: form.doc_date, ...content };
       await api.addDocument(deal, body);
       setForm({ ...form, file: null });
       e.target.reset();
@@ -144,6 +155,7 @@ function Documents({ deal, data, onChanged, startOpen }) {
               <tr>
                 <th>Include</th>
                 <th>Document</th>
+                <th>Format</th>
                 <th>Date</th>
                 <th>Used as</th>
               </tr>
@@ -156,7 +168,15 @@ function Documents({ deal, data, onChanged, startOpen }) {
                   </td>
                   <td>
                     {doc.name}, version {doc.version}
+                    {doc.problems?.length > 0 && (
+                      <ul className="doc-problems">
+                        {doc.problems.map((p, n) => (
+                          <li key={n}>{p}</li>
+                        ))}
+                      </ul>
+                    )}
                   </td>
+                  <td>{doc.format}</td>
                   <td className="nowrap">{fmtDate(doc.date)}</td>
                   <td>{doc.role}</td>
                 </tr>
@@ -199,14 +219,14 @@ function Documents({ deal, data, onChanged, startOpen }) {
             </>
           )}
           <label>
-            File (.md or .txt)
-            <input type="file" accept=".md,.txt,text/plain,text/markdown" onChange={set("file")} />
+            File (.pdf, .docx, .md or .txt)
+            <input type="file" accept=".pdf,.docx,.md,.txt,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document,text/plain,text/markdown" onChange={set("file")} />
           </label>
           <button type="submit" disabled={busy}>
             {busy ? "Uploading…" : "Upload"}
           </button>
         </form>
-        <p className="hint">This build reads text and Markdown. PDF, Word, Excel and PowerPoint follow.</p>
+        <p className="hint">This build reads PDF (text layer only, no scans), Word (.docx), Markdown and text. Excel and PowerPoint follow. PDF and Word support is checked on development documents only.</p>
       </details>
       )}
       {error && <Notice kind="error">{error}</Notice>}
@@ -379,7 +399,8 @@ function CommitmentCard({ deal, c, documents, onChanged, result, setResult }) {
           <li key={n}>
             <blockquote>“{s.quote}”</blockquote>
             <cite>
-              {s.source_name}, version {s.version} · {s.language}
+              {s.source_name}, version {s.version}
+              {s.page ? `, page ${s.page}` : ""} · {s.language}
             </cite>
           </li>
         ))}

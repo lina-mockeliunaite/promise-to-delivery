@@ -96,8 +96,8 @@ def build_snapshot(conn, slug: str, decision: str, reviewer: str, note: str, con
     issues, commitments, info = [], [], {}
     for c in reg["commitments"]:
         def cite(items):
-            return [{"quote": s["quote"], "source": s["source_name"], "type": s["doc_type_label"], "version": s["version"]}
-                    for s in items]
+            return [{"quote": s["quote"], "source": s["source_name"], "type": s["doc_type_label"], "version": s["version"],
+                     "page": s.get("page")} for s in items]
         trigger, main = cite(trigger_statements(c["statements"])), cite(main_statement(c["statements"]))
         for i in c["issues"]:
             info[i["id"]] = (c["name"], i["label"], i["state"])
@@ -213,19 +213,24 @@ def owner_text(item) -> str:
     return f"{item['owner']} ({item['owner_basis']})"
 
 
+def source_cell(evidence: dict) -> str:
+    """The source document, with its page when the document is a PDF: 'Proposal (page 3)'."""
+    return evidence["source"] + (f" (page {evidence['page']})" if evidence.get("page") else "")
+
+
 def csv_rows(snapshot: dict) -> list:
     """One row per issue (open first), then one row for each commitment with no issue at all."""
     rows = []
     for i in snapshot["issues"]:
         ev = i["evidence"]
         rows.append([i["commitment"], f"{i['attention']}: {i['why']}" if i["why"] else i["attention"], i["state"],
-                     owner_text(i), i["note"], "\n".join(e["quote"] for e in ev), "\n".join(e["source"] for e in ev),
+                     owner_text(i), i["note"], "\n".join(e["quote"] for e in ev), "\n".join(source_cell(e) for e in ev),
                      "\n".join(str(e["version"]) for e in ev)])
     for c in snapshot["commitments"]:
         if c["issue_count"] == 0:
             ev = c["evidence"]
             rows.append([c["promise"], "", c["status"], "", c.get("check_note", ""), "\n".join(e["quote"] for e in ev),
-                         "\n".join(e["source"] for e in ev), "\n".join(str(e["version"]) for e in ev)])
+                         "\n".join(source_cell(e) for e in ev), "\n".join(str(e["version"]) for e in ev)])
     return rows
 
 
@@ -282,7 +287,7 @@ def render_html(snapshot: dict, version: int) -> str:
         if i["note"]:
             parts.append(f"<p>Note: {e(i['note'])}</p>")
         for ev in i["evidence"]:
-            parts.append(f"<blockquote>“{e(ev['quote'])}”</blockquote><cite>{e(workspace.version_label(ev['source'], ev['version']))}</cite>")
+            parts.append(f"<blockquote>“{e(ev['quote'])}”</blockquote><cite>{e(workspace.version_label(ev['source'], ev['version'], ev.get('page')))}</cite>")
         parts.append("</div>")
     parts.append("<h2>All commitments</h2><table><thead><tr><th>Promise</th><th>Status</th><th>In the contract</th></tr></thead><tbody>")
     for c in snapshot["commitments"]:

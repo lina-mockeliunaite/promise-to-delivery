@@ -13,6 +13,8 @@ documents (text/Markdown upload, include/exclude), Review deal, the register, fi
 - A review that needs new extraction uses the API key from the server's environment only; the browser never sees it.
 """
 
+import base64
+import binascii
 import json
 import re
 from pathlib import Path
@@ -21,10 +23,11 @@ import os
 import sqlite3
 
 from fastapi import Body, Depends, FastAPI, Header, HTTPException, Query
-from fastapi.responses import Response
+from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
+import adapters
 import config
 import extraction_cache
 import handoff
@@ -38,6 +41,11 @@ ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
 # One body for every rejected deal, so the response never echoes or distinguishes the requested name.
 NOT_FOUND = "Not found"
+
+# A document upload is JSON with the file base64-encoded: 10 MB of file is about 13.4 MB of text. A request announcing
+# more than this is refused before its body is read, but only for a deal the app serves and a well-formed write.
+MAX_UPLOAD_BODY = 14 * 1024 * 1024
+UPLOAD_PATH = re.compile(r"^/api/deals/([^/]+)/documents$")
 
 
 def require_ui_deal(deal: str) -> str:
@@ -84,6 +92,32 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
     app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
     app.router.redirect_slashes = False
     app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
+
+    def served_deal(deal: str) -> bool:
+        """The deal exists and the app serves it (the same rule as workspace_deal), checked without a request body."""
+        path = ledger_path if ledger_path is not None else config.LEDGER_DB_PATH
+        if not Path(path).exists():
+            return False
+        kind = "development" if deal in config.UI_DEALS else "user" if ledger_fixes.USER_SLUG.fullmatch(deal) else None
+        if kind is None:
+            return False
+        conn = ledger.connect(path, check_same_thread=False)
+        try:
+            return conn.execute("SELECT 1 FROM deals WHERE slug = ? AND kind = ?", (deal, kind)).fetchone() is not None
+        finally:
+            conn.close()
+
+    @app.middleware("http")
+    async def refuse_oversize_uploads(request, call_next):
+        match = UPLOAD_PATH.match(request.url.path)
+        if match and request.method == "POST" and request.headers.get("x-requested-with") == "deal-workspace":
+            try:
+                announced = int(request.headers.get("content-length", "0"))
+            except ValueError:
+                announced = 0
+            if announced > MAX_UPLOAD_BODY and served_deal(match.group(1)):
+                return JSONResponse({"detail": "The file is larger than 10 MB."}, status_code=413)
+        return await call_next(request)
 
     @app.get("/api/deals")
     def list_deals():
@@ -200,21 +234,40 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
     @app.post("/api/deals/{deal}/documents", dependencies=[Depends(write_guard)])
     def ws_add_document(deal: str, body: dict = Body(...), conn=Depends(db)):
         workspace_deal(deal, conn)
-        text = body.get("text")
-        if not isinstance(text, str) or len(text.encode("utf-8")) > 1_000_000:
-            raise HTTPException(status_code=400, detail="Send the document as text, up to 1 MB.")
+        filename = str(body.get("filename") or "upload.md")[:200]
+        extra = {}
+        if "file_base64" in body:
+            # PDF and Word arrive as base64 inside the JSON body, so the preflight protection still applies.
+            encoded = body["file_base64"]
+            if not body.get("filename"):
+                raise HTTPException(status_code=400, detail="Send the file with its name, so its format can be recognised.")
+            if not isinstance(encoded, str) or len(encoded) > MAX_UPLOAD_BODY:
+                raise HTTPException(status_code=413, detail="The file is larger than 10 MB.")
+            try:
+                raw = base64.b64decode(encoded, validate=True)
+            except (binascii.Error, ValueError):
+                raise HTTPException(status_code=400, detail="The file could not be read. Upload it again.") from None
+            try:
+                adapted = adapters.adapt(filename, raw)
+            except adapters.AdapterError as exc:
+                raise HTTPException(status_code=exc.status, detail=str(exc)) from None
+            text, extra = "", {"raw": raw, "adapted": adapted}
+        else:
+            text = body.get("text")
+            if not isinstance(text, str) or len(text.encode("utf-8")) > 1_000_000:
+                raise HTTPException(status_code=400, detail="Send the document as text, up to 1 MB.")
         try:
             if body.get("source_key"):
-                vid = ledger_fixes.add_source_version(conn, deal, str(body["source_key"]), text,
-                                                      str(body.get("filename") or "upload.md")[:200],
-                                                      body.get("doc_type") or None, body.get("doc_date") or None)
+                vid = ledger_fixes.add_source_version(conn, deal, str(body["source_key"]), text, filename,
+                                                      body.get("doc_type") or None, body.get("doc_date") or None, **extra)
             else:
-                vid = ledger_fixes.add_source(conn, deal, str(body.get("name") or ""), text,
-                                              str(body.get("filename") or "upload.md")[:200],
-                                              str(body.get("doc_type") or ""), str(body.get("doc_date") or ""))
+                vid = ledger_fixes.add_source(conn, deal, str(body.get("name") or ""), text, filename,
+                                              str(body.get("doc_type") or ""), str(body.get("doc_date") or ""), **extra)
         except ledger_fixes.FixError as exc:
             raise bad_request(exc) from None
-        return {"source_version_id": vid}
+        adapted = extra.get("adapted")
+        return {"source_version_id": vid, "format": adapted["format"] if adapted else adapters.format_label("", filename),
+                "problems": adapted["problems"] if adapted else []}
 
     @app.post("/api/deals/{deal}/documents/include", dependencies=[Depends(write_guard)])
     def ws_include(deal: str, body: dict = Body(...), conn=Depends(db)):

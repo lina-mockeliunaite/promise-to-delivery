@@ -144,6 +144,7 @@ function View({ deal, version, data }) {
                 <blockquote>“{e.quote}”</blockquote>
                 <cite>
                   {e.source}, version {e.version}
+                  {e.page ? `, page ${e.page}` : ""}
                 </cite>
               </div>
             ))}
