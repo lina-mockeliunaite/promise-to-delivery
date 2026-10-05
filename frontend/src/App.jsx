@@ -364,8 +364,30 @@ function IssueRow({ deal, issue, onChanged, onEdit }) {
   );
 }
 
+// Put an element's top near the top of the viewport (16px of air). Two frames, so it has rendered and laid out; an
+// instant jump, so a re-render cannot cancel a smooth scroll half-way. Returns the cleanup for useEffect.
+function scrollNearTop(id) {
+  let second;
+  const first = requestAnimationFrame(() => {
+    second = requestAnimationFrame(() => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      window.scrollTo({ top: Math.max(0, el.getBoundingClientRect().top + window.scrollY - 16), behavior: "auto" });
+      el.focus({ preventScroll: true });
+    });
+  });
+  return () => {
+    cancelAnimationFrame(first);
+    if (second) cancelAnimationFrame(second);
+  };
+}
+
 function CommitmentCard({ deal, c, documents, onChanged, result, setResult }) {
   const clear = () => setResult(null);
+  // A new recheck result brings its line into view, the same way a click brings the card into view.
+  useEffect(() => {
+    if (result && result.id === c.id) return scrollNearTop("recheck-line");
+  }, [result]);
   return (
     <article className="card" id="commitment-card" tabIndex={-1}>
       <header className="card-head">
@@ -374,7 +396,7 @@ function CommitmentCard({ deal, c, documents, onChanged, result, setResult }) {
       </header>
       {c.check_note && <p className="hint">{c.check_note}</p>}
       {result && result.id === c.id && (
-        <p className="recheck-line" role="status">
+        <p className="recheck-line" id="recheck-line" tabIndex={-1} role="status">
           {result.text}
         </p>
       )}
@@ -446,22 +468,7 @@ function Register({ deal, reg, documents, onChanged, result, setResult }) {
     setScrollTick((t) => t + 1);
   };
   useEffect(() => {
-    if (!scrollTick) return;
-    // Put the card's top near the top of the viewport (16px of air). Two frames, so the card has rendered and
-    // laid out; an instant jump, so a re-render cannot cancel a smooth scroll half-way.
-    let second;
-    const first = requestAnimationFrame(() => {
-      second = requestAnimationFrame(() => {
-        const card = document.getElementById("commitment-card");
-        if (!card) return;
-        window.scrollTo({ top: Math.max(0, card.getBoundingClientRect().top + window.scrollY - 16), behavior: "auto" });
-        card.focus({ preventScroll: true });
-      });
-    });
-    return () => {
-      cancelAnimationFrame(first);
-      if (second) cancelAnimationFrame(second);
-    };
+    if (scrollTick) return scrollNearTop("commitment-card");
   }, [scrollTick]);
   return (
     <section className="panel">

@@ -142,3 +142,4 @@ cite { display: block; font-style: normal; font-size: 12px; color: var(--muted);
 .card { scroll-margin-top: 12px; }
 .card:focus { outline: none; }
 .doc-problems { margin: 4px 0 0; padding-left: 18px; font-size: 12px; color: var(--warn); }
+.recheck-line:focus { outline: none; }
