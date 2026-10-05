@@ -155,3 +155,13 @@
 **Failure:** The agent was right in substance but failed the evidence checks in every run, so the rules power the demo. Browser testing also exposed a threading bug despite the automated checks passing; it was fixed.
 
 **Still unclear:** I need to understand the threading fix well enough to explain it myself. The five scenarios passed with the real model, but I still need to explain what they establish about resolution correctness and what remains untested on new deals.
+
+## 2026-10-05 (evening) — Simulated checkpoint, signing-brief hypotheses, decision integrity
+
+*Dictated by Lina, 5 Oct 23:17, as answers to three close-of-day questions. Saved word for word.*
+
+**Why accepting a risk leaves the finding open:** Accepting a risk records a choice to proceed; it doesn't fix the missing approval or conflicting contract terms. The finding stays open so the handoff still shows what remains unresolved.
+
+**Why the same issue row isn't enough to carry the accountable person forward:** Reusing the row is a storage decision, not proof that the issue and responsibility are unchanged. I need to check whether the revised terms still represent the same issue before carrying the accountable person forward.
+
+**Why a saved handoff looks current after a catalogue edit:** Catalogue changes aren't covered by the current freshness check, so the handoff can look current even though its authorisation basis has changed. The saved snapshot should remain unchanged, but its currentness status needs to reflect that change.
