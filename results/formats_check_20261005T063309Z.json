@@ -1,0 +1,151 @@
+{
+  "timestamp_utc": "20261005T063309Z",
+  "model": "claude-sonnet-5",
+  "baseline_statements": 6,
+  "baseline_firm": 6,
+  "results": [
+    {
+      "variant": "generated PDF of HB-04",
+      "format": "PDF",
+      "problems": [],
+      "refused": null,
+      "extraction": "ok",
+      "cost_usd": 0.013846,
+      "statements": [
+        [
+          "Every NUSD payout on Polygon will be screened in real time through Elva's analytics integration before release, from the 1 December launch.",
+          "firm"
+        ],
+        [
+          "NUSD payouts on Ethereum will be screened in real time through Elva's analytics integration before release.",
+          "firm"
+        ],
+        [
+          "The payout ledger connector will handle up to 12,000 payouts per day at launch.",
+          "firm"
+        ],
+        [
+          "The payout ledger connector will handle up to 40,000 payouts per day by the end of the first year.",
+          "firm"
+        ],
+        [
+          "For payouts to exchange-hosted wallets, VASP counterparty data exchange will be generally available in Singapore by 31 March 2027.",
+          "firm"
+        ],
+        [
+          "A draft Statement of Work will follow.",
+          "firm"
+        ]
+      ],
+      "quotes_found": 6,
+      "quotes_missing": [],
+      "pages": {
+        "Every NUSD payout on Polygon will be screened in real time through Elva's analytics integration before release, from the 1 December launch.": 1,
+        "NUSD payouts on Ethereum will be screened in real time through Elva's analytics integration before release.": 1,
+        "The payout ledger connector will handle up to 12,000 payouts per day at launch.": 1,
+        "The payout ledger connector will handle up to 40,000 payouts per day by the end of the first year.": 1,
+        "For payouts to exchange-hosted wallets, VASP counterparty data exchange will be generally available in Singapore by 31 March 2027.": 1,
+        "A draft Statement of Work will follow.": 1
+      },
+      "firm": {
+        "same": 6,
+        "same_by_containment": 0,
+        "missing": [],
+        "extra": [],
+        "agrees": true
+      }
+    },
+    {
+      "variant": "generated Word version of HB-04",
+      "format": "Word",
+      "problems": [],
+      "refused": null,
+      "extraction": "ok",
+      "cost_usd": 0.01498,
+      "statements": [
+        [
+          "Every NUSD payout on Polygon will be screened in real time through Elva's analytics integration before release, from the 1 December launch.",
+          "firm"
+        ],
+        [
+          "NUSD payouts on Ethereum will be screened in real time through Elva's analytics integration before release.",
+          "firm"
+        ],
+        [
+          "The payout ledger connector will handle up to 12,000 payouts per day at launch.",
+          "firm"
+        ],
+        [
+          "The payout ledger connector will handle up to 40,000 payouts per day by the end of the first year.",
+          "firm"
+        ],
+        [
+          "For payouts to exchange-hosted wallets, VASP counterparty data exchange will be generally available in Singapore by 31 March 2027.",
+          "firm"
+        ]
+      ],
+      "quotes_found": 5,
+      "quotes_missing": [],
+      "pages": {},
+      "firm": {
+        "same": 5,
+        "same_by_containment": 0,
+        "missing": [
+          "A draft Statement of Work will follow."
+        ],
+        "extra": [],
+        "agrees": false
+      }
+    },
+    {
+      "variant": "your PDF (HB-04_proposal.pdf)",
+      "format": "PDF",
+      "problems": [],
+      "refused": null,
+      "extraction": "ok",
+      "cost_usd": 0.011632,
+      "statements": [
+        [
+          "Every NUSD payout on Polygon will be screened in real time through\nElva's analytics integration before release, from the 1 December\nlaunch.",
+          "firm"
+        ],
+        [
+          "NUSD payouts on Ethereum will be screened in real time through\nElva's analytics integration before release.",
+          "firm"
+        ],
+        [
+          "The payout ledger connector will handle up to 12,000 payouts per day\nat launch.",
+          "firm"
+        ],
+        [
+          "The payout ledger connector will handle up to 40,000 payouts per day\nby the end of the first year.",
+          "firm"
+        ],
+        [
+          "For payouts to exchange-hosted wallets, VASP counterparty data\nexchange will be generally available in Singapore by 31 March 2027.",
+          "firm"
+        ]
+      ],
+      "quotes_found": 5,
+      "quotes_missing": [],
+      "pages": {
+        "Every NUSD payout on Polygon will be screened in real time through\nElva's analytics integration before release, from the 1 December\nlaunch.": 1,
+        "NUSD payouts on Ethereum will be screened in real time through\nElva's analytics integration before release.": 1,
+        "The payout ledger connector will handle up to 12,000 payouts per day\nat launch.": 1,
+        "The payout ledger connector will handle up to 40,000 payouts per day\nby the end of the first year.": 1,
+        "For payouts to exchange-hosted wallets, VASP counterparty data\nexchange will be generally available in Singapore by 31 March 2027.": 1
+      },
+      "firm": {
+        "same": 5,
+        "same_by_containment": 0,
+        "missing": [
+          "A draft Statement of Work will follow."
+        ],
+        "extra": [],
+        "agrees": false
+      }
+    }
+  ],
+  "total_cost_usd": 0.040458,
+  "all_agree": false
+}
