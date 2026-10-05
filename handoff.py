@@ -110,7 +110,7 @@ def build_snapshot(conn, slug: str, decision: str, reviewer: str, note: str, con
         commitments.append({
             "promise": c["name"], "status": c["status"], "language": c["language"], "authorisation": c["authorisation"],
             "contract": contract_phrase(c["presence"], c["presence_detail"]), "issue_count": len(c["issues"]),
-            "evidence": main,
+            "check_note": c["check_note"], "evidence": main,
         })
     issues.sort(key=lambda i: STATE_ORDER.get(i["state"], 2))  # stable: open first, register order kept inside
     exceptions = [{"commitment": c["name"], "evidence": c["authorisation_evidence"]}
@@ -224,7 +224,7 @@ def csv_rows(snapshot: dict) -> list:
     for c in snapshot["commitments"]:
         if c["issue_count"] == 0:
             ev = c["evidence"]
-            rows.append([c["promise"], "", c["status"], "", "", "\n".join(e["quote"] for e in ev),
+            rows.append([c["promise"], "", c["status"], "", c.get("check_note", ""), "\n".join(e["quote"] for e in ev),
                          "\n".join(e["source"] for e in ev), "\n".join(str(e["version"]) for e in ev)])
     return rows
 
@@ -288,6 +288,8 @@ def render_html(snapshot: dict, version: int) -> str:
     for c in snapshot["commitments"]:
         parts.append(f"<tr><td>{e(c['promise'])}</td><td>{e(c['status'])}</td><td>{e(c['contract'])}</td></tr>")
     parts.append("</tbody></table>")
+    if any(c.get("check_note") for c in snapshot["commitments"]):
+        parts.append(f"<p class=\"muted\">{e(workspace.CHECK_NOTE)}</p>")
     parts.append("<h2>Approved exceptions</h2>")
     if not snapshot["exceptions"]:
         parts.append("<p class=\"muted\">None.</p>")
@@ -298,7 +300,7 @@ def render_html(snapshot: dict, version: int) -> str:
         parts.append("<p class=\"muted\">No fixes recorded.</p>")
     for h in snapshot["history"]:
         ev = "; ".join(f"{workspace.version_label(x['source'], x['version'])} ({x['where']})" for x in h["evidence"]) or "none"
-        parts.append(f"<p><strong>{e(h['route'])}</strong> · {e(h['owner'])} · {e(workspace.short_date(h['date']))} · approved by {e(h['approved_by'])}<br>"
+        parts.append(f"<p><strong>{e(h['route'])}</strong> · {e(h['owner'])} · {e(workspace.short_date(h['date']))} · signed off by {e(h['approved_by'])}<br>"
                      f"{e(h['rationale'])}<br><span class=\"muted\">Addresses: {e('; '.join(h['addresses']) or 'none')}."
                      f" Evidence: {e(ev)}</span></p>")
     parts.append("<h2>Reviewed sources</h2><table><thead><tr><th>Document</th><th>Version</th><th>Date</th><th>Used</th></tr></thead><tbody>")

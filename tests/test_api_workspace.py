@@ -55,7 +55,8 @@ class TestReading(WorkspaceCase):
     def test_the_register_shows_the_harbour_bank_findings_in_plain_language(self):
         reg = self.register()
         self.assertEqual(reg["freshness"]["state"], "Up to date")
-        self.assertEqual(reg["counts"], {"Needs action": 3, "Needs evidence": 1, "No issues raised": 4})
+        self.assertEqual(reg["counts"], {"Needs action": 3, "Needs evidence": 1, "No issues raised": 3,
+                                         "Not checked: conditional promise": 1})
         polygon = self.commitment("Polygon, real time")
         self.assertEqual(polygon["attention"], ["Needs internal approval", "Missing from the contract",
                                                 "Contract says something different"])
@@ -112,6 +113,38 @@ class TestFixFlow(WorkspaceCase):
         r = self.post("/api/deals/harbour_bank/documents/include", {"source_key": "HB-04", "included": False})
         self.assertEqual(r.status_code, 200, r.text)
         self.assertEqual(self.register()["freshness"]["state"], "Review out of date")
+
+    def fixes_in_ledger(self):
+        import ledger
+        conn = ledger.connect(self.db)
+        try:
+            return conn.execute("SELECT COUNT(*), COUNT(fix_key) FROM fixes").fetchone()[0]
+        finally:
+            conn.close()
+
+    def test_a_refused_sign_off_leaves_no_draft_fix_behind(self):
+        issue = self.commitment("Polygon, real time")["issues"][0]
+        body = {"route": "allowed_exception", "owner": "Product", "rationale": "Named exception.",
+                "issue_ids": [issue["id"]], "evidence": [{"source_version_id": 5, "locator": "whole document"}]}
+        for bad in ({"approved_by": ""}, {"approved_by": "   "}, {}):
+            r = self.post("/api/deals/harbour_bank/fixes", {**body, **bad})
+            self.assertEqual(r.status_code, 400, r.text)
+            self.assertEqual(r.json()["detail"], "a fix needs the name of who signs it off")
+            self.assertEqual(self.fixes_in_ledger(), 0)
+        # a route that needs evidence, sent without any: the ledger refuses at approval; still no draft
+        r = self.post("/api/deals/harbour_bank/fixes", {**body, "evidence": [], "approved_by": "Dana"})
+        self.assertEqual(r.status_code, 400, r.text)
+        self.assertEqual(self.fixes_in_ledger(), 0)
+        # and the next real fix is the first one: nothing was skipped
+        r = self.post("/api/deals/harbour_bank/fixes", {"route": "change_or_withdraw_promise", "owner": "Product",
+                      "rationale": "Withdraw it.", "issue_ids": [issue["id"]], "evidence": [], "approved_by": "Dana"})
+        self.assertEqual(r.status_code, 200, r.text)
+        import ledger
+        conn = ledger.connect(self.db)
+        try:
+            self.assertEqual(conn.execute("SELECT fix_key, status FROM fixes").fetchall(), [("F1", "approved")])
+        finally:
+            conn.close()
 
     def test_a_fix_cannot_claim_an_issue_from_another_deal_and_bad_input_is_a_400(self):
         r = self.post("/api/deals/harbour_bank/fixes", {"route": "allowed_exception", "owner": "Product", "rationale": "x",

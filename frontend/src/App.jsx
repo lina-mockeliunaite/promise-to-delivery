@@ -18,7 +18,7 @@ const STATUS = {
 };
 
 function Status({ value }) {
-  const s = STATUS[value] ?? { icon: "", cls: "s-muted" };
+  const s = STATUS[value] ?? { icon: value.startsWith("Not checked") ? "–" : "", cls: "s-muted" };
   return (
     <span className={`status ${s.cls}`}>
       <span aria-hidden="true">{s.icon}</span> {value}
@@ -297,8 +297,9 @@ function FixForm({ deal, commitment, documents, onStart, onDone }) {
         <textarea value={form.rationale} onChange={set("rationale")} rows={2} required />
       </label>
       <label>
-        Approved by
+        Signed off by
         <input value={form.approved_by} onChange={set("approved_by")} required />
+        <span className="hint">who agrees this fix</span>
       </label>
       <button type="submit" disabled={busy || form.issue_ids.length === 0}>
         {busy ? "Rechecking…" : "Record and recheck"}
@@ -351,6 +352,7 @@ function CommitmentCard({ deal, c, documents, onChanged, result, setResult }) {
         <h3>{c.name}</h3>
         <Status value={c.status} />
       </header>
+      {c.check_note && <p className="hint">{c.check_note}</p>}
       {result && result.id === c.id && (
         <p className="recheck-line" role="status">
           {result.text}

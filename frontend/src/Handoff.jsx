@@ -173,6 +173,8 @@ function View({ deal, version, data }) {
         </table>
       </div>
 
+      {h.commitments.some((c) => c.check_note) && <p className="hint">{h.commitments.find((c) => c.check_note).check_note}</p>}
+
       <h4>Approved exceptions</h4>
       {h.exceptions.length === 0 && <p className="hint">None.</p>}
       {h.exceptions.map((x, n) => (
@@ -187,7 +189,7 @@ function View({ deal, version, data }) {
       {h.history.length === 0 && <p className="hint">No fixes recorded.</p>}
       {h.history.map((f, n) => (
         <p key={n}>
-          <strong>{f.route}</strong> · {f.owner} · {fmtDate(f.date)} · approved by {f.approved_by}
+          <strong>{f.route}</strong> · {f.owner} · {fmtDate(f.date)} · signed off by {f.approved_by}
           <br />
           {f.rationale}
           <br />

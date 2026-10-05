@@ -250,13 +250,18 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
         try:
             evidence = [(int(e["source_version_id"]), str(e.get("locator") or "whole document")[:200], None)
                         for e in body.get("evidence") or []]
+            # One transaction: the draft and its sign-off are saved together or not at all, so a refused sign-off
+            # never leaves an unapproved draft behind.
             fix_id = ledger_fixes.create_fix(conn, deal, str(body.get("route", "")), str(body.get("owner", "")),
                                              str(body.get("rationale", "")), [int(i) for i in body.get("issue_ids") or []],
-                                             evidence)
-            ledger_fixes.approve_fix(conn, fix_id, str(body.get("approved_by", "")))
+                                             evidence, commit=False)
+            ledger_fixes.approve_fix(conn, fix_id, str(body.get("approved_by", "")), commit=False)
+            conn.commit()
         except (ledger_fixes.FixError, KeyError, ValueError, TypeError) as exc:
+            conn.rollback()
             raise bad_request(exc) from None
         except sqlite3.IntegrityError as exc:
+            conn.rollback()
             raise HTTPException(status_code=400, detail=f"Refused by the ledger: {exc}") from None
         return {"fix_id": fix_id}
 

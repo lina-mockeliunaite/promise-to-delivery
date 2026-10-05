@@ -316,7 +316,7 @@ class TestExports(HandoffCase):
     def test_clean_commitments_show_one_main_statement(self):
         snap = self.snapshot()
         clean = [c for c in snap["commitments"] if c["issue_count"] == 0]
-        self.assertEqual(len(clean), 4)
+        self.assertEqual(len(clean), 4)  # three firm, one conditional ("Not checked")
         reg = {c["name"]: c for c in workspace.register(self.conn, "harbour_bank")["commitments"]}
         for c in clean:
             self.assertEqual(len(c["evidence"]), 1)
@@ -416,6 +416,38 @@ class TestExports(HandoffCase):
         self.assertNotIn("<th>Type</th>", sources)
         self.assertIn("<th>Document</th><th>Version</th><th>Date</th><th>Used</th>", sources)
         self.assertEqual(page.count("Resolved means"), 1)
+
+    def test_promises_that_are_not_firm_say_not_checked_instead_of_no_issues_raised(self):
+        reg = workspace.register(self.conn, "harbour_bank")
+        by = {c["name"]: c for c in reg["commitments"]}
+        golive = by["Go-live"]
+        self.assertEqual((golive["language"], golive["status"]), ("conditional", "Not checked: conditional promise"))
+        self.assertEqual(golive["check_note"], "Only firm promises are checked against approval and the contract.")
+        firm_clean = [c for c in reg["commitments"] if c["language"] == "firm" and not c["issues"]]
+        self.assertEqual(len(firm_clean), 3)
+        self.assertTrue(all(c["status"] == "No issues raised" and c["check_note"] == "" for c in firm_clean))
+        self.assertEqual(reg["counts"].get("No issues raised"), 3)
+        self.assertEqual(reg["counts"].get("Not checked: conditional promise"), 1)
+        snap = self.snapshot()
+        row = next(c for c in snap["commitments"] if c["promise"] == "Go-live")
+        self.assertEqual((row["status"], row["check_note"]), ("Not checked: conditional promise", workspace.CHECK_NOTE))
+        csv_rows = list(csv.reader(io.StringIO(handoff.render_csv(snap).lstrip("\ufeff"))))
+        golive_row = next(r for r in csv_rows if r[0] == "Go-live")
+        self.assertEqual((golive_row[2], golive_row[4]), ("Not checked: conditional promise", workspace.CHECK_NOTE))
+        clean_firm_row = next(r for r in csv_rows if r[2] == "No issues raised")
+        self.assertEqual(clean_firm_row[4], "")
+        page = handoff.render_html(snap, 1)
+        self.assertIn("Not checked: conditional promise", page)
+        self.assertIn(workspace.CHECK_NOTE, page)
+        self.assertNotIn(workspace.CHECK_NOTE, handoff.render_html({**snap, "commitments": [
+            c for c in snap["commitments"] if not c["check_note"]]}, 1))  # no footnote when nothing was skipped
+
+    def test_display_status_names_the_language(self):
+        self.assertEqual(workspace.display_status("No issues raised", "exploratory"), "Not checked: exploratory promise")
+        self.assertEqual(workspace.display_status("No issues raised", "conditional"), "Not checked: conditional promise")
+        self.assertEqual(workspace.display_status("No issues raised", "firm"), "No issues raised")
+        self.assertEqual(workspace.display_status("Needs action", "firm"), "Needs action")
+        self.assertEqual(workspace.display_status("Not in current documents", "conditional"), "Not in current documents")
 
     def test_dates_in_the_summary_read_as_28_sep_2026_not_iso(self):
         page = handoff.render_html(self.snapshot(), 1)

@@ -152,6 +152,16 @@ def documents(conn, slug: str) -> list:
     return out
 
 
+CHECK_NOTE = "Only firm promises are checked against approval and the contract."
+
+
+def display_status(status: str, language: str) -> str:
+    """A promise that is not firm is never checked, so 'No issues raised' would overstate: say it was not checked."""
+    if status == "No issues raised" and language in ("conditional", "exploratory"):
+        return f"Not checked: {language} promise"
+    return status
+
+
 GAP_PREFIX = "Firm promise absent from the contract terms, and nothing withdraws it. "
 INCORPORATED_NAMES = {"draft_sow": "SOW", "draft_contract": "draft contract"}
 
@@ -317,8 +327,10 @@ def register(conn, slug: str) -> dict:
             if term:
                 presence_label = f"Not in the contract: the contract says {term} instead."
                 break
+        shown_status = display_status(status, language)
         commitments.append({
-            "id": cid, "name": display_name(cname, statements), "note": note, "status": status, "language": language,
+            "id": cid, "name": display_name(cname, statements), "note": note, "status": shown_status, "language": language,
+            "check_note": CHECK_NOTE if shown_status != status else "",
             "authorisation": AUTH_LABELS.get(auth, auth), "authorisation_evidence": shown_auth or plain(auth_ev, names),
             "presence": presence_label, "presence_detail": shown_presence or plain(pdetail, names),
             "progression": progression(statements),

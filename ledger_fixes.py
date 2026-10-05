@@ -180,7 +180,7 @@ def create_fix(conn, slug: str, route: str, owner: str, rationale: str, issue_id
 
 def approve_fix(conn, fix_id: int, approved_by: str, commit: bool = True) -> None:
     if not approved_by or not approved_by.strip():
-        raise FixError("approval needs a name")
+        raise FixError("a fix needs the name of who signs it off")
     try:
         conn.execute("UPDATE fixes SET status = 'approved', approved_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now'),"
                      " approved_by = ? WHERE id = ?", (approved_by, fix_id))
