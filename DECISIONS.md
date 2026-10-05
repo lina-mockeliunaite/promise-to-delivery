@@ -604,3 +604,26 @@ An accountable person and deadline belong to the issue. They may carry forward o
 **Schedule.** The hours ceiling is lifted. The 22 October hard stop, Coral Pay seal until 14 October, and end-of-day learning close remain unchanged.
 
 The next implementation brief covers only integrity rules and the two pre-implementation inspections (`docs/BRIEF_2026-10-06_integrity.md`). Layout and recipient choices await the real checkpoint. No integrity change requires opening Coral Pay before the sealed evaluation.
+
+## 2026-10-05 — Reframe: handoff record first, pre-signature review second
+
+Decision: Position the product as a handoff record for Delivery, CS and
+Support ("the deal as it was actually promised"), with pre-signature use
+as the upgrade ("run it before signature and gaps can still be fixed in
+the contract").
+
+Why: The users who feel the pain are the ones receiving the deal; CS
+leadership holds budget for reducing escalations; it avoids positioning
+against Sales' incentive to sign.
+
+Not changed: engine, rules, fix routes, recheck, handoff build. No code
+changes before Checkpoint 1. Scope freeze 12 Oct still applies.
+
+Accepted weak point: document assembly still depends on Sales. Today's
+answer: the AE attaches documents at handoff; later, connectors (not built).
+
+To test at CP1: does the reviewer name a real, recent kickoff surprise
+and its cost; who would assemble the documents; trust vs AE handoff notes.
+
+Deferred to 12 Oct: handoff record as landing screen; post-signature
+"reset the expectation with the customer" fix route.
