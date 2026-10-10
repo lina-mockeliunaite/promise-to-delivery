@@ -796,3 +796,8 @@ Full analysis: `docs/RESULTS_coral_pay_2026-10-10.md`. Seal verified 12/12. Cost
 **Frozen now (v2_version 2):** `detect_v2.py` prompt and verifier, `score_v2.py`. No further prompt or verifier changes before the sealed run; nothing changes in response to it.
 **Sealed run also runs the one-call baseline** (the same task as on Coral Pay), so v2 is compared with a single prompt on the same unseen deal. Baseline scored by hand against the labels after the run.
 **Pass criteria confirmed as written (15:30 entry):** ≥80% of labelled (commitment, issue) targets found; ≤1 false flag; a parse error or truncated reply is a failed run, not a retry.
+
+## 2026-10-10, 17:05 — Sealed v2 run on Atlas Remit: pass; atlas_remit released
+
+Full analysis: `docs/RESULTS_atlas_remit_v2_2026-10-10.md`. Committed before the run (`d539f5e`); run once 08:44 UTC; seal 12/12; $0.248. **v2: 8 of 8 targets, 0 false flags, 0 rejected, reply complete: passes all three pre-registered criteria.** One-call baseline: also 8 of 8; 1 finding outside the labels (Polygon promised two days before its exception was approved: a real timing point, a false flag under the frozen labels); reply truncated at the token limit. **Conclusion:** v2 matches a single prompt on detection on this deal; its value is verified, structured findings the app can recheck and close. Sample is one deal, 8 targets. Limitation found: the verifier's approval guard reads "approved by <Name>" only, not "Approver: <Name>"; the model, not the verifier, kept AC07 clean. Not changed after the run.
+**atlas_remit is released** from this point (used once); it becomes development data like Coral Pay. Next: Stage 2, v2 findings into the app (issues, recheck, handoff).

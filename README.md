@@ -47,6 +47,19 @@ Coral Pay was written before the build and sealed: no code read it until a singl
 
 **The finding that matters:** a single model call over all the documents found **all 3** planted issues with no false flags; the rules found 1. The rules' vocabulary was tuned on development wording and did not generalise. What the pipeline adds is not better detection but evidence-bound findings, recheck, decisions that never change findings, and a handoff record. The next design is model-led detection with rule-checked evidence.
 
+## Version 2 (model detects, code verifies): second sealed deal, 10 Oct 2026
+
+After the Coral Pay result, detection was rebuilt: one model call proposes each finding with exact quotes and catalogue or contract citations, and code rejects any finding whose quotes or citations do not check out. Tuned on the four development deals (including Coral Pay, now seen), frozen and committed, then run once on **Atlas Remit**, a deal written and sealed by an isolated agent that never saw v2's code. Full analysis: [`docs/RESULTS_atlas_remit_v2_2026-10-10.md`](docs/RESULTS_atlas_remit_v2_2026-10-10.md).
+
+| | Pre-registered target | v2 | One-call baseline |
+| --- | --- | --- | --- |
+| Labelled issues found | ≥ 80% | **8 of 8** | 8 of 8 |
+| False flags | ≤ 1 | **0** | 1 (a real timing point outside the labels) |
+| Reply complete and parsed | required | **yes** | truncated at the token limit |
+| Every finding mechanically checked | — | **yes** | no (free text, scored by hand) |
+
+**Read it straight:** v2 did not out-detect a single prompt; it matched it, and its findings are verifiable and structured enough for the app to recheck and close. One deal and eight targets is a small sample.
+
 ## Known limitations (stated plainly)
 
 - **Paraphrase and unseen wording.** The rules found 0 of 5 reworded approval issues in a practice set, and 1 of 3 planted issues on the sealed deal; the misses reached review as *Needs evidence*, not as findings.

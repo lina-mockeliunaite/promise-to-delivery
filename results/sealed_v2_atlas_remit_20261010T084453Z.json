@@ -1,0 +1,453 @@
+{
+  "kind": "v2_sealed",
+  "v2_version": 2,
+  "model": "claude-sonnet-5",
+  "seal_files_verified": 12,
+  "deals": [
+    {
+      "deal": "atlas_remit",
+      "model": "claude-sonnet-5",
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 12984,
+        "output_tokens": 11930
+      },
+      "cost_usd": 0.145268,
+      "findings": [
+        {
+          "kind": "absolute_limit",
+          "commitment": "Real-time wallet screening for Tron payouts",
+          "promise_quotes": [
+            {
+              "source_id": "AR-04",
+              "quote": "NUSD payouts that Atlas routes over Tron will also have the receiving wallet screened in real time before funds are released, so your Indonesian partners are covered from day one."
+            }
+          ],
+          "catalogue_path": "CAP-021/SG",
+          "unlisted_value": "Tron",
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Tron is not a network supported by the on-chain wallet screening catalogue entry for Singapore, so real-time Tron wallet screening cannot be delivered even with an approved exception."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Real-time wallet screening for Tron payouts",
+          "promise_quotes": [
+            {
+              "source_id": "AR-04",
+              "quote": "NUSD payouts that Atlas routes over Tron will also have the receiving wallet screened in real time before funds are released, so your Indonesian partners are covered from day one."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "routes over Tron",
+            "Indonesian partners are covered"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The proposal's Tron wallet-screening commitment is not reflected anywhere in the SOW, Annex 1 or the Agreement, and nothing withdraws it."
+        },
+        {
+          "kind": "conflicting_terms",
+          "commitment": "Sanctions and name screening capacity promised at up to 60,000 checks a day",
+          "promise_quotes": [
+            {
+              "source_id": "AR-04",
+              "quote": "Name and sanctions screening is sized at up to sixty thousand checks a day, comfortably above your forecast peak."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": {
+            "source_id": "AR-06",
+            "quote": "Elva will screen customer and beneficiary names against sanctions lists at volumes of up to 30,000 screenings per day."
+          },
+          "note_quote": null,
+          "subject": "sanctions",
+          "promised_value": "sixty thousand checks a day",
+          "contract_value": "30,000 screenings per day",
+          "reason": "The proposal promises sanctions screening capacity of up to 60,000 checks a day, but the SOW caps the same service at 30,000 per day, a direct sizing conflict that undercuts the customer's peak-volume forecast."
+        },
+        {
+          "kind": "over_limit",
+          "commitment": "Payout ledger connector provisioned for 30,000 payouts per day",
+          "promise_quotes": [
+            {
+              "source_id": "AR-04",
+              "quote": "The payout ledger connector will be provisioned for 30,000 payouts daily from launch."
+            }
+          ],
+          "catalogue_path": "CAP-023/SG",
+          "unlisted_value": null,
+          "limit_name": "max_payouts_per_day",
+          "promised_quantity": 30000,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "AR-05",
+            "quote": "Proposal sizing is 30,000/day. No approval on file for volume above the limit."
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The promised 30,000 payouts per day exceeds the Singapore catalogue limit of 25,000 for the payout ledger connector, and no approved exception has been recorded."
+        },
+        {
+          "kind": "approval_required",
+          "commitment": "Ingest third-party behavioural/device risk scores into fraud rules and investigations from go-live",
+          "promise_quotes": [
+            {
+              "source_id": "AR-04",
+              "quote": "Elva will ingest the device and behavioural risk scores from your existing behavioural-biometrics vendor and make them available to fraud rules and investigators from go-live."
+            }
+          ],
+          "catalogue_path": "CAP-027/SG",
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "AR-05",
+            "quote": "Exception approved in principle on deal desk call, 17 Oct. Approver: not recorded."
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The third-party behavioural intelligence connector requires a named approval for Singapore, but the pricing note only records an approval in principle with no named approver, so it is not properly authorised to sell."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Ingest third-party behavioural/device risk scores into fraud rules and investigations from go-live",
+          "promise_quotes": [
+            {
+              "source_id": "AR-04",
+              "quote": "Elva will ingest the device and behavioural risk scores from your existing behavioural-biometrics vendor and make them available to fraud rules and investigators from go-live."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "behavioural risk scores",
+            "existing behavioural-biometrics vendor"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The commitment to ingest behavioural/device risk scores from the customer's biometrics vendor is absent from the SOW and Agreement, and nothing withdraws it, despite the customer's fraud-rule build depending on it."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Automatic drafting of suspicious transaction reports from the case record",
+          "promise_quotes": [
+            {
+              "source_id": "AR-04",
+              "quote": "Suspicious transaction reports will be drafted automatically from the case record, ready for your MLRO to review and file."
+            },
+            {
+              "source_id": "AR-02",
+              "quote": "Once an analyst marks a case as suspicious, we generate the STR for them."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "drafted automatically",
+            "ready for your MLRO",
+            "review and file"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The automatic STR-drafting commitment that the customer's MLRO team is relying on does not appear anywhere in the SOW or Agreement, and nothing withdraws it."
+        }
+      ],
+      "v2_version": 2,
+      "accepted": [
+        {
+          "kind": "absolute_limit",
+          "commitment": "Real-time wallet screening for Tron payouts",
+          "promise_quotes": [
+            {
+              "source_id": "AR-04",
+              "quote": "NUSD payouts that Atlas routes over Tron will also have the receiving wallet screened in real time before funds are released, so your Indonesian partners are covered from day one."
+            }
+          ],
+          "catalogue_path": "CAP-021/SG",
+          "unlisted_value": "Tron",
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Tron is not a network supported by the on-chain wallet screening catalogue entry for Singapore, so real-time Tron wallet screening cannot be delivered even with an approved exception.",
+          "problems": []
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Real-time wallet screening for Tron payouts",
+          "promise_quotes": [
+            {
+              "source_id": "AR-04",
+              "quote": "NUSD payouts that Atlas routes over Tron will also have the receiving wallet screened in real time before funds are released, so your Indonesian partners are covered from day one."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "routes over Tron",
+            "Indonesian partners are covered"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The proposal's Tron wallet-screening commitment is not reflected anywhere in the SOW, Annex 1 or the Agreement, and nothing withdraws it.",
+          "problems": []
+        },
+        {
+          "kind": "conflicting_terms",
+          "commitment": "Sanctions and name screening capacity promised at up to 60,000 checks a day",
+          "promise_quotes": [
+            {
+              "source_id": "AR-04",
+              "quote": "Name and sanctions screening is sized at up to sixty thousand checks a day, comfortably above your forecast peak."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": {
+            "source_id": "AR-06",
+            "quote": "Elva will screen customer and beneficiary names against sanctions lists at volumes of up to 30,000 screenings per day."
+          },
+          "note_quote": null,
+          "subject": "sanctions",
+          "promised_value": "sixty thousand checks a day",
+          "contract_value": "30,000 screenings per day",
+          "reason": "The proposal promises sanctions screening capacity of up to 60,000 checks a day, but the SOW caps the same service at 30,000 per day, a direct sizing conflict that undercuts the customer's peak-volume forecast.",
+          "problems": []
+        },
+        {
+          "kind": "over_limit",
+          "commitment": "Payout ledger connector provisioned for 30,000 payouts per day",
+          "promise_quotes": [
+            {
+              "source_id": "AR-04",
+              "quote": "The payout ledger connector will be provisioned for 30,000 payouts daily from launch."
+            }
+          ],
+          "catalogue_path": "CAP-023/SG",
+          "unlisted_value": null,
+          "limit_name": "max_payouts_per_day",
+          "promised_quantity": 30000,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "AR-05",
+            "quote": "Proposal sizing is 30,000/day. No approval on file for volume above the limit."
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The promised 30,000 payouts per day exceeds the Singapore catalogue limit of 25,000 for the payout ledger connector, and no approved exception has been recorded.",
+          "problems": []
+        },
+        {
+          "kind": "approval_required",
+          "commitment": "Ingest third-party behavioural/device risk scores into fraud rules and investigations from go-live",
+          "promise_quotes": [
+            {
+              "source_id": "AR-04",
+              "quote": "Elva will ingest the device and behavioural risk scores from your existing behavioural-biometrics vendor and make them available to fraud rules and investigators from go-live."
+            }
+          ],
+          "catalogue_path": "CAP-027/SG",
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "AR-05",
+            "quote": "Exception approved in principle on deal desk call, 17 Oct. Approver: not recorded."
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The third-party behavioural intelligence connector requires a named approval for Singapore, but the pricing note only records an approval in principle with no named approver, so it is not properly authorised to sell.",
+          "problems": []
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Ingest third-party behavioural/device risk scores into fraud rules and investigations from go-live",
+          "promise_quotes": [
+            {
+              "source_id": "AR-04",
+              "quote": "Elva will ingest the device and behavioural risk scores from your existing behavioural-biometrics vendor and make them available to fraud rules and investigators from go-live."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "behavioural risk scores",
+            "existing behavioural-biometrics vendor"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The commitment to ingest behavioural/device risk scores from the customer's biometrics vendor is absent from the SOW and Agreement, and nothing withdraws it, despite the customer's fraud-rule build depending on it.",
+          "problems": []
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Automatic drafting of suspicious transaction reports from the case record",
+          "promise_quotes": [
+            {
+              "source_id": "AR-04",
+              "quote": "Suspicious transaction reports will be drafted automatically from the case record, ready for your MLRO to review and file."
+            },
+            {
+              "source_id": "AR-02",
+              "quote": "Once an analyst marks a case as suspicious, we generate the STR for them."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "drafted automatically",
+            "ready for your MLRO",
+            "review and file"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The automatic STR-drafting commitment that the customer's MLRO team is relying on does not appear anywhere in the SOW or Agreement, and nothing withdraws it.",
+          "problems": []
+        }
+      ],
+      "rejected": [],
+      "score": {
+        "deal": "atlas_remit",
+        "targets": 8,
+        "found": 8,
+        "missed": [],
+        "accepted": 7,
+        "false_flags": 0,
+        "duplicates": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "rejected": 0,
+        "rejected_true": [],
+        "rows": [
+          {
+            "kind": "absolute_limit",
+            "commitment": "Real-time wallet screening for Tron payouts",
+            "matched": [
+              "AC01"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "contract_gap",
+            "commitment": "Real-time wallet screening for Tron payouts",
+            "matched": [
+              "AC01"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "conflicting_terms",
+            "commitment": "Sanctions and name screening capacity promised at up to 60,000 checks a day",
+            "matched": [
+              "AC02"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "over_limit",
+            "commitment": "Payout ledger connector provisioned for 30,000 payouts per day",
+            "matched": [
+              "AC05"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "approval_required",
+            "commitment": "Ingest third-party behavioural/device risk scores into fraud rules and investigations from go-live",
+            "matched": [
+              "AC03"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "contract_gap",
+            "commitment": "Ingest third-party behavioural/device risk scores into fraud rules and investigations from go-live",
+            "matched": [
+              "AC03"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "contract_gap",
+            "commitment": "Automatic drafting of suspicious transaction reports from the case record",
+            "matched": [
+              "AC04"
+            ],
+            "verdict": "hit"
+          }
+        ]
+      }
+    }
+  ],
+  "baseline": {
+    "answer": "# Review Findings — Atlas Remit / Atlas Direct\n\n## A. Customer-facing promises beyond Elva's catalogue or approved scope\n\n**1. Tron wallet screening — not in the catalogue at all**\n> \"NUSD payouts that Atlas routes over Tron will also have the receiving wallet screened in real time before funds are released, so your Indonesian partners are covered from day one.\"\n— **AR-04** (proposal)\n\nCAP-021 only defines SG coverage for Ethereum and Polygon/NUSD. Tron does not appear anywhere in the schema. Per the catalogue's `unlisted_rule`, an absent network \"cannot be sold under a named exception; only changing or withdrawing the promise resolves it.\" Elva's own deal desk confirms this: \"Tron (any asset, any mode) | Not in catalogue … Not offered\" (**AR-05**, row 3). The promise was made to the customer anyway, with no approval mechanism available to cure it.\n\n**2. Payout ledger connector sized above the catalogue limit without an approved exception**\n> \"The payout ledger connector will be provisioned for 30,000 payouts daily from launch.\"\n— **AR-04**, repeated at **AR-06** §4.1: \"support up to thirty thousand (30,000) payouts per day\"\n\nCAP-023 caps SG at `max_payouts_per_day: 25,000`. Deal desk flags exactly this: \"Proposal sizing is 30,000/day. No approval on file for volume above the limit\" (**AR-05**, row 5). The commitment was made to the customer and then carried straight into the draft SOW with no exception on record.\n\n**3. Behavioural-intelligence (fraud signal) connector committed without a valid named approval**\n> \"Elva will ingest the device and behavioural risk scores from your existing behavioural-biometrics vendor and make them available to fraud rules and investigators from go-live.\"\n— **AR-04**\n\nCAP-027 is beta/`requires_named_approval` in SG. As of **AR-02** (7 Oct), Elva's own solutions consultant said \"I'd need to check what we can commit to before I say yes\" — i.e., unresolved. By the time of the proposal (16 Oct) it is stated as an unconditional commitment, yet the only approval on file is described in **AR-05** row 4 as \"approved in principle on deal desk call … Approver: not recorded\" — materially weaker than the properly minuted Polygon exception (row 2, named approver, forum minute). A firm go-live promise rests on an undocumented approval for a beta capability.\n\n**4. Polygon real-time screening promised before the named exception existed**\n> \"Recipient wallets on both Ethereum and Polygon will be screened in real time, ahead of release, for every NUSD payout.\"\n— **AR-04**, dated 16 October 2026\n\nCAP-021 shows Polygon real-time as beta/`requires_named_approval`. The named exception was only approved on **18 October 2026** (PF-2026-41, per **AR-05** row 2) — two days *after* this unconditional promise was made to the customer. It was later regularised in the SOW, but the proposal itself exceeded approved scope at the moment it was sent.\n\n## B. Firm, specific promises missing or changed in the draft agreement without explicit withdrawal\n\n**5. Tron promise dropped from the SOW/contract, customer still relying on it**\nAnnex 1 of **AR-06** lists only Ethereum (1.1) and Polygon (1.2) — Tron is absent, with no clause stating it is excluded or withdrawn. Yet the customer email confirms ongoing reliance:\n> \"Our compliance plan for the Indonesian corridor assumes Tron payouts are screened in real time exactly as your proposal describes.\"\n— **AR-08**\n\nCombined with the entire-agreement clause (**AR-07** §15), Melissa's team believes a commitment is live that will be contractually extinguished on signature unless this is actively corrected with Atlas.\n\n**6. Automatic STR drafting promised, then omitted from the SOW**\n> \"Suspicious transaction reports will be drafted automatically from the case record, ready for your MLRO to review and file.\"\n— **AR-04**\n\nThis is in-catalogue (CAP-015, GA/standard), so deliverable — but **AR-06** contains no clause describing SAR/STR drafting anywhere in its sections. The customer has built process around it and says so explicitly:\n> \"My MLRO team has built its STR process around the automatic drafting you showed us, so we are counting on that being there at go-live.\"\n— **AR-08**\n\nWith the entire-agreement clause in **AR-07** §15 superseding \"all prior proposals,\" this specific, relied-upon commitment risks disappearing unless written into the SOW.\n\n**7. Fraud/behavioural signal ingestion promised, then omitted from the SOW**\nAs in item 3, **AR-04** firmly promised ingestion of behavioural scores \"from go-live.\" **AR-06** and **AR-07** contain no clause on this capability at all. Customer reliance is explicit:\n> \"Joel's team is planning the fraud-rule build around the behavioural scores flowing in from day one.\"\n— **AR-08**\n\nThis compounds problem 3: not only is the underlying approval weak, the commitment has also vanished from the document that would actually bind Elva.\n\n**8. Sanctions screening volume silently cut from 60,000/day to 30,000/day**\n> \"Name and sanctions screening is sized at up to sixty thousand checks a day, comfortably above your forecast peak.\"\n— **AR-04**\n\nversus\n\n> \"3.1 Elva will screen customer and beneficiary names against sanctions lists at volumes of up to 30,000 screenings per day.\"\n— **AR-06**\n\nNo document explains or flags this reduction to the customer. It matters because the customer's own current forecast has since moved up, not down:\n> \"Peak-day modelling now puts us at around 45,000 name screenings, so the sizing in the proposal matters to us.\"\n— **AR-08**\n\nThe SOW figure (30,000) is now below the customer's stated peak need (45,000",
+    "stop_reason": "max_tokens",
+    "cost_usd": 0.102854,
+    "usage": {
+      "input_tokens": 11427,
+      "output_tokens": 8000
+    },
+    "scoring": "manual: compare each problem the baseline names with the commitment labels"
+  },
+  "file": "sealed_v2_atlas_remit_20261010T084453Z.json"
+}

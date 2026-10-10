@@ -6,9 +6,7 @@
       "Edit(./data/coral_pay/**)",
       "Read(./data/coral_pay.sha256)",
       "Edit(./data/coral_pay.sha256)",
-      "Read(./data/atlas_remit/**)",
       "Edit(./data/atlas_remit/**)",
-      "Read(./data/atlas_remit.sha256)",
       "Edit(./data/atlas_remit.sha256)"
     ]
   }
