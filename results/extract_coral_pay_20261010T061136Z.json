@@ -1,0 +1,403 @@
+{
+  "deal": "coral_pay",
+  "timestamp_utc": "2026-10-10T06:11:36+00:00",
+  "model": "claude-sonnet-5",
+  "max_tokens": 8000,
+  "thinking_mode": "model_default",
+  "thinking_param_sent": null,
+  "prompt_hashes": {
+    "system_prompt_sha256": "db9e892a315dab16e1dab527f2ab400f852750c9fc2c2eedef20afb305539e0a",
+    "user_template_sha256": "2afd3f1e5767267451f199f06d1ddcf1d6a3f2cdbf7acf4798939a4c18a398d4",
+    "schema_sha256": "a4debfaf8d03c75b41ab354d49451522b20119c90df1ee6643c5690a7fc0d5a8"
+  },
+  "price_per_mtok_usd": {
+    "input": 2.0,
+    "output": 10.0
+  },
+  "status_counts": {
+    "complete": 6,
+    "skipped_reference_only": 2
+  },
+  "totals": {
+    "input_tokens": 9917,
+    "output_tokens": 3786,
+    "thinking_tokens": 2624,
+    "cost_usd": 0.057694
+  },
+  "documents": [
+    {
+      "source_id": "CP-01",
+      "file": "CP-01_discovery_call.md",
+      "doc_type": "call_transcript",
+      "date": "2026-11-02",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1806,
+            "output_tokens": 464,
+            "thinking_tokens": 286
+          },
+          "cost_usd": 0.008252
+        }
+      ],
+      "statements": [
+        {
+          "quote": "We're exploring whether Elva's integration could screen NUSD recipient wallets on Solana for your Australian launch.",
+          "speaker": "Ben Carter",
+          "language": "exploratory",
+          "statement_id": "CP-01-S01",
+          "source_id": "CP-01",
+          "doc_type": "call_transcript",
+          "date": "2026-11-02"
+        },
+        {
+          "quote": "I'll bring our implementation lead to the next call so we can talk through the path to go-live.",
+          "speaker": "Ben Carter",
+          "language": "firm",
+          "statement_id": "CP-01-S02",
+          "source_id": "CP-01",
+          "doc_type": "call_transcript",
+          "date": "2026-11-02"
+        },
+        {
+          "quote": "We'll turn that around quickly and follow with a proposal.",
+          "speaker": "Sarah Whitfield",
+          "language": "firm",
+          "statement_id": "CP-01-S03",
+          "source_id": "CP-01",
+          "doc_type": "call_transcript",
+          "date": "2026-11-02"
+        }
+      ],
+      "input_tokens": 1806,
+      "output_tokens": 464,
+      "thinking_tokens": 286,
+      "cost_usd": 0.008252
+    },
+    {
+      "source_id": "CP-02",
+      "file": "CP-02_technical_call.md",
+      "doc_type": "call_transcript",
+      "date": "2026-11-05",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1593,
+            "output_tokens": 540,
+            "thinking_tokens": 410
+          },
+          "cost_usd": 0.008586
+        }
+      ],
+      "statements": [
+        {
+          "quote": "We can target your 15 January 2027 go-live, provided Coral Pay gives us sandbox and testnet access by 15 December 2026.",
+          "speaker": "Hannah Moore",
+          "language": "conditional",
+          "statement_id": "CP-02-S01",
+          "source_id": "CP-02",
+          "doc_type": "call_transcript",
+          "date": "2026-11-05"
+        },
+        {
+          "quote": "We'll share a draft implementation plan alongside the proposal.",
+          "speaker": "Hannah Moore",
+          "language": "firm",
+          "statement_id": "CP-02-S02",
+          "source_id": "CP-02",
+          "doc_type": "call_transcript",
+          "date": "2026-11-05"
+        }
+      ],
+      "input_tokens": 1593,
+      "output_tokens": 540,
+      "thinking_tokens": 410,
+      "cost_usd": 0.008586
+    },
+    {
+      "source_id": "CP-03",
+      "file": "CP-03_deployment_questionnaire.md",
+      "doc_type": "security_questionnaire",
+      "date": "2026-11-09",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1562,
+            "output_tokens": 442,
+            "thinking_tokens": 333
+          },
+          "cost_usd": 0.007544
+        }
+      ],
+      "statements": [
+        {
+          "quote": "Elva will deploy Coral Pay's production environment on Microsoft Azure in the Australia East region.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-03-S01",
+          "source_id": "CP-03",
+          "doc_type": "security_questionnaire",
+          "date": "2026-11-09"
+        },
+        {
+          "quote": "A summary of our most recent independent penetration test is available on request.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-03-S02",
+          "source_id": "CP-03",
+          "doc_type": "security_questionnaire",
+          "date": "2026-11-09"
+        }
+      ],
+      "input_tokens": 1562,
+      "output_tokens": 442,
+      "thinking_tokens": 333,
+      "cost_usd": 0.007544
+    },
+    {
+      "source_id": "CP-04",
+      "file": "CP-04_proposal.md",
+      "doc_type": "proposal",
+      "date": "2026-11-16",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1621,
+            "output_tokens": 849,
+            "thinking_tokens": 567
+          },
+          "cost_usd": 0.011732
+        }
+      ],
+      "statements": [
+        {
+          "quote": "Elva will screen the recipient wallet of every NUSD payout on Solana through its pre-built analytics integration before release.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-04-S01",
+          "source_id": "CP-04",
+          "doc_type": "proposal",
+          "date": "2026-11-16"
+        },
+        {
+          "quote": "The payout ledger connector will handle up to 12,000 payouts per day at launch.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-04-S02",
+          "source_id": "CP-04",
+          "doc_type": "proposal",
+          "date": "2026-11-16"
+        },
+        {
+          "quote": "Elva's sanctions screening API will screen up to 25,000 payer and beneficiary names per day.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-04-S03",
+          "source_id": "CP-04",
+          "doc_type": "proposal",
+          "date": "2026-11-16"
+        },
+        {
+          "quote": "Payout exceptions will be managed in Elva's case management workspace.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-04-S04",
+          "source_id": "CP-04",
+          "doc_type": "proposal",
+          "date": "2026-11-16"
+        },
+        {
+          "quote": "Elva will deliver two 90-minute operations training sessions for Coral Pay's payout operations team before launch.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-04-S05",
+          "source_id": "CP-04",
+          "doc_type": "proposal",
+          "date": "2026-11-16"
+        }
+      ],
+      "input_tokens": 1621,
+      "output_tokens": 849,
+      "thinking_tokens": 567,
+      "cost_usd": 0.011732
+    },
+    {
+      "source_id": "CP-05",
+      "file": "CP-05_pricing_services_note.md",
+      "doc_type": "pricing_services_note",
+      "date": "2026-11-20",
+      "status": "skipped_reference_only",
+      "error": null,
+      "attempts": [],
+      "statements": []
+    },
+    {
+      "source_id": "CP-06",
+      "file": "CP-06_draft_sow.md",
+      "doc_type": "draft_sow",
+      "date": "2026-11-25",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1763,
+            "output_tokens": 1101,
+            "thinking_tokens": 691
+          },
+          "cost_usd": 0.014536
+        }
+      ],
+      "statements": [
+        {
+          "quote": "Provider will deploy Customer's production environment on Microsoft Azure in the Australia East region.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-06-S01",
+          "source_id": "CP-06",
+          "doc_type": "draft_sow",
+          "date": "2026-11-25"
+        },
+        {
+          "quote": "The payout ledger connector will handle up to 12,000 payouts per day at launch.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-06-S02",
+          "source_id": "CP-06",
+          "doc_type": "draft_sow",
+          "date": "2026-11-25"
+        },
+        {
+          "quote": "Provider's sanctions screening API will screen up to 25,000 payer and beneficiary names per day.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-06-S03",
+          "source_id": "CP-06",
+          "doc_type": "draft_sow",
+          "date": "2026-11-25"
+        },
+        {
+          "quote": "Payout exceptions will be managed in Provider's case management workspace.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-06-S04",
+          "source_id": "CP-06",
+          "doc_type": "draft_sow",
+          "date": "2026-11-25"
+        },
+        {
+          "quote": "Provider will provide NUSD recipient-wallet screening for Customer's Solana payouts through Elva's pre-built analytics integration, in accordance with the Wallet Screening Specification in Annex A.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-06-S05",
+          "source_id": "CP-06",
+          "doc_type": "draft_sow",
+          "date": "2026-11-25"
+        },
+        {
+          "quote": "The parties will hold a weekly project status meeting during implementation.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-06-S06",
+          "source_id": "CP-06",
+          "doc_type": "draft_sow",
+          "date": "2026-11-25"
+        },
+        {
+          "quote": "A.1 Solana: each NUSD recipient wallet is screened through the analytics integration in real time before the payout is released.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-06-S07",
+          "source_id": "CP-06",
+          "doc_type": "draft_sow",
+          "date": "2026-11-25"
+        }
+      ],
+      "input_tokens": 1763,
+      "output_tokens": 1101,
+      "thinking_tokens": 691,
+      "cost_usd": 0.014536
+    },
+    {
+      "source_id": "CP-07",
+      "file": "CP-07_draft_contract.md",
+      "doc_type": "draft_contract",
+      "date": "2026-11-27",
+      "status": "complete",
+      "error": null,
+      "attempts": [
+        {
+          "attempt": 1,
+          "ok": true,
+          "error_kind": null,
+          "error": null,
+          "stop_reason": "end_turn",
+          "usage": {
+            "input_tokens": 1572,
+            "output_tokens": 390,
+            "thinking_tokens": 337
+          },
+          "cost_usd": 0.007044
+        }
+      ],
+      "statements": [
+        {
+          "quote": "This Agreement starts on the date of last signature and continues for three years.",
+          "speaker": "Elva",
+          "language": "firm",
+          "statement_id": "CP-07-S01",
+          "source_id": "CP-07",
+          "doc_type": "draft_contract",
+          "date": "2026-11-27"
+        }
+      ],
+      "input_tokens": 1572,
+      "output_tokens": 390,
+      "thinking_tokens": 337,
+      "cost_usd": 0.007044
+    },
+    {
+      "source_id": "CP-08",
+      "file": "CP-08_customer_email.md",
+      "doc_type": "customer_email",
+      "date": "2026-12-01",
+      "status": "skipped_reference_only",
+      "error": null,
+      "attempts": [],
+      "statements": []
+    }
+  ]
+}

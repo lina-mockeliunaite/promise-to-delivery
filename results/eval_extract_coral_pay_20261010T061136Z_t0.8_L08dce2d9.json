@@ -1,0 +1,81 @@
+{
+  "threshold": 0.8,
+  "near_miss_floor": 0.5,
+  "counts": {
+    "tp": 14,
+    "fp": 6,
+    "fn": 0,
+    "labels": 14,
+    "outputs": 20
+  },
+  "precision": 0.7,
+  "recall": 1.0,
+  "recall_firm": 1.0,
+  "language_accuracy": 1.0,
+  "language_confusion": {
+    "exploratory": {
+      "exploratory": 1
+    },
+    "conditional": {
+      "conditional": 1
+    },
+    "firm": {
+      "firm": 12
+    }
+  },
+  "language_mismatches": [],
+  "hedge_errors": [],
+  "non_complete_documents": [
+    {
+      "source_id": "CP-05",
+      "status": "skipped_reference_only",
+      "labels_affected": []
+    },
+    {
+      "source_id": "CP-08",
+      "status": "skipped_reference_only",
+      "labels_affected": []
+    }
+  ],
+  "false_positives": [
+    {
+      "statement_id": "CP-01-S02",
+      "source_id": "CP-01",
+      "language": "firm",
+      "quote": "I'll bring our implementation lead to the next call so we can talk through the path to go-live."
+    },
+    {
+      "statement_id": "CP-01-S03",
+      "source_id": "CP-01",
+      "language": "firm",
+      "quote": "We'll turn that around quickly and follow with a proposal."
+    },
+    {
+      "statement_id": "CP-02-S02",
+      "source_id": "CP-02",
+      "language": "firm",
+      "quote": "We'll share a draft implementation plan alongside the proposal."
+    },
+    {
+      "statement_id": "CP-03-S02",
+      "source_id": "CP-03",
+      "language": "firm",
+      "quote": "A summary of our most recent independent penetration test is available on request."
+    },
+    {
+      "statement_id": "CP-06-S06",
+      "source_id": "CP-06",
+      "language": "firm",
+      "quote": "The parties will hold a weekly project status meeting during implementation."
+    },
+    {
+      "statement_id": "CP-07-S01",
+      "source_id": "CP-07",
+      "language": "firm",
+      "quote": "This Agreement starts on the date of last signature and continues for three years."
+    }
+  ],
+  "false_negatives": [],
+  "near_misses": [],
+  "detail_lost": []
+}

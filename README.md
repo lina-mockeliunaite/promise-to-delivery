@@ -28,24 +28,28 @@ One commitment can carry several of these at once, and they close independently:
 
 ## Where the AI comes in — and where it doesn't
 
-The model reads the paperwork and extracts promises with verifiable quotes. Rules decide, because their verdicts can be traced to a catalogue line or a contract clause. I also built a bounded agent to catch reworded promises the rules miss: it read all five paraphrased cases correctly in substance, but could not back any verdict with evidence in the form the code verifies, so under a decision rule written before the comparison, it does not decide anything yet. A revised agent (v2) has only been smoke-tested; its first real test is the sealed run.
+The model reads the paperwork and extracts promises with verifiable quotes. Rules decide, because their verdicts can be traced to a catalogue line or a contract clause. I also built a bounded agent to catch reworded promises the rules miss: it read all five paraphrased cases correctly in substance, but could not back any verdict with evidence in the form the code verifies, so under a decision rule written before the comparison, it does not decide anything yet. A revised agent (v2) repeated the pattern on the sealed deal: right in substance on two cases the rules missed, unsupported in form. On that deal a plain one-call review found more than the rules did, which is the honest case for model-led detection with rule-checked evidence as the next design.
 
-## Results
+## Results (sealed deal, run once on 10 Oct 2026)
 
-*To be completed after the single sealed run on 14 Oct (Coral Pay, unseen until then): baseline vs rules [vs agent], exact cases, cost, and what failed.*
+Coral Pay was written before the build and sealed: no code read it until a single run per configuration. Full analysis: [`docs/RESULTS_coral_pay_2026-10-10.md`](docs/RESULTS_coral_pay_2026-10-10.md).
 
-| Metric | Target | Result |
+| | Target | Result |
 | --- | --- | --- |
-| Recall, firm commitments | ≥ 90% | |
-| Precision after housekeeping filter | ≥ 85% | |
-| Quote validity | 100% | |
-| Planted conflicts reaching review | 3 of 3 | |
-| False flags on clean commitments | 0 | |
-| Resolution scenarios behaving as expected (development deal, real model) | 5 of 5 | 5 of 5 (10 Oct) |
+| Extraction recall, firm commitments | ≥ 90% | **14/14** |
+| Language (exploratory / conditional / firm) | ≥ 85% | **14/14** |
+| Quote validity | 100% | **100%** |
+| Precision after the housekeeping filter | ≥ 85% | **74%: missed** |
+| Planted issues found exactly by the rules | 3 of 3 | **1 of 3** (the other 2 reached review as *Needs evidence*) |
+| False flags on clean commitments | 0 | **2 of 4** |
+| Agent v2 earns a place (pre-registered rule) | — | **No**: right in substance on 2 cases, unsupported in form, over the time and cost bounds |
+| Resolution scenarios (development deal, real model) | 5 of 5 | **5 of 5** |
+
+**The finding that matters:** a single model call over all the documents found **all 3** planted issues with no false flags; the rules found 1. The rules' vocabulary was tuned on development wording and did not generalise. What the pipeline adds is not better detection but evidence-bound findings, recheck, decisions that never change findings, and a handoff record. The next design is model-led detection with rule-checked evidence.
 
 ## Known limitations (stated plainly)
 
-- **Paraphrase.** The rules found 0 of 5 reworded approval issues in a practice set; they reached review as *Needs evidence*, not as findings.
+- **Paraphrase and unseen wording.** The rules found 0 of 5 reworded approval issues in a practice set, and 1 of 3 planted issues on the sealed deal; the misses reached review as *Needs evidence*, not as findings.
 - **A recheck does not re-read unchanged documents** when extraction settings change: an unchanged version keeps the extraction it already had. Each review records which settings every document was read under and says so when they differ.
 - **Re-confirmation is deal-wide.** Any new evidence asks for every earlier decision to be re-confirmed. Safe, but noisy on a large deal; narrowing it needs dependency tracking.
 - **Synthetic data, small set.** Results describe performance on fictional deals written for this build, not generalisation.

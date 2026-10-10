@@ -1,0 +1,981 @@
+{
+  "deal": "coral_pay",
+  "seal_files_verified": 12,
+  "configuration": {
+    "extraction_model": "claude-sonnet-5",
+    "max_tokens": 8000,
+    "thinking_mode": "model_default",
+    "prompt_hashes": {
+      "system_prompt_sha256": "db9e892a315dab16e1dab527f2ab400f852750c9fc2c2eedef20afb305539e0a",
+      "user_template_sha256": "2afd3f1e5767267451f199f06d1ddcf1d6a3f2cdbf7acf4798939a4c18a398d4",
+      "schema_sha256": "a4debfaf8d03c75b41ab354d49451522b20119c90df1ee6643c5690a7fc0d5a8"
+    },
+    "agent_version": 2,
+    "agent_model": "claude-sonnet-5",
+    "agent_bounds": {
+      "cost_usd": 0.1,
+      "latency_s": 60,
+      "tool_calls_per_commitment": 6,
+      "tool_calls_per_deal": 40,
+      "turns": 15
+    },
+    "rules_config_sha256": "834c711306c1de09d85106226791a9c7d04878623238fd60a0c7bb349f69fb68"
+  },
+  "steps": {
+    "baseline": {
+      "ok": true,
+      "result": {
+        "answer": "# Review Findings\n\n## A. Promises beyond Elva's catalogue or approved scope\n\n### 1. Solana wallet screening — network/region not in catalogue\n\n**Quotes:**\n- CP-04: *\"Elva will screen the recipient wallet of every NUSD payout on Solana through its pre-built analytics integration before release.\"*\n- CP-06, §6: *\"Provider will provide NUSD recipient-wallet screening for Customer's Solana payouts through Elva's pre-built analytics integration, in accordance with the Wallet Screening Specification in Annex A.\"* and Annex A.1: *\"Solana: each NUSD recipient wallet is screened through the analytics integration in real time before the payout is released.\"*\n- CP-07, Clause 3.4: *\"Provider will provide wallet screening services as described in SOW section 6.\"*\n- CP-08: *\"Our 15 January launch depends on Elva screening every Solana recipient wallet before the payout is released.\"*\n\n**Why it's a problem:** CAP-021 (On-chain wallet screening integration) only lists two networks — **Ethereum** and **Polygon** — both only under the **SG** region path; there is no AU entry at all, and no Solana network entry anywhere. Per the catalogue's `unlisted_rule`, \"a region, network, asset or mode absent from this catalogue is not offered... it cannot be sold under a named exception.\" The deal is an Australian launch (AUD funding, AU hosting, AU-scoped CAP-007/CAP-023 limits per CP-05), so CAP-021 isn't even available in this region, and Solana is absent as a network regardless of region. This promise has moved from a hedged \"Product team is reviewing\" (CP-02: *\"Our Product team is reviewing Solana coverage\"*) into firm, unqualified contractual commitments (CP-04 → CP-06 → CP-07) with no catalogue basis and no recorded approval in the deal desk note (CP-05), which is silent on CAP-021 entirely.\n\n### 2. Azure hosting commitment — unsupported cloud\n\n**Quotes:**\n- CP-03: *\"Elva will deploy Coral Pay's production environment on Microsoft Azure in the Australia East region.\"*\n- CP-06, §2: *\"Provider will deploy Customer's production environment on Microsoft Azure in the Australia East region.\"*\n- CP-07, Clause 3.2: *\"Provider will host the services as described in SOW section 2.\"* (incorporating the Azure commitment)\n\n**Why it's a problem:** CAP-019 (Regional cloud deployment) lists `supported_clouds: [\"AWS\", \"GCP\"]` for both SG and AU — Azure is not an option in either region. The deal desk note (CP-05) only confirms no-exception status for \"AWS or GCP,\" never Azure. Despite Coral Pay flagging Azure as their standard (CP-01: *\"our infrastructure standard is Azure\"*), Elva firmly committed to Azure hosting in the security questionnaire and carried it through into the SOW and contract without any named approval or catalogue change — a direct sale of an unlisted cloud.\n\n## B. Firm promises missing/changed in the draft agreement without withdrawal\n\n### 3. Operations training sessions dropped from the SOW\n\n**Quotes:**\n- CP-04, §6: *\"Elva will deliver two 90-minute operations training sessions for Coral Pay's payout operations team before launch.\"*\n- CP-08 (customer email, relying on it): *\"Our operations team is planning around the two training sessions in the first week of January.\"*\n- CP-05 (internal note): training appears only in a *\"Commercial-approved standard service menu (reference only)... not a Coral Pay order or a deal-priced allocation.\"*\n\n**Why it's a problem:** The proposal (CP-04) made a specific, firm, dated commitment to deliver training before launch, and the customer's most recent email (CP-08) confirms Coral Pay is actively relying on it. Yet the draft SOW (CP-06), which purports to describe the full scope of implementation (§§1–8: hosting, payout ledger, sanctions screening, payout exceptions, wallet screening, out-of-scope, governance), contains **no clause referencing training** at all. The internal pricing note confirms this was never actually allocated as a deal-specific, priced service — only listed \"for reference only.\" The promise has quietly disappeared between proposal and SOW without any explicit withdrawal or renegotiation communicated to the customer, creating a live gap between what Coral Pay believes it is owed and what the contract will actually deliver.",
+        "stop_reason": "end_turn",
+        "cost_usd": 0.068014,
+        "usage": {
+          "input_tokens": 8132,
+          "output_tokens": 5175
+        },
+        "scoring": "manual: compare each problem the baseline names with the commitment labels"
+      }
+    },
+    "extraction": {
+      "ok": true,
+      "result": {
+        "run_file": "extract_coral_pay_20261010T061136Z.json",
+        "eval_file": "eval_extract_coral_pay_20261010T061136Z_t0.8_L08dce2d9.json",
+        "status_counts": {
+          "complete": 6,
+          "skipped_reference_only": 2
+        },
+        "cost_usd": 0.057694,
+        "metrics": {
+          "counts": {
+            "tp": 14,
+            "fp": 6,
+            "fn": 0,
+            "labels": 14,
+            "outputs": 20
+          },
+          "precision": 0.7,
+          "recall": 1.0,
+          "recall_firm": 1.0,
+          "language_accuracy": 1.0
+        }
+      }
+    },
+    "rules_and_agent": {
+      "ok": true,
+      "result": {
+        "rules": {
+          "deal": "coral_pay",
+          "review_id": 1,
+          "grouping": {
+            "statements": {
+              "exact": 10,
+              "of": 14
+            },
+            "commitments": {
+              "exact": 3,
+              "of": 7
+            }
+          },
+          "metrics": {
+            "authorisation": {
+              "exact": 4,
+              "of": 7
+            },
+            "presence": {
+              "exact": 5,
+              "of": 7
+            },
+            "issue_sets": {
+              "exact": 3,
+              "of": 7
+            },
+            "issues": {
+              "true_positive": 1,
+              "false_positive": 5,
+              "false_negative": 2
+            },
+            "absolute_limit": {
+              "exact": 6,
+              "of": 7
+            },
+            "false_flags_on_clean_commitments": 2,
+            "commitments_with_issues_reaching_review": {
+              "found": 3,
+              "of": 3
+            }
+          },
+          "issues_on_unmatched_predicted_groups": [
+            {
+              "predicted": "C03",
+              "issues": [
+                [
+                  "insufficient_evidence",
+                  "authorisation",
+                  0
+                ],
+                [
+                  "insufficient_evidence",
+                  "contract",
+                  0
+                ]
+              ]
+            },
+            {
+              "predicted": "C05",
+              "issues": [
+                [
+                  "insufficient_evidence",
+                  "authorisation",
+                  0
+                ],
+                [
+                  "insufficient_evidence",
+                  "contract",
+                  0
+                ]
+              ]
+            },
+            {
+              "predicted": "C06",
+              "issues": [
+                [
+                  "approval",
+                  "authorisation",
+                  1
+                ],
+                [
+                  "insufficient_evidence",
+                  "contract",
+                  0
+                ]
+              ]
+            },
+            {
+              "predicted": "C11",
+              "issues": [
+                [
+                  "insufficient_evidence",
+                  "authorisation",
+                  0
+                ]
+              ]
+            },
+            {
+              "predicted": "C14",
+              "issues": [
+                [
+                  "insufficient_evidence",
+                  "authorisation",
+                  0
+                ]
+              ]
+            },
+            {
+              "predicted": "C15",
+              "issues": [
+                [
+                  "insufficient_evidence",
+                  "authorisation",
+                  0
+                ]
+              ]
+            }
+          ],
+          "commitments": [
+            {
+              "label": "C01",
+              "name": "Two 90-minute operations training sessions before launch",
+              "predicted": "C10",
+              "authorisation": {
+                "label": "standard_authorised",
+                "rules": "unknown_needs_review",
+                "match": false
+              },
+              "presence": {
+                "label": "absent",
+                "rules": "absent",
+                "match": true
+              },
+              "issues": {
+                "label": [
+                  "contract_gap"
+                ],
+                "rules": [
+                  "insufficient_evidence"
+                ],
+                "match": false
+              },
+              "absolute_limit": {
+                "label": false,
+                "rules": false,
+                "match": true
+              }
+            },
+            {
+              "label": "C02",
+              "name": "Every NUSD payout on Solana: recipient wallet screened through Elva's analytics integration before release (real time per Annex A)",
+              "predicted": "C13",
+              "authorisation": {
+                "label": "no_approval_evidence",
+                "rules": "no_approval_evidence",
+                "match": true
+              },
+              "presence": {
+                "label": "included_in_draft_contract",
+                "rules": "included_in_draft_contract",
+                "match": true
+              },
+              "issues": {
+                "label": [
+                  "approval"
+                ],
+                "rules": [
+                  "approval"
+                ],
+                "match": true
+              },
+              "absolute_limit": {
+                "label": true,
+                "rules": true,
+                "match": true
+              }
+            },
+            {
+              "label": "C03",
+              "name": "Coral Pay production environment deployed on Microsoft Azure, Australia East",
+              "predicted": "C04",
+              "authorisation": {
+                "label": "no_approval_evidence",
+                "rules": "unknown_needs_review",
+                "match": false
+              },
+              "presence": {
+                "label": "included_in_draft_contract",
+                "rules": "absent",
+                "match": false
+              },
+              "issues": {
+                "label": [
+                  "approval"
+                ],
+                "rules": [
+                  "insufficient_evidence"
+                ],
+                "match": false
+              },
+              "absolute_limit": {
+                "label": true,
+                "rules": false,
+                "match": false
+              }
+            },
+            {
+              "label": "C04",
+              "name": "Payout ledger connector up to 12,000 payouts/day at launch",
+              "predicted": "C07",
+              "authorisation": {
+                "label": "standard_authorised",
+                "rules": "standard_authorised",
+                "match": true
+              },
+              "presence": {
+                "label": "included_in_draft_contract",
+                "rules": "included_in_draft_contract",
+                "match": true
+              },
+              "issues": {
+                "label": [],
+                "rules": [],
+                "match": true
+              },
+              "absolute_limit": {
+                "label": false,
+                "rules": false,
+                "match": true
+              }
+            },
+            {
+              "label": "C05",
+              "name": "Sanctions screening API up to 25,000 payer and beneficiary name screenings/day",
+              "predicted": "C08",
+              "authorisation": {
+                "label": "standard_authorised",
+                "rules": "standard_authorised",
+                "match": true
+              },
+              "presence": {
+                "label": "included_in_draft_contract",
+                "rules": "absent",
+                "match": false
+              },
+              "issues": {
+                "label": [],
+                "rules": [
+                  "insufficient_evidence"
+                ],
+                "match": false
+              },
+              "absolute_limit": {
+                "label": false,
+                "rules": false,
+                "match": true
+              }
+            },
+            {
+              "label": "C06",
+              "name": "Payout exceptions managed in case management workspace",
+              "predicted": "C09",
+              "authorisation": {
+                "label": "standard_authorised",
+                "rules": "standard_authorised",
+                "match": true
+              },
+              "presence": {
+                "label": "included_in_draft_contract",
+                "rules": "included_in_draft_contract",
+                "match": true
+              },
+              "issues": {
+                "label": [],
+                "rules": [],
+                "match": true
+              },
+              "absolute_limit": {
+                "label": false,
+                "rules": false,
+                "match": true
+              }
+            },
+            {
+              "label": "C07",
+              "name": "15 January 2027 go-live, conditional on sandbox/testnet access by 15 December 2026",
+              "predicted": "C02",
+              "authorisation": {
+                "label": null,
+                "rules": "unknown_needs_review",
+                "match": false
+              },
+              "presence": {
+                "label": "absent",
+                "rules": "absent",
+                "match": true
+              },
+              "issues": {
+                "label": [],
+                "rules": [
+                  "contract_gap",
+                  "insufficient_evidence"
+                ],
+                "match": false
+              },
+              "absolute_limit": {
+                "label": false,
+                "rules": false,
+                "match": true
+              }
+            }
+          ],
+          "labels_sha256": {
+            "statements": "08dce2d99fcce2b8eea0fc063ead464984fcc165717963b336e80b87715b8690",
+            "commitments": "ecbdc7be4944e1a84f024915afdd142e0772a589e83bfef285ffc029bbf44e95"
+          }
+        },
+        "agent": {
+          "agent_version": 2,
+          "escalated": [
+            "C02",
+            "C03",
+            "C04",
+            "C05",
+            "C10",
+            "C11",
+            "C14",
+            "C15"
+          ],
+          "run": {
+            "agent_version": 2,
+            "model": "claude-sonnet-5",
+            "escalated": [
+              "C02",
+              "C03",
+              "C04",
+              "C05",
+              "C10",
+              "C11",
+              "C14",
+              "C15"
+            ],
+            "tool_calls": 11,
+            "turns": 3,
+            "tool_call_cap": 40,
+            "status": "complete",
+            "usage": {
+              "input_tokens": 19632,
+              "output_tokens": 8883
+            },
+            "verdicts": {
+              "C02": {
+                "submitted": {
+                  "commitment_key": "C02",
+                  "capability_id": null,
+                  "catalogue_path": null,
+                  "authorisation": "unknown_needs_review",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "recipient-wallet screening decision"
+                    },
+                    {
+                      "term": "quantity",
+                      "phrase": "15 January 2027"
+                    }
+                  ],
+                  "rationale": "The quoted commitments mix a scheduling statement (\"bring our implementation lead to the next call\") with a conditional go-live date tied to sandbox/testnet access, and a reference to a customer-side wallet-screening policy. No specific catalogue capability, network, asset or mode is named, and the pricing note explicitly places Ethereum wallet screening for Coral Pay's own payouts outside the deal scope. The scope this promise commits Elva to cannot be matched to a single catalogue entry, so it cannot be verified as authorised.",
+                  "mode": null,
+                  "network": null,
+                  "region": null,
+                  "asset": null,
+                  "quantity": null,
+                  "pricing_note_line": null
+                },
+                "validation": {
+                  "accepted": true,
+                  "problems": [],
+                  "expected": "unknown_needs_review",
+                  "absolute_limit": false,
+                  "catalogue_paths": []
+                }
+              },
+              "C03": {
+                "submitted": {
+                  "commitment_key": "C03",
+                  "capability_id": null,
+                  "catalogue_path": null,
+                  "authorisation": "unknown_needs_review",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "We'll share a draft implementation plan alongside the proposal."
+                    }
+                  ],
+                  "rationale": "Sharing a draft implementation plan is a documentation/process commitment, not a catalogue capability or a service listed in the pricing note. There is no basis in the catalogue or pricing note to assess authorisation.",
+                  "mode": null,
+                  "network": null,
+                  "region": null,
+                  "asset": null,
+                  "quantity": null,
+                  "pricing_note_line": null
+                },
+                "validation": {
+                  "accepted": true,
+                  "problems": [],
+                  "expected": "unknown_needs_review",
+                  "absolute_limit": false,
+                  "catalogue_paths": []
+                }
+              },
+              "C04": {
+                "submitted": {
+                  "commitment_key": "C04",
+                  "capability_id": "CAP-019",
+                  "catalogue_path": "CAP-019/AU",
+                  "authorisation": "no_approval_evidence",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "Elva will deploy Coral Pay's production environment"
+                    },
+                    {
+                      "term": "region",
+                      "phrase": "Australia East region"
+                    }
+                  ],
+                  "rationale": "CAP-019 Regional cloud deployment is generally available and standard for AU, but its limits restrict supported clouds to AWS and GCP. Microsoft Azure is not a supported cloud for this capability, and the pricing note only confirms 'No exception needed for AWS or GCP' with no Azure exception recorded, so hosting production on Azure exceeds the standard scope without approval evidence.",
+                  "mode": null,
+                  "network": null,
+                  "region": "AU",
+                  "asset": null,
+                  "quantity": null,
+                  "pricing_note_line": "CAP-019 Regional cloud deployment | Australia | Generally available; standard; supported clouds AWS and GCP | No exception needed for AWS or GCP"
+                },
+                "validation": {
+                  "accepted": false,
+                  "problems": [
+                    "authorisation no_approval_evidence is not what its own terms and evidence give (standard_authorised)"
+                  ],
+                  "expected": "standard_authorised",
+                  "absolute_limit": false,
+                  "catalogue_paths": [
+                    "CAP-019/AU"
+                  ]
+                }
+              },
+              "C05": {
+                "submitted": {
+                  "commitment_key": "C05",
+                  "capability_id": null,
+                  "catalogue_path": null,
+                  "authorisation": "unknown_needs_review",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "A summary of our most recent independent penetration test is available on request."
+                    }
+                  ],
+                  "rationale": "Providing a penetration test summary is a security/compliance disclosure, not a catalogue capability or a priced/standard service recorded in the pricing note. There is no catalogue or pricing-note basis to confirm authorisation.",
+                  "mode": null,
+                  "network": null,
+                  "region": null,
+                  "asset": null,
+                  "quantity": null,
+                  "pricing_note_line": null
+                },
+                "validation": {
+                  "accepted": true,
+                  "problems": [],
+                  "expected": "unknown_needs_review",
+                  "absolute_limit": false,
+                  "catalogue_paths": []
+                }
+              },
+              "C10": {
+                "submitted": {
+                  "commitment_key": "C10",
+                  "capability_id": null,
+                  "catalogue_path": null,
+                  "authorisation": "standard_authorised",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "two 90-minute operations training sessions"
+                    },
+                    {
+                      "term": "quantity",
+                      "phrase": "two 90-minute operations training sessions"
+                    }
+                  ],
+                  "rationale": "The pricing note's commercial-approved standard service menu lists 'Operations training | Up to two 90-minute sessions for operations staff before go-live; standard service available to all customers when ordered'. The commitment to deliver two 90-minute training sessions for the payout operations team before launch matches this standard, pre-authorised service exactly and is within its stated limit.",
+                  "mode": null,
+                  "network": null,
+                  "region": null,
+                  "asset": null,
+                  "quantity": {
+                    "value": 2,
+                    "unit": "sessions",
+                    "period": "before go-live"
+                  },
+                  "pricing_note_line": "Operations training | Up to two 90-minute sessions for operations staff before go-live; standard service available to all customers when ordered | 1 person-day"
+                },
+                "validation": {
+                  "accepted": false,
+                  "problems": [
+                    "authorisation standard_authorised is not what its own terms and evidence give (unknown_needs_review)"
+                  ],
+                  "expected": "unknown_needs_review",
+                  "absolute_limit": false,
+                  "catalogue_paths": []
+                }
+              },
+              "C11": {
+                "submitted": {
+                  "commitment_key": "C11",
+                  "capability_id": "CAP-019",
+                  "catalogue_path": "CAP-019/AU",
+                  "authorisation": "no_approval_evidence",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "Provider will deploy Customer's production environment"
+                    },
+                    {
+                      "term": "region",
+                      "phrase": "Australia East region"
+                    }
+                  ],
+                  "rationale": "Same capability as C04: CAP-019 Regional cloud deployment is standard for AU only with supported clouds AWS and GCP. Microsoft Azure is not within the limit, and the pricing note records no exception for Azure, only for AWS/GCP, so this draft SOW term lacks approval evidence.",
+                  "mode": null,
+                  "network": null,
+                  "region": "AU",
+                  "asset": null,
+                  "quantity": null,
+                  "pricing_note_line": "CAP-019 Regional cloud deployment | Australia | Generally available; standard; supported clouds AWS and GCP | No exception needed for AWS or GCP"
+                },
+                "validation": {
+                  "accepted": false,
+                  "problems": [
+                    "authorisation no_approval_evidence is not what its own terms and evidence give (standard_authorised)"
+                  ],
+                  "expected": "standard_authorised",
+                  "absolute_limit": false,
+                  "catalogue_paths": [
+                    "CAP-019/AU"
+                  ]
+                }
+              },
+              "C14": {
+                "submitted": {
+                  "commitment_key": "C14",
+                  "capability_id": null,
+                  "catalogue_path": null,
+                  "authorisation": "unknown_needs_review",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "The parties will hold a weekly project status meeting during implementation."
+                    }
+                  ],
+                  "rationale": "A recurring project status meeting is a governance/process commitment, not a catalogue capability or a service listed in the pricing note. There is no catalogue or pricing-note basis to assess authorisation.",
+                  "mode": null,
+                  "network": null,
+                  "region": null,
+                  "asset": null,
+                  "quantity": null,
+                  "pricing_note_line": null
+                },
+                "validation": {
+                  "accepted": true,
+                  "problems": [],
+                  "expected": "unknown_needs_review",
+                  "absolute_limit": false,
+                  "catalogue_paths": []
+                }
+              },
+              "C15": {
+                "submitted": {
+                  "commitment_key": "C15",
+                  "capability_id": "CAP-021",
+                  "catalogue_path": null,
+                  "authorisation": "unknown_needs_review",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "Provider will provide wallet screening services as described in SOW section 6."
+                    }
+                  ],
+                  "rationale": "This references On-chain wallet screening integration (CAP-021), but the quote does not state the region, network, asset or mode (the referenced 'SOW section 6' detail is not in evidence). CAP-021 is only catalogued for the SG region with specific network/asset/mode combinations having different sellability (e.g., Polygon real_time requires named approval). The pricing note also notes Coral Pay's Ethereum payout wallet screening is handled by its own provider and is outside this deal's scope. Without the specific scope terms, the exact capability match and its authorisation cannot be determined.",
+                  "mode": null,
+                  "network": null,
+                  "region": null,
+                  "asset": null,
+                  "quantity": null
+                },
+                "validation": {
+                  "accepted": false,
+                  "problems": [
+                    "uncited: no catalogue path"
+                  ],
+                  "expected": "unknown_needs_review",
+                  "absolute_limit": false,
+                  "catalogue_paths": [
+                    "CAP-021/SG/Ethereum/NUSD/real_time",
+                    "CAP-021/SG/Polygon/NUSD/batch",
+                    "CAP-021/SG/Polygon/NUSD/real_time"
+                  ]
+                }
+              }
+            },
+            "duplicate_submissions": [],
+            "log": [
+              {
+                "turn": 1,
+                "tool": "get_capability",
+                "input": {
+                  "capability_id": "CAP-021"
+                }
+              },
+              {
+                "turn": 1,
+                "tool": "get_capability",
+                "input": {
+                  "capability_id": "CAP-019"
+                }
+              },
+              {
+                "turn": 1,
+                "tool": "get_pricing_note",
+                "input": {}
+              },
+              {
+                "turn": 2,
+                "stop_reason": "max_tokens",
+                "note": "no tool call"
+              },
+              {
+                "turn": 3,
+                "tool": "submit_verdict",
+                "input": {
+                  "commitment_key": "C02",
+                  "capability_id": null,
+                  "catalogue_path": null,
+                  "authorisation": "unknown_needs_review",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "recipient-wallet screening decision"
+                    },
+                    {
+                      "term": "quantity",
+                      "phrase": "15 January 2027"
+                    }
+                  ],
+                  "rationale": "The quoted commitments mix a scheduling statement (\"bring our implementation lead to the next call\") with a conditional go-live date tied to sandbox/testnet access, and a reference to a customer-side wallet-screening policy. No specific catalogue capability, network, asset or mode is named, and the pricing note explicitly places Ethereum wallet screening for Coral Pay's own payouts outside the deal scope. The scope this promise commits Elva to cannot be matched to a single catalogue entry, so it cannot be verified as authorised.",
+                  "mode": null,
+                  "network": null,
+                  "region": null,
+                  "asset": null,
+                  "quantity": null,
+                  "pricing_note_line": null
+                }
+              },
+              {
+                "turn": 3,
+                "tool": "submit_verdict",
+                "input": {
+                  "commitment_key": "C03",
+                  "capability_id": null,
+                  "catalogue_path": null,
+                  "authorisation": "unknown_needs_review",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "We'll share a draft implementation plan alongside the proposal."
+                    }
+                  ],
+                  "rationale": "Sharing a draft implementation plan is a documentation/process commitment, not a catalogue capability or a service listed in the pricing note. There is no basis in the catalogue or pricing note to assess authorisation.",
+                  "mode": null,
+                  "network": null,
+                  "region": null,
+                  "asset": null,
+                  "quantity": null,
+                  "pricing_note_line": null
+                }
+              },
+              {
+                "turn": 3,
+                "tool": "submit_verdict",
+                "input": {
+                  "commitment_key": "C04",
+                  "capability_id": "CAP-019",
+                  "catalogue_path": "CAP-019/AU",
+                  "authorisation": "no_approval_evidence",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "Elva will deploy Coral Pay's production environment"
+                    },
+                    {
+                      "term": "region",
+                      "phrase": "Australia East region"
+                    }
+                  ],
+                  "rationale": "CAP-019 Regional cloud deployment is generally available and standard for AU, but its limits restrict supported clouds to AWS and GCP. Microsoft Azure is not a supported cloud for this capability, and the pricing note only confirms 'No exception needed for AWS or GCP' with no Azure exception recorded, so hosting production on Azure exceeds the standard scope without approval evidence.",
+                  "mode": null,
+                  "network": null,
+                  "region": "AU",
+                  "asset": null,
+                  "quantity": null,
+                  "pricing_note_line": "CAP-019 Regional cloud deployment | Australia | Generally available; standard; supported clouds AWS and GCP | No exception needed for AWS or GCP"
+                }
+              },
+              {
+                "turn": 3,
+                "tool": "submit_verdict",
+                "input": {
+                  "commitment_key": "C05",
+                  "capability_id": null,
+                  "catalogue_path": null,
+                  "authorisation": "unknown_needs_review",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "A summary of our most recent independent penetration test is available on request."
+                    }
+                  ],
+                  "rationale": "Providing a penetration test summary is a security/compliance disclosure, not a catalogue capability or a priced/standard service recorded in the pricing note. There is no catalogue or pricing-note basis to confirm authorisation.",
+                  "mode": null,
+                  "network": null,
+                  "region": null,
+                  "asset": null,
+                  "quantity": null,
+                  "pricing_note_line": null
+                }
+              },
+              {
+                "turn": 3,
+                "tool": "submit_verdict",
+                "input": {
+                  "commitment_key": "C10",
+                  "capability_id": null,
+                  "catalogue_path": null,
+                  "authorisation": "standard_authorised",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "two 90-minute operations training sessions"
+                    },
+                    {
+                      "term": "quantity",
+                      "phrase": "two 90-minute operations training sessions"
+                    }
+                  ],
+                  "rationale": "The pricing note's commercial-approved standard service menu lists 'Operations training | Up to two 90-minute sessions for operations staff before go-live; standard service available to all customers when ordered'. The commitment to deliver two 90-minute training sessions for the payout operations team before launch matches this standard, pre-authorised service exactly and is within its stated limit.",
+                  "mode": null,
+                  "network": null,
+                  "region": null,
+                  "asset": null,
+                  "quantity": {
+                    "value": 2,
+                    "unit": "sessions",
+                    "period": "before go-live"
+                  },
+                  "pricing_note_line": "Operations training | Up to two 90-minute sessions for operations staff before go-live; standard service available to all customers when ordered | 1 person-day"
+                }
+              },
+              {
+                "turn": 3,
+                "tool": "submit_verdict",
+                "input": {
+                  "commitment_key": "C11",
+                  "capability_id": "CAP-019",
+                  "catalogue_path": "CAP-019/AU",
+                  "authorisation": "no_approval_evidence",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "Provider will deploy Customer's production environment"
+                    },
+                    {
+                      "term": "region",
+                      "phrase": "Australia East region"
+                    }
+                  ],
+                  "rationale": "Same capability as C04: CAP-019 Regional cloud deployment is standard for AU only with supported clouds AWS and GCP. Microsoft Azure is not within the limit, and the pricing note records no exception for Azure, only for AWS/GCP, so this draft SOW term lacks approval evidence.",
+                  "mode": null,
+                  "network": null,
+                  "region": "AU",
+                  "asset": null,
+                  "quantity": null,
+                  "pricing_note_line": "CAP-019 Regional cloud deployment | Australia | Generally available; standard; supported clouds AWS and GCP | No exception needed for AWS or GCP"
+                }
+              },
+              {
+                "turn": 3,
+                "tool": "submit_verdict",
+                "input": {
+                  "commitment_key": "C14",
+                  "capability_id": null,
+                  "catalogue_path": null,
+                  "authorisation": "unknown_needs_review",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "The parties will hold a weekly project status meeting during implementation."
+                    }
+                  ],
+                  "rationale": "A recurring project status meeting is a governance/process commitment, not a catalogue capability or a service listed in the pricing note. There is no catalogue or pricing-note basis to assess authorisation.",
+                  "mode": null,
+                  "network": null,
+                  "region": null,
+                  "asset": null,
+                  "quantity": null,
+                  "pricing_note_line": null
+                }
+              },
+              {
+                "turn": 3,
+                "tool": "submit_verdict",
+                "input": {
+                  "commitment_key": "C15",
+                  "capability_id": "CAP-021",
+                  "catalogue_path": null,
+                  "authorisation": "unknown_needs_review",
+                  "term_evidence": [
+                    {
+                      "term": "capability",
+                      "phrase": "Provider will provide wallet screening services as described in SOW section 6."
+                    }
+                  ],
+                  "rationale": "This references On-chain wallet screening integration (CAP-021), but the quote does not state the region, network, asset or mode (the referenced 'SOW section 6' detail is not in evidence). CAP-021 is only catalogued for the SG region with specific network/asset/mode combinations having different sellability (e.g., Polygon real_time requires named approval). The pricing note also notes Coral Pay's Ethereum payout wallet screening is handled by its own provider and is outside this deal's scope. Without the specific scope terms, the exact capability match and its authorisation cannot be determined.",
+                  "mode": null,
+                  "network": null,
+                  "region": null,
+                  "asset": null,
+                  "quantity": null
+                }
+              }
+            ],
+            "seconds": 80.35,
+            "cost_usd": 0.128094
+          },
+          "judged": {
+            "added_material": [],
+            "false_flags": [],
+            "unsupported": [
+              {
+                "commitment": "C04",
+                "label": "C03",
+                "problems": [
+                  "authorisation no_approval_evidence is not what its own terms and evidence give (standard_authorised)"
+                ]
+              },
+              {
+                "commitment": "C10",
+                "label": "C01",
+                "problems": [
+                  "authorisation standard_authorised is not what its own terms and evidence give (unknown_needs_review)"
+                ]
+              },
+              {
+                "commitment": "C11",
+                "label": null,
+                "problems": [
+                  "authorisation no_approval_evidence is not what its own terms and evidence give (standard_authorised)"
+                ]
+              }
+            ],
+            "uncited": [
+              "C15"
+            ],
+            "disagreements_with_labels": [
+              "C02"
+            ],
+            "final_authorisation": {
+              "C02": "unknown_needs_review",
+              "C03": "unknown_needs_review",
+              "C04": "unknown_needs_review",
+              "C05": "unknown_needs_review",
+              "C10": "unknown_needs_review",
+              "C11": "unknown_needs_review",
+              "C14": "unknown_needs_review",
+              "C15": "unknown_needs_review"
+            },
+            "cost_usd": 0.128094,
+            "seconds": 80.35,
+            "status": "complete",
+            "tool_calls": 11,
+            "turns": 3
+          },
+          "decision": {
+            "condition_1_adds_material_issue": false,
+            "condition_2_no_unsupported_or_uncited": false,
+            "condition_3_within_bounds": false,
+            "bounds_per_deal": {
+              "coral_pay": {
+                "mean_cost_usd": 0.128094,
+                "max_cost_usd": 0.128094,
+                "mean_seconds": 80.35,
+                "max_seconds": 80.35,
+                "within_bounds": false
+              }
+            },
+            "keep_agent": false,
+            "conclusion": "The rules power the demo: the agent did not meet all three conditions on the tested cases."
+          }
+        }
+      }
+    }
+  },
+  "total_cost_usd": 0.253802,
+  "completed": true,
+  "timestamp_utc": "2026-10-10T06:12:56+00:00"
+}
