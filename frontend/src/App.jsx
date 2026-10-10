@@ -342,7 +342,7 @@ function CountsLine({ counts }) {
 }
 
 function DecisionCell({ c }) {
-  const line = c.decision_line.replace(/^Must fix before signing( · )?/, "");
+  const line = c.decision_line;
   return (
     <>
       {c.must_fix && <span className="tag tag-bad">Must fix before signing</span>}

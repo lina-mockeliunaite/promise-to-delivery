@@ -228,6 +228,14 @@ class TestDecisions(LayoutCase):
         self.assertIsNone(self.finding("Polygon, real time", "approval")["decision"]["must_fix"])
         self.assertEqual(self.post("/decisions/clear", {"flag_id": flag["flag_id"], "by": "Mei", "reason": "x"}).status_code, 409)
 
+    def test_must_fix_shows_once_on_the_row_not_again_in_the_decision_line(self):
+        approval = self.finding("Polygon, real time", "approval")
+        self.assertEqual(self.post("/decisions", {"kind": "must_fix", "issue_id": approval["id"], "by": "Mei", "reason": "x"}).status_code, 200)
+        row = self.commitment("Polygon, real time")
+        self.assertTrue(row["must_fix"])
+        self.assertNotIn("must fix", row["decision_line"].lower())
+        self.assertEqual(row["decision_line"], "2 awaiting decision")
+
     def test_unknown_kind_and_missing_reason_are_refused(self):
         gap = self.finding("VASP", "contract_gap")
         self.assertEqual(self.post("/decisions", {"kind": "resolve", "issue_id": gap["id"], "by": "A", "reason": "B"}).status_code, 400)

@@ -496,8 +496,9 @@ def overview(conn, slug: str) -> dict:
                 awaiting += 1
             acc = i["accountable"]
             people.append((acc.get("person"), acc["status"]))
-            decisions.append("Must fix before signing" if i["decision"]["must_fix"] else
-                             "Okay to proceed" if i["decision"]["status"] == "okay" else
+            if i["decision"]["must_fix"]:
+                continue  # shown once, as the row's Must fix tag (c["must_fix"]); never repeated in the decision line
+            decisions.append("Okay to proceed" if i["decision"]["status"] == "okay" else
                              "Needs re-confirmation" if i["decision"]["status"] == "reconfirm" else "Awaiting decision")
         c["open_count"] = open_n
         c["told"], c["contract"] = told_and_contract(conn, did, c, raw_presence.get(c["id"]))
