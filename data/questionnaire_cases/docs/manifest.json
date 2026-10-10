@@ -1,0 +1,6 @@
+{
+  "deal": "questionnaire_cases",
+  "documents": [
+    {"source_id": "QC-01", "file": "QC-01_security_questionnaire.md", "doc_type": "security_questionnaire", "date": "2026-11-05"}
+  ]
+}

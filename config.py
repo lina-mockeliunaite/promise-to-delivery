@@ -89,6 +89,7 @@ ALLOWED_DEALS = [
     "harbour_bank",
     "hard_cases",  # development fixture deal, Day 7 (data/hard_cases/BRIEF.md)
     "practice_cases",  # rules-vs-agent practice set, 3 Oct (data/practice_cases/BRIEF.md)
+    "questionnaire_cases",  # security-questionnaire extraction fixture, 10 Oct; extraction only, never in LEDGER_DEALS
 ]
 
 

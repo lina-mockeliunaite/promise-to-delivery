@@ -708,3 +708,12 @@ Runs (10 Oct, Lina's Mac):
 **Configuration for the 14 Oct sealed run (recorded before the 12 Oct candidate freeze).** One run per configuration, nothing changed afterwards: (1) baseline; (2) rules; (3) rules + agent v2 as escalation for firm commitments the rules leave *unknown*. Extraction frozen v1: `claude-sonnet-5`, thinking `model_default`, `MAX_TOKENS = 8000`. Agent: `AGENT_VERSION = 2`, same model, `AGENT_MAX_TOKENS = 4000`, 6 tool calls per commitment, 40 per deal, 15 turns; bounds $0.10 and 60 s per deal review. Decision rule as written 4 Oct; on Coral Pay condition 2 is judged on the single run (v1 was judged on three runs on the practice set). Rules as of 9 Oct.
 
 ---
+
+## 2026-10-10, 11:30 — Security-questionnaire fixture: first extraction of the document type (pre-freeze)
+
+Fixture `data/questionnaire_cases/` (extraction only; in `ALLOWED_DEALS`, not `LEDGER_DEALS` or `UI_DEALS`). Labels written by Claude at Lina's request, who also wrote the document: a smoke test of the document type, not an accuracy measure. Run `results/extract_questionnaire_cases_20261010T032843Z.json`, $0.021; evaluation `results/eval_extract_questionnaire_cases_20261010T032843Z_t0.8_L2c3f3ead.json`.
+
+- Recall 8/8 (firm 7/7), precision 8/9, all quotes valid. Questionnaire tables read without a format problem.
+- **False positive, as predicted:** the bare answer "Yes." (row 10) extracted as a firm statement with the quote "Yes." It carries no terms, so in a full review it would become an unnamed commitment needing evidence: noise for Delivery. Known limitation of a frozen prompt; recorded, not fixed. Expect the same on any yes/no questionnaire, including the sealed deal.
+- **Language mismatch:** row 6 ("…will share the executive summary … on request") labelled firm, extracted conditional. Arguable either way ("on request" is a trigger, not a hedge). Labels are not changed after results; reported as is.
+- Nothing here changes the evaluated configuration. The freeze can proceed.

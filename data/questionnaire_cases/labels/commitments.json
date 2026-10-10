@@ -1,0 +1,13 @@
+{
+  "_how_to": "Questionnaire fixture commitments (10 Oct). Extraction-only fixture: not in LEDGER_DEALS, so these are not scored by the rules.",
+  "commitments": [
+    {"id": "QC1", "name": "SAML single sign-on for all users from go-live"},
+    {"id": "QC2", "name": "MFA enforced for administrator accounts"},
+    {"id": "QC3", "name": "Encryption at rest with AES-256"},
+    {"id": "QC4", "name": "Data stored and processed only in Singapore"},
+    {"id": "QC5", "name": "SOC 2 Type II report expected H2 2027"},
+    {"id": "QC6", "name": "Annual penetration test summary shared on request"},
+    {"id": "QC7", "name": "Real-time screening of NUSD payouts on Arbitrum"},
+    {"id": "QC8", "name": "Full case audit history for every alert"}
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "run_file": "extract_questionnaire_cases_20261010T032843Z.json",
+  "deal": "questionnaire_cases",
+  "labels_sha256": "2c3f3eadf0d6e6004403f48423d1a2ced17f5e5b558bccfff00d2f559c92d45c",
+  "threshold": 0.8,
+  "near_miss_floor": 0.5,
+  "counts": {
+    "tp": 8,
+    "fp": 1,
+    "fn": 0,
+    "labels": 8,
+    "outputs": 9
+  },
+  "precision": 0.8888888888888888,
+  "recall": 1.0,
+  "recall_firm": 1.0,
+  "language_accuracy": 0.875,
+  "language_confusion": {
+    "firm": {
+      "firm": 6,
+      "conditional": 1
+    },
+    "conditional": {
+      "conditional": 1
+    }
+  },
+  "language_mismatches": [
+    {
+      "score": 1.0,
+      "source_id": "QC-01",
+      "label_id": "Q06",
+      "label_language": "firm",
+      "label_quote": "An independent penetration test is performed every year, and Elva will share the executive summary with Kestrel Remit on request.",
+      "statement_id": "QC-01-S06",
+      "output_language": "conditional",
+      "output_quote": "An independent penetration test is performed every year, and Elva will share the executive summary with Kestrel Remit on request."
+    }
+  ],
+  "hedge_errors": [],
+  "non_complete_documents": [],
+  "false_positives": [
+    {
+      "statement_id": "QC-01-S08",
+      "source_id": "QC-01",
+      "language": "firm",
+      "quote": "Yes."
+    }
+  ],
+  "false_negatives": [],
+  "near_misses": [],
+  "detail_lost": []
+}

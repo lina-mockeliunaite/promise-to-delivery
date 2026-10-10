@@ -1,0 +1,13 @@
+{
+  "_how_to": "Questionnaire fixture labels (10 Oct, written by Claude at Lina's request; not independent of the document's design). Same scope rules as Harbour Bank. Excluded by design: row 8 customer obligation, row 9 pointer, row 10 bare 'Yes.' (known limitation, unlabelled). 8 statements, 7 firm.",
+  "statements": [
+    {"id": "Q01", "source_id": "QC-01", "speaker": "Elva (questionnaire)", "quote": "Elva supports SAML 2.0 single sign-on for all Kestrel Remit users from go-live.", "language": "firm", "commitment_ids": ["QC1"], "case": "row 1"},
+    {"id": "Q02", "source_id": "QC-01", "speaker": "Elva (questionnaire)", "quote": "Elva will enforce multi-factor authentication for every Kestrel Remit administrator account.", "language": "firm", "commitment_ids": ["QC2"], "case": "row 2"},
+    {"id": "Q03", "source_id": "QC-01", "speaker": "Elva (questionnaire)", "quote": "All Kestrel Remit data will be encrypted at rest with AES-256.", "language": "firm", "commitment_ids": ["QC3"], "case": "row 3"},
+    {"id": "Q04", "source_id": "QC-01", "speaker": "Elva (questionnaire)", "quote": "Kestrel Remit data will be stored and processed only in Singapore.", "language": "firm", "commitment_ids": ["QC4"], "case": "row 4"},
+    {"id": "Q05", "source_id": "QC-01", "speaker": "Elva (questionnaire)", "quote": "Elva is working towards SOC 2 Type II and expects the report in the second half of 2027.", "language": "conditional", "commitment_ids": ["QC5"], "case": "row 5"},
+    {"id": "Q06", "source_id": "QC-01", "speaker": "Elva (questionnaire)", "quote": "An independent penetration test is performed every year, and Elva will share the executive summary with Kestrel Remit on request.", "language": "firm", "commitment_ids": ["QC6"], "case": "row 6"},
+    {"id": "Q07", "source_id": "QC-01", "speaker": "Elva (questionnaire)", "quote": "Elva will screen every NUSD payout on Arbitrum in real time before release.", "language": "firm", "commitment_ids": ["QC7"], "case": "row 7"},
+    {"id": "Q08", "source_id": "QC-01", "speaker": "Elva (questionnaire)", "quote": "Elva provides full case audit history for every alert raised on Kestrel Remit payouts.", "language": "firm", "commitment_ids": ["QC8"], "case": "row 11"}
+  ]
+}

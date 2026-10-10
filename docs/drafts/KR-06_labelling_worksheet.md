@@ -31,3 +31,6 @@ Expected downstream: rows 1–4 and 6 have no catalogue capability, so they reac
 1. Move `KR-06_security_questionnaire.md` into `data/hard_cases/docs/`, add it to `manifest.json` (`"doc_type": "security_questionnaire"`, `"date": "2026-11-05"`).
 2. Add your labels to `data/hard_cases/labels/statements.json`; record the old and new label hash in DECISIONS (labels change → new hash, old score reported alongside).
 3. One extraction run on hard cases (about $0.01, needs the key), then `regression.py`. Record the result before the freeze.
+
+---
+**Superseded 10 Oct:** adopted as a separate extraction-only deal, `data/questionnaire_cases/` (labels written by Claude at your request). Not added to hard cases, so their labels and hash are unchanged.
