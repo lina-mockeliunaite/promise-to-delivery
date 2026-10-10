@@ -50,6 +50,15 @@ class NoModel:
     messages = property(lambda self: (_ for _ in ()).throw(AssertionError("model called")))
 
 
+def build_current(path):
+    """scenarios.build_fresh, then an unchanged-input rerun of every deal with no model: the demo as it stands once its
+    reviews are made under the current hash definition, so decisions can be saved on it."""
+    conn = scenarios.build_fresh(path)
+    for slug in config.LEDGER_DEALS:
+        recheck.recheck(conn, slug, None, NoModel())
+    return conn
+
+
 class RecheckCase(unittest.TestCase):
     def setUp(self):
         patcher = mock.patch.object(config, "LEDGER_DEALS", ["harbour_bank", "hard_cases"])

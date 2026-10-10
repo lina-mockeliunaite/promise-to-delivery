@@ -81,6 +81,23 @@ class TestReset(ResetCase):
         self.assertEqual(done["model_calls"], 0)
         self.assertEqual(sorted(p.name for p in self.dir.iterdir()), [backup.name, "ledger.sqlite"])  # no temp files left
 
+    def test_the_demo_starts_on_the_current_hash_definition_so_a_handoff_can_be_saved(self):
+        import handoff
+        import integrity
+        import ledger
+        import ledger_fixes
+        done = reset_demo.reset(self.db)
+        self.assertEqual(done["model_calls"], 0)
+        conn = ledger.connect(self.db)
+        self.addCleanup(conn.close)
+        for slug in config.LEDGER_DEALS:
+            fresh = ledger_fixes.freshness(conn, ledger_fixes.deal_id(conn, slug))
+            self.assertEqual((fresh["state"], fresh["reasons"]), ("Up to date", []), slug)
+            self.assertEqual(integrity.review_config(conn, fresh["review_id"])[0], 2)
+            self.assertEqual(conn.execute("SELECT run_kind FROM reviews WHERE id = ?", (fresh["review_id"],)).fetchone()[0], "unchanged_input_rerun")
+            self.assertEqual(conn.execute("SELECT inputs_changed FROM review_bindings WHERE review_id = ?", (fresh["review_id"],)).fetchone()[0], 0)
+        self.assertEqual(handoff.save(conn, "harbour_bank", "not_ready", "Lina", "", [])["version"], 1)
+
     def test_with_no_existing_ledger_there_is_nothing_to_back_up(self):
         done = reset_demo.reset(self.db)
         self.assertIsNone(done["backup"])

@@ -25,7 +25,7 @@ import ledger_fixes
 import recheck
 import scenarios
 import workspace
-from test_recheck import FakeExtractor
+from test_recheck import FakeExtractor, build_current
 
 # Internal keys that must never reach a reader: commitment keys, statement keys, document keys, hashes, paths.
 INTERNAL = re.compile(r"\bC\d{2,}\b|-S\d{2}\b|\b(?:HB|D)-\d{2}\b|sha256|\.sqlite|/Users/|state:|\.md\b|\.txt\b|CAP-\d+|\|"
@@ -39,7 +39,7 @@ class HandoffCase(unittest.TestCase):
         self.addCleanup(patcher.stop)
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
-        self.conn = scenarios.build_fresh(Path(tmp.name) / "ledger.sqlite")
+        self.conn = build_current(Path(tmp.name) / "ledger.sqlite")
         self.addCleanup(self.conn.close)
 
     def open_ids(self, deal="harbour_bank"):

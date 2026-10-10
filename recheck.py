@@ -24,6 +24,7 @@ from pathlib import Path
 
 import config
 import extraction_cache
+import integrity
 import ledger
 import ledger_consolidate as lc
 import ledger_fixes
@@ -107,6 +108,8 @@ def recheck(conn: sqlite3.Connection, slug: str, fix_id=None, client=None, catal
     vocab, catalogue_bytes = lc._load_vocabulary(catalogue_path)
     catalogue = json.loads(catalogue_bytes.decode("utf-8"))
     config_sha = lc.rules_sha256(catalogue_bytes)
+    config_sha2 = integrity.config_sha256(integrity.HASH_DEFINITION, catalogue_bytes)
+    integrity.ensure_schema(conn)  # before any write: it commits
     prev_review = _latest_review(conn, did)
     fix = None
     if fix_id is not None:
@@ -114,7 +117,7 @@ def recheck(conn: sqlite3.Connection, slug: str, fix_id=None, client=None, catal
         if fix is None or fix[3] != did or fix[2] != "approved":
             raise RecheckError("a recheck after a fix needs an approved fix of this deal")
     try:
-        result = _recheck(conn, did, slug, prev_review, fix, client, vocab, catalogue, config_sha)
+        result = _recheck(conn, did, slug, prev_review, fix, client, vocab, catalogue, config_sha, config_sha2)
     except BaseException:
         conn.rollback()
         raise
@@ -122,14 +125,22 @@ def recheck(conn: sqlite3.Connection, slug: str, fix_id=None, client=None, catal
     return result
 
 
-def _recheck(conn, did, slug, prev_review, fix, client, vocab, catalogue, config_sha):
+def _recheck(conn, did, slug, prev_review, fix, client, vocab, catalogue, config_sha, config_sha2):
     run_kind = "recheck_after_fix" if fix else ("unchanged_input_rerun" if prev_review else "review")
+    # run_kind is kept as it was written (the column only allows four values). Whether the inputs differed from the
+    # previous review is recorded separately: count unchanged-input reruns by inputs_changed, never by run_kind.
+    source_now, evidence_now = ledger_fixes.source_set_sha256(conn, did), ledger_fixes.decision_evidence_sha256(conn, did)
+    inputs_changed, why = None, ""
+    if prev_review:
+        before = conn.execute("SELECT source_set_sha256, decision_evidence_sha256 FROM reviews WHERE id = ?", (prev_review,)).fetchone()
+        inputs_changed = (source_now, evidence_now) != tuple(before)
+        why = ("; documents changed" if source_now != before[0] else "") + (
+            "; approval or fix evidence changed" if evidence_now != before[1] else "")
     review_id = conn.execute(
         "INSERT INTO reviews (deal_id, run_kind, checker, config_sha256, source_set_sha256, decision_evidence_sha256,"
         " triggered_by_fix_id, status, note) VALUES (?, ?, 'rules', ?, ?, ?, ?, 'running', ?)",
-        (did, run_kind, config_sha, ledger_fixes.source_set_sha256(conn, did),
-         ledger_fixes.decision_evidence_sha256(conn, did), fix[0] if fix else None,
-         f"recheck of review {prev_review}" if prev_review else "first review"),
+        (did, run_kind, config_sha, source_now, evidence_now, fix[0] if fix else None,
+         f"recheck of review {prev_review}{why}" if prev_review else "first review"),
     ).lastrowid
 
     # --- Sources and extraction ---
@@ -293,9 +304,10 @@ def _recheck(conn, did, slug, prev_review, fix, client, vocab, catalogue, config
             " cited_label, cited_date, resolved_version_id, status, reason) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (review_id, r.from_version_id, r.from_locator, source_ids.get(r.target_source_key) if r.target_source_key else None,
              r.target_locator, r.cited_label, r.cited_date, r.resolved_version_id, r.status, r.reason))
+    integrity.write_review_binding(conn, review_id, config_sha2, inputs_changed)
     conn.execute("UPDATE reviews SET status = 'complete', cost_usd = ?, finished_at = strftime('%Y-%m-%dT%H:%M:%SZ', 'now')"
                  " WHERE id = ?", (round(cost, 6), review_id))
-    return {"review_id": review_id, "run_kind": run_kind, "model_calls": model_calls, "cost_usd": round(cost, 6),
+    return {"review_id": review_id, "run_kind": run_kind, "inputs_changed": bool(inputs_changed), "model_calls": model_calls, "cost_usd": round(cost, 6),
             "checks": counts, "unsupported": sorted(existing[c] for c in unsupported)}
 
 

@@ -102,16 +102,24 @@ def set_included(conn, slug: str, source_key: str, included: bool, commit: bool 
 
 
 def freshness(conn, did: int) -> dict:
-    """'Not reviewed', 'Review out of date' or 'Up to date', from the source-set and decision-evidence hashes."""
+    """'Not reviewed', 'Review out of date' or 'Up to date'.
+
+    Out of date when the documents, the approval evidence or the catalogue and rules differ from what the latest review
+    was made against (integrity.py: the three hashes, compared under the review's own hash definition). `reasons` lists
+    every plain-word reason, including two that do not make the review out of date but stop a decision being made on
+    it: it was made under an older hash definition, or its config was never recorded. `notes` carries the extraction
+    line, which is shown and never a reason."""
+    import integrity  # imported here: integrity imports this module
     row = conn.execute(
         "SELECT r.id, r.source_set_sha256, r.decision_evidence_sha256, r.finished_at, r.run_kind FROM reviews r"
         " WHERE r.deal_id = ? AND r.status = 'complete' AND EXISTS (SELECT 1 FROM commitment_assessments a"
         " WHERE a.review_id = r.id) ORDER BY r.id DESC LIMIT 1", (did,)).fetchone()
     if row is None:
-        return {"state": "Not reviewed", "review_id": None, "finished_at": None, "run_kind": None}
-    current = (source_set_sha256(conn, did), decision_evidence_sha256(conn, did))
-    state = "Up to date" if current == (row[1], row[2]) else "Review out of date"
-    return {"state": state, "review_id": row[0], "finished_at": row[3], "run_kind": row[4]}
+        return {"state": "Not reviewed", "review_id": None, "finished_at": None, "run_kind": None, "reasons": [], "notes": []}
+    reasons = integrity.review_reasons(conn, did, row[0], row[1], row[2])
+    state = "Review out of date" if any(r in integrity.STALE for r in reasons) else "Up to date"
+    return {"state": state, "review_id": row[0], "finished_at": row[3], "run_kind": row[4], "reasons": reasons,
+            "notes": integrity.extraction_note(conn, row[0])}
 
 
 def add_source_version(conn, slug: str, source_key: str, text: str, filename: str, doc_type=None, doc_date=None,

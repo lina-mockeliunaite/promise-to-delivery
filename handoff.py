@@ -15,6 +15,7 @@ import re
 from datetime import datetime, timezone
 from pathlib import Path
 
+import integrity
 import ledger_fixes
 import workspace
 
@@ -52,10 +53,10 @@ class HandoffError(Exception):
 def ensure_schema(conn) -> None:
     """Create the handoff table and its immutability triggers if this database does not have them yet."""
     have = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE name LIKE 'handoff_versions%'")}
-    if {"handoff_versions", "handoff_versions_immutable_u", "handoff_versions_immutable_d"} <= have:
-        return
-    conn.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
-    conn.commit()
+    if not {"handoff_versions", "handoff_versions_immutable_u", "handoff_versions_immutable_d"} <= have:
+        conn.executescript(SCHEMA_PATH.read_text(encoding="utf-8"))
+        conn.commit()
+    integrity.ensure_schema(conn)
 
 
 def validate_decision(decision, reviewer, note, open_issue_ids, confirmed_ids) -> tuple:
@@ -149,6 +150,8 @@ def save(conn, slug: str, decision, reviewer, note, confirmed_ids, review_id=Non
         raise HandoffError("Run the review before saving the handoff", 409)
     if fresh["state"] == "Review out of date":
         raise HandoffError("Rerun the review before saving the handoff", 409)
+    if fresh["reasons"]:  # made under an older hash definition, or its config was never recorded: not comparable
+        raise HandoffError("Rerun the review before saving the handoff", 409)
     if review_id is not None and review_id != fresh["review_id"]:
         raise HandoffError("The review has changed. Reload the page and check it before saving.", 409)
     try:
@@ -165,41 +168,49 @@ def save(conn, slug: str, decision, reviewer, note, confirmed_ids, review_id=Non
     snapshot = build_snapshot(conn, slug, decision, reviewer, note, confirmed, (fresh["finished_at"] or "")[:10], decided_on)
     src_hash, ev_hash = conn.execute("SELECT source_set_sha256, decision_evidence_sha256 FROM reviews WHERE id = ?",
                                      (fresh["review_id"],)).fetchone()
-    conn.execute(
+    binding = integrity.current_binding(conn, did)  # all three hashes; refused unless the review is current
+    saved_id = conn.execute(
         "INSERT INTO handoff_versions (deal_id, version_no, review_id, source_set_sha256, decision_evidence_sha256,"
         " decision, reviewer, decided_on, note, snapshot_json) VALUES (?, (SELECT COALESCE(MAX(version_no), 0) + 1"
         " FROM handoff_versions WHERE deal_id = ?), ?, ?, ?, ?, ?, ?, ?, ?)",
         (did, did, fresh["review_id"], src_hash, ev_hash, decision, reviewer, decided_on, note or None,
-         json.dumps(snapshot, sort_keys=True)))
+         json.dumps(snapshot, sort_keys=True))).lastrowid
+    integrity.write_decision_binding(conn, "handoff", saved_id, binding)
     conn.commit()
     return {"version": conn.execute("SELECT MAX(version_no) FROM handoff_versions WHERE deal_id = ?", (did,)).fetchone()[0]}
 
 
-def _changed_since(conn, did: int, src_hash, ev_hash) -> bool:
-    return (ledger_fixes.source_set_sha256(conn, did), ledger_fixes.decision_evidence_sha256(conn, did)) != (src_hash, ev_hash)
+def _status(conn, did: int, handoff_id: int, review_id: int, src_hash, ev_hash) -> dict:
+    """A saved version against the deal now, on its three bound hashes. A version saved before bindings existed is read
+    as hash definition 1 from its review: it says "checking rules updated", never "Documents changed"."""
+    return integrity.decision_status(conn, did, "handoff", handoff_id, derived=(src_hash, ev_hash, review_id))
 
 
 def list_versions(conn, slug: str) -> list:
     ensure_schema(conn)
     did = ledger_fixes.deal_id(conn, slug)
-    return [{"version": v, "decision": DECISIONS[d], "reviewer": r, "date": on,
-             "changed_since_saved": _changed_since(conn, did, sh, eh)}
-            for v, d, r, on, sh, eh in conn.execute(
-                "SELECT version_no, decision, reviewer, decided_on, source_set_sha256, decision_evidence_sha256"
-                " FROM handoff_versions WHERE deal_id = ? ORDER BY version_no DESC", (did,))]
+    out = []
+    for hid, v, d, r, on, rid, sh, eh in conn.execute(
+            "SELECT id, version_no, decision, reviewer, decided_on, review_id, source_set_sha256, decision_evidence_sha256"
+            " FROM handoff_versions WHERE deal_id = ? ORDER BY version_no DESC", (did,)).fetchall():
+        st = _status(conn, did, hid, rid, sh, eh)
+        out.append({"version": v, "decision": DECISIONS[d], "reviewer": r, "date": on,
+                    "changed_since_saved": not st["current"], "reasons": st["reasons"]})
+    return out
 
 
 def get_version(conn, slug: str, version=None):
     """A saved version as {version, changed_since_saved, handoff}, the latest if no version is given; None if absent."""
     ensure_schema(conn)
     did = ledger_fixes.deal_id(conn, slug)
-    sql = ("SELECT version_no, snapshot_json, source_set_sha256, decision_evidence_sha256 FROM handoff_versions"
+    sql = ("SELECT version_no, snapshot_json, source_set_sha256, decision_evidence_sha256, id, review_id FROM handoff_versions"
            " WHERE deal_id = ?")
     row = (conn.execute(sql + " AND version_no = ?", (did, version)) if version is not None
            else conn.execute(sql + " ORDER BY version_no DESC LIMIT 1", (did,))).fetchone()
     if row is None:
         return None
-    return {"version": row[0], "changed_since_saved": _changed_since(conn, did, row[2], row[3]), "handoff": json.loads(row[1])}
+    st = _status(conn, did, row[4], row[5], row[2], row[3])
+    return {"version": row[0], "changed_since_saved": not st["current"], "reasons": st["reasons"], "handoff": json.loads(row[1])}
 
 
 # --- Exports (rendered from a saved snapshot only) ------------------------------------------------------------------

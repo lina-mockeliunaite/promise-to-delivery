@@ -3,7 +3,8 @@
     .venv/bin/python reset_demo.py
 
 Uses the existing build path (ledger_import.build, then ledger_consolidate.consolidate_all with the rules) on the
-pinned run files and development documents. No model call, no API key, no network. Writes only inside workspace/;
+pinned run files and development documents, then one unchanged-input rerun of each deal so its review is made under the
+current hash definition and a handoff can be saved at once. No model call, no API key, no network. Writes only inside workspace/;
 data/ is read by the import exactly as before and never written, and it refuses to write a ledger inside data/.
 
 The new ledger is built beside the old one and swapped in only if the whole build succeeds; the old ledger is then
@@ -21,6 +22,7 @@ import config
 import ledger
 import ledger_consolidate
 import ledger_import
+import recheck
 import workspace
 
 
@@ -43,6 +45,10 @@ def reset(db_path=None, now=None) -> dict:
         conn = ledger.connect(fresh)
         try:
             ledger_consolidate.consolidate_all(conn, assess=True)
+            # An imported review has no recorded config, so no decision could be saved on it. An unchanged-input rerun
+            # with no model client (imported extractions are reused) puts every deal on the current hash definition.
+            for slug in config.LEDGER_DEALS:
+                recheck.recheck(conn, slug, None, None)
             deals = [{"deal": d["deal"], "open_issues": d["open_issues"], "freshness": d["freshness"]["state"]}
                      for d in workspace.deal_list(conn)]
             commitments = {slug: conn.execute(

@@ -21,7 +21,7 @@ from fastapi.testclient import TestClient
 import api
 import config
 import scenarios
-from test_recheck import FakeExtractor
+from test_recheck import FakeExtractor, build_current
 
 H = {"X-Requested-With": "deal-workspace"}
 
@@ -35,7 +35,7 @@ class WorkspaceCase(unittest.TestCase):
         self.addCleanup(tmp.cleanup)
         root = Path(tmp.name)
         self.db = root / "ledger.sqlite"
-        scenarios.build_fresh(self.db).close()
+        build_current(self.db).close()
         self.client = TestClient(api.create_app(dist_dir=root / "no-dist", ledger_path=self.db),
                                  base_url="http://127.0.0.1", follow_redirects=False)
 
