@@ -166,6 +166,10 @@ def approval_text(authorisation, language, refs, terms_json) -> str:
             sentences.append("Approval isn't inferred from implementation scope or from inclusion in the contract.")
             if searched:
                 sentences.append("The pricing note was searched and names nothing for it.")
+        elif notes and notes[0].get("line") and pricing_note_cell(notes[0]["line"]) == "[no stored value]":
+            # 9 Oct: a spreadsheet approval cell whose formula has no saved result (adapters.NO_VALUE, rules.NO_STORED_VALUE)
+            sentences.append("Pricing note: the approval cell is a spreadsheet formula with no saved value, so it says "
+                             "neither yes nor no. Save the file in Excel, or record the approval as text.")
         elif notes and notes[0].get("line"):
             sentences.append("Pricing note: approval wording found, but no approver is named.")
         elif not notes and len(kinds) <= 1:

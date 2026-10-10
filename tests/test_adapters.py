@@ -189,9 +189,12 @@ class TestDispatch(unittest.TestCase):
         self.assertEqual(len(names), 3)
 
     def test_types_sizes_and_encodings_that_are_not_supported_are_refused_plainly(self):
-        for name in ("a.exe", "a.zip", "a.docm", "noextension", "a.xlsx", ".pdf.exe"):
-            with self.assertRaisesRegex(adapters.AdapterError, "PDF, Word \\(.docx\\), Markdown and text"):
+        # 9 Oct: .xlsx moved from refused to read (Excel adapter); a non-workbook named .xlsx is refused by the adapter.
+        for name in ("a.exe", "a.zip", "a.docm", "noextension", ".pdf.exe"):
+            with self.assertRaisesRegex(adapters.AdapterError, "PDF, Word \\(.docx\\), Excel \\(.xlsx\\), PowerPoint \\(.pptx\\), Markdown and text"):
                 adapters.adapt(name, b"x")
+        with self.assertRaisesRegex(adapters.AdapterError, "not an Excel document"):
+            adapters.adapt("a.xlsx", b"x")
         with self.assertRaisesRegex(adapters.AdapterError, "empty"):
             adapters.adapt("a.pdf", b"")
         with self.assertRaises(adapters.AdapterError) as big:

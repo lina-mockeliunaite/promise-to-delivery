@@ -38,3 +38,11 @@ export const fetchHandoffs = (deal) => getJson(`${d(deal)}/handoffs`);
 export const fetchHandoff = (deal, version) => getJson(`${d(deal)}/handoffs/view?version=${encodeURIComponent(version)}`);
 export const handoffCsvUrl = (deal, version) => `${d(deal)}/handoffs/export.csv?version=${encodeURIComponent(version)}`;
 export const handoffSummaryUrl = (deal, version) => `${d(deal)}/handoffs/summary?version=${encodeURIComponent(version)}`;
+
+// Layout redesign (9 Oct): fix inside the finding, per-finding decisions, the deal note, the accountable person.
+export const checkFinding = (deal, body) => postJson(`${d(deal)}/findings/check`, body);
+export const recordDecision = (deal, body) => postJson(`${d(deal)}/decisions`, body);
+export const clearFlag = (deal, body) => postJson(`${d(deal)}/decisions/clear`, body);
+export const saveNote = (deal, body) => postJson(`${d(deal)}/note`, body);
+export const setAccountable = (deal, body) => postJson(`${d(deal)}/accountable`, body);
+export const fetchDocumentText = (deal, versionId) => getJson(`${d(deal)}/documents/text?version=${encodeURIComponent(versionId)}`);

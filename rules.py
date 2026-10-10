@@ -31,6 +31,9 @@ POSITIVE = re.compile(r"\b(?:exception approved|approved exception|named approva
 APPROVER = re.compile(r"\bapproved by\s+([A-Z][\w.'-]*(?:\s+[A-Z][\w.'-]*)*(?:\s*\([^)]*\))?)|\bapprover:\s*([^|;\n]+)", re.I)
 CONDITIONS = re.compile(r"\b(?:subject to|conditional on|provided that|only if|until|limited to)\b[^|\n]*", re.I)
 GLOBAL_NO_EXCEPTION = re.compile(r"\bno (?:named )?exceptions?\b[^.\n]*\bapproved\b", re.I)
+# A spreadsheet cell whose formula has no stored value or an error (adapters.NO_VALUE, 9 Oct). In the approval cell
+# of a scoped row it means the note cannot say either way: needs evidence, never approved and never "not approved".
+NO_STORED_VALUE = "[no stored value]"
 WHEN_LABELS = {"launch": "at launch", "end_of_first_year": "by end of first year"}
 
 
@@ -159,6 +162,9 @@ def note_finding(notes: list, ts: dict, cap_name: str):
     for note in notes:
         rows = _scoped_rows(note, ts, cap_name)
         for row in rows:
+            if "|" in row and row.strip().strip("|").split("|")[-1].strip() == NO_STORED_VALUE:
+                return "value_missing", row, note
+        for row in rows:
             if NEGATIVE.search(row):
                 return "no_approval_evidence", row, note
         for row in rows:
@@ -244,6 +250,10 @@ def _authorisation(c, ts, catalogue, vocab, notes):
         if conditions:
             text += "; conditions recorded: " + "; ".join(conditions) + " (each must be carried into the contract)"
         return finding, text, refs, False, [], note, row
+    if finding == "value_missing":
+        return ("unknown_needs_review", f"{cat_text}; {note.source_key} has no stored value in the approval cell of this "
+                f"row (a spreadsheet formula without a saved result): '{row}'", refs, False,
+                ["the pricing note saved with its values, or the approval written as text"], note, row)
     if finding == "approval_without_approver":
         return ("unknown_needs_review", f"{cat_text}; {note.source_key} has approval wording but names no approver: "
                 f"'{row}'", refs, False, ["the name or role of the person who approved this exception"], note, row)

@@ -274,11 +274,12 @@ def register(conn, slug: str) -> dict:
         statements = [
             {"source_name": names[sk], "doc_type_label": DOC_TYPE_LABELS.get(dt, dt), "version": vn,
              "quote": q, "language": lang, "date": dd,
-             "page": adapters.locate_page(canon, lmap, q) if canon else None}
-            for sk, dt, vn, q, lang, dd, canon, lmap in conn.execute(
+             "page": adapters.locate_page(canon, lmap, q) if canon and an == adapters.PDF_ADAPTER_NAME else None,
+             "where": adapters.locate(canon, lmap, q, an) if canon and an in (adapters.XLSX_ADAPTER_NAME, adapters.PPTX_ADAPTER_NAME) else None}
+            for sk, dt, vn, q, lang, dd, canon, lmap, an in conn.execute(
                 "SELECT so.source_key, v.doc_type, v.version_no, st.quote, st.language, v.doc_date,"
-                " CASE WHEN v.adapter_name = 'pdf-text' THEN v.canonical_text END,"
-                " CASE WHEN v.adapter_name = 'pdf-text' THEN v.location_map END"
+                " CASE WHEN v.adapter_name IN ('pdf-text', 'xlsx', 'pptx') THEN v.canonical_text END,"
+                " CASE WHEN v.adapter_name IN ('pdf-text', 'xlsx', 'pptx') THEN v.location_map END, v.adapter_name"
                 " FROM review_statement_commitments l JOIN statements st ON st.id = l.statement_id"
                 " JOIN source_versions v ON v.id = l.source_version_id JOIN sources so ON so.id = v.source_id"
                 " WHERE l.commitment_id = ? AND l.review_id = (SELECT MAX(review_id) FROM review_statement_commitments"
@@ -369,3 +370,157 @@ def deal_list(conn) -> list:
         out.append({"deal": slug, "name": deal_title(slug, name), "kind": kind,
                     "freshness": ledger_fixes.freshness(conn, did), "open_issues": open_n})
     return out
+
+
+# --- Overview for the redesigned layout (built 9 Oct; docs/BRIEF_2026-10-06_layout.md) ----------------------------------
+# Additions only: register() above is unchanged, so the handoff snapshot and its tests read exactly what they read before.
+
+FINDING_LABELS = {
+    "approval": "No approval recorded", "contract_gap": "Missing from contract",
+    "conflicting_terms": "Contract says something different", "insufficient_evidence": "Needs evidence",
+    "missing_condition": "A condition was dropped",
+}
+DECISION_NOT_CURRENT = "Rerun the review before recording decisions"
+
+
+def finding_label(issue_type, subject=None, absolute=False) -> str:
+    """The finding type in plain words, as the overview row and the finding block show it."""
+    if issue_type == "approval" and absolute:
+        return "Not offered"
+    return FINDING_LABELS.get(issue_type, issue_label(issue_type, subject))
+
+
+def _own_term(conn, cid: int, term: str):
+    row = conn.execute("SELECT terms FROM commitment_assessments WHERE commitment_id = ? AND support_state = 'supported'"
+                       " ORDER BY id DESC LIMIT 1", (cid,)).fetchone()
+    ts = evidence_text.representative_terms(json.loads(row[0])) if row and row[0] else None
+    if not ts:
+        return None
+    if term == "mode" and ts.get("mode"):
+        return evidence_text.MODE_WORDS.get(ts["mode"], ts["mode"])
+    q = ts.get("quantity")
+    if term == "quantity" and q:
+        return f"{q['value']:,} {q['unit']} per {q['period']}"
+    return None
+
+
+def told_and_contract(conn, did: int, c: dict, raw_presence: str) -> tuple:
+    """('Told' short term, 'Contract' short term) for an overview row. Where a conflict names the differing term, both
+    sides show that term ('real-time' / 'batch'); otherwise how firm the promise was and whether the contract has it."""
+    for criteria_json, cid in conn.execute(
+            "SELECT i.closure_criteria, i.commitment_id FROM issues i JOIN issue_current_state s ON s.issue_id = i.id"
+            " WHERE i.commitment_id = ? AND i.issue_type = 'conflicting_terms' AND s.state <> 'Resolved'", (c["id"],)):
+        criteria = json.loads(criteria_json)
+        theirs = conflict_term(conn, did, criteria)
+        ours = _own_term(conn, cid, criteria.get("differing_term"))
+        if theirs and ours:
+            return ours, theirs
+    told = {"firm": "Firm promise", "conditional": "Conditional", "exploratory": "Exploratory"}.get(c["language"], c["language"])
+    contract = {"included_in_draft_contract": "Included", "absent": "Not included"}.get(raw_presence, "Not assessed")
+    if not c["supported"]:
+        contract = "No longer in the documents"
+    return told, contract
+
+
+def resolved_by(conn, did: int, issue_id: int, labels: dict):
+    """'Resolved by Draft SOW, version 2 · 9 Oct 2026 · signed off by Dana Lee' for a resolved finding: the documents its
+    closing check looked at, and who signed off the fix that brought them in. None if it is not resolved by evidence."""
+    row = conn.execute("SELECT evidence_checked, checked_at, fix_id FROM closure_checks WHERE issue_id = ? ORDER BY id DESC LIMIT 1",
+                       (issue_id,)).fetchone()
+    if row is None:
+        return None
+    versions = [e.get("source_version_id") for e in json.loads(row[0] or "[]") if isinstance(e, dict)]
+    docs, signers = [], []
+    for vid in dict.fromkeys(v for v in versions if v is not None):
+        found = conn.execute("SELECT s.source_key, v.version_no FROM source_versions v JOIN sources s ON s.id = v.source_id"
+                             " WHERE v.id = ? AND s.deal_id = ?", (vid, did)).fetchone()
+        if found:
+            docs.append({"source_version_id": vid, "label": version_label(labels.get(found[0], found[0]), found[1])})
+        for (who,) in conn.execute("SELECT f.approved_by FROM fixes f JOIN fix_evidence e ON e.fix_id = f.id"
+                                   " WHERE e.source_version_id = ? AND f.status = 'approved' ORDER BY f.id", (vid,)):
+            if who not in signers:
+                signers.append(who)
+    if not docs:
+        return None
+    text = "Resolved by " + "; ".join(d["label"] for d in docs) + f" · {short_date(row[1][:10])}"
+    if signers:
+        text += " · signed off by " + ", ".join(signers)
+    return {"text": text, "documents": docs}
+
+
+def overview(conn, slug: str) -> dict:
+    """register() plus what the redesigned overview and finding blocks show. Reads only. Human records (decisions,
+    accountable people, the deal note) are shown beside findings; none of them is used to compute a finding's state."""
+    import integrity
+    import workspace_records
+
+    reg = register(conn, slug)
+    did = ledger_fixes.deal_id(conn, slug)
+    labels = document_labels(conn, did)
+    fresh = reg["freshness"]
+    can_decide, _ = integrity.is_current(conn, did)
+    if fresh["state"] == "Up to date" and not can_decide:
+        reg["freshness_label"] = DECISION_NOT_CURRENT  # never "Up to date" when a decision cannot be saved on it
+    else:
+        reg["freshness_label"] = fresh["state"]
+    reg["can_decide"] = bool(can_decide)
+    reg["deal_note"] = workspace_records.deal_note(conn, did)
+    docs = [d for d in documents(conn, slug) if d["included"]]
+    reg["versions_line"] = " · ".join(f"{d['name']} v{d['version']}" for d in docs)
+    raw_presence = dict(conn.execute(
+        "SELECT c.id, a.contractual_presence FROM commitments c JOIN commitment_status s ON s.commitment_id = c.id"
+        " JOIN commitment_assessments a ON a.id = s.assessment_id WHERE c.deal_id = ?", (did,)).fetchall())
+
+    unresolved = awaiting = reconfirm = flags = 0
+    for c in reg["commitments"]:
+        open_n = 0
+        people, decisions = [], []
+        for i in c["issues"]:
+            absolute = i["absolute_limit"]
+            i["finding"] = finding_label(i["type"], None, absolute)
+            i["decision"] = workspace_records.decision_for(conn, slug, i["id"])
+            i["accountable"] = integrity.accountability_status(conn, i["id"])
+            impact = integrity.impact_status(conn, slug, i["id"])
+            i["impact"] = "Not assessed" if impact["status"] == "none" else impact["status"]
+            i["resolved_by"] = resolved_by(conn, did, i["id"], labels) if i["state"] == "Resolved" else None
+            if i["decision"]["must_fix"]:
+                flags += 1
+            if i["state"] == "Resolved":
+                continue
+            open_n += 1
+            unresolved += 1
+            if i["decision"]["status"] == "reconfirm":
+                reconfirm += 1
+            decided = i["decision"]["status"] == "okay" or i["decision"]["must_fix"] is not None
+            if not decided:
+                awaiting += 1
+            acc = i["accountable"]
+            people.append((acc.get("person"), acc["status"]))
+            decisions.append("Must fix before signing" if i["decision"]["must_fix"] else
+                             "Okay to proceed" if i["decision"]["status"] == "okay" else
+                             "Needs re-confirmation" if i["decision"]["status"] == "reconfirm" else "Awaiting decision")
+        c["open_count"] = open_n
+        c["told"], c["contract"] = told_and_contract(conn, did, c, raw_presence.get(c["id"]))
+        c["findings"] = list(dict.fromkeys(i["finding"] for i in c["issues"] if i["state"] != "Resolved"))
+        named = sorted({p for p, st in people if st == "current"})
+        c["accountable"] = ", ".join(named) if named else None
+        # Ownership carries forward only on unchanged terms and evidence (integrity Part B); otherwise it is shown as
+        # needing confirmation, never silently as current and never as if nobody had been named.
+        c["confirm_owner"] = sorted({p for p, st in people if st == "confirm"} - set(named))
+        c["unassigned"] = any(st == "none" for _, st in people)
+        c["decision_line"] = (" · ".join(f"{decisions.count(d)} {d.lower()}" if decisions.count(d) > 1 or len(set(decisions)) > 1 else d
+                                         for d in dict.fromkeys(decisions)) if decisions else "")
+        c["must_fix"] = any(i["decision"]["must_fix"] for i in c["issues"])
+        c["group"] = "open" if open_n else ("resolved" if c["issues"] else "other")
+
+    rows = [c for c in reg["commitments"] if c["group"] == "open"]
+    rows.sort(key=lambda c: (-c["open_count"], c["name"].lower()))
+    reg["open_rows"] = [c["id"] for c in rows]
+    reg["resolved_findings"] = [
+        {"commitment_id": c["id"], "commitment": c["name"], "issue_id": i["id"], "finding": i["finding"],
+         "resolved_by": i["resolved_by"]["text"] if i["resolved_by"] else "Resolved"}
+        for c in reg["commitments"] for i in c["issues"] if i["state"] == "Resolved"]
+    reg["other_rows"] = [c["id"] for c in sorted((c for c in reg["commitments"] if c["group"] == "other"), key=lambda c: c["name"].lower())]
+    reg["finding_counts"] = {"unresolved": unresolved, "awaiting_decision": awaiting, "needs_reconfirmation": reconfirm,
+                             "must_fix_flags": flags}
+    return reg

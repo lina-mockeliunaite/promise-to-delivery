@@ -165,3 +165,7 @@
 **Why the same issue row isn't enough to carry the accountable person forward:** Reusing the row is a storage decision, not proof that the issue and responsibility are unchanged. I need to check whether the revised terms still represent the same issue before carrying the accountable person forward.
 
 **Why a saved handoff looks current after a catalogue edit:** Catalogue changes aren't covered by the current freshness check, so the handoff can look current even though its authorisation basis has changed. The saved snapshot should remain unchanged, but its currentness status needs to reflect that change.
+
+## 2026-10-06 — Checkpoint 1 (real reviewer), integrity inspection and Part B
+
+Today’s checkpoint showed me how much the UI was getting in the way of understanding the product. I struggled with selecting the right evidence myself, and the recheck didn’t make it obvious what had closed and what was still open. I understand why we chose deal-wide re-confirmation: a new pricing note could affect other commitments, so we can’t assume their earlier decisions still apply. In the next demo I’ll let the reviewer find the issues without helping, then show the evidence upload and check result together beside the issue.

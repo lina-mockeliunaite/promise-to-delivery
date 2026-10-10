@@ -30,11 +30,14 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 import adapters
 import config
 import extraction_cache
+import finding_check
 import handoff
+import integrity
 import ledger
 import ledger_fixes
 import recheck
 import workspace
+import workspace_records
 
 DIST_DIR = config.ROOT / "frontend" / "dist"
 ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
@@ -214,6 +217,30 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
         import anthropic
         return anthropic.Anthropic()
 
+    def read_upload(body: dict) -> tuple:
+        """(filename, text, extra) from an upload body. PDF and Word arrive as base64 inside the JSON body, so the
+        preflight protection still applies; Markdown and text arrive as text."""
+        filename = str(body.get("filename") or "upload.md")[:200]
+        if "file_base64" in body:
+            encoded = body["file_base64"]
+            if not body.get("filename"):
+                raise HTTPException(status_code=400, detail="Send the file with its name, so its format can be recognised.")
+            if not isinstance(encoded, str) or len(encoded) > MAX_UPLOAD_BODY:
+                raise HTTPException(status_code=413, detail="The file is larger than 10 MB.")
+            try:
+                raw = base64.b64decode(encoded, validate=True)
+            except (binascii.Error, ValueError):
+                raise HTTPException(status_code=400, detail="The file could not be read. Upload it again.") from None
+            try:
+                adapted = adapters.adapt(filename, raw)
+            except adapters.AdapterError as exc:
+                raise HTTPException(status_code=exc.status, detail=str(exc)) from None
+            return filename, "", {"raw": raw, "adapted": adapted}
+        text = body.get("text")
+        if not isinstance(text, str) or len(text.encode("utf-8")) > 1_000_000:
+            raise HTTPException(status_code=400, detail="Send the document as text, up to 1 MB.")
+        return filename, text, {}
+
     @app.get("/api/workspace/deals")
     def ws_deals(conn=Depends(db)):
         return {"deals": workspace.deal_list(conn)}
@@ -234,28 +261,7 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
     @app.post("/api/deals/{deal}/documents", dependencies=[Depends(write_guard)])
     def ws_add_document(deal: str, body: dict = Body(...), conn=Depends(db)):
         workspace_deal(deal, conn)
-        filename = str(body.get("filename") or "upload.md")[:200]
-        extra = {}
-        if "file_base64" in body:
-            # PDF and Word arrive as base64 inside the JSON body, so the preflight protection still applies.
-            encoded = body["file_base64"]
-            if not body.get("filename"):
-                raise HTTPException(status_code=400, detail="Send the file with its name, so its format can be recognised.")
-            if not isinstance(encoded, str) or len(encoded) > MAX_UPLOAD_BODY:
-                raise HTTPException(status_code=413, detail="The file is larger than 10 MB.")
-            try:
-                raw = base64.b64decode(encoded, validate=True)
-            except (binascii.Error, ValueError):
-                raise HTTPException(status_code=400, detail="The file could not be read. Upload it again.") from None
-            try:
-                adapted = adapters.adapt(filename, raw)
-            except adapters.AdapterError as exc:
-                raise HTTPException(status_code=exc.status, detail=str(exc)) from None
-            text, extra = "", {"raw": raw, "adapted": adapted}
-        else:
-            text = body.get("text")
-            if not isinstance(text, str) or len(text.encode("utf-8")) > 1_000_000:
-                raise HTTPException(status_code=400, detail="Send the document as text, up to 1 MB.")
+        filename, text, extra = read_upload(body)
         try:
             if body.get("source_key"):
                 vid = ledger_fixes.add_source_version(conn, deal, str(body["source_key"]), text, filename,
@@ -268,6 +274,18 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
         adapted = extra.get("adapted")
         return {"source_version_id": vid, "format": adapted["format"] if adapted else adapters.format_label("", filename),
                 "problems": adapted["problems"] if adapted else []}
+
+    @app.get("/api/deals/{deal}/documents/text")
+    def ws_document_text(deal: str, version: int = Query(...), conn=Depends(db)):
+        """The readable text of one document version of this deal, so a resolved finding can open its evidence."""
+        workspace_deal(deal, conn)
+        did = ledger_fixes.deal_id(conn, deal)
+        row = conn.execute("SELECT s.source_key, v.version_no, v.canonical_text FROM source_versions v JOIN sources s"
+                           " ON s.id = v.source_id WHERE v.id = ? AND s.deal_id = ?", (version, did)).fetchone()
+        if row is None:
+            raise HTTPException(status_code=404, detail=NOT_FOUND)
+        label = workspace.document_labels(conn, did).get(row[0], row[0])
+        return {"name": workspace.version_label(label, row[1]), "text": row[2] or ""}
 
     @app.post("/api/deals/{deal}/documents/include", dependencies=[Depends(write_guard)])
     def ws_include(deal: str, body: dict = Body(...), conn=Depends(db)):
@@ -290,12 +308,12 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
                 "set in its terminal, then review again.")) from None
         except (recheck.RecheckError, ledger_fixes.FixError) as exc:
             raise bad_request(exc) from None
-        return {"review": {k: result[k] for k in ("run_kind", "model_calls", "cost_usd", "checks")}}
+        return {"review": {k: result[k] for k in ("run_kind", "inputs_changed", "model_calls", "cost_usd", "checks")}}
 
     @app.get("/api/deals/{deal}/register")
     def ws_register(deal: str, conn=Depends(db)):
         workspace_deal(deal, conn)
-        return workspace.register(conn, deal)
+        return workspace.overview(conn, deal)
 
     @app.post("/api/deals/{deal}/fixes", dependencies=[Depends(write_guard)])
     def ws_fix(deal: str, body: dict = Body(...), conn=Depends(db)):
@@ -335,6 +353,72 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
             conn.commit()
         except sqlite3.IntegrityError as exc:
             raise HTTPException(status_code=400, detail=f"Refused by the ledger: {exc}") from None
+        return {"ok": True}
+
+    # --- Layout redesign (9 Oct): deal note, fix inside the finding, decisions, accountable person ----------------
+    # None of these routes changes a finding. Only /findings/check records evidence, and only its recheck can close.
+    def record_error(exc):
+        return HTTPException(status_code=exc.status, detail=str(exc))
+
+    @app.post("/api/deals/{deal}/note", dependencies=[Depends(write_guard)])
+    def ws_note(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        try:
+            workspace_records.set_deal_note(conn, deal, body.get("note"), body.get("entered_by"), body.get("deadline"))
+        except workspace_records.RecordError as exc:
+            raise record_error(exc) from None
+        return {"ok": True}
+
+    @app.post("/api/deals/{deal}/findings/check", dependencies=[Depends(write_guard)])
+    def ws_check_finding(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        filename, text, extra = read_upload(body)
+        try:
+            result = finding_check.check(
+                conn, deal, body.get("issue_id"), confirmed_doc_type=body.get("confirmed_doc_type"), filename=filename,
+                text=text, raw=extra.get("raw"), adapted=extra.get("adapted"), source_key=body.get("source_key") or None,
+                name=body.get("name"), doc_date=body.get("doc_date"), signed_off_by=body.get("signed_off_by"),
+                note=body.get("note"), client=model_client())
+        except finding_check.CheckError as exc:
+            raise record_error(exc) from None
+        except (recheck.RecheckError, ledger_fixes.FixError) as exc:
+            raise bad_request(exc) from None
+        return {"check": result}
+
+    @app.post("/api/deals/{deal}/decisions", dependencies=[Depends(write_guard)])
+    def ws_decision(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        kind = body.get("kind")
+        try:
+            if kind == "okay_to_proceed":
+                workspace_records.okay_to_proceed(conn, deal, body.get("issue_id"), body.get("by"), body.get("reason"))
+            elif kind == "must_fix":
+                workspace_records.flag_must_fix(conn, deal, body.get("issue_id"), body.get("by"), body.get("reason"))
+            else:
+                raise HTTPException(status_code=400, detail="Choose Okay to proceed or Must fix before signing.")
+        except workspace_records.RecordError as exc:
+            raise record_error(exc) from None
+        return {"ok": True}
+
+    @app.post("/api/deals/{deal}/decisions/clear", dependencies=[Depends(write_guard)])
+    def ws_clear_flag(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        try:
+            workspace_records.clear_flag(conn, deal, body.get("flag_id"), body.get("by"), body.get("reason"))
+        except workspace_records.RecordError as exc:
+            raise record_error(exc) from None
+        return {"ok": True}
+
+    @app.post("/api/deals/{deal}/accountable", dependencies=[Depends(write_guard)])
+    def ws_accountable(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        try:
+            integrity.set_accountability(conn, deal, int(body.get("issue_id")), body.get("person"), None, body.get("set_by"),
+                                         confirm=bool(body.get("confirm")))
+        except integrity.IntegrityError as exc:
+            raise record_error(exc) from None
+        except (TypeError, ValueError):
+            raise HTTPException(status_code=404, detail=NOT_FOUND) from None
         return {"ok": True}
 
     # --- Handoff (saved snapshots and exports) --------------------------------------------------------------

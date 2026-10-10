@@ -1,0 +1,49 @@
+{
+  "timestamp_utc": "2026-10-10T03:01:29+00:00",
+  "purpose": "Smoke test only: does agent v2 run with the real model. Not scored, not an input to the decision rule.",
+  "agent_version": 2,
+  "model": "claude-sonnet-5",
+  "bounds": {
+    "cost_usd": 0.1,
+    "latency_s": 60
+  },
+  "deals": {
+    "harbour_bank": {
+      "escalated": [
+        "C08"
+      ],
+      "status": "complete",
+      "turns": 1,
+      "tool_calls": 1,
+      "seconds": 6.63,
+      "cost_usd": 0.011958,
+      "verdicts": {
+        "C08": {
+          "accepted": true,
+          "problems": [],
+          "authorisation": "unknown_needs_review"
+        }
+      },
+      "missing_verdicts": []
+    },
+    "hard_cases": {
+      "escalated": [
+        "C03"
+      ],
+      "status": "complete",
+      "turns": 1,
+      "tool_calls": 1,
+      "seconds": 4.64,
+      "cost_usd": 0.009816,
+      "verdicts": {
+        "C03": {
+          "accepted": true,
+          "problems": [],
+          "authorisation": "unknown_needs_review"
+        }
+      },
+      "missing_verdicts": []
+    }
+  },
+  "ran_end_to_end": true
+}

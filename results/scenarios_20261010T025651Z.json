@@ -1,0 +1,404 @@
+{
+  "timestamp_utc": "2026-10-10T02:56:51+00:00",
+  "control_unchanged_input_rerun": {
+    "passed": true,
+    "deals": {
+      "harbour_bank": {
+        "model_calls": 0,
+        "unchanged": true,
+        "checks": {
+          "met": 0,
+          "open_action": 7,
+          "open_evidence": 1,
+          "new": 0
+        }
+      },
+      "hard_cases": {
+        "model_calls": 0,
+        "unchanged": true,
+        "checks": {
+          "met": 0,
+          "open_action": 6,
+          "open_evidence": 2,
+          "new": 0
+        }
+      },
+      "practice_cases": {
+        "model_calls": 0,
+        "unchanged": true,
+        "checks": {
+          "met": 0,
+          "open_action": 0,
+          "open_evidence": 14,
+          "new": 0
+        }
+      }
+    }
+  },
+  "scenarios": [
+    {
+      "id": "S1",
+      "name": "Approval added; hourly-batch SOW remains",
+      "passed": true,
+      "problems": [],
+      "rechecks": [
+        {
+          "review_id": 4,
+          "run_kind": "recheck_after_fix",
+          "inputs_changed": true,
+          "model_calls": 0,
+          "cost_usd": 0.0,
+          "checks": {
+            "met": 1,
+            "open_action": 6,
+            "open_evidence": 1,
+            "new": 0
+          },
+          "unsupported": []
+        }
+      ],
+      "states": {
+        "On-chain wallet screening integration: Polygon, real time": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Resolved",
+            "conflicting_terms/conflict:C07": "Needs action",
+            "contract_gap/contract": "Needs action"
+          }
+        },
+        "Go-live": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "On-chain wallet screening integration: Ethereum, real time": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "Payout ledger connector: up to 12,000 payouts per day, at launch": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "Payout ledger connector: up to 40,000 payouts per day, by end of first year": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action",
+            "contract_gap/contract": "Needs action"
+          }
+        },
+        "VASP counterparty data exchange": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action",
+            "contract_gap/contract": "Needs action"
+          }
+        },
+        "On-chain wallet screening integration: Polygon, batch": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "Unclassified promise: The parties will hold a weekly project status meet [terms incomplete: capability; HB-06-S03]": {
+          "status": "Needs evidence",
+          "issues": {
+            "insufficient_evidence/authorisation": "Needs evidence"
+          }
+        }
+      }
+    },
+    {
+      "id": "S2",
+      "name": "SOW aligned; required approval still missing",
+      "passed": true,
+      "problems": [],
+      "rechecks": [
+        {
+          "review_id": 4,
+          "run_kind": "recheck_after_fix",
+          "inputs_changed": true,
+          "model_calls": 1,
+          "cost_usd": 0.012416,
+          "checks": {
+            "met": 3,
+            "open_action": 5,
+            "open_evidence": 0,
+            "new": 0
+          },
+          "unsupported": [
+            "C07",
+            "C08"
+          ]
+        }
+      ],
+      "states": {
+        "On-chain wallet screening integration: Polygon, real time": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action",
+            "conflicting_terms/conflict:C07": "Resolved",
+            "contract_gap/contract": "Resolved"
+          }
+        },
+        "Go-live": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "On-chain wallet screening integration: Ethereum, real time": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "Payout ledger connector: up to 12,000 payouts per day, at launch": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "Payout ledger connector: up to 40,000 payouts per day, by end of first year": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action",
+            "contract_gap/contract": "Needs action"
+          }
+        },
+        "VASP counterparty data exchange": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action",
+            "contract_gap/contract": "Needs action"
+          }
+        },
+        "On-chain wallet screening integration: Polygon, batch": {
+          "status": "Not in current documents",
+          "issues": {}
+        },
+        "Unclassified promise: The parties will hold a weekly project status meet [terms incomplete: capability; HB-06-S03]": {
+          "status": "Not in current documents",
+          "issues": {
+            "insufficient_evidence/authorisation": "Resolved"
+          }
+        }
+      }
+    },
+    {
+      "id": "S3",
+      "name": "Both issues supported with evidence",
+      "passed": true,
+      "problems": [],
+      "rechecks": [
+        {
+          "review_id": 4,
+          "run_kind": "recheck_after_fix",
+          "inputs_changed": true,
+          "model_calls": 0,
+          "cost_usd": 0.0,
+          "checks": {
+            "met": 1,
+            "open_action": 6,
+            "open_evidence": 1,
+            "new": 0
+          },
+          "unsupported": []
+        },
+        {
+          "review_id": 5,
+          "run_kind": "recheck_after_fix",
+          "inputs_changed": true,
+          "model_calls": 1,
+          "cost_usd": 0.012786,
+          "checks": {
+            "met": 4,
+            "open_action": 4,
+            "open_evidence": 0,
+            "new": 0
+          },
+          "unsupported": [
+            "C07",
+            "C08"
+          ]
+        }
+      ],
+      "states": {
+        "On-chain wallet screening integration: Polygon, real time": {
+          "status": "Resolved",
+          "issues": {
+            "approval/authorisation": "Resolved",
+            "conflicting_terms/conflict:C07": "Resolved",
+            "contract_gap/contract": "Resolved"
+          }
+        },
+        "Go-live": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "On-chain wallet screening integration: Ethereum, real time": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "Payout ledger connector: up to 12,000 payouts per day, at launch": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "Payout ledger connector: up to 40,000 payouts per day, by end of first year": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action",
+            "contract_gap/contract": "Needs action"
+          }
+        },
+        "VASP counterparty data exchange": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action",
+            "contract_gap/contract": "Needs action"
+          }
+        },
+        "On-chain wallet screening integration: Polygon, batch": {
+          "status": "Not in current documents",
+          "issues": {}
+        },
+        "Unclassified promise: The parties will hold a weekly project status meet [terms incomplete: capability; HB-06-S03]": {
+          "status": "Not in current documents",
+          "issues": {
+            "insufficient_evidence/authorisation": "Resolved"
+          }
+        }
+      }
+    },
+    {
+      "id": "S4",
+      "name": "Absolute limit plus an attempted exception",
+      "passed": true,
+      "problems": [],
+      "rechecks": [
+        {
+          "review_id": 4,
+          "run_kind": "recheck_after_fix",
+          "inputs_changed": true,
+          "model_calls": 0,
+          "cost_usd": 0.0,
+          "checks": {
+            "met": 0,
+            "open_action": 6,
+            "open_evidence": 2,
+            "new": 0
+          },
+          "unsupported": []
+        }
+      ],
+      "states": {
+        "On-chain wallet screening integration: Arbitrum [terms incomplete: mode; KR-01-S01]": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action",
+            "insufficient_evidence/contract": "Needs evidence"
+          }
+        },
+        "On-chain wallet screening integration: Polygon, real time": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "Go-live": {
+          "status": "Needs action",
+          "issues": {
+            "contract_gap/contract": "Needs action",
+            "insufficient_evidence/authorisation": "Needs evidence"
+          }
+        },
+        "Payout ledger connector: up to 30,000 payouts per day, at launch": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action"
+          }
+        },
+        "On-chain wallet screening integration: Arbitrum, real time": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action",
+            "contract_gap/contract": "Needs action"
+          }
+        },
+        "VASP counterparty data exchange": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "Case audit history": {
+          "status": "Needs action",
+          "issues": {
+            "contract_gap/contract": "Needs action"
+          }
+        },
+        "On-chain wallet screening integration: Ethereum, real time": {
+          "status": "No issues raised",
+          "issues": {}
+        }
+      }
+    },
+    {
+      "id": "S5",
+      "name": "Insufficient evidence",
+      "passed": true,
+      "problems": [],
+      "rechecks": [
+        {
+          "review_id": 4,
+          "run_kind": "recheck_after_fix",
+          "inputs_changed": true,
+          "model_calls": 0,
+          "cost_usd": 0.0,
+          "checks": {
+            "met": 0,
+            "open_action": 7,
+            "open_evidence": 1,
+            "new": 0
+          },
+          "unsupported": []
+        }
+      ],
+      "states": {
+        "On-chain wallet screening integration: Polygon, real time": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action",
+            "conflicting_terms/conflict:C07": "Needs action",
+            "contract_gap/contract": "Needs action"
+          }
+        },
+        "Go-live": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "On-chain wallet screening integration: Ethereum, real time": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "Payout ledger connector: up to 12,000 payouts per day, at launch": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "Payout ledger connector: up to 40,000 payouts per day, by end of first year": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action",
+            "contract_gap/contract": "Needs action"
+          }
+        },
+        "VASP counterparty data exchange": {
+          "status": "Needs action",
+          "issues": {
+            "approval/authorisation": "Needs action",
+            "contract_gap/contract": "Needs action"
+          }
+        },
+        "On-chain wallet screening integration: Polygon, batch": {
+          "status": "No issues raised",
+          "issues": {}
+        },
+        "Unclassified promise: The parties will hold a weekly project status meet [terms incomplete: capability; HB-06-S03]": {
+          "status": "Needs evidence",
+          "issues": {
+            "insufficient_evidence/authorisation": "Needs evidence"
+          }
+        }
+      }
+    }
+  ],
+  "passed": 5,
+  "of": 5,
+  "cost_usd": 0.025202
+}

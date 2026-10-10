@@ -627,3 +627,84 @@ and its cost; who would assemble the documents; trust vs AE handoff notes.
 
 Deferred to 12 Oct: handoff record as landing screen; post-signature
 "reset the expectation with the customer" fix route.
+
+## 2026-10-06 — Checkpoint 1 (real reviewer) and resulting decisions
+
+Reviewer: Head of Growth, former colleague, revenue side. Not the planned CS/delivery profile; friendly reviewer, so praise is not evidence.
+
+What happened
+- Step 2 (unaided gap-finding) not tested: I named the contract gap before asking. Wrong evidence attached twice in the demo (KR-05 file; then aligned SOW typed as pricing note).
+- Reviewer could not tell what the fix had resolved; main page still said "needs approval". I was confused too.
+
+What he said
+- Owners: deal owner / CRO / commercial lead / pre-sales lead; documents assembled by pre-sales or sales.
+- One deadline per deal, not per issue ("not a project management tool"). Ask where each item lives after handoff.
+- "Accept the risk" alarms people; prefers "okay to proceed".
+- Wants AI-suggested business impact (person can override). "Where does the AI come in? It seems rules-based."
+- Stopper: if it feels like a burden. Needs a quick deal summary at the top.
+
+Decisions
+- Prioritise layout (`docs/BRIEF_2026-10-06_layout.md`), after integrity Part B. Overview: compact rows, finding types in words, two separate counts (unresolved vs awaiting decision), sort by open findings.
+- Fix inside the finding: attach, confirm document type, Save & check, result in place; resolved findings name their evidence.
+- "Okay to proceed" and "Must fix before signing" are per-finding human decisions with name and reason; never change a finding. "Must fix" stays visible until a named person clears it.
+- Re-confirmation is deal-wide for the prototype. Rejected: narrow carry-forward (needs tested dependency tracking). Cost: re-confirmation noise on large deals.
+- Deal summary typed by a person. Rejected: generated summary (new model call, new scope).
+- Business impact stays "Not assessed" until a person records it. AI-suggested impact → Later; check with a delivery reviewer first.
+
+Triage
+- Before freeze: layout brief; integrity Part B.
+- After freeze: deal-level deadline field; "where it lives after handoff".
+- Later: AI-suggested impact; narrower re-confirmation.
+
+Rule slips (Claude Code): `ls data` listed coral_pay names (not read); one `git diff --stat`. Seal intact.
+
+## 2026-10-06 — Checkpoint 1 (real reviewer) and resulting decisions
+
+Reviewer: Head of Growth, former colleague, revenue side. Not the planned CS/delivery profile; friendly reviewer, so praise is not evidence.
+
+What happened
+- Step 2 (unaided gap-finding) not tested: I named the contract gap before asking. Wrong evidence attached twice in the demo (KR-05 file; then aligned SOW typed as pricing note).
+- Reviewer could not tell what the fix had resolved; main page still said "needs approval". I was confused too.
+
+What he said
+- Owners: deal owner / CRO / commercial lead / pre-sales lead; documents assembled by pre-sales or sales.
+- One deadline per deal, not per issue ("not a project management tool"). Ask where each item lives after handoff.
+- "Accept the risk" alarms people; prefers "okay to proceed".
+- Wants AI-suggested business impact (person can override). "Where does the AI come in? It seems rules-based."
+- Stopper: if it feels like a burden. Needs a quick deal summary at the top.
+
+Decisions
+- Prioritise layout (BRIEF_2026-10-06_layout.md), after integrity Part B. Overview: compact rows, finding types in words, two separate counts (unresolved vs awaiting decision), sort by open findings.
+- Fix inside the finding: attach, confirm document type, Save & check, result in place; resolved findings name their evidence.
+- "Okay to proceed" and "Must fix before signing" are per-finding human decisions with name and reason; never change a finding. "Must fix" stays visible until a named person clears it.
+- Re-confirmation is deal-wide for the prototype. Rejected: narrow carry-forward (needs tested dependency tracking). Cost: re-confirmation noise on large deals.
+- Deal summary typed by a person. Rejected: generated summary (new model call, new scope).
+- Business impact stays "Not assessed" until a person records it. AI-suggested impact → Later; check with a delivery reviewer first.
+
+Triage
+- Before freeze: layout brief; integrity Part B.
+- After freeze: deal-level deadline field; "where it lives after handoff".
+- Later: AI-suggested impact; narrower re-confirmation.
+
+Rule slips (Claude Code): `ls data` listed coral_pay names (not read); one `git diff --stat`. Seal intact.
+
+---
+
+## 2026-10-09/10 — Unattended build day; decisions; pre-freeze runs
+
+*Built by Claude while Lina was away (layout redesign, Excel and PowerPoint adapters). Full detail, alternatives and checks: `docs/DECISIONS_DRAFT_2026-10-09_layout.md`; spec `docs/SPEC_xlsx_pptx_canonical_text.md`. Built on Part B before Part B was reviewed (the brief said wait).*
+
+Decisions (Lina, 9 Oct):
+- **Agent v2 on Coral Pay: option C** — smoke test on development deals first, then one run on Coral Pay. Rejected: rules only (drops the headline's third column); v2 untested on the sealed run; a fresh practice set (2–3 h labelling before the freeze). Decision rule unchanged.
+- **A spreadsheet approval cell whose formula has no saved value gives *Needs evidence*** (confirms 3 Oct). `rules.py` changed before the freeze; rules scores on all three development deals identical to 3 Oct.
+- **Hidden PowerPoint slides are read and flagged.** Speaker notes not read.
+- **A fix addresses only the finding it was attached to.** Rejected: every open finding on the commitment. Other findings the document closes are reported as effects.
+
+Runs (10 Oct, Lina's Mac):
+- Real-model 5/5 scenarios: all pass, control pass, $0.025 (`results/scenarios_20261010T025651Z.json`). First real-model check of the Part B `recheck.py` change. Regression check only for the formula rule (no scenario uses a spreadsheet).
+- Agent v2 smoke test: ran end to end, both deals within bounds, $0.022 (`results/agent_smoke_20261010T030129Z.json`). Proves v2 runs, not that it maps paraphrases: both items went to *unknown* in one call.
+- 568 tests pass. Demo reset.
+
+**Configuration for the 14 Oct sealed run (recorded before the 12 Oct candidate freeze).** One run per configuration, nothing changed afterwards: (1) baseline; (2) rules; (3) rules + agent v2 as escalation for firm commitments the rules leave *unknown*. Extraction frozen v1: `claude-sonnet-5`, thinking `model_default`, `MAX_TOKENS = 8000`. Agent: `AGENT_VERSION = 2`, same model, `AGENT_MAX_TOKENS = 4000`, 6 tool calls per commitment, 40 per deal, 15 turns; bounds $0.10 and 60 s per deal review. Decision rule as written 4 Oct; on Coral Pay condition 2 is judged on the single run (v1 was judged on three runs on the practice set). Rules as of 9 Oct.
+
+---
