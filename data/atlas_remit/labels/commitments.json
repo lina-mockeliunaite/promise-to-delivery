@@ -1,0 +1,184 @@
+{
+  "_how_to": "One row per consolidated commitment (12). authorisation = standard_authorised | exception_approved | no_approval_evidence | unknown_needs_review, or null for exploratory/conditional commitments (null means not applicable). authorisation_evidence cites the catalogue path and the AR-05 pricing-note row. contractual_presence = absent | included_in_draft_contract (following SOW No. 1 and Annex 1, incorporated by contract clause 3). issues use overcommitment | expectation_gap | contradiction | needs_review. reason = absolute_limit where the item is not in the catalogue at all, else null. customer_context items are {type: reliance | customer_obligation, source_id, quote}.",
+  "commitments": [
+    {
+      "id": "AC01",
+      "name": "NUSD payouts over Tron: receiving wallet screened in real time before release",
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-021/SG: no Tron network listed (catalogue unlisted_rule: not offered, no exception route); AR-05 row 3: not offered",
+      "contractual_presence": "absent",
+      "issues": [
+        "overcommitment",
+        "expectation_gap"
+      ],
+      "reason": "absolute_limit",
+      "customer_context": [
+        {
+          "type": "reliance",
+          "source_id": "AR-01",
+          "quote": "And our Indonesian distribution partners keep asking for Tron, because that's where a lot of their recipients already hold balances."
+        },
+        {
+          "type": "reliance",
+          "source_id": "AR-08",
+          "quote": "Our compliance plan for the Indonesian corridor assumes Tron payouts are screened in real time exactly as your proposal describes."
+        }
+      ]
+    },
+    {
+      "id": "AC02",
+      "name": "Name and sanctions screening sized at up to 60,000 checks per day",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-007/SG: max_screenings_per_day 100,000; 60,000 within limit; AR-05 row 6",
+      "contractual_presence": "absent",
+      "issues": [
+        "expectation_gap",
+        "contradiction"
+      ],
+      "reason": null,
+      "customer_context": [
+        {
+          "type": "reliance",
+          "source_id": "AR-08",
+          "quote": "Peak-day modelling now puts us at around 45,000 name screenings, so the sizing in the proposal matters to us."
+        }
+      ]
+    },
+    {
+      "id": "AC03",
+      "name": "Third-party device/behavioural risk scores ingested for fraud rules and investigators from go-live",
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-027/SG: beta, requires_named_approval, roadmap_date 2027-12-31; AR-05 row 4: approved in principle, approver not recorded",
+      "contractual_presence": "absent",
+      "issues": [
+        "overcommitment",
+        "expectation_gap"
+      ],
+      "reason": null,
+      "customer_context": [
+        {
+          "type": "reliance",
+          "source_id": "AR-08",
+          "quote": "Joel's team is planning the fraud-rule build around the behavioural scores flowing in from day one."
+        }
+      ]
+    },
+    {
+      "id": "AC04",
+      "name": "Suspicious transaction report (STR) drafts generated automatically from the case record",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-015/SG: generally_available, standard; AR-05 row 7",
+      "contractual_presence": "absent",
+      "issues": [
+        "expectation_gap"
+      ],
+      "reason": null,
+      "customer_context": [
+        {
+          "type": "reliance",
+          "source_id": "AR-08",
+          "quote": "My MLRO team has built its STR process around the automatic drafting you showed us, so we are counting on that being there at go-live."
+        }
+      ]
+    },
+    {
+      "id": "AC05",
+      "name": "Payout ledger connector supports 30,000 payouts per day from launch",
+      "authorisation": "no_approval_evidence",
+      "authorisation_evidence": "CAP-023/SG: max_payouts_per_day 25,000; 30,000 exceeds limit; AR-05 row 5: no approval on file",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [
+        "overcommitment"
+      ],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "AC06",
+      "name": "NUSD payouts on Ethereum: recipient wallet screened in real time before release",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-021/SG/Ethereum/NUSD/real_time: generally_available, standard; AR-05 row 1",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": [
+        {
+          "type": "customer_obligation",
+          "source_id": "AR-02",
+          "quote": "On our side, we'll have the analytics provider API keys loaded into your sandbox by 8 January."
+        },
+        {
+          "type": "customer_obligation",
+          "source_id": "AR-08",
+          "quote": "Separately, Joel confirms the analytics provider API keys will be in the sandbox by 8 January as agreed."
+        }
+      ]
+    },
+    {
+      "id": "AC07",
+      "name": "NUSD payouts on Polygon: recipient wallet screened in real time before release (limited beta)",
+      "authorisation": "exception_approved",
+      "authorisation_evidence": "CAP-021/SG/Polygon/NUSD/real_time: beta, requires_named_approval, roadmap_date 2027-03-31; AR-05 row 2: named exception approved by Gabriel Tan, VP Product, 18 Oct 2026",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": [
+        {
+          "type": "reliance",
+          "source_id": "AR-01",
+          "quote": "From a compliance point of view I won't release a single payout until the receiving wallet has been screened and come back clean."
+        }
+      ]
+    },
+    {
+      "id": "AC08",
+      "name": "Sanctions screening of customer and beneficiary names up to 30,000 per day (SOW)",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-007/SG: max_screenings_per_day 100,000; within limit",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "AC09",
+      "name": "Tenant hosted on AWS in the Singapore region",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-019/SG: generally_available, standard, supported_clouds AWS/GCP; AR-05 row 9",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "AC10",
+      "name": "Case management workspace with full case audit history",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "CAP-011/SG and CAP-014/SG: generally_available, standard; AR-05 row 8",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "AC11",
+      "name": "Unsupervised anomaly detection on corridor data in a later phase",
+      "authorisation": null,
+      "authorisation_evidence": "not applicable: A03 is exploratory",
+      "contractual_presence": "absent",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    },
+    {
+      "id": "AC12",
+      "name": "30 days of hypercare support after go-live",
+      "authorisation": "standard_authorised",
+      "authorisation_evidence": "AR-05 priced services: Hypercare, post go-live support, 30 calendar days; catalogue lists capabilities, not services",
+      "contractual_presence": "included_in_draft_contract",
+      "issues": [],
+      "reason": null,
+      "customer_context": []
+    }
+  ]
+}

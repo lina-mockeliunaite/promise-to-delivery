@@ -1,0 +1,13 @@
+{
+  "deal": "atlas_remit",
+  "documents": [
+    {"source_id": "AR-01", "file": "AR-01_discovery_call.md",                    "doc_type": "call_transcript",        "date": "2026-10-01"},
+    {"source_id": "AR-02", "file": "AR-02_solution_call.md",                     "doc_type": "call_transcript",        "date": "2026-10-07"},
+    {"source_id": "AR-03", "file": "AR-03_security_deployment_questionnaire.md", "doc_type": "security_questionnaire", "date": "2026-10-12"},
+    {"source_id": "AR-04", "file": "AR-04_proposal.md",                          "doc_type": "proposal",               "date": "2026-10-16"},
+    {"source_id": "AR-05", "file": "AR-05_pricing_services_note.md",             "doc_type": "pricing_services_note",  "date": "2026-10-19"},
+    {"source_id": "AR-06", "file": "AR-06_draft_sow.md",                         "doc_type": "draft_sow",              "date": "2026-10-26"},
+    {"source_id": "AR-07", "file": "AR-07_draft_contract.md",                    "doc_type": "draft_contract",         "date": "2026-10-29"},
+    {"source_id": "AR-08", "file": "AR-08_customer_email.md",                    "doc_type": "customer_email",         "date": "2026-11-02"}
+  ]
+}

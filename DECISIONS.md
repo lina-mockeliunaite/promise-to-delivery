@@ -755,3 +755,44 @@ Not changed: `extract.py`, `schema.py`, `sales_filter.py`, `ledger_consolidate.p
 ## 2026-10-10, 14:13 — Sealed run on Coral Pay: results recorded, nothing changed afterwards
 
 Full analysis: `docs/RESULTS_coral_pay_2026-10-10.md`. Seal verified 12/12. Cost $0.25. Extraction recall 14/14, language 14/14, precision 70% (74% after the filter; target 85% missed). Rules: 1 of 3 planted issues exactly (Solana); Azure and training reached review only as *Needs evidence*; 2 false flags on 4 clean commitments; grouping 3/7. Agent v2 failed conditions 1, 2 and 3 (80 s, $0.128); right in substance on Azure and training, unsupported in form. **The one-call baseline found 3 of 3 planted issues with no false flags.** Root cause of every rules miss: the development-tuned vocabulary (term parser, filter) does not generalise — the 3 Oct paraphrase limitation, confirmed. Per the test-set discipline, no module is changed in response; findings go to the README and the Later list (model-led detection with rule-checked evidence).
+
+## 2026-10-10, 14:25 — Version 2: model-led detection with code-verified evidence
+
+**Chose (Lina):** build v2 rather than demo v1 with a known overfit. **Design:** the model proposes each finding (approval, absolute limit, contract gap, conflicting terms) with verbatim quotes and citations; code rejects any finding whose quotes or citations do not check out; verified findings flow into the existing screens, recheck and handoff. Rejected: rules first with the model filling gaps (keeps the overfit core); model only (no verification, least defensible).
+**Evaluation:** a new unseen deal, written and sealed by an isolated agent that never sees v2 code; the builder (Claude) never reads it before the single sealed run. Coral Pay is not reused (seen). v1's Coral Pay result stands as recorded.
+**Timeline:** Checkpoint 2 moves from 16 Oct to 21 Oct and reviews v2's sealed result; hard stop 22 Oct unchanged. v1 remains in the repository and the README as the measured first version.
+
+## 2026-10-10, 15:30 — v2 Stage 1 built: detector, verifier, scorer, dev runner, sealed harness
+
+**Files:** `detect_v2.py` (one structured-output model call per deal + `verify()`), `score_v2.py`, `run_v2.py` (`dev`, `replay`, `sealed`), `tests/test_v2.py` (18). Nothing in the v1 pipeline or the ledger changed. 597 tests pass.
+
+**Finding types and what code checks** (a finding is shown only if every check passes; rejected findings are kept with reasons):
+- every promise quote word for word in the named document; never from the internal pricing note.
+- *approval required*: the catalogue path exists and says `requires_named_approval`; the network, if any, is named in the promise; no pricing-note line for that capability and scope says "approved by <Name>" (not negated).
+- *absolute limit*: the capability exists; the region is missing from it, or the unlisted value is in the promise and nowhere in that region's catalogue entry.
+- *over limit*: a numeric catalogue limit below the promised quantity, which appears in the promise ("30k" and "30 thousand" count); no named approval.
+- *contract gap*: 1–3 phrases of at most six words, each in the promise and none anywhere in the contract chain (draft contract + SOW).
+- *conflicting terms*: contract quote verbatim in the contract chain; a subject named in both; promised value absent from the contract quote, contract value in it. Scored as contradiction **and** expectation gap (in every labelled dev case the two co-occur, and a verified conflict means the promise as made is not in the contract).
+
+**What code does not check, stated plainly:** that a paraphrase means a given mode or asset ("instant risk check" = real time) — that is the model's reading; that a missing phrase is the *right* phrase; that a promise is firm rather than conditional. These are the model's judgement, visible in the quotes, and are what the sealed run measures.
+
+**Verifier not the bottleneck:** correct findings written from the labels pass verification on all four dev deals (17 oracle findings, 0 rejected); eight kinds of wrong finding are rejected (paraphrased quote, internal source, standard entry, within limit, listed value, unknown capability, phrase in contract, long phrase, conflict without shared subject, approval recorded in the scenario pricing note).
+
+**Development protocol:** dev deals are harbour_bank, practice_cases, hard_cases and coral_pay (released). `python run_v2.py dev` costs about $0.2–0.4; `replay` re-verifies saved model output for free, so verifier changes are tried without spend. Prompt and verifier may change until the sealed run; nothing changes after it.
+
+**Pass criteria for the sealed run on atlas_remit (proposed by Claude, to be confirmed by Lina before the run; fixed once confirmed):** (1) at least 80% of labelled (commitment, issue) targets found; (2) at most one false flag; (3) a parse error or truncated reply counts as a failed run, not a retry. Reported alongside, not pass/fail: rejected-but-true findings, duplicates, cost and time.
+
+## 2026-10-10, 15:10 — v2 dev run 1 and version 2 changes
+
+**Dev run 1** (`results/v2_dev_20261010T064917Z.json`, $0.40, prompt version 1): Harbour Bank 7/7, practice 12/12, hard cases 4/5, Coral Pay 3/3. 26 of 27 labelled issues found, 3 false flags, 0 duplicates. Comparison on the same deals: the v1 rules missed most paraphrased cases on the practice set (0 issue sets correct, 3 Oct) and 2 of 3 on Coral Pay.
+**Misses, traced:** (1) KC4 30,000/day was found by the model and *rejected by the verifier*: the promise says "thirty thousand" and the checker only read digits. Checker bug; fixed (English number words), replay with no model call → 27/27 (`results/v2_replay_20261010T070647Z.json`). (2) KC5 "Elva will deliver VASP… subject to Product approval" reported as firm; labelled conditional (2 false flags). (3) Coral Pay "This proposal sets out Elva's support for… launch on 15 January 2027" reported as a contract gap; it is context, not a promise (1 false flag; v1's rules flagged the same sentence).
+**Changed (prompt version 2):** two general clarifications: an unmet condition makes a "will" statement conditional; a sentence describing the customer's plan or a document's purpose is not a promise, and a date is a promise only where Elva commits to deliver by it. Neither names a deal, capability or document. Not changed: the verifier does not test firmness; it stays the model's judgement and is what the sealed run measures.
+**Judgement call noted:** "will deliver X, subject to approval" is arguably firm to a customer; the frozen label says conditional and stands.
+
+## 2026-10-10, 16:45 — v2 dev run 2; v2 frozen for the sealed run
+
+**Dev run 2** (`results/v2_dev_20261010T083854Z.json`, $0.40, prompt version 2): 27 of 27 labelled issues found on all four dev deals, 0 false flags, 0 duplicates, 0 true findings rejected. **Read with care:** these are the deals the two changes were made against; a perfect score here shows the fixes did what they were meant to, not that v2 generalises. The sealed run on atlas_remit is the test.
+
+**Frozen now (v2_version 2):** `detect_v2.py` prompt and verifier, `score_v2.py`. No further prompt or verifier changes before the sealed run; nothing changes in response to it.
+**Sealed run also runs the one-call baseline** (the same task as on Coral Pay), so v2 is compared with a single prompt on the same unseen deal. Baseline scored by hand against the labels after the run.
+**Pass criteria confirmed as written (15:30 entry):** ≥80% of labelled (commitment, issue) targets found; ≤1 false flag; a parse error or truncated reply is a failed run, not a retry.

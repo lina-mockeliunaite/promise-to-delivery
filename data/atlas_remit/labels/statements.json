@@ -1,0 +1,270 @@
+{
+  "_how_to": "One row per Elva vendor statement meeting the commitment definition (24 statements). Quotes are copied exactly from the source document and verified by script. language = exploratory | conditional | firm. commitment_ids refer to AC01-AC12; one statement may map to several commitments. Excluded: sales-process steps, customer obligations and reliance lines (attached as customer_context in commitments.json), pointer-only sentences (SOW 5.1, contract 3, 3.3), boilerplate, and AR-05 (internal deal-desk note, reference only). AR-05, AR-07 and AR-08 contain no labelled Elva statements.",
+  "statements": [
+    {
+      "id": "A01",
+      "source_id": "AR-01",
+      "speaker": "Koh Wen Jie (Elva)",
+      "quote": "Ethereum is the easy part — that one's live today, we screen the receiving wallet in real time before you release anything.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC06"
+      ],
+      "case": "Clean firm promise in casual call language; GA standard"
+    },
+    {
+      "id": "A02",
+      "source_id": "AR-01",
+      "speaker": "Koh Wen Jie (Elva)",
+      "quote": "Let me take Tron away and check whether our analytics hook-up can see wallets on that network at all.",
+      "language": "exploratory",
+      "commitment_ids": [
+        "AC01"
+      ],
+      "case": "Exploratory: Tron only to be checked; not a finding on its own"
+    },
+    {
+      "id": "A03",
+      "source_id": "AR-01",
+      "speaker": "Koh Wen Jie (Elva)",
+      "quote": "Longer term, we could look at whether our unsupervised anomaly models would add anything on the corridor data — no promises, it's just a thought for a later phase.",
+      "language": "exploratory",
+      "commitment_ids": [
+        "AC11"
+      ],
+      "case": "Exploratory; must not become a firm finding"
+    },
+    {
+      "id": "A04",
+      "source_id": "AR-02",
+      "speaker": "Rachel Pereira (Elva)",
+      "quote": "If I can get it signed off internally as a named exception, we could turn it on for your launch; otherwise it's the batch flavour until general availability next March.",
+      "language": "conditional",
+      "commitment_ids": [
+        "AC07"
+      ],
+      "case": "Conditional on named approval; approval later recorded with named approver"
+    },
+    {
+      "id": "A05",
+      "source_id": "AR-02",
+      "speaker": "Koh Wen Jie (Elva)",
+      "quote": "Thirty thousand a day is fine on our side.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC05"
+      ],
+      "case": "Number in words; firm volume above CAP-023 SG limit"
+    },
+    {
+      "id": "A06",
+      "source_id": "AR-02",
+      "speaker": "Koh Wen Jie (Elva)",
+      "quote": "Once an analyst marks a case as suspicious, we generate the STR for them.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC04"
+      ],
+      "case": "Firm; STR = catalogue SAR drafting under a local synonym"
+    },
+    {
+      "id": "A07",
+      "source_id": "AR-02",
+      "speaker": "Koh Wen Jie (Elva)",
+      "quote": "We have a connector for third-party behavioural risk scores, but it's in beta, so I'd need to check what we can commit to before I say yes.",
+      "language": "exploratory",
+      "commitment_ids": [
+        "AC03"
+      ],
+      "case": "Hedged; no commitment yet"
+    },
+    {
+      "id": "A08",
+      "source_id": "AR-03",
+      "speaker": "Elva (security questionnaire)",
+      "quote": "Elva will host the Atlas Remit tenant on AWS in the Singapore region (ap-southeast-1).",
+      "language": "firm",
+      "commitment_ids": [
+        "AC09"
+      ],
+      "case": "Clean firm; CAP-019 SG AWS"
+    },
+    {
+      "id": "A09",
+      "source_id": "AR-03",
+      "speaker": "Elva (security questionnaire)",
+      "quote": "Every action an analyst takes on a case — assignment, notes, attachments and the final disposition — is written to a tamper-evident audit history.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC10"
+      ],
+      "case": "Clean firm; CAP-014"
+    },
+    {
+      "id": "A10",
+      "source_id": "AR-04",
+      "speaker": "Elva (proposal)",
+      "quote": "Recipient wallets on both Ethereum and Polygon will be screened in real time, ahead of release, for every NUSD payout.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC06",
+        "AC07"
+      ],
+      "case": "One statement, two commitments"
+    },
+    {
+      "id": "A11",
+      "source_id": "AR-04",
+      "speaker": "Elva (proposal)",
+      "quote": "NUSD payouts that Atlas routes over Tron will also have the receiving wallet screened in real time before funds are released, so your Indonesian partners are covered from day one.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC01"
+      ],
+      "case": "Absolute limit: Tron not in catalogue"
+    },
+    {
+      "id": "A12",
+      "source_id": "AR-04",
+      "speaker": "Elva (proposal)",
+      "quote": "Name and sanctions screening is sized at up to sixty thousand checks a day, comfortably above your forecast peak.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC02"
+      ],
+      "case": "Within CAP-007 SG limit; SOW later states 30,000"
+    },
+    {
+      "id": "A13",
+      "source_id": "AR-04",
+      "speaker": "Elva (proposal)",
+      "quote": "The payout ledger connector will be provisioned for 30,000 payouts daily from launch.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC05"
+      ],
+      "case": "Above CAP-023 SG limit of 25,000; no approval"
+    },
+    {
+      "id": "A14",
+      "source_id": "AR-04",
+      "speaker": "Elva (proposal)",
+      "quote": "Investigators will work alerts and cases in a single case workspace, with a full audit trail of every action.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC10"
+      ],
+      "case": "Clean firm; CAP-011 + CAP-014"
+    },
+    {
+      "id": "A15",
+      "source_id": "AR-04",
+      "speaker": "Elva (proposal)",
+      "quote": "Suspicious transaction reports will be drafted automatically from the case record, ready for your MLRO to review and file.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC04"
+      ],
+      "case": "Authorised; absent from SOW/contract"
+    },
+    {
+      "id": "A16",
+      "source_id": "AR-04",
+      "speaker": "Elva (proposal)",
+      "quote": "Elva will ingest the device and behavioural risk scores from your existing behavioural-biometrics vendor and make them available to fraud rules and investigators from go-live.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC03"
+      ],
+      "case": "CAP-027 beta; approval recorded without approver"
+    },
+    {
+      "id": "A17",
+      "source_id": "AR-04",
+      "speaker": "Elva (proposal)",
+      "quote": "Your tenant will run on Elva's AWS deployment in Singapore.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC09"
+      ],
+      "case": "Clean firm"
+    },
+    {
+      "id": "A18",
+      "source_id": "AR-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "2.1 Elva will deploy the Atlas tenant on Amazon Web Services in the Singapore region.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC09"
+      ],
+      "case": "Contract chain"
+    },
+    {
+      "id": "A19",
+      "source_id": "AR-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "2.2 Elva will configure the case management workspace, including case audit history, for the Atlas investigations team.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC10"
+      ],
+      "case": "Contract chain"
+    },
+    {
+      "id": "A20",
+      "source_id": "AR-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "3.1 Elva will screen customer and beneficiary names against sanctions lists at volumes of up to 30,000 screenings per day.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC08"
+      ],
+      "case": "Conflicts with proposal's sixty thousand"
+    },
+    {
+      "id": "A21",
+      "source_id": "AR-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "4.1 The payout ledger connector will support up to thirty thousand (30,000) payouts per day.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC05"
+      ],
+      "case": "Over-limit volume carried into contract chain"
+    },
+    {
+      "id": "A22",
+      "source_id": "AR-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "6.1 Elva will provide 30 days of hypercare support following go-live.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC12"
+      ],
+      "case": "Priced service in AR-05"
+    },
+    {
+      "id": "A23",
+      "source_id": "AR-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "1.1 Ethereum: each beneficiary wallet is screened in real time through the analytics integration before the NUSD payout is released.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC06"
+      ],
+      "case": "Annex 1"
+    },
+    {
+      "id": "A24",
+      "source_id": "AR-06",
+      "speaker": "Elva (draft SOW)",
+      "quote": "1.2 Polygon: each beneficiary wallet is screened in real time through the analytics integration before the NUSD payout is released, under the limited-beta support terms approved for Atlas.",
+      "language": "firm",
+      "commitment_ids": [
+        "AC07"
+      ],
+      "case": "Annex 1; approved exception"
+    }
+  ]
+}

@@ -1,0 +1,1697 @@
+{
+  "kind": "v2_dev",
+  "v2_version": 1,
+  "model": "claude-sonnet-5",
+  "deals": [
+    {
+      "deal": "harbour_bank",
+      "model": "claude-sonnet-5",
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 9487,
+        "output_tokens": 9731
+      },
+      "cost_usd": 0.116284,
+      "findings": [
+        {
+          "kind": "approval_required",
+          "commitment": "Real-time wallet screening for Polygon NUSD payouts",
+          "promise_quotes": [
+            {
+              "source_id": "HB-03",
+              "quote": "Through its pre-built connector to a blockchain analytics provider, Elva will return real-time wallet-screening results for Ethereum and Polygon before every NUSD payout is released."
+            },
+            {
+              "source_id": "HB-04",
+              "quote": "Every NUSD payout on Polygon will be screened in real time through Elva's analytics integration before release, from the 1 December launch."
+            }
+          ],
+          "catalogue_path": "CAP-021/SG/Polygon/NUSD/real_time",
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "HB-05",
+            "quote": "No named exception approved for Harbour Bank"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Elva promised customers real-time Polygon wallet screening, but Polygon real-time screening is still in beta and requires a named approval that has not been granted for Harbour Bank."
+        },
+        {
+          "kind": "conflicting_terms",
+          "commitment": "Real-time wallet screening for Polygon NUSD payouts",
+          "promise_quotes": [
+            {
+              "source_id": "HB-03",
+              "quote": "Through its pre-built connector to a blockchain analytics provider, Elva will return real-time wallet-screening results for Ethereum and Polygon before every NUSD payout is released."
+            },
+            {
+              "source_id": "HB-04",
+              "quote": "Every NUSD payout on Polygon will be screened in real time through Elva's analytics integration before release, from the 1 December launch."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": {
+            "source_id": "HB-06",
+            "quote": "A.2 Polygon: recipient wallets are screened through the analytics integration in batches at hourly intervals. A Polygon payout is released after the next completed screening batch returns a clear result."
+          },
+          "note_quote": null,
+          "subject": "Polygon",
+          "promised_value": "screened in real time",
+          "contract_value": "batches at hourly intervals",
+          "reason": "The RFP response and proposal promise Polygon payouts are screened in real time, but the SOW Annex A specifies hourly batch screening for Polygon, a materially slower and different control than what was promised."
+        },
+        {
+          "kind": "over_limit",
+          "commitment": "Payout ledger connector scaling to 40,000 payouts per day by end of year one",
+          "promise_quotes": [
+            {
+              "source_id": "HB-04",
+              "quote": "The payout ledger connector will handle up to 40,000 payouts per day by the end of the first year."
+            }
+          ],
+          "catalogue_path": "CAP-023/SG",
+          "unlisted_value": null,
+          "limit_name": "max_payouts_per_day",
+          "promised_quantity": 40000,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "HB-05",
+            "quote": "No approval for 40,000/day"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Elva promised to scale the payout ledger connector to 40,000 payouts per day, well above Singapore's catalogue limit of 25,000 per day, with no approved exception on record."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Payout ledger connector scaling to 40,000 payouts per day by end of year one",
+          "promise_quotes": [
+            {
+              "source_id": "HB-04",
+              "quote": "The payout ledger connector will handle up to 40,000 payouts per day by the end of the first year."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "up to 40,000 payouts per day",
+            "end of the first year"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The commitment to scale to 40,000 payouts per day by year one only appears in the proposal and is never carried into the SOW or contract, leaving a customer-facing promise with no contractual backing."
+        },
+        {
+          "kind": "approval_required",
+          "commitment": "VASP counterparty data exchange for exchange-hosted wallet payouts",
+          "promise_quotes": [
+            {
+              "source_id": "HB-04",
+              "quote": "For payouts to exchange-hosted wallets, VASP counterparty data exchange will be generally available in Singapore by 31 March 2027."
+            }
+          ],
+          "catalogue_path": "CAP-024/SG",
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "HB-05",
+            "quote": "No named exception approved for Harbour Bank"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Elva promised VASP counterparty data exchange would be generally available in Singapore by 31 March 2027, but the capability is still roadmap status requiring named approval, with a catalogue GA date of 30 June 2027, and no approval has been recorded for Harbour Bank."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "VASP counterparty data exchange for exchange-hosted wallet payouts",
+          "promise_quotes": [
+            {
+              "source_id": "HB-04",
+              "quote": "For payouts to exchange-hosted wallets, VASP counterparty data exchange will be generally available in Singapore by 31 March 2027."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "VASP counterparty data exchange",
+            "exchange-hosted wallets"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The promise to deliver VASP counterparty data exchange for exchange-hosted wallet payouts is never mentioned in the SOW or contract, leaving this commitment unaddressed in the binding documents."
+        }
+      ],
+      "v2_version": 1,
+      "accepted": [
+        {
+          "kind": "approval_required",
+          "commitment": "Real-time wallet screening for Polygon NUSD payouts",
+          "promise_quotes": [
+            {
+              "source_id": "HB-03",
+              "quote": "Through its pre-built connector to a blockchain analytics provider, Elva will return real-time wallet-screening results for Ethereum and Polygon before every NUSD payout is released."
+            },
+            {
+              "source_id": "HB-04",
+              "quote": "Every NUSD payout on Polygon will be screened in real time through Elva's analytics integration before release, from the 1 December launch."
+            }
+          ],
+          "catalogue_path": "CAP-021/SG/Polygon/NUSD/real_time",
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "HB-05",
+            "quote": "No named exception approved for Harbour Bank"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Elva promised customers real-time Polygon wallet screening, but Polygon real-time screening is still in beta and requires a named approval that has not been granted for Harbour Bank.",
+          "problems": []
+        },
+        {
+          "kind": "conflicting_terms",
+          "commitment": "Real-time wallet screening for Polygon NUSD payouts",
+          "promise_quotes": [
+            {
+              "source_id": "HB-03",
+              "quote": "Through its pre-built connector to a blockchain analytics provider, Elva will return real-time wallet-screening results for Ethereum and Polygon before every NUSD payout is released."
+            },
+            {
+              "source_id": "HB-04",
+              "quote": "Every NUSD payout on Polygon will be screened in real time through Elva's analytics integration before release, from the 1 December launch."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": {
+            "source_id": "HB-06",
+            "quote": "A.2 Polygon: recipient wallets are screened through the analytics integration in batches at hourly intervals. A Polygon payout is released after the next completed screening batch returns a clear result."
+          },
+          "note_quote": null,
+          "subject": "Polygon",
+          "promised_value": "screened in real time",
+          "contract_value": "batches at hourly intervals",
+          "reason": "The RFP response and proposal promise Polygon payouts are screened in real time, but the SOW Annex A specifies hourly batch screening for Polygon, a materially slower and different control than what was promised.",
+          "problems": []
+        },
+        {
+          "kind": "over_limit",
+          "commitment": "Payout ledger connector scaling to 40,000 payouts per day by end of year one",
+          "promise_quotes": [
+            {
+              "source_id": "HB-04",
+              "quote": "The payout ledger connector will handle up to 40,000 payouts per day by the end of the first year."
+            }
+          ],
+          "catalogue_path": "CAP-023/SG",
+          "unlisted_value": null,
+          "limit_name": "max_payouts_per_day",
+          "promised_quantity": 40000,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "HB-05",
+            "quote": "No approval for 40,000/day"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Elva promised to scale the payout ledger connector to 40,000 payouts per day, well above Singapore's catalogue limit of 25,000 per day, with no approved exception on record.",
+          "problems": []
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Payout ledger connector scaling to 40,000 payouts per day by end of year one",
+          "promise_quotes": [
+            {
+              "source_id": "HB-04",
+              "quote": "The payout ledger connector will handle up to 40,000 payouts per day by the end of the first year."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "up to 40,000 payouts per day",
+            "end of the first year"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The commitment to scale to 40,000 payouts per day by year one only appears in the proposal and is never carried into the SOW or contract, leaving a customer-facing promise with no contractual backing.",
+          "problems": []
+        },
+        {
+          "kind": "approval_required",
+          "commitment": "VASP counterparty data exchange for exchange-hosted wallet payouts",
+          "promise_quotes": [
+            {
+              "source_id": "HB-04",
+              "quote": "For payouts to exchange-hosted wallets, VASP counterparty data exchange will be generally available in Singapore by 31 March 2027."
+            }
+          ],
+          "catalogue_path": "CAP-024/SG",
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "HB-05",
+            "quote": "No named exception approved for Harbour Bank"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Elva promised VASP counterparty data exchange would be generally available in Singapore by 31 March 2027, but the capability is still roadmap status requiring named approval, with a catalogue GA date of 30 June 2027, and no approval has been recorded for Harbour Bank.",
+          "problems": []
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "VASP counterparty data exchange for exchange-hosted wallet payouts",
+          "promise_quotes": [
+            {
+              "source_id": "HB-04",
+              "quote": "For payouts to exchange-hosted wallets, VASP counterparty data exchange will be generally available in Singapore by 31 March 2027."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "VASP counterparty data exchange",
+            "exchange-hosted wallets"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The promise to deliver VASP counterparty data exchange for exchange-hosted wallet payouts is never mentioned in the SOW or contract, leaving this commitment unaddressed in the binding documents.",
+          "problems": []
+        }
+      ],
+      "rejected": [],
+      "score": {
+        "deal": "harbour_bank",
+        "targets": 7,
+        "found": 7,
+        "missed": [],
+        "accepted": 6,
+        "false_flags": 0,
+        "duplicates": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "rejected": 0,
+        "rejected_true": [],
+        "rows": [
+          {
+            "kind": "approval_required",
+            "commitment": "Real-time wallet screening for Polygon NUSD payouts",
+            "matched": [
+              "C01",
+              "C02"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "conflicting_terms",
+            "commitment": "Real-time wallet screening for Polygon NUSD payouts",
+            "matched": [
+              "C01",
+              "C02"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "over_limit",
+            "commitment": "Payout ledger connector scaling to 40,000 payouts per day by end of year one",
+            "matched": [
+              "C05"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "contract_gap",
+            "commitment": "Payout ledger connector scaling to 40,000 payouts per day by end of year one",
+            "matched": [
+              "C05"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "approval_required",
+            "commitment": "VASP counterparty data exchange for exchange-hosted wallet payouts",
+            "matched": [
+              "C06"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "contract_gap",
+            "commitment": "VASP counterparty data exchange for exchange-hosted wallet payouts",
+            "matched": [
+              "C06"
+            ],
+            "verdict": "hit"
+          }
+        ]
+      }
+    },
+    {
+      "deal": "practice_cases",
+      "model": "claude-sonnet-5",
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 7680,
+        "output_tokens": 7176
+      },
+      "cost_usd": 0.08712,
+      "findings": [
+        {
+          "kind": "absolute_limit",
+          "commitment": "Pre-release wallet screening will cover Tron payouts",
+          "promise_quotes": [
+            {
+              "source_id": "PC-01",
+              "quote": "Tron wallets will be covered by the same pre-release checks."
+            }
+          ],
+          "catalogue_path": "CAP-021/SG",
+          "unlisted_value": "Tron",
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Tron is not a supported network under the on-chain wallet screening catalogue entry for Singapore (only Ethereum and Polygon exist), so this cannot be delivered or sold under any exception."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Pre-release wallet screening will cover Tron payouts",
+          "promise_quotes": [
+            {
+              "source_id": "PC-01",
+              "quote": "Tron wallets will be covered by the same pre-release checks."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "Tron wallets",
+            "pre-release checks"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The SOW only describes Ethereum real-time and Polygon batch screening; Tron coverage promised on the sales call is missing entirely from the contract chain."
+        },
+        {
+          "kind": "approval_required",
+          "commitment": "Instant (real-time) risk check on every Polygon payout",
+          "promise_quotes": [
+            {
+              "source_id": "PC-01",
+              "quote": "Every payout to a Polygon wallet gets an instant risk check before funds move."
+            }
+          ],
+          "catalogue_path": "CAP-021/SG/Polygon/NUSD/real_time",
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "PC-03",
+            "quote": "No named exception approved for Tidewater Pay"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Real-time Polygon screening is still in beta and requires a named approval, but the deal desk note records no named approver for Tidewater Pay."
+        },
+        {
+          "kind": "conflicting_terms",
+          "commitment": "Polygon payout screening timing",
+          "promise_quotes": [
+            {
+              "source_id": "PC-01",
+              "quote": "Every payout to a Polygon wallet gets an instant risk check before funds move."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": {
+            "source_id": "PC-04",
+            "quote": "Polygon: recipient wallets are screened in hourly batches before release."
+          },
+          "note_quote": null,
+          "subject": "Polygon",
+          "promised_value": "instant risk check before funds move",
+          "contract_value": "screened in hourly batches before release",
+          "reason": "Sales promised instant real-time screening for Polygon payouts, but the SOW only commits to hourly batch screening, a materially slower mode."
+        },
+        {
+          "kind": "over_limit",
+          "commitment": "Sanctions screening capacity of 120,000 checks per day",
+          "promise_quotes": [
+            {
+              "source_id": "PC-02",
+              "quote": "Our service handles up to 120,000 sanctions checks every day."
+            }
+          ],
+          "catalogue_path": "CAP-007/SG",
+          "unlisted_value": null,
+          "limit_name": "max_screenings_per_day",
+          "promised_quantity": 120000,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "PC-03",
+            "quote": "No approval above 100,000/day"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The catalogue caps Singapore sanctions screening at 100,000 checks per day and no exception above that has been approved, but 120,000 was promised."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Sanctions screening capacity of 120,000 checks per day",
+          "promise_quotes": [
+            {
+              "source_id": "PC-02",
+              "quote": "Our service handles up to 120,000 sanctions checks every day."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "120,000 sanctions checks",
+            "every day"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The sanctions screening capacity figure quoted to the customer does not appear anywhere in the SOW or contract."
+        },
+        {
+          "kind": "over_limit",
+          "commitment": "Payout processing capacity of around 30,000 payouts per day",
+          "promise_quotes": [
+            {
+              "source_id": "PC-02",
+              "quote": "We will comfortably absorb around 30k payouts a day from launch."
+            }
+          ],
+          "catalogue_path": "CAP-023/SG",
+          "unlisted_value": null,
+          "limit_name": "max_payouts_per_day",
+          "promised_quantity": 30000,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "PC-03",
+            "quote": "No approval above 25,000/day"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The catalogue caps Singapore payout ledger connector throughput at 25,000 per day with no approved exception, but 30,000 was promised."
+        },
+        {
+          "kind": "conflicting_terms",
+          "commitment": "Payout ledger connector daily volume",
+          "promise_quotes": [
+            {
+              "source_id": "PC-02",
+              "quote": "We will comfortably absorb around 30k payouts a day from launch."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": {
+            "source_id": "PC-04",
+            "quote": "The payout ledger connector will handle up to 20,000 payouts per day."
+          },
+          "note_quote": null,
+          "subject": "payouts",
+          "promised_value": "around 30k payouts a day",
+          "contract_value": "up to 20,000 payouts per day",
+          "reason": "The proposal promises roughly 30,000 payouts per day while the SOW commits to only 20,000 per day, a direct conflict on volume."
+        },
+        {
+          "kind": "approval_required",
+          "commitment": "VASP counterparty data exchange live in Singapore by end of Q1 2027",
+          "promise_quotes": [
+            {
+              "source_id": "PC-02",
+              "quote": "Counterparty data sharing with exchanges will be switched on in Singapore by the end of Q1 2027."
+            }
+          ],
+          "catalogue_path": "CAP-024/SG",
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "PC-03",
+            "quote": "No named exception approved for Tidewater Pay"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "VASP counterparty data exchange is roadmap-only and requires a named approval, but no named approver is on record for Tidewater Pay."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "VASP counterparty data exchange live in Singapore by end of Q1 2027",
+          "promise_quotes": [
+            {
+              "source_id": "PC-02",
+              "quote": "Counterparty data sharing with exchanges will be switched on in Singapore by the end of Q1 2027."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "Counterparty data sharing",
+            "switched on in Singapore",
+            "end of Q1 2027"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The commitment to switch on counterparty data sharing by Q1 2027 is absent from the SOW and contract entirely."
+        }
+      ],
+      "v2_version": 1,
+      "accepted": [
+        {
+          "kind": "absolute_limit",
+          "commitment": "Pre-release wallet screening will cover Tron payouts",
+          "promise_quotes": [
+            {
+              "source_id": "PC-01",
+              "quote": "Tron wallets will be covered by the same pre-release checks."
+            }
+          ],
+          "catalogue_path": "CAP-021/SG",
+          "unlisted_value": "Tron",
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Tron is not a supported network under the on-chain wallet screening catalogue entry for Singapore (only Ethereum and Polygon exist), so this cannot be delivered or sold under any exception.",
+          "problems": []
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Pre-release wallet screening will cover Tron payouts",
+          "promise_quotes": [
+            {
+              "source_id": "PC-01",
+              "quote": "Tron wallets will be covered by the same pre-release checks."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "Tron wallets",
+            "pre-release checks"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The SOW only describes Ethereum real-time and Polygon batch screening; Tron coverage promised on the sales call is missing entirely from the contract chain.",
+          "problems": []
+        },
+        {
+          "kind": "approval_required",
+          "commitment": "Instant (real-time) risk check on every Polygon payout",
+          "promise_quotes": [
+            {
+              "source_id": "PC-01",
+              "quote": "Every payout to a Polygon wallet gets an instant risk check before funds move."
+            }
+          ],
+          "catalogue_path": "CAP-021/SG/Polygon/NUSD/real_time",
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "PC-03",
+            "quote": "No named exception approved for Tidewater Pay"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Real-time Polygon screening is still in beta and requires a named approval, but the deal desk note records no named approver for Tidewater Pay.",
+          "problems": []
+        },
+        {
+          "kind": "conflicting_terms",
+          "commitment": "Polygon payout screening timing",
+          "promise_quotes": [
+            {
+              "source_id": "PC-01",
+              "quote": "Every payout to a Polygon wallet gets an instant risk check before funds move."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": {
+            "source_id": "PC-04",
+            "quote": "Polygon: recipient wallets are screened in hourly batches before release."
+          },
+          "note_quote": null,
+          "subject": "Polygon",
+          "promised_value": "instant risk check before funds move",
+          "contract_value": "screened in hourly batches before release",
+          "reason": "Sales promised instant real-time screening for Polygon payouts, but the SOW only commits to hourly batch screening, a materially slower mode.",
+          "problems": []
+        },
+        {
+          "kind": "over_limit",
+          "commitment": "Sanctions screening capacity of 120,000 checks per day",
+          "promise_quotes": [
+            {
+              "source_id": "PC-02",
+              "quote": "Our service handles up to 120,000 sanctions checks every day."
+            }
+          ],
+          "catalogue_path": "CAP-007/SG",
+          "unlisted_value": null,
+          "limit_name": "max_screenings_per_day",
+          "promised_quantity": 120000,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "PC-03",
+            "quote": "No approval above 100,000/day"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The catalogue caps Singapore sanctions screening at 100,000 checks per day and no exception above that has been approved, but 120,000 was promised.",
+          "problems": []
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Sanctions screening capacity of 120,000 checks per day",
+          "promise_quotes": [
+            {
+              "source_id": "PC-02",
+              "quote": "Our service handles up to 120,000 sanctions checks every day."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "120,000 sanctions checks",
+            "every day"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The sanctions screening capacity figure quoted to the customer does not appear anywhere in the SOW or contract.",
+          "problems": []
+        },
+        {
+          "kind": "over_limit",
+          "commitment": "Payout processing capacity of around 30,000 payouts per day",
+          "promise_quotes": [
+            {
+              "source_id": "PC-02",
+              "quote": "We will comfortably absorb around 30k payouts a day from launch."
+            }
+          ],
+          "catalogue_path": "CAP-023/SG",
+          "unlisted_value": null,
+          "limit_name": "max_payouts_per_day",
+          "promised_quantity": 30000,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "PC-03",
+            "quote": "No approval above 25,000/day"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The catalogue caps Singapore payout ledger connector throughput at 25,000 per day with no approved exception, but 30,000 was promised.",
+          "problems": []
+        },
+        {
+          "kind": "conflicting_terms",
+          "commitment": "Payout ledger connector daily volume",
+          "promise_quotes": [
+            {
+              "source_id": "PC-02",
+              "quote": "We will comfortably absorb around 30k payouts a day from launch."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": {
+            "source_id": "PC-04",
+            "quote": "The payout ledger connector will handle up to 20,000 payouts per day."
+          },
+          "note_quote": null,
+          "subject": "payouts",
+          "promised_value": "around 30k payouts a day",
+          "contract_value": "up to 20,000 payouts per day",
+          "reason": "The proposal promises roughly 30,000 payouts per day while the SOW commits to only 20,000 per day, a direct conflict on volume.",
+          "problems": []
+        },
+        {
+          "kind": "approval_required",
+          "commitment": "VASP counterparty data exchange live in Singapore by end of Q1 2027",
+          "promise_quotes": [
+            {
+              "source_id": "PC-02",
+              "quote": "Counterparty data sharing with exchanges will be switched on in Singapore by the end of Q1 2027."
+            }
+          ],
+          "catalogue_path": "CAP-024/SG",
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "PC-03",
+            "quote": "No named exception approved for Tidewater Pay"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "VASP counterparty data exchange is roadmap-only and requires a named approval, but no named approver is on record for Tidewater Pay.",
+          "problems": []
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "VASP counterparty data exchange live in Singapore by end of Q1 2027",
+          "promise_quotes": [
+            {
+              "source_id": "PC-02",
+              "quote": "Counterparty data sharing with exchanges will be switched on in Singapore by the end of Q1 2027."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "Counterparty data sharing",
+            "switched on in Singapore",
+            "end of Q1 2027"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The commitment to switch on counterparty data sharing by Q1 2027 is absent from the SOW and contract entirely.",
+          "problems": []
+        }
+      ],
+      "rejected": [],
+      "score": {
+        "deal": "practice_cases",
+        "targets": 12,
+        "found": 12,
+        "missed": [],
+        "accepted": 10,
+        "false_flags": 0,
+        "duplicates": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "rejected": 0,
+        "rejected_true": [],
+        "rows": [
+          {
+            "kind": "absolute_limit",
+            "commitment": "Pre-release wallet screening will cover Tron payouts",
+            "matched": [
+              "PC3"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "contract_gap",
+            "commitment": "Pre-release wallet screening will cover Tron payouts",
+            "matched": [
+              "PC3"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "approval_required",
+            "commitment": "Instant (real-time) risk check on every Polygon payout",
+            "matched": [
+              "PC1"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "conflicting_terms",
+            "commitment": "Polygon payout screening timing",
+            "matched": [
+              "PC1"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "over_limit",
+            "commitment": "Sanctions screening capacity of 120,000 checks per day",
+            "matched": [
+              "PC9"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "contract_gap",
+            "commitment": "Sanctions screening capacity of 120,000 checks per day",
+            "matched": [
+              "PC9"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "over_limit",
+            "commitment": "Payout processing capacity of around 30,000 payouts per day",
+            "matched": [
+              "PC7"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "conflicting_terms",
+            "commitment": "Payout ledger connector daily volume",
+            "matched": [
+              "PC7"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "approval_required",
+            "commitment": "VASP counterparty data exchange live in Singapore by end of Q1 2027",
+            "matched": [
+              "PC10"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "contract_gap",
+            "commitment": "VASP counterparty data exchange live in Singapore by end of Q1 2027",
+            "matched": [
+              "PC10"
+            ],
+            "verdict": "hit"
+          }
+        ]
+      }
+    },
+    {
+      "deal": "hard_cases",
+      "model": "claude-sonnet-5",
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 7333,
+        "output_tokens": 6752
+      },
+      "cost_usd": 0.082186,
+      "findings": [
+        {
+          "kind": "absolute_limit",
+          "commitment": "Elva will screen NUSD payouts on Arbitrum in real time before release.",
+          "promise_quotes": [
+            {
+              "source_id": "KR-01",
+              "quote": "We'll have Arbitrum screening live for your launch."
+            },
+            {
+              "source_id": "KR-02",
+              "quote": "Elva will screen every NUSD payout on Arbitrum in real time before release."
+            }
+          ],
+          "catalogue_path": "CAP-021/SG",
+          "unlisted_value": "Arbitrum",
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The catalogue's on-chain wallet screening only covers Ethereum and Polygon networks for Singapore; Arbitrum is not offered and cannot be sold even with an exception."
+        },
+        {
+          "kind": "conflicting_terms",
+          "commitment": "Network for real-time NUSD payout screening before release.",
+          "promise_quotes": [
+            {
+              "source_id": "KR-02",
+              "quote": "Elva will screen every NUSD payout on Arbitrum in real time before release."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": {
+            "source_id": "KR-03",
+            "quote": "Provider will screen NUSD payouts on Ethereum in real time before release."
+          },
+          "note_quote": null,
+          "subject": "NUSD",
+          "promised_value": "Arbitrum",
+          "contract_value": "Ethereum",
+          "reason": "The proposal promises Arbitrum screening while the SOW incorporated into the contract specifies Ethereum, creating a direct conflict on which network is covered."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Elva will go live for Kestrel Remit on 1 March 2027.",
+          "promise_quotes": [
+            {
+              "source_id": "KR-02",
+              "quote": "Elva will go live for Kestrel Remit on 1 March 2027."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "go live for Kestrel Remit",
+            "1 March 2027"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "No go-live date appears anywhere in the SOW or contract, leaving a firm launch commitment unenforced."
+        },
+        {
+          "kind": "over_limit",
+          "commitment": "Payout ledger connector will handle up to 30,000 payouts per day.",
+          "promise_quotes": [
+            {
+              "source_id": "KR-02",
+              "quote": "The payout ledger connector will handle up to thirty thousand payouts per day at launch."
+            }
+          ],
+          "catalogue_path": "CAP-023/SG",
+          "unlisted_value": null,
+          "limit_name": "max_payouts_per_day",
+          "promised_quantity": 30000,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "KR-05",
+            "quote": "No named exceptions have been requested or approved for Kestrel Remit."
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The promised 30,000 payouts per day exceeds the Singapore catalogue limit of 25,000 for the payout ledger connector, and no exception has been approved."
+        },
+        {
+          "kind": "approval_required",
+          "commitment": "Elva will deliver VASP counterparty data exchange for Kestrel Remit.",
+          "promise_quotes": [
+            {
+              "source_id": "KR-02",
+              "quote": "Elva will deliver VASP counterparty data exchange for Kestrel Remit, subject to Product approval."
+            }
+          ],
+          "catalogue_path": "CAP-024/SG",
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "KR-05",
+            "quote": "No named exceptions have been requested or approved for Kestrel Remit."
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "VASP counterparty data exchange requires a named approval in Singapore and none has been recorded for this deal."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Elva will deliver VASP counterparty data exchange for Kestrel Remit.",
+          "promise_quotes": [
+            {
+              "source_id": "KR-02",
+              "quote": "Elva will deliver VASP counterparty data exchange for Kestrel Remit, subject to Product approval."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "VASP counterparty data exchange"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "This promised deliverable does not appear anywhere in the SOW or contract, so it is not contractually committed despite being promised to the customer."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Elva will provide full case audit history for every alert raised on Kestrel Remit payouts.",
+          "promise_quotes": [
+            {
+              "source_id": "KR-02",
+              "quote": "Elva will provide full case audit history for every alert raised on Kestrel Remit payouts."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "full case audit history",
+            "every alert raised"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The SOW only refers generically to reporting in Schedule 2 and never commits to case audit history for every alert, leaving this promise unsupported by the contract chain."
+        }
+      ],
+      "v2_version": 1,
+      "accepted": [
+        {
+          "kind": "absolute_limit",
+          "commitment": "Elva will screen NUSD payouts on Arbitrum in real time before release.",
+          "promise_quotes": [
+            {
+              "source_id": "KR-01",
+              "quote": "We'll have Arbitrum screening live for your launch."
+            },
+            {
+              "source_id": "KR-02",
+              "quote": "Elva will screen every NUSD payout on Arbitrum in real time before release."
+            }
+          ],
+          "catalogue_path": "CAP-021/SG",
+          "unlisted_value": "Arbitrum",
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The catalogue's on-chain wallet screening only covers Ethereum and Polygon networks for Singapore; Arbitrum is not offered and cannot be sold even with an exception.",
+          "problems": []
+        },
+        {
+          "kind": "conflicting_terms",
+          "commitment": "Network for real-time NUSD payout screening before release.",
+          "promise_quotes": [
+            {
+              "source_id": "KR-02",
+              "quote": "Elva will screen every NUSD payout on Arbitrum in real time before release."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": {
+            "source_id": "KR-03",
+            "quote": "Provider will screen NUSD payouts on Ethereum in real time before release."
+          },
+          "note_quote": null,
+          "subject": "NUSD",
+          "promised_value": "Arbitrum",
+          "contract_value": "Ethereum",
+          "reason": "The proposal promises Arbitrum screening while the SOW incorporated into the contract specifies Ethereum, creating a direct conflict on which network is covered.",
+          "problems": []
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Elva will go live for Kestrel Remit on 1 March 2027.",
+          "promise_quotes": [
+            {
+              "source_id": "KR-02",
+              "quote": "Elva will go live for Kestrel Remit on 1 March 2027."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "go live for Kestrel Remit",
+            "1 March 2027"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "No go-live date appears anywhere in the SOW or contract, leaving a firm launch commitment unenforced.",
+          "problems": []
+        },
+        {
+          "kind": "approval_required",
+          "commitment": "Elva will deliver VASP counterparty data exchange for Kestrel Remit.",
+          "promise_quotes": [
+            {
+              "source_id": "KR-02",
+              "quote": "Elva will deliver VASP counterparty data exchange for Kestrel Remit, subject to Product approval."
+            }
+          ],
+          "catalogue_path": "CAP-024/SG",
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "KR-05",
+            "quote": "No named exceptions have been requested or approved for Kestrel Remit."
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "VASP counterparty data exchange requires a named approval in Singapore and none has been recorded for this deal.",
+          "problems": []
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Elva will deliver VASP counterparty data exchange for Kestrel Remit.",
+          "promise_quotes": [
+            {
+              "source_id": "KR-02",
+              "quote": "Elva will deliver VASP counterparty data exchange for Kestrel Remit, subject to Product approval."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "VASP counterparty data exchange"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "This promised deliverable does not appear anywhere in the SOW or contract, so it is not contractually committed despite being promised to the customer.",
+          "problems": []
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Elva will provide full case audit history for every alert raised on Kestrel Remit payouts.",
+          "promise_quotes": [
+            {
+              "source_id": "KR-02",
+              "quote": "Elva will provide full case audit history for every alert raised on Kestrel Remit payouts."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "full case audit history",
+            "every alert raised"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The SOW only refers generically to reporting in Schedule 2 and never commits to case audit history for every alert, leaving this promise unsupported by the contract chain.",
+          "problems": []
+        }
+      ],
+      "rejected": [
+        {
+          "kind": "over_limit",
+          "commitment": "Payout ledger connector will handle up to 30,000 payouts per day.",
+          "promise_quotes": [
+            {
+              "source_id": "KR-02",
+              "quote": "The payout ledger connector will handle up to thirty thousand payouts per day at launch."
+            }
+          ],
+          "catalogue_path": "CAP-023/SG",
+          "unlisted_value": null,
+          "limit_name": "max_payouts_per_day",
+          "promised_quantity": 30000,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "KR-05",
+            "quote": "No named exceptions have been requested or approved for Kestrel Remit."
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The promised 30,000 payouts per day exceeds the Singapore catalogue limit of 25,000 for the payout ledger connector, and no exception has been approved.",
+          "problems": [
+            "30,000 does not appear in the promise"
+          ]
+        }
+      ],
+      "score": {
+        "deal": "hard_cases",
+        "targets": 5,
+        "found": 4,
+        "missed": [
+          {
+            "commitment": "KC4",
+            "name": "Payout ledger connector up to 30,000 payouts/day at launch",
+            "issue": "overcommitment"
+          }
+        ],
+        "accepted": 6,
+        "false_flags": 2,
+        "duplicates": 0,
+        "precision": 0.667,
+        "recall": 0.8,
+        "rejected": 1,
+        "rejected_true": [
+          {
+            "kind": "over_limit",
+            "commitment": "Payout ledger connector will handle up to 30,000 payouts per day.",
+            "matched": [
+              "KC4"
+            ],
+            "problems": [
+              "30,000 does not appear in the promise"
+            ]
+          }
+        ],
+        "rows": [
+          {
+            "kind": "absolute_limit",
+            "commitment": "Elva will screen NUSD payouts on Arbitrum in real time before release.",
+            "matched": [
+              "KC1"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "conflicting_terms",
+            "commitment": "Network for real-time NUSD payout screening before release.",
+            "matched": [
+              "KC1"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "contract_gap",
+            "commitment": "Elva will go live for Kestrel Remit on 1 March 2027.",
+            "matched": [
+              "KC3"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "approval_required",
+            "commitment": "Elva will deliver VASP counterparty data exchange for Kestrel Remit.",
+            "matched": [
+              "KC5"
+            ],
+            "verdict": "false_flag"
+          },
+          {
+            "kind": "contract_gap",
+            "commitment": "Elva will deliver VASP counterparty data exchange for Kestrel Remit.",
+            "matched": [
+              "KC5"
+            ],
+            "verdict": "false_flag"
+          },
+          {
+            "kind": "contract_gap",
+            "commitment": "Elva will provide full case audit history for every alert raised on Kestrel Remit payouts.",
+            "matched": [
+              "KC6"
+            ],
+            "verdict": "hit"
+          }
+        ]
+      }
+    },
+    {
+      "deal": "coral_pay",
+      "model": "claude-sonnet-5",
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 9557,
+        "output_tokens": 9688
+      },
+      "cost_usd": 0.115994,
+      "findings": [
+        {
+          "kind": "absolute_limit",
+          "commitment": "Host Coral Pay's production environment on Microsoft Azure in Australia",
+          "promise_quotes": [
+            {
+              "source_id": "CP-03",
+              "quote": "Elva will deploy Coral Pay's production environment on Microsoft Azure in the Australia East region."
+            },
+            {
+              "source_id": "CP-06",
+              "quote": "Provider will deploy Customer's production environment on Microsoft Azure in the Australia East region."
+            }
+          ],
+          "catalogue_path": "CAP-019/AU",
+          "unlisted_value": "Microsoft Azure",
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Elva committed to hosting on Azure, but the catalogue's supported clouds for Regional cloud deployment in Australia are only AWS and GCP; Azure is not offered and cannot be sold even with an exception."
+        },
+        {
+          "kind": "absolute_limit",
+          "commitment": "Screen NUSD recipient wallets on Solana for Coral Pay's Australian payout launch",
+          "promise_quotes": [
+            {
+              "source_id": "CP-04",
+              "quote": "Elva will screen the recipient wallet of every NUSD payout on Solana through its pre-built analytics integration before release."
+            },
+            {
+              "source_id": "CP-06",
+              "quote": "Provider will provide NUSD recipient-wallet screening for Customer's Solana payouts through Elva's pre-built analytics integration, in accordance with the Wallet Screening Specification in Annex A."
+            }
+          ],
+          "catalogue_path": "CAP-021/AU",
+          "unlisted_value": "AU",
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "On-chain wallet screening integration is only catalogued for Singapore, covering Ethereum and Polygon networks; there is no Australia region entry and Solana is not a supported network anywhere, so this cannot be sold even with a named exception."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Deliver two 90-minute operations training sessions before launch",
+          "promise_quotes": [
+            {
+              "source_id": "CP-04",
+              "quote": "Elva will deliver two 90-minute operations training sessions for Coral Pay's payout operations team before launch."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "two 90-minute operations training sessions",
+            "before launch"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Elva promised two pre-launch training sessions in the proposal and the customer is relying on this, but neither the SOW nor the contract contains any training obligation."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Support Coral Pay's contractor payout launch on 15 January 2027",
+          "promise_quotes": [
+            {
+              "source_id": "CP-04",
+              "quote": "This proposal sets out Elva's support for Coral Pay's contractor payout launch on 15 January 2027."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "15 January 2027"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The proposal commits Elva's support to a fixed 15 January 2027 launch date, but neither the SOW nor the contract records this date, leaving the launch timeline without contractual protection."
+        }
+      ],
+      "v2_version": 1,
+      "accepted": [
+        {
+          "kind": "absolute_limit",
+          "commitment": "Host Coral Pay's production environment on Microsoft Azure in Australia",
+          "promise_quotes": [
+            {
+              "source_id": "CP-03",
+              "quote": "Elva will deploy Coral Pay's production environment on Microsoft Azure in the Australia East region."
+            },
+            {
+              "source_id": "CP-06",
+              "quote": "Provider will deploy Customer's production environment on Microsoft Azure in the Australia East region."
+            }
+          ],
+          "catalogue_path": "CAP-019/AU",
+          "unlisted_value": "Microsoft Azure",
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Elva committed to hosting on Azure, but the catalogue's supported clouds for Regional cloud deployment in Australia are only AWS and GCP; Azure is not offered and cannot be sold even with an exception.",
+          "problems": []
+        },
+        {
+          "kind": "absolute_limit",
+          "commitment": "Screen NUSD recipient wallets on Solana for Coral Pay's Australian payout launch",
+          "promise_quotes": [
+            {
+              "source_id": "CP-04",
+              "quote": "Elva will screen the recipient wallet of every NUSD payout on Solana through its pre-built analytics integration before release."
+            },
+            {
+              "source_id": "CP-06",
+              "quote": "Provider will provide NUSD recipient-wallet screening for Customer's Solana payouts through Elva's pre-built analytics integration, in accordance with the Wallet Screening Specification in Annex A."
+            }
+          ],
+          "catalogue_path": "CAP-021/AU",
+          "unlisted_value": "AU",
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "On-chain wallet screening integration is only catalogued for Singapore, covering Ethereum and Polygon networks; there is no Australia region entry and Solana is not a supported network anywhere, so this cannot be sold even with a named exception.",
+          "problems": []
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Deliver two 90-minute operations training sessions before launch",
+          "promise_quotes": [
+            {
+              "source_id": "CP-04",
+              "quote": "Elva will deliver two 90-minute operations training sessions for Coral Pay's payout operations team before launch."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "two 90-minute operations training sessions",
+            "before launch"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Elva promised two pre-launch training sessions in the proposal and the customer is relying on this, but neither the SOW nor the contract contains any training obligation.",
+          "problems": []
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Support Coral Pay's contractor payout launch on 15 January 2027",
+          "promise_quotes": [
+            {
+              "source_id": "CP-04",
+              "quote": "This proposal sets out Elva's support for Coral Pay's contractor payout launch on 15 January 2027."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "15 January 2027"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The proposal commits Elva's support to a fixed 15 January 2027 launch date, but neither the SOW nor the contract records this date, leaving the launch timeline without contractual protection.",
+          "problems": []
+        }
+      ],
+      "rejected": [],
+      "score": {
+        "deal": "coral_pay",
+        "targets": 3,
+        "found": 3,
+        "missed": [],
+        "accepted": 4,
+        "false_flags": 1,
+        "duplicates": 0,
+        "precision": 0.75,
+        "recall": 1.0,
+        "rejected": 0,
+        "rejected_true": [],
+        "rows": [
+          {
+            "kind": "absolute_limit",
+            "commitment": "Host Coral Pay's production environment on Microsoft Azure in Australia",
+            "matched": [
+              "C03"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "absolute_limit",
+            "commitment": "Screen NUSD recipient wallets on Solana for Coral Pay's Australian payout launch",
+            "matched": [
+              "C02"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "contract_gap",
+            "commitment": "Deliver two 90-minute operations training sessions before launch",
+            "matched": [
+              "C01"
+            ],
+            "verdict": "hit"
+          },
+          {
+            "kind": "contract_gap",
+            "commitment": "Support Coral Pay's contractor payout launch on 15 January 2027",
+            "matched": [],
+            "verdict": "false_flag"
+          }
+        ]
+      }
+    }
+  ],
+  "file": "v2_dev_20261010T064917Z.json"
+}

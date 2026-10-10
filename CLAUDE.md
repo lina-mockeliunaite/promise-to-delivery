@@ -5,6 +5,9 @@
 - Exclude both paths from every repository-wide search or script that traverses the repository. If a task appears to require either path, stop and ask Lina.
 - Before starting, read `.claude/settings.json` to confirm the four deny rules are present. Never test the seal by attempting to access either path. This file is an instruction, not the access control.
 
+## Second sealed test set (10 Oct, v2)
+- `data/atlas_remit/` and `data/atlas_remit.sha256` are sealed exactly like Coral Pay was, until Lina releases them for the single v2 sealed run. Do not read, list, search, hash, edit or inspect them; exclude both paths from every repository-wide search or script.
+
 ## Development data
 - `data/harbour_bank/` is the development deal. Extraction may read its source documents, but not its labels.
 - Evaluation code may read `data/harbour_bank/labels/` to score runs and report errors. Use those errors to improve general rules; do not put gold labels or Harbour Bank sentences into an extraction prompt as examples.
