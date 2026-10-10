@@ -48,6 +48,12 @@ def display_name(name: str, statements: list) -> str:
     if clean.startswith("Unclassified promise:"):
         quote = statements[0]["quote"] if statements else clean.split(":", 1)[1]
         quote = re.sub(r"^\s*[A-Z]\.\d+(\.\d+)*\s+", "", quote).strip().rstrip(".")
+        # 10 Oct demo polish: name the thing promised, not the sentence ("The parties will hold a weekly meeting" ->
+        # "Weekly meeting"). Wording only; the quote itself is shown unchanged in the promise trail.
+        trimmed = re.sub(r"^(?:the parties|elva|we|the supplier|the provider)\s+(?:will|shall)\s+"
+                         r"(?:hold|provide|deliver|run|offer|supply|give)\s+(?:an?|the)\s+", "", quote, flags=re.I)
+        if trimmed != quote and trimmed:
+            quote = trimmed[:1].upper() + trimmed[1:]
         return quote if len(quote) <= 90 else quote[:87].rsplit(" ", 1)[0] + "…"
     return clean
 
@@ -404,6 +410,32 @@ def _own_term(conn, cid: int, term: str):
     return None
 
 
+def short_terms(conn, cid: int):
+    """The promise's own material terms in a few words, for the overview's Told column (9-10 Oct demo polish):
+    '40,000 payouts/day', 'real-time', 'by 31 Mar 2027', '1 Dec go-live', 'weekly'. None if the terms say nothing."""
+    row = conn.execute("SELECT terms FROM commitment_assessments WHERE commitment_id = ? AND support_state = 'supported'"
+                       " ORDER BY id DESC LIMIT 1", (cid,)).fetchone()
+    terms = json.loads(row[0]) if row and row[0] else {}
+    ts = evidence_text.representative_terms(terms) or {}
+    members = terms.get("members") or []
+    q = ts.get("quantity")
+    if q:
+        return f"{q['value']:,} {q['unit']}/{q['period']}"
+    if ts.get("mode"):
+        return evidence_text.MODE_WORDS.get(ts["mode"], ts["mode"])
+    if ts.get("go_live_date"):
+        m = re.fullmatch(r"-?-?(\d{4})?-?(\d{2})-(\d{2})", ts["go_live_date"])
+        if m:
+            return f"{int(m.group(3))} {MONTHS_SHORT[int(m.group(2)) - 1]} go-live"
+    dates = sorted({d for mbr in members for d in (mbr.get("dates") or []) if re.fullmatch(r"\d{4}-\d{2}-\d{2}", d)})
+    if dates:
+        return "by " + short_date(dates[0])
+    cadence = sorted({x for mbr in members for x in (mbr.get("cadence") or [])})
+    if cadence:
+        return cadence[0]
+    return None
+
+
 def told_and_contract(conn, did: int, c: dict, raw_presence: str) -> tuple:
     """('Told' short term, 'Contract' short term) for an overview row. Where a conflict names the differing term, both
     sides show that term ('real-time' / 'batch'); otherwise how firm the promise was and whether the contract has it."""
@@ -415,7 +447,10 @@ def told_and_contract(conn, did: int, c: dict, raw_presence: str) -> tuple:
         ours = _own_term(conn, cid, criteria.get("differing_term"))
         if theirs and ours:
             return ours, theirs
-    told = {"firm": "Firm promise", "conditional": "Conditional", "exploratory": "Exploratory"}.get(c["language"], c["language"])
+    told = short_terms(conn, c["id"]) or {"firm": "Firm promise", "conditional": "Conditional",
+                                          "exploratory": "Exploratory"}.get(c["language"], c["language"])
+    if told and c["language"] in ("conditional", "exploratory") and told.lower() != c["language"]:
+        told = f"{told} ({c['language']})"
     contract = {"included_in_draft_contract": "Included", "absent": "Not included"}.get(raw_presence, "Not assessed")
     if not c["supported"]:
         contract = "No longer in the documents"

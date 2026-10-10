@@ -96,6 +96,15 @@ class TestOverview(LayoutCase):
         self.assertEqual(o["resolved_findings"], [])
         self.assertNotIn("sha256", json.dumps(o))
 
+    def test_told_shows_the_promise_s_own_terms_and_unclassified_promises_get_a_readable_name(self):
+        by_name = {c["name"]: c for c in self.overview()["commitments"]}
+        self.assertEqual(by_name["Payout ledger connector: up to 40,000 payouts per day, by end of first year"]["told"], "40,000 payouts/day")
+        self.assertEqual(by_name["VASP counterparty data exchange"]["told"], "by 31 Mar 2027")
+        self.assertEqual(by_name["Go-live"]["told"], "1 Dec go-live (conditional)")
+        weekly = by_name["Weekly project status meeting during implementation"]
+        self.assertEqual(weekly["told"], "weekly")
+        self.assertTrue(any(s["quote"].startswith("The parties will hold") for s in weekly["statements"]))  # quote untouched
+
     def test_register_keys_used_by_the_handoff_are_unchanged(self):
         o = self.overview()
         for key in ("deal", "name", "freshness", "counts", "commitments", "scope_note", "resolved_means"):
