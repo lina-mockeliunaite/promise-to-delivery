@@ -1,6 +1,6 @@
 """Uploading PDF and Word through the workspace API: formats, problems, refusals, page citations, pricing notes as evidence,
 and the seal tests on the new upload path. Temporary ledger; a scripted fake stands in for the model. Nothing under
-data/ is written and nothing under data/coral_pay/ is read (an audit hook checks the upload and review path).
+data/ is written and nothing under data/sealed_decoy/ is read (an audit hook checks the upload and review path).
 """
 
 import base64
@@ -188,7 +188,7 @@ class TestRefusals(FormatsCase):
 class TestSeal(FormatsCase):
     def test_non_allowlisted_deals_are_404_before_the_file_is_read_and_writes_need_the_guard(self):
         body = {"filename": "a.pdf", "file_base64": b64(mf.hb04_pdf()), "doc_type": "proposal", "doc_date": "2026-10-10"}
-        for deal in ("hard_cases", "coral_pay", "u_0123456789abcdef", "..", "harbour_bank%2F..%2Fcoral_pay"):
+        for deal in ("hard_cases", "sealed_decoy", "u_0123456789abcdef", "..", "harbour_bank%2F..%2Fsealed_decoy"):
             r = self.post(f"/api/deals/{deal}/documents", body)
             self.assertIn(r.status_code, (404, 422), deal)
             r = self.post(f"/api/deals/{deal}/documents", {**body, "file_base64": "A" * (15 * 1024 * 1024)})
@@ -198,7 +198,7 @@ class TestSeal(FormatsCase):
         self.assertEqual(r.status_code, 403)
         self.assertEqual(len(self.documents()), 8)
 
-    def test_the_upload_and_review_path_never_reads_coral_pay_or_writes_to_data(self):
+    def test_the_upload_and_review_path_never_reads_sealed_decoy_or_writes_to_data(self):
         global _active
         deal = self.user_deal()
         payload = {"statements": [{"quote": "The payout ledger connector will handle up to 12,000 payouts per day at launch.",
@@ -213,7 +213,7 @@ class TestSeal(FormatsCase):
                 self.assertEqual(self.post(f"/api/deals/{deal}/review", {}).status_code, 200)
         finally:
             _active = False
-        self.assertEqual([e for e in _events if any("coral_pay" in a.lower() for a in e[1])], [])
+        self.assertEqual([e for e in _events if any("sealed_decoy" in a.lower() for a in e[1])], [])
         data_root = str(config.DATA_DIR.resolve())
         self.assertEqual([e for e in _events if e[0] == "open" and len(e[1]) > 1 and e[1][0].startswith(data_root)
                           and any(m in e[1][1] for m in "wax+")], [])

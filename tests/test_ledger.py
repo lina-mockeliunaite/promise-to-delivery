@@ -2,7 +2,7 @@
 
 Everything runs against a temporary folder holding a decoy sealed deal with a canary string and a
 temporary database. Nothing here touches the real data/ folder, the real results/ folder, the real
-coral_pay path or workspace/ledger.sqlite.
+sealed_decoy path or workspace/ledger.sqlite.
 """
 
 import json
@@ -20,7 +20,7 @@ import config
 import ledger
 
 CANARY = "CANARY_TEXT_c0ral_9c2e"
-DECOY = "coral_pay"
+DECOY = "sealed_decoy"
 H = "a" * 64
 
 
@@ -204,7 +204,7 @@ class TestSchemaShape(LedgerTestCase):
         self.assertIn("review_statement_commitments", tables)
         views = {r[0] for r in self.conn.execute("SELECT name FROM sqlite_master WHERE type = 'view'")}
         self.assertEqual(views, {"issue_current_state", "commitment_status"})
-        self.assertEqual(ledger.schema_version(self.conn), 1)
+        self.assertEqual(ledger.schema_version(self.conn), 2)
         self.assertEqual(self.conn.execute("PRAGMA foreign_keys").fetchone()[0], 1)
 
     def test_review_statements_no_longer_holds_a_commitment_column(self):
@@ -219,7 +219,7 @@ class TestSchemaShape(LedgerTestCase):
         self.conn.commit()
         other = ledger.open_ledger(self.db_path)
         self.addCleanup(other.close)
-        self.assertEqual(ledger.schema_version(other), 1)
+        self.assertEqual(ledger.schema_version(other), 2)
 
     def test_user_slugs_must_be_u_plus_16_hex(self):
         ok = "u_" + "0123456789abcdef"

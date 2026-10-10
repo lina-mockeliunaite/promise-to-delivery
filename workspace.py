@@ -38,6 +38,9 @@ AUTH_LABELS = {
     "no_approval_evidence": "No approval recorded", "unknown_needs_review": "Can't be confirmed",
     "not_assessed": "Not assessed", None: "Not applicable",
 }
+# v2 reports problems only: 'not_assessed' there means no verified problem was found, not that nobody looked.
+V2_AUTH_LABELS = {"not_assessed": "No approval issue found", "no_approval_evidence": "No approval recorded"}
+V2_PRESENCE_LABELS = {"not_assessed": "No contract gap found", "absent": "Not in the contract as promised"}
 PRESENCE_LABELS = {"included_in_draft_contract": "In the draft contract", "absent": "Not in the contract",
                    "not_assessed": "Not assessed"}
 
@@ -296,9 +299,12 @@ def register(conn, slug: str) -> dict:
                 "SELECT authorisation, language, evidence_refs, terms, authorisation_evidence, contractual_presence,"
                 " presence_detail, review_id FROM commitment_assessments WHERE commitment_id = ? ORDER BY id DESC", (cid,))):
             refs_a = json.loads(arow_refs) if arow_refs else {}
-            auth_plain = evidence_text.approval_text(arow_auth, arow_lang, refs_a, json.loads(arow_terms) if arow_terms else None)
-            pres_plain = presence_sentence(conn, {"presence": arow_pres, "presence_detail": arow_detail, "refs": refs_a,
-                                                  "review_id": arow_review, "commitment_id": cid})
+            if arow_terms and json.loads(arow_terms).get("v2"):  # v2: the verifier's own one-line statements
+                auth_plain, pres_plain = arow_ev or "", arow_detail or ""
+            else:
+                auth_plain = evidence_text.approval_text(arow_auth, arow_lang, refs_a, json.loads(arow_terms) if arow_terms else None)
+                pres_plain = presence_sentence(conn, {"presence": arow_pres, "presence_detail": arow_detail, "refs": refs_a,
+                                                      "review_id": arow_review, "commitment_id": cid})
             if k == 0:
                 shown_auth, shown_presence = auth_plain, pres_plain
             if arow_ev and auth_plain:
@@ -335,6 +341,7 @@ def register(conn, slug: str) -> dict:
             if itype == "conflicting_terms" and state != "Resolved":
                 conflicts.append(json.loads(criteria))
         open_issues = [i for i in issues if i["state"] != "Resolved"]
+        is_v2 = bool(terms_json and json.loads(terms_json).get("v2"))
         presence_label = PRESENCE_LABELS.get(presence, presence)
         for criteria_ in conflicts:
             term = conflict_term(conn, did, criteria_)
@@ -345,8 +352,9 @@ def register(conn, slug: str) -> dict:
         commitments.append({
             "id": cid, "name": display_name(cname, statements), "note": note, "status": shown_status, "language": language,
             "check_note": CHECK_NOTE if shown_status != status else "",
-            "authorisation": AUTH_LABELS.get(auth, auth), "authorisation_evidence": shown_auth or plain(auth_ev, names),
-            "presence": presence_label, "presence_detail": shown_presence or plain(pdetail, names),
+            "authorisation": (V2_AUTH_LABELS if is_v2 else AUTH_LABELS).get(auth, AUTH_LABELS.get(auth, auth)),
+            "authorisation_evidence": shown_auth or plain(auth_ev, names),
+            "presence": V2_PRESENCE_LABELS.get(presence, presence_label) if is_v2 else presence_label, "presence_detail": shown_presence or plain(pdetail, names),
             "progression": progression(statements),
             "supported": support == "supported",
             "attention": [i["label"] for i in open_issues], "owners": sorted({i["owner"] for i in open_issues}),
@@ -439,6 +447,16 @@ def short_terms(conn, cid: int):
 def told_and_contract(conn, did: int, c: dict, raw_presence: str) -> tuple:
     """('Told' short term, 'Contract' short term) for an overview row. Where a conflict names the differing term, both
     sides show that term ('real-time' / 'batch'); otherwise how firm the promise was and whether the contract has it."""
+    row = conn.execute("SELECT terms FROM commitment_assessments WHERE commitment_id = ? ORDER BY id DESC LIMIT 1",
+                       (c["id"],)).fetchone()
+    terms = json.loads(row[0]) if row and row[0] else {}
+    if terms.get("v2"):  # v2 (10 Oct): the verified finding's own words
+        told = terms.get("told") or "Firm promise"
+        if not c["supported"]:
+            return told, "No longer in the documents"
+        if terms.get("contract"):
+            return told, terms["contract"]
+        return told, "Not included" if raw_presence == "absent" else "No gap found"
     for criteria_json, cid in conn.execute(
             "SELECT i.closure_criteria, i.commitment_id FROM issues i JOIN issue_current_state s ON s.issue_id = i.id"
             " WHERE i.commitment_id = ? AND i.issue_type = 'conflicting_terms' AND s.state <> 'Resolved'", (c["id"],)):

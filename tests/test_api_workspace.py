@@ -1,7 +1,7 @@
 """Workspace API: the register, documents, fixes, review and freshness, against a temporary ledger.
 
 The ledger is built from the development deals in a temporary file. Only harbour_bank (config.UI_DEALS) and user deals
-are reachable; hard_cases is in the ledger but not in the UI, and coral_pay is never in either. A scripted fake stands
+are reachable; hard_cases is in the ledger but not in the UI, and sealed_decoy is never in either. A scripted fake stands
 in for the model. No label file is read by the API.
 """
 
@@ -65,7 +65,7 @@ class TestReading(WorkspaceCase):
         self.assertNotIn("sha256", json.dumps(reg))
 
     def test_only_ui_deals_and_existing_user_deals_are_reachable(self):
-        for deal in ("hard_cases", "coral_pay", "u_0123456789abcdef", "..", "harbour_bank%2F..%2Fcoral_pay"):
+        for deal in ("hard_cases", "sealed_decoy", "u_0123456789abcdef", "..", "harbour_bank%2F..%2Fsealed_decoy"):
             for path in (f"/api/deals/{deal}/register", f"/api/deals/{deal}/documents"):
                 self.assertIn(self.client.get(path).status_code, (404, 422), path)
             self.assertIn(self.post(f"/api/deals/{deal}/review", {}).status_code, (404, 422), deal)

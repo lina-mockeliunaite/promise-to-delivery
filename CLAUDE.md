@@ -17,3 +17,8 @@
 - Do not run Git commands. Lina handles Git.
 - Read the API key only from `ANTHROPIC_API_KEY`; never print, log or write its value.
 - Keep model IDs in one config file; other code reads them from there.
+
+## v2 in the app (10 Oct)
+- The app runs v2 only (`ledger_v2.py`); the v1 rules pipeline stays for evaluation. `python reset_demo.py` rebuilds the app ledger from `config.V2_DEALS` with the saved v2 output (no model call).
+- Closure is by re-verifying a stored claim; never let model output close an issue directly.
+- `detect_v2.py` prompt and verifier logic are frozen at v2_version 2 (sealed run passed); changing them needs a new sealed check.

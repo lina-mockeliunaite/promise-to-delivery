@@ -104,12 +104,13 @@ class TestHashDefinitions(IntegrityCase):
         self.assertEqual(integrity.compare(self.conn, self.did, src, ev, 1, None)["reasons"], [integrity.NO_CONFIG])
         self.assertEqual(integrity.compare(self.conn, self.did, src, ev, 1, "0" * 64)["reasons"],
                          [integrity.RULES, integrity.OLDER_DEFINITION])
-        self.assertEqual(integrity.compare(self.conn, self.did, src, ev, 2, integrity.config_sha256(2))["reasons"], [])
+        self.assertEqual(integrity.compare(self.conn, self.did, src, ev, 2, integrity.config_sha256(2))["reasons"], [integrity.OLDER_DEFINITION])
+        self.assertEqual(integrity.compare(self.conn, self.did, src, ev, 3, integrity.config_sha256(3))["reasons"], [])
 
     def test_the_ledger_schema_version_is_unchanged_and_ensure_schema_is_idempotent(self):
         integrity.ensure_schema(self.conn)
         integrity.ensure_schema(self.conn)
-        self.assertEqual(self.conn.execute("SELECT value FROM schema_meta WHERE key = 'schema_version'").fetchone()[0], "1")
+        self.assertEqual(self.conn.execute("SELECT value FROM schema_meta WHERE key = 'schema_version'").fetchone()[0], "2")
 
     def test_an_existing_database_without_the_tables_keeps_its_data_and_reads_as_definition_one(self):
         for table in reversed(integrity.TABLES):
@@ -126,12 +127,12 @@ class TestHashDefinitions(IntegrityCase):
 class TestReviewsAndHandoffs(IntegrityCase):
     def test_a_review_records_its_definition_and_a_handoff_binds_all_three_hashes(self):
         review_id = self.freshness()["review_id"]
-        self.assertEqual(integrity.review_config(self.conn, review_id), (2, integrity.config_sha256(2)))
+        self.assertEqual(integrity.review_config(self.conn, review_id), (3, integrity.config_sha256(3)))
         self.save()
         hid = self.conn.execute("SELECT id FROM handoff_versions").fetchone()[0]
         row = self.conn.execute("SELECT hash_definition, source_set_sha256, decision_evidence_sha256, config_sha256 FROM decision_bindings"
                                 " WHERE decision_kind = 'handoff' AND decision_id = ?", (hid,)).fetchone()
-        self.assertEqual(row, (2, *self.hashes(), integrity.config_sha256(2)))
+        self.assertEqual(row, (3, *self.hashes(), integrity.config_sha256(3)))
         self.assertFalse(handoff.get_version(self.conn, "harbour_bank")["changed_since_saved"])
         with self.assertRaises(sqlite3.IntegrityError):
             self.conn.execute("UPDATE decision_bindings SET config_sha256 = ?", ("0" * 64,))

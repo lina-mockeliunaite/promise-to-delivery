@@ -78,7 +78,13 @@ def check(conn, slug: str, issue_id, *, confirmed_doc_type, filename: str, text:
             chosen = workspace.DOC_TYPE_LABELS[confirmed_doc_type]
             raise CheckError(f"This file would replace the {current}, but it was confirmed as a {chosen.lower()}. "
                              "Choose the document it replaces again, or add it as a new document. Nothing was saved.")
-    if confirmed_doc_type in config.EXTRACTABLE_DOC_TYPES and client is None:
+    import ledger_v2
+    v2 = ledger_v2.is_v2(conn, did)
+    if v2 and client is None:
+        canonical = adapted["canonical_text"] if adapted else ledger_import.markdown_adapter(text.encode("utf-8"))["canonical_text"]
+        if ledger_v2.needs_model(conn, slug, str(source_key) if source_key else None, confirmed_doc_type, canonical):
+            raise CheckError(NEEDS_KEY, 409)
+    elif confirmed_doc_type in config.EXTRACTABLE_DOC_TYPES and client is None:
         fields = extraction_cache.key_fields(_canonical_sha(text, adapted), confirmed_doc_type)
         if extraction_cache.lookup(conn, fields) is None:
             raise CheckError(NEEDS_KEY, 409)

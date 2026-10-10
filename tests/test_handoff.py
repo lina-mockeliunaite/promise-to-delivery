@@ -266,7 +266,7 @@ class TestImmutability(HandoffCase):
     def test_ensure_schema_is_idempotent_and_leaves_the_ledger_version_alone(self):
         handoff.ensure_schema(self.conn)
         handoff.ensure_schema(self.conn)
-        self.assertEqual(self.conn.execute("SELECT value FROM schema_meta WHERE key = 'schema_version'").fetchone()[0], "1")
+        self.assertEqual(self.conn.execute("SELECT value FROM schema_meta WHERE key = 'schema_version'").fetchone()[0], "2")
 
 
 class TestExports(HandoffCase):

@@ -1,0 +1,164 @@
+{
+  "input_sha256": "0c4ac3ab38203c392c7364df42817604ea040455658a34a6ae9aa7ed929de6c0",
+  "deal": "harbour_bank",
+  "v2_version": 2,
+  "model": "claude-sonnet-5",
+  "findings": [
+    {
+      "kind": "approval_required",
+      "commitment": "Real-time wallet screening for NUSD payouts on Polygon",
+      "promise_quotes": [
+        {
+          "source_id": "HB-03",
+          "quote": "Through its pre-built connector to a blockchain analytics provider, Elva will return real-time wallet-screening results for Ethereum and Polygon before every NUSD payout is released."
+        },
+        {
+          "source_id": "HB-04",
+          "quote": "Every NUSD payout on Polygon will be screened in real time through Elva's analytics integration before release, from the 1 December launch."
+        }
+      ],
+      "catalogue_path": "CAP-021/SG/Polygon/NUSD/real_time",
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": {
+        "source_id": "HB-05",
+        "quote": "No named exception approved for Harbour Bank"
+      },
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "Real-time Polygon wallet screening is only beta and requires a named approval in the catalogue, but the pricing note records no named exception for Harbour Bank, so Elva cannot sell this capability as promised."
+    },
+    {
+      "kind": "conflicting_terms",
+      "commitment": "Screening mode for NUSD payouts on Polygon",
+      "promise_quotes": [
+        {
+          "source_id": "HB-03",
+          "quote": "Through its pre-built connector to a blockchain analytics provider, Elva will return real-time wallet-screening results for Ethereum and Polygon before every NUSD payout is released."
+        },
+        {
+          "source_id": "HB-04",
+          "quote": "Every NUSD payout on Polygon will be screened in real time through Elva's analytics integration before release, from the 1 December launch."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": {
+        "source_id": "HB-06",
+        "quote": "A.2 Polygon: recipient wallets are screened through the analytics integration in batches at hourly intervals."
+      },
+      "note_quote": null,
+      "subject": "Polygon",
+      "promised_value": "real-time",
+      "contract_value": "batches at hourly intervals",
+      "reason": "Sales told the customer Polygon payouts would be screened in real time, but the signed SOW specifies hourly batch screening for Polygon, directly contradicting the customer-facing promise."
+    },
+    {
+      "kind": "approval_required",
+      "commitment": "VASP counterparty data exchange availability for exchange-hosted wallet payouts",
+      "promise_quotes": [
+        {
+          "source_id": "HB-04",
+          "quote": "For payouts to exchange-hosted wallets, VASP counterparty data exchange will be generally available in Singapore by 31 March 2027."
+        }
+      ],
+      "catalogue_path": "CAP-024/SG",
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": {
+        "source_id": "HB-05",
+        "quote": "No named exception approved for Harbour Bank"
+      },
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "VASP counterparty data exchange is roadmap-only and requires named approval in the catalogue, but no named exception has been approved for Harbour Bank, so Elva cannot commit to its general availability."
+    },
+    {
+      "kind": "contract_gap",
+      "commitment": "VASP counterparty data exchange availability for exchange-hosted wallet payouts",
+      "promise_quotes": [
+        {
+          "source_id": "HB-04",
+          "quote": "For payouts to exchange-hosted wallets, VASP counterparty data exchange will be generally available in Singapore by 31 March 2027."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [
+        "VASP counterparty data exchange",
+        "generally available in Singapore",
+        "by 31 March 2027"
+      ],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The proposal promises VASP counterparty data exchange for exchange-hosted wallet payouts, but this commitment appears nowhere in the SOW, Annex A, or the draft contract, leaving an unaddressed customer promise."
+    },
+    {
+      "kind": "over_limit",
+      "commitment": "Payout ledger connector throughput by end of year one",
+      "promise_quotes": [
+        {
+          "source_id": "HB-04",
+          "quote": "The payout ledger connector will handle up to 40,000 payouts per day by the end of the first year."
+        }
+      ],
+      "catalogue_path": "CAP-023/SG",
+      "unlisted_value": null,
+      "limit_name": "max_payouts_per_day",
+      "promised_quantity": 40000,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": {
+        "source_id": "HB-05",
+        "quote": "No approval for 40,000/day"
+      },
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The catalogue caps the payout ledger connector in Singapore at 25,000 payouts per day, and the pricing note confirms no approval exists for the promised 40,000/day, so this volume cannot be delivered as sold."
+    },
+    {
+      "kind": "contract_gap",
+      "commitment": "Payout ledger connector throughput by end of year one",
+      "promise_quotes": [
+        {
+          "source_id": "HB-04",
+          "quote": "The payout ledger connector will handle up to 40,000 payouts per day by the end of the first year."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [
+        "40,000 payouts per day",
+        "end of the first year"
+      ],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The proposal commits to 40,000 payouts per day by year end, but the SOW only covers 12,000 payouts per day at launch and says nothing about the later higher volume, leaving this promise uncontracted."
+    }
+  ],
+  "cost_usd": 0.0,
+  "origin": "seed",
+  "seed_file": "v2_dev_20261010T083854Z.json"
+}

@@ -2,7 +2,7 @@
 
 Expected values are read from the real frozen run files and the real development docs (read-only). The
 import itself runs on byte-identical copies in a temporary folder, into a temporary database, so nothing
-here touches the real data/ folder beyond those reads, the real coral_pay path or workspace/ledger.sqlite.
+here touches the real data/ folder beyond those reads, the real sealed_decoy path or workspace/ledger.sqlite.
 """
 
 import contextlib
@@ -25,7 +25,7 @@ import ledger_import
 REAL_DATA = config.DATA_DIR
 REAL_RESULTS = config.RESULTS_DIR
 CANARY = "CANARY_TEXT_c0ral_9c2e"
-DECOY = "coral_pay"
+DECOY = "sealed_decoy"
 DEALS = ("harbour_bank", "hard_cases")
 
 EXPECTED = {  # per deal: sources, source_versions, extractions, review_sources, statements, outcomes

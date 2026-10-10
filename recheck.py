@@ -105,6 +105,12 @@ def _closing_evidence(issue, a, unsupported_now, assessments_by_cid, presence_by
 
 def recheck(conn: sqlite3.Connection, slug: str, fix_id=None, client=None, catalogue_path=None) -> dict:
     did = ledger_fixes.deal_id(conn, slug)
+    import ledger_v2  # v2 deals (10 Oct): model proposes, code verifies and closes; the rules below are not used
+    if ledger_v2.is_v2(conn, did):
+        try:
+            return ledger_v2.review(conn, slug, client, fix_id, catalogue_path)
+        except ValueError as exc:
+            raise RecheckError(str(exc)) from None
     vocab, catalogue_bytes = lc._load_vocabulary(catalogue_path)
     catalogue = json.loads(catalogue_bytes.decode("utf-8"))
     config_sha = lc.rules_sha256(catalogue_bytes)

@@ -789,6 +789,10 @@ function FindingBlock({ deal, issue, documents, docTypes, canDecide, result, onR
         </p>
       )}
       {!resolved && <p className="why">{issue.reason}</p>}
+      {!resolved && issue.raised_by === "model_v2" && issue.unmet && issue.unmet.length > 0 && (
+        <p className="verified"><span>Checked against the documents and catalogue:</span> {issue.unmet.join(" ")}</p>
+      )}
+      {resolved && issue.raised_by === "model_v2" && issue.reason && <p className="why">{issue.reason}</p>}
       <dl className="facts">
         {!resolved && (
           <div>

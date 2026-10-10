@@ -1,7 +1,7 @@
 """Handoff API: saving, the guards, the exports, and the Harbour Bank flow (fix, recheck, save with open items).
 
 Temporary ledger only; a scripted fake stands in for the model (the flow needs none). Only harbour_bank and user deals
-are reachable. Nothing under data/coral_pay/ is touched.
+are reachable. Nothing under data/sealed_decoy/ is touched.
 """
 
 import csv
@@ -47,7 +47,7 @@ class HandoffApiCase(WorkspaceCase):
 
 class TestGuards(HandoffApiCase):
     def test_every_handoff_route_is_404_for_deals_outside_the_allowlist(self):
-        for deal in ("hard_cases", "coral_pay", "u_0123456789abcdef", "..", "harbour_bank%2F..%2Fcoral_pay"):
+        for deal in ("hard_cases", "sealed_decoy", "u_0123456789abcdef", "..", "harbour_bank%2F..%2Fsealed_decoy"):
             for path in ("handoffs", "handoffs/view", "handoffs/export.csv", "handoffs/summary"):
                 self.assertIn(self.client.get(f"/api/deals/{deal}/{path}").status_code, (404, 422), (deal, path))
             r = self.post(f"/api/deals/{deal}/handoffs", {"decision": "not_ready", "reviewer": "x"})

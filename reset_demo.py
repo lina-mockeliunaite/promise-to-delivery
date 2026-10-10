@@ -1,11 +1,11 @@
-"""Reset the demo workspace: back up the current ledger, then rebuild a fresh one from the development deals.
+"""Reset the demo workspace: back up the current ledger, then rebuild a fresh one from the v2 demo deals.
 
     .venv/bin/python reset_demo.py
 
-Uses the existing build path (ledger_import.build, then ledger_consolidate.consolidate_all with the rules) on the
-pinned run files and development documents, then one unchanged-input rerun of each deal so its review is made under the
-current hash definition and a handoff can be saved at once. No model call, no API key, no network. Writes only inside workspace/;
-data/ is read by the import exactly as before and never written, and it refuses to write a ledger inside data/.
+Since 10 Oct the app runs v2 (model detects, code verifies): ledger_v2.build imports each deal in config.V2_DEALS and
+makes its first review from the saved, frozen v2 output in config.V2_SEED_FILES, verifying every finding again. No model
+call, no API key, no network. Writes only inside workspace/ (the ledger) and results/v2_cache/ (the model-output cache);
+data/ is read and never written, and it refuses to write a ledger inside data/.
 
 The new ledger is built beside the old one and swapped in only if the whole build succeeds; the old ledger is then
 backed up (a consistent SQLite copy) next to it as ledger.backup-<UTC timestamp>.sqlite. Anything created in the app
@@ -20,9 +20,8 @@ from pathlib import Path
 
 import config
 import ledger
-import ledger_consolidate
 import ledger_import
-import recheck
+import ledger_v2
 import workspace
 
 
@@ -41,21 +40,17 @@ def reset(db_path=None, now=None) -> dict:
     fresh.unlink(missing_ok=True)  # leftover from an earlier crash: our own temporary file
 
     try:
-        ledger_import.build(fresh, rebuild=True)
+        built = ledger_v2.build(fresh)
         conn = ledger.connect(fresh)
         try:
-            ledger_consolidate.consolidate_all(conn, assess=True)
-            # An imported review has no recorded config, so no decision could be saved on it. An unchanged-input rerun
-            # with no model client (imported extractions are reused) puts every deal on the current hash definition.
-            for slug in config.LEDGER_DEALS:
-                recheck.recheck(conn, slug, None, None)
             deals = [{"deal": d["deal"], "open_issues": d["open_issues"], "freshness": d["freshness"]["state"]}
                      for d in workspace.deal_list(conn)]
             commitments = {slug: conn.execute(
                 "SELECT COUNT(*) FROM commitments c JOIN deals d ON d.id = c.deal_id WHERE d.slug = ?", (slug,)).fetchone()[0]
-                for slug in config.LEDGER_DEALS}
+                for slug in config.V2_DEALS}
         finally:
             conn.close()
+        model_calls = sum(r["model_calls"] for r in built.values())
         backup = None
         if final.exists():
             backup = final.with_name(f"{final.stem}.backup-{stamp}{final.suffix}")
@@ -71,7 +66,7 @@ def reset(db_path=None, now=None) -> dict:
     except BaseException:
         fresh.unlink(missing_ok=True)
         raise
-    return {"ledger": final, "backup": backup, "deals": deals, "commitments": commitments, "model_calls": 0}
+    return {"ledger": final, "backup": backup, "deals": deals, "commitments": commitments, "model_calls": model_calls}
 
 
 def main(argv: list) -> int:
@@ -80,8 +75,7 @@ def main(argv: list) -> int:
         return 2
     try:
         done = reset()
-    except (ResetError, ledger_import.LedgerImportError, ledger_consolidate.ConsolidationError,
-            ledger.LedgerDealNotAllowed) as exc:
+    except (ResetError, ledger_import.LedgerImportError, ledger.LedgerDealNotAllowed, ledger_v2.NeedsModel) as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
     print("Demo reset.")
@@ -89,11 +83,11 @@ def main(argv: list) -> int:
         print(f"  Backed up the old ledger to {done['backup']}")
     else:
         print("  No existing ledger, so nothing to back up.")
-    print(f"  Built a fresh ledger at {done['ledger']} from the development deals (pinned run files; model calls: 0).")
+    print(f"  Built a fresh ledger at {done['ledger']} from the v2 demo deals (saved v2 findings, each verified again; "
+          f"model calls: {done['model_calls']}).")
     for d in done["deals"]:
         print(f"  Shown in the app: {d['deal']}, {done['commitments'][d['deal']]} commitments, {d['open_issues']} open issues, "
               f"review {d['freshness'].lower()}.")
-    print("  Also in the ledger, not shown in the app: " + ", ".join(s for s in done["commitments"] if s not in {d["deal"] for d in done["deals"]}) + ".")
     print("  Anything created in the app since the last reset (user deals, fixes, handoffs) is only in the backup.")
     print("  Restart the app so it opens the new ledger.")
     return 0

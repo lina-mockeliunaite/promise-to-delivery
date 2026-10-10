@@ -286,7 +286,7 @@ def verify(finding: dict, docs: list, catalogue: dict) -> list:
             return ["the pricing-note quote is not verbatim in a pricing note"]
         approved = _note_approves(notes, cap, scope_patterns)
         if approved:
-            return [f"the pricing note records an approval: {approved[:120]}"]
+            return [f"the pricing note records an approval: {approved}"]
         return []
 
     if kind == "contract_gap":

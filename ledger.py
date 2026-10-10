@@ -11,7 +11,7 @@ from pathlib import Path
 import config
 
 SCHEMA_PATH = Path(__file__).resolve().parent / "ledger_schema.sql"
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2  # 2 (10 Oct): model_v2 checker
 
 
 class LedgerDealNotAllowed(Exception):
@@ -59,8 +59,9 @@ def open_ledger(db_path=None) -> sqlite3.Connection:
 
 
 def require_ledger_deal(slug: str) -> str:
-    """Return the slug if it is in config.LEDGER_DEALS, else raise. Exact match; ALLOWED_DEALS is never consulted."""
-    if slug not in config.LEDGER_DEALS:
+    """Return the slug if it is in config.LEDGER_DEALS or config.V2_DEALS, else raise. Exact match; ALLOWED_DEALS is
+    never consulted."""
+    if slug not in config.LEDGER_DEALS and slug not in config.V2_DEALS:
         raise LedgerDealNotAllowed(f"Deal {slug!r} is not in LEDGER_DEALS {config.LEDGER_DEALS}; refusing to write it.")
     return slug
 

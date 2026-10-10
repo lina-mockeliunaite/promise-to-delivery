@@ -1,0 +1,85 @@
+{
+  "input_sha256": "3480ca8097cd272b943371d080c43a2dab735798f06fcb675ee05860316939e8",
+  "deal": "coral_pay",
+  "v2_version": 2,
+  "model": "claude-sonnet-5",
+  "findings": [
+    {
+      "kind": "absolute_limit",
+      "commitment": "Deploy Coral Pay's production environment on Microsoft Azure in the Australia East region",
+      "promise_quotes": [
+        {
+          "source_id": "CP-03",
+          "quote": "Elva will deploy Coral Pay's production environment on Microsoft Azure in the Australia East region."
+        },
+        {
+          "source_id": "CP-06",
+          "quote": "Provider will deploy Customer's production environment on Microsoft Azure in the Australia East region."
+        }
+      ],
+      "catalogue_path": "CAP-019/AU",
+      "unlisted_value": "Microsoft Azure",
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "Elva committed to hosting Coral Pay on Microsoft Azure, but the catalogue only lists AWS and GCP as supported clouds for regional deployment in Australia; Azure is not an offerable option and cannot be fixed with an exception."
+    },
+    {
+      "kind": "absolute_limit",
+      "commitment": "Screen every NUSD recipient wallet on Solana for Coral Pay's Australian contractor payout launch",
+      "promise_quotes": [
+        {
+          "source_id": "CP-04",
+          "quote": "Elva will screen the recipient wallet of every NUSD payout on Solana through its pre-built analytics integration before release."
+        },
+        {
+          "source_id": "CP-06",
+          "quote": "Provider will provide NUSD recipient-wallet screening for Customer's Solana payouts through Elva's pre-built analytics integration, in accordance with the Wallet Screening Specification in Annex A."
+        }
+      ],
+      "catalogue_path": "CAP-021/AU",
+      "unlisted_value": "AU",
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "Elva promised Solana wallet screening for an Australian launch, but the on-chain wallet screening catalogue only covers the SG region with Ethereum and Polygon networks; there is no Australia region and no Solana network at all, so this cannot be sold or approved as an exception."
+    },
+    {
+      "kind": "contract_gap",
+      "commitment": "Deliver two 90-minute operations training sessions for Coral Pay's payout operations team before launch",
+      "promise_quotes": [
+        {
+          "source_id": "CP-04",
+          "quote": "Elva will deliver two 90-minute operations training sessions for Coral Pay's payout operations team before launch."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [
+        "two 90-minute operations training sessions",
+        "before launch"
+      ],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The proposal firmly commits Elva to two training sessions before go-live, but neither the draft SOW nor the draft contract (including Annex A) mention any training obligation, so this commitment is unenforceable as currently papered."
+    }
+  ],
+  "cost_usd": 0.0,
+  "origin": "seed",
+  "seed_file": "v2_dev_20261010T083854Z.json"
+}

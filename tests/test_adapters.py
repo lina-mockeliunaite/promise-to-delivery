@@ -263,7 +263,7 @@ class TestNotesTable(unittest.TestCase):
             self.conn.execute("UPDATE source_version_notes SET message = 'x'")
         with self.assertRaises(sqlite3.IntegrityError):
             self.conn.execute("DELETE FROM source_version_notes")
-        self.assertEqual(self.conn.execute("SELECT value FROM schema_meta WHERE key = 'schema_version'").fetchone()[0], "1")
+        self.assertEqual(self.conn.execute("SELECT value FROM schema_meta WHERE key = 'schema_version'").fetchone()[0], "2")
         self.assertEqual(adapters.notes_for(self.conn, []), {})
 
 

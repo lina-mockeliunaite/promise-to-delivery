@@ -175,7 +175,7 @@ class TestRulesSeal(tlc.TestSeal):
     """The decoy sealed deal stays untouched when the rules run; the guard holds with ALLOWED_DEALS widened."""
 
     def test_the_rules_never_touch_the_decoy(self):
-        with mock.patch.object(config, "ALLOWED_DEALS", config.ALLOWED_DEALS + ["coral_pay"]):
+        with mock.patch.object(config, "ALLOWED_DEALS", config.ALLOWED_DEALS + ["sealed_decoy"]):
             with self.assertRaises(ledger.LedgerDealNotAllowed):
                 ledger_consolidate.consolidate_review(self.conn, self.decoy_review, assess=True)
         ledger_consolidate.consolidate_all(self.conn, assess=True)
@@ -185,7 +185,7 @@ class TestRulesSeal(tlc.TestSeal):
             "SELECT COUNT(*) FROM reference_resolutions WHERE review_id = ?", (self.decoy_review,)).fetchone()[0], 0)
 
     def test_negative_control_an_unguarded_run_would_carry_the_canary_into_the_rules_output(self):
-        with mock.patch.object(config, "LEDGER_DEALS", config.LEDGER_DEALS + ["coral_pay"]):
+        with mock.patch.object(config, "LEDGER_DEALS", config.LEDGER_DEALS + ["sealed_decoy"]):
             ledger_consolidate.consolidate_review(self.conn, self.decoy_review, assess=True)
         found = "\n".join(str(r) for t in ("commitment_assessments",) for r in self.conn.execute(f"SELECT * FROM {t}"))
         self.assertIn(CANARY, found)

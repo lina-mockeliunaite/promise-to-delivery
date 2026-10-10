@@ -27,8 +27,9 @@ import ledger_import
 
 HERE = Path(__file__).resolve().parent
 SCHEMA_PATH = HERE / "integrity_schema.sql"
-HASH_DEFINITION = 2
+HASH_DEFINITION = 3
 CONFIG_FILES = lc.RULE_FILES + ("recheck.py",)
+CONFIG_FILES_3 = CONFIG_FILES + ("detect_v2.py", "ledger_v2.py")  # 3 (10 Oct): the v2 detector and verifier decide findings
 
 DOCUMENTS = "Documents changed"
 EVIDENCE = "Approval or fix evidence changed"
@@ -78,11 +79,11 @@ def config_sha256(definition: int, raw: bytes | None = None) -> str:
     raw = catalogue_bytes() if raw is None else raw
     if definition == 1:
         return lc.rules_sha256(raw)
-    if definition != 2:
+    if definition not in (2, 3):
         raise ValueError(f"unknown hash definition {definition}")
     digest = hashlib.sha256()
-    digest.update(b"hash_definition:2\0")
-    for name in CONFIG_FILES:
+    digest.update(f"hash_definition:{definition}".encode() + b"\0")
+    for name in (CONFIG_FILES if definition == 2 else CONFIG_FILES_3):
         digest.update(name.encode() + b"\0" + (HERE / name).read_bytes() + b"\0")
     digest.update(b"catalogue.json\0" + canonical_catalogue(raw))
     return digest.hexdigest()

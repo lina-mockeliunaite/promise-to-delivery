@@ -90,13 +90,30 @@ ALLOWED_DEALS = [
     "hard_cases",  # development fixture deal, Day 7 (data/hard_cases/BRIEF.md)
     "practice_cases",  # rules-vs-agent practice set, 3 Oct (data/practice_cases/BRIEF.md)
     "questionnaire_cases",  # security-questionnaire extraction fixture, 10 Oct; extraction only, never in LEDGER_DEALS
+    "coral_pay",  # sealed test deal for v1; run once 10 Oct 06:12 UTC, released as development data since
+    "atlas_remit",  # sealed test deal for v2; run once 10 Oct 08:44 UTC, released as development data since
 ]
 
 
 # Deals the local web UI may show. Narrower than ALLOWED_DEALS: hard_cases is for the pipeline only.
 UI_DEALS = [
     "harbour_bank",
+    "coral_pay",
+    "atlas_remit",
 ]
+
+# Deals the app reviews with v2 (model detects, code verifies; DECISIONS 10 Oct). The app's ledger holds only these.
+# LEDGER_DEALS below stays the v1 rules pipeline, kept as the measured baseline and for its tests.
+V2_DEALS = list(UI_DEALS)
+
+# Saved v2 model output to seed each deal's first review, so the demo reset makes no model call. Each file holds the
+# frozen v2 (version 2) findings for that deal's original documents; every finding is verified again on import.
+V2_SEED_FILES = {
+    "harbour_bank": "v2_dev_20261010T083854Z.json",
+    "coral_pay": "v2_dev_20261010T083854Z.json",
+    "atlas_remit": "sealed_v2_atlas_remit_20261010T084453Z.json",
+}
+V2_CACHE_DIR = ROOT / "results" / "v2_cache"
 
 
 def check_ui_deals(ui_deals: list, allowed_deals: list) -> None:

@@ -141,14 +141,14 @@ class InputsAndOutput(unittest.TestCase):
     def test_run_path_must_be_results_extract_json(self):
         good = config.RESULTS_DIR / "extract_x_1.json"
         self.assertEqual(evaluate.validate_run_path(str(good)), good.resolve())
-        for bad in ("data/coral_pay/labels/statements.json", "results/eval_x.json",
+        for bad in ("data/sealed_decoy/labels/statements.json", "results/eval_x.json",
                     "results/../data/x/extract_a.json", "results/sub/extract_a.json", "results/extract_a.txt"):
             with self.assertRaises(ValueError, msg=bad):
                 evaluate.validate_run_path(bad)
 
     def test_disallowed_deal_refused(self):
         with self.assertRaises(config.DealNotAllowed):
-            evaluate.load_labels("coral_pay")
+            evaluate.load_labels("sealed_decoy")
 
     def test_output_name_and_no_overwrite(self):
         with tempfile.TemporaryDirectory() as d:

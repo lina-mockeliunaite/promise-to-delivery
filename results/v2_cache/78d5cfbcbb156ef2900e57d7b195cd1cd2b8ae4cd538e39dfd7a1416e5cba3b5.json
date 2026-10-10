@@ -1,0 +1,134 @@
+{
+  "input_sha256": "78d5cfbcbb156ef2900e57d7b195cd1cd2b8ae4cd538e39dfd7a1416e5cba3b5",
+  "deal": "harbour_bank",
+  "v2_version": 2,
+  "model": "claude-sonnet-5",
+  "findings": [
+    {
+      "kind": "over_limit",
+      "commitment": "Payout ledger connector will handle up to 40,000 payouts per day by the end of the first year",
+      "promise_quotes": [
+        {
+          "source_id": "HB-04",
+          "quote": "The payout ledger connector will handle up to 40,000 payouts per day by the end of the first year."
+        }
+      ],
+      "catalogue_path": "CAP-023/SG",
+      "unlisted_value": null,
+      "limit_name": "max_payouts_per_day",
+      "promised_quantity": 40000,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": {
+        "source_id": "HB-05",
+        "quote": "No approval for 40,000/day"
+      },
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "Elva promised 40,000 payouts/day by year end, but Singapore's catalogue cap is 25,000/day and the pricing note records no approved exception for the higher volume."
+    },
+    {
+      "kind": "contract_gap",
+      "commitment": "Payout ledger connector will handle up to 40,000 payouts per day by the end of the first year",
+      "promise_quotes": [
+        {
+          "source_id": "HB-04",
+          "quote": "The payout ledger connector will handle up to 40,000 payouts per day by the end of the first year."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [
+        "40,000 payouts per day",
+        "by the end of the first year"
+      ],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The SOW only commits to 12,000 payouts/day at launch; the promised scale-up to 40,000/day by year one appears nowhere in the contract chain, so it is unenforceable."
+    },
+    {
+      "kind": "approval_required",
+      "commitment": "VASP counterparty data exchange will be generally available in Singapore by 31 March 2027",
+      "promise_quotes": [
+        {
+          "source_id": "HB-04",
+          "quote": "For payouts to exchange-hosted wallets, VASP counterparty data exchange will be generally available in Singapore by 31 March 2027."
+        }
+      ],
+      "catalogue_path": "CAP-024/SG",
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": {
+        "source_id": "HB-05",
+        "quote": "No named exception approved for Harbour Bank"
+      },
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "VASP counterparty data exchange is still on the roadmap and requires named approval, but no named approver has signed off for Harbour Bank, so Elva cannot commit to a 31 March 2027 GA date."
+    },
+    {
+      "kind": "contract_gap",
+      "commitment": "VASP counterparty data exchange will be generally available in Singapore by 31 March 2027",
+      "promise_quotes": [
+        {
+          "source_id": "HB-04",
+          "quote": "For payouts to exchange-hosted wallets, VASP counterparty data exchange will be generally available in Singapore by 31 March 2027."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [
+        "VASP counterparty data exchange",
+        "exchange-hosted wallets",
+        "by 31 March 2027"
+      ],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "This VASP data exchange commitment and its 31 March 2027 date are not mentioned anywhere in the SOW or contract, leaving a material promise with no contractual backing."
+    },
+    {
+      "kind": "contract_gap",
+      "commitment": "Real-time wallet screening on Polygon will be live from the 1 December launch",
+      "promise_quotes": [
+        {
+          "source_id": "HB-04",
+          "quote": "Every NUSD payout on Polygon will be screened in real time through Elva's analytics integration before release, from the 1 December launch."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [
+        "from the 1 December launch"
+      ],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The proposal ties Polygon real-time screening to the 1 December launch date, but the SOW's wallet-screening specification contains no launch date, so the timing commitment is not reflected in the contract chain."
+    }
+  ],
+  "cost_usd": 0.143682,
+  "origin": "model_call",
+  "usage": {
+    "input_tokens": 9636,
+    "output_tokens": 12441
+  }
+}

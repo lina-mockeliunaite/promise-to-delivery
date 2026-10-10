@@ -127,6 +127,8 @@ cite { display: block; font-style: normal; font-size: 12px; color: var(--muted);
 .issue-head { display: flex; gap: 10px; align-items: baseline; flex-wrap: wrap; }
 .next { margin: 6px 0 2px; font-weight: 550; }
 .why { margin: 4px 0; font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.verified { margin: 4px 0 8px; font-size: 13px; overflow-wrap: anywhere; }
+.verified span { font-weight: 600; }
 .issue-edit { display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap; }
 .issue-edit label { min-width: 160px; }
 .issue-edit .grow { flex: 1; }

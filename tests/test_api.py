@@ -1,7 +1,7 @@
 """Offline seal tests for the read-only API.
 
-The app is pointed at a temporary data folder holding a fake harbour_bank and a decoy coral_pay with a
-canary file. Nothing here touches the real data/ folder or the real coral_pay path.
+The app is pointed at a temporary data folder holding a fake harbour_bank and a decoy sealed_decoy with a
+canary file. Nothing here touches the real data/ folder or the real sealed_decoy path.
 """
 
 import json
@@ -102,9 +102,9 @@ class ApiTestCase(unittest.TestCase):
         (data / "hard_cases" / "docs" / "manifest.json").write_text(
             json.dumps({"deal": "hard_cases", "documents": [{"source_id": HARD_CASES_MARKER}]})
         )
-        (data / "coral_pay").mkdir()
-        (data / "coral_pay" / "canary.txt").write_text(CANARY)
-        (data / "coral_pay" / "manifest.json").write_text(json.dumps({"documents": [{"source_id": CANARY}]}))
+        (data / "sealed_decoy").mkdir()
+        (data / "sealed_decoy" / "canary.txt").write_text(CANARY)
+        (data / "sealed_decoy" / "manifest.json").write_text(json.dumps({"documents": [{"source_id": CANARY}]}))
         (data / "catalogue.json").write_text(json.dumps({"note": CANARY}))
 
         results.mkdir()
@@ -146,7 +146,7 @@ class TestHappyPath(ApiTestCase):
     def test_deals(self):
         r = self.client.get("/api/deals")
         self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.json(), {"deals": ["harbour_bank"]})
+        self.assertEqual(r.json(), {"deals": config.UI_DEALS})
 
     def test_sources(self):
         r = self.client.get("/api/deals/harbour_bank/sources")
@@ -186,21 +186,21 @@ class TestHappyPath(ApiTestCase):
 
 
 class TestSeal(ApiTestCase):
-    def test_1_coral_pay_is_404_and_canary_never_appears(self):
-        for path in ("/api/deals/coral_pay/sources", "/api/deals/coral_pay/results/latest"):
+    def test_1_sealed_decoy_is_404_and_canary_never_appears(self):
+        for path in ("/api/deals/sealed_decoy/sources", "/api/deals/sealed_decoy/results/latest"):
             r = self.client.get(path)
             self.assertEqual(r.status_code, 404, path)
             self.assert_clean(r)
 
     def test_1b_ui_guard_holds_even_if_allowed_deals_were_widened(self):
-        with mock.patch.object(config, "ALLOWED_DEALS", config.ALLOWED_DEALS + ["coral_pay"]):
-            for path in ("/api/deals/coral_pay/sources", "/api/deals/coral_pay/results/latest"):
+        with mock.patch.object(config, "ALLOWED_DEALS", config.ALLOWED_DEALS + ["sealed_decoy"]):
+            for path in ("/api/deals/sealed_decoy/sources", "/api/deals/sealed_decoy/results/latest"):
                 r = self.client.get(path)
                 self.assertEqual(r.status_code, 404, path)
                 self.assert_clean(r)
 
     def test_1c_rejected_deals_get_one_generic_body(self):
-        names = ("coral_pay", "hard_cases", "nope")
+        names = ("sealed_decoy", "hard_cases", "nope")
         bodies = {self.client.get(f"/api/deals/{name}/sources").text for name in names}
         self.assertEqual(len(bodies), 1)
         body = bodies.pop()
@@ -209,16 +209,16 @@ class TestSeal(ApiTestCase):
 
     def test_2_traversal_variants(self):
         paths = [
-            "/api/deals/harbour_bank/../coral_pay/sources",
-            "/api/deals/..%2Fcoral_pay/sources",
-            "/api/deals/harbour_bank%2F..%2Fcoral_pay/sources",
-            "/api/deals/%2e%2e/coral_pay/sources",
-            "/api/deals/%2e%2e%2Fcoral_pay/results/latest",
-            "/api/deals/coral_pay/sources/",
-            "/api/deals/coral_pay/results/latest/",
+            "/api/deals/harbour_bank/../sealed_decoy/sources",
+            "/api/deals/..%2Fsealed_decoy/sources",
+            "/api/deals/harbour_bank%2F..%2Fsealed_decoy/sources",
+            "/api/deals/%2e%2e/sealed_decoy/sources",
+            "/api/deals/%2e%2e%2Fsealed_decoy/results/latest",
+            "/api/deals/sealed_decoy/sources/",
+            "/api/deals/sealed_decoy/results/latest/",
             "/api/deals/Coral_Pay/sources",
             "/api/deals/CORAL_PAY/results/latest",
-            "/api/deals/%63oral_pay/sources",
+            "/api/deals/%73ealed_decoy/sources",
         ]
         for path in paths:
             r = self.client.get(path)
@@ -258,12 +258,12 @@ class TestSeal(ApiTestCase):
         """
         self.assertEqual(self.client.get("/").status_code, 200)  # the mount is live
         paths = (
-            "/../data/coral_pay/canary.txt",
-            "/%2e%2e/data/coral_pay/canary.txt",
-            "/..%2fdata/coral_pay/canary.txt",
-            "/..%2Fdata%2Fcoral_pay%2Fcanary.txt",
-            "/%2e%2e%2fdata/coral_pay/manifest.json",
-            "/data/coral_pay/canary.txt",
+            "/../data/sealed_decoy/canary.txt",
+            "/%2e%2e/data/sealed_decoy/canary.txt",
+            "/..%2fdata/sealed_decoy/canary.txt",
+            "/..%2Fdata%2Fsealed_decoy%2Fcanary.txt",
+            "/%2e%2e%2fdata/sealed_decoy/manifest.json",
+            "/data/sealed_decoy/canary.txt",
         )
         for path in paths:
             r = self.client.get(path)
@@ -273,20 +273,20 @@ class TestSeal(ApiTestCase):
     def test_5c_negative_control_the_canary_check_fails_when_the_decoy_is_served(self):
         # Throwaway app that serves the decoy folder directly: the check must catch it.
         leaky = FastAPI()
-        leaky.mount("/", StaticFiles(directory=self.data / "coral_pay"), name="leaky")
+        leaky.mount("/", StaticFiles(directory=self.data / "sealed_decoy"), name="leaky")
         r = TestClient(leaky, base_url="http://127.0.0.1").get("/canary.txt")
         self.assertEqual(r.status_code, 200)
         self.assertIn(CANARY, r.text)
         with self.assertRaises(AssertionError):
             self.assert_clean(r)
 
-    def test_6_ui_deals_subset_of_allowed_and_excludes_coral_pay(self):
+    def test_6_ui_deals_subset_of_allowed_and_excludes_sealed_decoy(self):
         self.assertTrue(set(config.UI_DEALS) <= set(config.ALLOWED_DEALS))
-        self.assertNotIn("coral_pay", config.UI_DEALS)
+        self.assertNotIn("sealed_decoy", config.UI_DEALS)
 
     def test_6b_import_check_rejects_a_ui_deal_that_is_not_allowed(self):
         config.check_ui_deals(["harbour_bank"], ["harbour_bank", "hard_cases"])
-        for bad in (["coral_pay"], ["harbour_bank", "hard_cases_x"]):
+        for bad in (["sealed_decoy"], ["harbour_bank", "hard_cases_x"]):
             with self.assertRaises(RuntimeError):
                 config.check_ui_deals(bad, ["harbour_bank", "hard_cases"])
 

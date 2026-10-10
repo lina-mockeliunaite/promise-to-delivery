@@ -1,4 +1,5 @@
--- Ledger schema, schema_version = 1. Written once (3 Oct); see docs/LEDGER_SCHEMA.md.
+-- Ledger schema, schema_version = 2. Written 3 Oct; see docs/LEDGER_SCHEMA.md.
+-- Version 2 (10 Oct): reviews.checker and issues.raised_by also allow 'model_v2' (model detects, code verifies).
 -- Run on a connection with PRAGMA foreign_keys = ON (ledger.connect does this).
 -- Hashes are lowercase SHA-256 hex. Timestamps are ISO-8601 UTC text. No filesystem paths are stored.
 -- "Immutable" = BEFORE UPDATE / BEFORE DELETE triggers that abort. State is derived in views, never stored.
@@ -7,7 +8,7 @@ CREATE TABLE schema_meta (
     key   TEXT PRIMARY KEY,
     value TEXT NOT NULL
 );
-INSERT INTO schema_meta (key, value) VALUES ('schema_version', '1');
+INSERT INTO schema_meta (key, value) VALUES ('schema_version', '2');
 
 -- 1 ---------------------------------------------------------------------------------------------
 CREATE TABLE deals (
@@ -70,7 +71,7 @@ CREATE TABLE reviews (
     id                       INTEGER PRIMARY KEY,
     deal_id                  INTEGER NOT NULL REFERENCES deals (id),
     run_kind                 TEXT NOT NULL CHECK (run_kind IN ('review', 'recheck_after_fix', 'unchanged_input_rerun', 'fresh_model_run')),
-    checker                  TEXT NOT NULL CHECK (checker IN ('rules', 'agent')),
+    checker                  TEXT NOT NULL CHECK (checker IN ('rules', 'agent', 'model_v2')),
     config_sha256            TEXT CHECK (config_sha256 IS NULL OR (length(config_sha256) = 64 AND config_sha256 NOT GLOB '*[^0-9a-f]*')),
     source_set_sha256        TEXT CHECK (source_set_sha256 IS NULL OR (length(source_set_sha256) = 64 AND source_set_sha256 NOT GLOB '*[^0-9a-f]*')),
     decision_evidence_sha256 TEXT CHECK (decision_evidence_sha256 IS NULL OR (length(decision_evidence_sha256) = 64 AND decision_evidence_sha256 NOT GLOB '*[^0-9a-f]*')),
@@ -345,7 +346,7 @@ CREATE TABLE issues (
     owner_function      TEXT NOT NULL CHECK (owner_function IN ('Product', 'Commercial', 'Delivery', 'Customer Success', 'Support')),
     note                TEXT,
     raised_review_id    INTEGER NOT NULL REFERENCES reviews (id),
-    raised_by           TEXT NOT NULL CHECK (raised_by IN ('rules', 'agent')),
+    raised_by           TEXT NOT NULL CHECK (raised_by IN ('rules', 'agent', 'model_v2')),
     raised_config_sha256 TEXT CHECK (raised_config_sha256 IS NULL OR (length(raised_config_sha256) = 64 AND raised_config_sha256 NOT GLOB '*[^0-9a-f]*')),
     closure_criteria    TEXT NOT NULL CHECK (json_valid(closure_criteria)),
     criteria_version    INTEGER NOT NULL,
