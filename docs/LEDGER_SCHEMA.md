@@ -180,7 +180,7 @@ Types: `id` is `INTEGER PRIMARY KEY`; `*_id` are foreign keys; `TEXT` JSON colum
 
 Therefore imported rows have `origin = 'imported_run_file'`, `reusable = 0`, `key_sha256` NULL and the missing key fields NULL. They exist so the 3–4 Oct build (filter, consolidation, rules) can read real statements without a model call; reviews built on them record `cache_outcome = 'imported'`. **The app's first review ignores them and calls the model** (section 8).
 
-**Reuse** (12 Oct): a document is a hit only if a `reusable = 1` row matches the whole key. Any difference re-extracts that document only. The extract.py command line stays always fresh. Required test: an injected client that raises if called, proving an unchanged-input rerun makes no model call.
+**Reuse** (12 Oct): a document is a hit only if a `reusable = 1` row matches the whole key. Any difference re-extracts that document only. *(Corrected 10 Oct, see DECISIONS 2026-10-06: a cache lookup hits only when the whole key matches. A recheck reuses the extraction its previous review used for an unchanged source version, whatever configuration made it; a new or re-included version is looked up by the whole key. Each review records the key every source used.)* The extract.py command line stays always fresh. Required test: an injected client that raises if called, proving an unchanged-input rerun makes no model call.
 
 ## 7. Adapter interface and the snapshot row
 

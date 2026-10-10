@@ -21,3 +21,7 @@ Why it was left as it is: forcing re-extraction on any configuration change woul
 **Rerun labels.** `reviews.run_kind` allows four values and a CHECK cannot be changed additively, so a rerun after a document change is still stored as `unchanged_input_rerun`. Whether inputs changed is recorded in `review_bindings.inputs_changed` (1 changed, 0 unchanged, `NULL` for a first review) and in the review note ("recheck of review N; documents changed"). Any count of unchanged-input reruns must use `inputs_changed`, not `run_kind`.
 
 Not changed: `extract.py`, `schema.py`, `sales_filter.py`, `ledger_consolidate.py`, `terms.py`, `references.py`, `rules.py`, `agent.py`; `schema_version`; any existing row.
+
+
+---
+**Folded into DECISIONS.md on 10 Oct (accepted).**
