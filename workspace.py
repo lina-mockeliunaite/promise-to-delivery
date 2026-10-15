@@ -366,10 +366,19 @@ def register(conn, slug: str) -> dict:
     counts = {}
     for c in commitments:
         counts[c["status"]] = counts.get(c["status"], 0) + 1
+    scope = ("Demonstrated on fictional deals with a complete capability catalogue."
+             if not ledger_fixes.USER_SLUG.fullmatch(slug)
+             else "Uploaded documents: accuracy unvalidated; approval needs internal evidence.")
+    import ledger_v2  # v2 reports only what it can verify: say plainly what could not be checked at all
+    if ledger_v2.is_v2(conn, did):
+        types = {t for (t,) in conn.execute("SELECT v.doc_type FROM source_versions v JOIN sources s ON s.id = v.source_id"
+                                            " WHERE s.deal_id = ? AND v.included = 1", (did,))}
+        if not types & {"draft_contract", "draft_sow"}:
+            scope += " No draft contract or SOW in this deal, so nothing is checked against the contract."
+        if "pricing_services_note" not in types:
+            scope += " No pricing and services note, so no approval can be found; approvals read as not recorded."
     return {"deal": slug, "name": deal_title(slug, name), "freshness": fresh, "counts": counts, "commitments": commitments,
-            "scope_note": ("Demonstrated on fictional deals with a complete capability catalogue."
-                           if not ledger_fixes.USER_SLUG.fullmatch(slug)
-                           else "Uploaded documents: accuracy unvalidated; approval needs internal evidence."),
+            "scope_note": scope,
             "resolved_means": "Resolved means the documented gap is closed, not that the work is ready."}
 
 

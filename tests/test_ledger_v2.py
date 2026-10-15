@@ -195,3 +195,46 @@ class TestRealModelCheckScript(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp, mock.patch.object(config, "V2_CACHE_DIR", Path(tmp) / "cache"):
             results = check_v2_app.run(FakeClient([]), Path(tmp) / "c.sqlite")
         self.assertEqual([r[0] for r in results if not r[1]], [])
+
+
+class TestUserDeal(unittest.TestCase):
+    """A deal created in the app is reviewed by v2 from its first review."""
+
+    def test_new_deal_is_v2_needs_the_model_and_raises_verified_findings(self):
+        import ledger_fixes
+        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(config, "V2_CACHE_DIR", Path(tmp) / "cache"):
+            conn = ledger.open_ledger(Path(tmp) / "u.sqlite")
+            self.addCleanup(conn.close)
+            slug = ledger_fixes.create_user_deal(conn, "Test Co")
+            ledger_fixes.add_source(conn, slug, "Proposal", "Elva will screen NUSD payouts on Tron in real time.\n",
+                                    "p.md", "proposal", "2026-10-10")
+            ledger_fixes.add_source(conn, slug, "SOW", "Provider will provide case management.\n", "s.md", "draft_sow", "2026-10-11")
+            with self.assertRaises(ledger_v2.NeedsModel):
+                recheck.recheck(conn, slug, None, None)
+            src = conn.execute("SELECT source_key FROM sources s JOIN deals d ON d.id = s.deal_id WHERE d.slug = ? AND"
+                               " s.display_name = 'Proposal'", (slug,)).fetchone()[0]
+            q = [{"source_id": src, "quote": "Elva will screen NUSD payouts on Tron in real time."}]
+            base = dict(catalogue_path=None, unlisted_value=None, limit_name=None, promised_quantity=None, missing_phrases=[],
+                        contract_quote=None, note_quote=None, subject=None, promised_value=None, contract_value=None,
+                        reason="r", commitment="Tron screening", promise_quotes=q)
+            client = FakeClient([dict(base, kind="absolute_limit", catalogue_path="CAP-021/SG", unlisted_value="Tron"),
+                                 dict(base, kind="contract_gap", missing_phrases=["Tron"]),
+                                 dict(base, kind="approval_required", catalogue_path="CAP-021/SG/Ethereum/NUSD/real_time")])
+            r = recheck.recheck(conn, slug, None, client)
+            self.assertEqual((r["accepted"], r["rejected"], r["model_calls"]), (2, 1, 1))
+            o = workspace.overview(conn, slug)
+            self.assertEqual(sorted(i["finding"] for c in o["commitments"] for i in c["issues"]), ["Missing from contract", "Not offered"])
+
+
+class TestExclusion(V2Case):
+    def test_excluding_a_cited_document_never_closes_a_finding(self):
+        import ledger_fixes
+        ledger_fixes.set_included(self.conn, "harbour_bank", "HB-04", False)
+        recheck.recheck(self.conn, "harbour_bank", None, FakeClient([]))
+        states = {k: v[0] for k, v in self.issues("harbour_bank").items()}
+        self.assertNotIn("Resolved", states.values())
+        self.assertIn("Needs evidence", states.values())
+        ledger_fixes.set_included(self.conn, "harbour_bank", "HB-04", True)
+        recheck.recheck(self.conn, "harbour_bank", None, FakeClient([]))
+        self.assertEqual(workspace.overview(self.conn, "harbour_bank")["finding_counts"]["unresolved"], 6)
+        self.assertNotIn("Needs evidence", {v[0] for v in self.issues("harbour_bank").values()})

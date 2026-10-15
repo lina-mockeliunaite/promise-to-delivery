@@ -114,6 +114,8 @@ V2_SEED_FILES = {
     "atlas_remit": "sealed_v2_atlas_remit_20261010T084453Z.json",
 }
 V2_CACHE_DIR = ROOT / "results" / "v2_cache"
+# Deals created in the app are reviewed by v2 (10 Oct). False only in tests that cover the v1 rules path.
+USER_DEALS_V2 = True
 
 
 def check_ui_deals(ui_deals: list, allowed_deals: list) -> None:

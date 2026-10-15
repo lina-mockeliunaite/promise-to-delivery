@@ -223,6 +223,7 @@ class TestReviewsAndHandoffs(IntegrityCase):
         self.assertEqual(result["model_calls"], 0)
 
 
+@mock.patch.object(config, "USER_DEALS_V2", False)  # covers the v1 rules path on a user deal
 class TestRerunLabels(IntegrityCase):
     def test_inputs_changed_not_run_kind_says_whether_a_rerun_saw_new_inputs(self):
         same = self.rerun()

@@ -34,6 +34,7 @@ class WorkspaceCase(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         root = Path(tmp.name)
+        self.tmp = tmp.name
         self.db = root / "ledger.sqlite"
         build_current(self.db).close()
         self.client = TestClient(api.create_app(dist_dir=root / "no-dist", ledger_path=self.db),
@@ -167,18 +168,32 @@ class TestUserDeal(WorkspaceCase):
         with mock.patch.dict(os.environ, {}, clear=True):
             r = self.post(f"/api/deals/{deal}/review", {})
         self.assertEqual(r.status_code, 409)  # needs the model, and the server has no key
-        payload = {"statements": [{"quote": "Elva will provide full case audit history for every alert.",
-                                   "speaker": "x", "language": "firm"}]}
+        # v2 (10 Oct): the model proposes a contract gap, but the code cannot verify it (no contract or SOW in the deal,
+        # and the source id is not one of this deal's), so nothing is raised and the overview says what can't be checked.
+        quote = [{"source_id": "proposal", "quote": "Elva will provide full case audit history for every alert."}]
+        finding = dict(kind="contract_gap", commitment="Case audit history", promise_quotes=quote, catalogue_path=None,
+                       unlisted_value=None, limit_name=None, promised_quantity=None, missing_phrases=["full case audit history"],
+                       contract_quote=None, note_quote=None, subject=None, promised_value=None, contract_value=None, reason="r")
         with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-only"}), \
-                mock.patch("anthropic.Anthropic", return_value=FakeExtractor(payload)):
+                mock.patch("anthropic.Anthropic", return_value=V2Fake([finding])), \
+                mock.patch.object(config, "V2_CACHE_DIR", Path(self.tmp) / "cache"):
             r = self.post(f"/api/deals/{deal}/review", {})
         self.assertEqual(r.status_code, 200, r.text)
         self.assertEqual(r.json()["review"]["run_kind"], "review")
         reg = self.register(deal)
-        audit = next(c for c in reg["commitments"] if "Case audit history" in c["name"])
-        self.assertEqual(audit["authorisation"], "Standard, authorised")
-        self.assertIn("Contract coverage can't be confirmed", audit["attention"])  # no contract uploaded
+        self.assertEqual(reg["commitments"], [])
         self.assertIn("unvalidated", reg["scope_note"])
+        self.assertIn("No draft contract or SOW", reg["scope_note"])
+
+
+class V2Fake:
+    def __init__(self, findings):
+        import json as _j
+        from types import SimpleNamespace as NS
+        self.messages = NS(create=lambda **kw: NS(content=[NS(type="text", text=_j.dumps({"findings": findings}))],
+                                                  stop_reason="end_turn",
+                                                  usage=NS(input_tokens=1, output_tokens=1, output_tokens_details=None)))
+
 
     def test_a_user_deal_rejects_an_unknown_document_type_and_an_empty_name(self):
         self.assertEqual(self.post("/api/user-deals", {"name": " "}).status_code, 400)

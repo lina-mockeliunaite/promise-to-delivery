@@ -170,6 +170,7 @@ class TestProgressionAndContractLine(unittest.TestCase):
         self.assertEqual((workspace.short_date(""), workspace.short_date("n/a")), ("", "n/a"))
 
 
+@mock.patch.object(config, "USER_DEALS_V2", False)  # covers the v1 rules path on a user deal
 class TestDecisionRules(HandoffCase):
     def test_ready_is_refused_while_any_issue_is_open_and_allowed_when_none_are(self):
         with self.assertRaisesRegex(handoff.HandoffError, "can't be ready"):

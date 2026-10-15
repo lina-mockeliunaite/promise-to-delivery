@@ -185,6 +185,7 @@ class TestRefusals(FormatsCase):
         self.assertEqual(r.status_code, 413)
 
 
+@mock.patch.object(config, "USER_DEALS_V2", False)  # v1 extraction path. v2 statements use the same page lookup in workspace.register; not separately tested with a PDF
 class TestSeal(FormatsCase):
     def test_non_allowlisted_deals_are_404_before_the_file_is_read_and_writes_need_the_guard(self):
         body = {"filename": "a.pdf", "file_base64": b64(mf.hb04_pdf()), "doc_type": "proposal", "doc_date": "2026-10-10"}
@@ -227,6 +228,7 @@ class TestSeal(FormatsCase):
             self.assertNotIn(needle, seen)
 
 
+@mock.patch.object(config, "USER_DEALS_V2", False)  # v1 extraction path. v2 statements use the same page lookup in workspace.register; not separately tested with a PDF
 class TestQuotesAndPages(FormatsCase):
     def test_a_review_of_a_pdf_cites_the_page_in_the_register_and_in_both_exports(self):
         deal = self.user_deal()

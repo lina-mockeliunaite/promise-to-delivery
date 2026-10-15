@@ -230,6 +230,14 @@ def _evidence(claim: dict, docs: list, problem: str = "") -> list:
     return [{"source_version_id": d["version_id"]} for d in (chosen or docs)]
 
 
+def _cited_sources(claim: dict) -> set:
+    """Every document a stored claim cites: its promise sources and, for a conflict, the contract clause's source."""
+    out = {q["source_id"] for q in claim.get("promise_quotes") or []}
+    if claim.get("contract_quote"):
+        out.add(claim["contract_quote"]["source_id"])
+    return out
+
+
 def _reason_open(f: dict, still: bool) -> str:
     lead = "Still holds on the current documents. " if still else ""
     return lead + (f.get("reason") or "").strip()
@@ -262,7 +270,12 @@ def needs_model(conn, slug: str, source_key, doc_type: str, canonical_text: str,
 
 
 def is_v2(conn, did: int) -> bool:
-    return conn.execute("SELECT 1 FROM reviews WHERE deal_id = ? AND checker = 'model_v2' LIMIT 1", (did,)).fetchone() is not None
+    """A deal already reviewed by v2, or a deal created in the app (user deals are always v2 from 10 Oct)."""
+    if conn.execute("SELECT 1 FROM reviews WHERE deal_id = ? AND checker = 'model_v2' LIMIT 1", (did,)).fetchone():
+        return True
+    row = conn.execute("SELECT kind FROM deals WHERE id = ?", (did,)).fetchone()
+    return bool(config.USER_DEALS_V2 and row and row[0] == "user" and not conn.execute(
+        "SELECT 1 FROM reviews WHERE deal_id = ? AND checker <> 'model_v2' LIMIT 1", (did,)).fetchone())
 
 
 # --- The review -----------------------------------------------------------------------------------------------------
@@ -415,6 +428,15 @@ def _write(conn, did, slug, docs, catalogue, catalogue_raw, det, prev_id, fix) -
             outcome, ev, unmet, reason, re_raised = ("open_action", [], [_checked_line(fresh)],
                                                      "Raised again by this review. " + _reason_open(fresh, False), 1)
             counts["reopened"] += 1
+        elif claim and _cited_sources(claim) - {d["source_id"] for d in docs}:
+            # A document the finding cites was excluded from the review. Removing a source never closes anything:
+            # the finding needs evidence until the document is included again or replaced by a new version.
+            missing = sorted(_cited_sources(claim) - {d["source_id"] for d in docs})
+            outcome, ev, unmet, re_raised = "open_evidence", [], [f"excluded from the review: {', '.join(labels.get(m, m) for m in missing)}"], 0
+            reason = ("A document this finding cites is excluded from the review, so it can't be checked. Include it again, "
+                      "or add a new version that changes the promise.")
+            counts.setdefault("open_evidence", 0)
+            counts["open_evidence"] += 1
         else:
             problems = detect_v2.verify(claim, docs, catalogue) if claim else ["no stored claim"]
             blocked = absolute and fix is not None and fix[1] == "allowed_exception" and fix_for is not None
