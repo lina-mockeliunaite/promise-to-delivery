@@ -1,0 +1,13 @@
+{
+  "summary": "Elva provides controls for Atlas Direct, Atlas Remit's NUSD payout service, targeted for launch on 1 February 2027, hosted on AWS in Singapore.",
+  "deliverables": [
+    "Tenant on Amazon Web Services, Singapore region",
+    "Case management workspace with case audit history",
+    "Name and sanctions screening, up to 30,000 a day",
+    "Payout ledger connector, up to 30,000 payouts a day",
+    "NUSD wallet screening per Annex 1; 30 days of hypercare after go-live"
+  ],
+  "go_live": "2027-02-01",
+  "confirmed_by": "Deal owner (fictional)",
+  "basis": "draft SOW v0.3, 26 Oct"
+}

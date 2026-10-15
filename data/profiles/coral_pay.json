@@ -1,0 +1,12 @@
+{
+  "summary": "Elva provides payment controls for Coral Pay's contractor payout launch, with NUSD recipient-wallet screening for Solana payouts, hosted on Microsoft Azure in Australia East.",
+  "deliverables": [
+    "Production environment on Microsoft Azure, Australia East",
+    "Payout ledger connector, up to 12,000 payouts a day at launch",
+    "Sanctions screening, up to 25,000 names a day",
+    "Payout exceptions in the case management workspace",
+    "NUSD wallet screening for Solana payouts"
+  ],
+  "confirmed_by": "Deal owner (fictional)",
+  "basis": "draft SOW, 25 Nov"
+}

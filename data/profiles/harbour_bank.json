@@ -1,0 +1,11 @@
+{
+  "summary": "Elva provides payment controls for Harbour Bank's launch of stablecoin-powered cross-border payouts to SMEs, using NUSD on Ethereum and Polygon. Go-live depends on Harbour Bank providing sandbox and testnet access by 10 November.",
+  "deliverables": [
+    "Payout ledger connector, up to 12,000 payouts a day at launch",
+    "NUSD wallet screening: Ethereum in real time; Polygon in hourly batches",
+    "Weekly project status meeting during implementation"
+  ],
+  "go_live": "2026-12-01",
+  "confirmed_by": "Deal owner (fictional)",
+  "basis": "draft SOW, 20 Oct"
+}

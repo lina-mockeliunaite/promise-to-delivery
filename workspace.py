@@ -591,4 +591,7 @@ def overview(conn, slug: str) -> dict:
     reg["other_rows"] = [c["id"] for c in sorted((c for c in reg["commitments"] if c["group"] == "other"), key=lambda c: c["name"].lower())]
     reg["finding_counts"] = {"unresolved": unresolved, "awaiting_decision": awaiting, "needs_reconfirmation": reconfirm,
                              "must_fix_flags": flags}
+    import deal_stage  # revamp, 15 Oct: stage from the documents, owner-confirmed brief; reads only
+    reg["stage"] = deal_stage.deal_stage(conn, slug)
+    reg["brief"] = deal_stage.deal_brief(slug)
     return reg

@@ -351,6 +351,73 @@ function DecisionCell({ c }) {
   );
 }
 
+function StageBar({ stage }) {
+  if (!stage || !stage.current) return null;
+  return (
+    <section className="panel stage-panel" aria-label="Deal stage and where promises were made">
+      <div className="section-head">
+        <h2>Deal stage and where promises were made</h2>
+        {stage.headline && <span className="hint stage-headline">{stage.headline}</span>}
+      </div>
+      <div className="stage-scroll">
+        <ol className="stage-bar">
+          {stage.stages.map((s) => (
+            <li key={s.key} className={`stage stage-${s.state}`}>
+              <span className="stage-track" aria-hidden="true" />
+              <span className="stage-name">
+                {s.label}
+                {s.state === "current" ? " · now" : ""}
+              </span>
+              {s.documents.length > 0 ? (
+                <span className="stage-docs">
+                  {s.documents.map((d) => `${d.name}${d.date ? " · " + fmtDate(d.date) : ""}`).join("\n")}
+                </span>
+              ) : (
+                <span className="stage-docs">{s.state === "done" ? "No documents" : "\u00a0"}</span>
+              )}
+              {s.gaps_started > 0 && (
+                <span className="stage-gaps">{plural(s.gaps_started, "gap")} started here</span>
+              )}
+              {s.note && (s.state === "current" || s.state === "todo") && <span className="stage-note">{s.note}</span>}
+            </li>
+          ))}
+        </ol>
+      </div>
+      <p className="hint">
+        {stage.basis === "override"
+          ? `Stage set by ${stage.override?.set_by || "a person"}${stage.override?.reason ? `: ${stage.override.reason}` : ""}, not by the documents.`
+          : "Stage worked out from the documents in this deal."}
+      </p>
+    </section>
+  );
+}
+
+function DealBrief({ brief }) {
+  if (!brief) return null;
+  return (
+    <section className="panel brief-panel">
+      <div className="section-head">
+        <h2>The deal in brief</h2>
+        <span className="hint">
+          Confirmed by {brief.confirmed_by || "the deal owner"}
+          {brief.basis ? ` · from ${brief.basis}` : ""}
+        </span>
+      </div>
+      <p className="brief-summary">{brief.summary}</p>
+      {brief.deliverables.length > 0 && (
+        <>
+          <h3 className="brief-label">Key deliverables</h3>
+          <ul className="brief-list">
+            {brief.deliverables.map((d) => (
+              <li key={d}>{d}</li>
+            ))}
+          </ul>
+        </>
+      )}
+    </section>
+  );
+}
+
 function Overview({ deal, reg, docs, onOpen, onChanged, busy, onReview }) {
   const byId = new Map(reg.commitments.map((c) => [c.id, c]));
   const rows = reg.open_rows.map((id) => byId.get(id));
@@ -378,6 +445,9 @@ function Overview({ deal, reg, docs, onOpen, onChanged, busy, onReview }) {
         <DealNote key={note?.at ?? "none"} deal={deal} note={note} onSaved={onChanged} />
         <CountsLine counts={reg.finding_counts} />
       </section>
+
+      <StageBar stage={reg.stage} />
+      <DealBrief brief={reg.brief} />
 
       <section className="panel">
         <div className="section-head">

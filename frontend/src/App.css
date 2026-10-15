@@ -238,3 +238,22 @@ cite { display: block; font-style: normal; font-size: 12px; color: var(--muted);
 .type-warning .notice { margin: 0; }
 .cell-line { display: block; }
 .rows .tag-bad { display: inline-block; margin-bottom: 2px; }
+
+/* Revamp 15 Oct: stage bar and deal brief */
+.stage-scroll { overflow-x: auto; }
+.stage-bar { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(7, minmax(120px, 1fr)); gap: 10px; min-width: 900px; }
+.stage { display: flex; flex-direction: column; gap: 6px; }
+.stage-track { height: 6px; border-radius: 3px; background: var(--line); }
+.stage-done .stage-track, .stage-current .stage-track { background: var(--accent); }
+.stage-current .stage-track { box-shadow: 0 0 0 3px var(--accent-soft); }
+.stage-name { font-weight: 600; font-size: 14px; }
+.stage-current .stage-name { color: var(--accent); }
+.stage-todo .stage-name { color: var(--muted); }
+.stage-docs { font-size: 12px; color: var(--muted); white-space: pre-line; line-height: 1.45; }
+.stage-gaps { align-self: flex-start; padding: 2px 8px; border-radius: 999px; background: var(--bad-soft); color: var(--bad); font-size: 12px; font-weight: 600; }
+.stage-note { font-size: 12px; font-weight: 600; color: var(--accent); }
+.stage-current .stage-note { color: var(--accent); }
+.stage-headline { font-weight: 600; color: var(--text); }
+.brief-summary { margin: 0 0 12px; line-height: 1.6; }
+.brief-label { margin: 0 0 6px; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+.brief-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; line-height: 1.5; }

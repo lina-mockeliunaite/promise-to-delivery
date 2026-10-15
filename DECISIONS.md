@@ -859,3 +859,11 @@ Full analysis: `docs/RESULTS_atlas_remit_v2_2026-10-10.md`. Committed before the
 **Stage bar:** Discovery → Evaluation → Proposal / RFP → Shortlisted → Contracting → Signed → Handover, showing which stage each open gap was first promised in; Contracting is marked as the last cheap point to fix; Handover freezes the snapshot. Pattern informed by a typical B2B pipeline and handover practice; no employer names, figures or wording used.
 **Positioning corrected:** not "the recheck is the only defensible part" (post-signature obligation tools exist) but tracing sales promises → contract → product capability across changing documents, before and at signature. The single-prompt comparison is one deal; claim it narrowly.
 **Next:** test both screens with one Delivery or CS lead (handoff screen first, unexplained) before building.
+
+## 2026-10-15, 20:00 — Revamp step 1: stage bar and deal brief (branch `revamp`)
+
+**Built:** `deal_stage.py`; the overview gains `stage` and `brief`; two new blocks at the top of the deal page.
+**Stage comes from the documents** (first call Discovery, later calls Evaluation, RFP/proposal Proposal / RFP, draft SOW or contract Contracting, signed documents Signed); internal notes and emails never move it; a document never sits before the stage already reached. A person may override it in the deal profile; the page then says so. Why: a typed stage goes stale; the paperwork shows what exists. Limit: the CRM knows stages documents don't (a shortlist).
+**Where gaps started:** each promise with an open gap is placed at the stage of the earliest document its stored claim quotes. Counted per promise, so the bar matches the list below it. Harbour Bank: all 3 at Proposal / RFP.
+**Deal brief:** owner-confirmed summary and deliverables from `data/profiles/<deal>.json`; never model-written; user deals have none yet.
+**No schema change, no change to findings** (a test checks register() is identical before and after). Seal tests caught a first draft that sent document keys and file names to the page; fixed to type labels only. 624 Python tests pass.
