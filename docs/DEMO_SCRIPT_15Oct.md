@@ -1,39 +1,36 @@
-# Demo script — 3 minutes (for the 15 Oct recording and Checkpoint 2)
+# Demo script, 3 minutes (v2, rewritten 15 Oct from the live walk-through)
 
-*Drafted by Claude, 10 Oct. Audience: CRO, founder, heads of growth, delivery and support. Say it in your words; the clicks are fixed. Rehearse twice before recording.*
+*Audience: CRO, founder, heads of growth, delivery and support. Say it in your words; the clicks are fixed. Rehearse twice before recording. Replaces the 10 Oct v1 script.*
 
 ## Before you press record (10 min)
 
-1. Stop both terminals. `.venv/bin/python reset_demo.py` (a clean deal: 8 open findings).
-2. Terminal 1: set the key (`read -s ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY`), then start the server. The key is needed only for step 6 (the SOW is read by the model, about $0.01).
-3. Terminal 2: `cd frontend && npm run dev`. Browser at http://127.0.0.1:5173, window about 1440×900, zoom 100%.
-4. Add the deal note beforehand (one line, your name, a deadline), so the first screen is complete.
-5. Have the two files ready in a Finder window: `data/scenarios/HB-05_v2_named_exception.md` and `HB-06_v2_annex_aligned.md`.
-6. Close other tabs and notifications.
+1. Stop both terminals. `.venv/bin/python reset_demo.py`. Harbour Bank should show **6 unresolved, 6 awaiting decision**.
+2. Terminal 1: set the key (`read -s ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY`, paste, Enter), then `.venv/bin/python -m uvicorn api:app --host 127.0.0.1 --port 8000`.
+3. Terminal 2: `cd frontend && npm run dev`. Browser at http://127.0.0.1:5173, about 1440×900, zoom 100%.
+4. Finder window with `data/scenarios/HB-05_v2_named_exception.md` and `HB-06_v2_annex_aligned.md`.
+5. Close other tabs and notifications. **Click Save & check once and wait.**
 
 ## The script
 
-| Time | Click | Say (your words) |
+| Time | Click | Say |
 | --- | --- | --- |
-| 0:00 | Overview, nothing clicked | "When a deal is signed, Delivery inherits the contract — but the customer remembers the proposal, the RFP answers and the calls. This is Harbour Bank, a fictional deal. The tool has read every document and built the deal as it was actually promised." |
-| 0:20 | Point at the rows and the two counts | "Four promises have open findings. Top one: the customer was told **real-time** wallet screening; the contract says **batch**. Eight findings unresolved, eight awaiting a decision — two different numbers, on purpose." |
-| 0:40 | Click the Polygon row; open **Promise trail** for two seconds, close it | "Here's how it drifted: exploratory on the first call, a firm promise by the proposal, and the contract quietly says batch. Every line is a word-for-word quote from a document." |
-| 1:00 | Point at the three finding blocks | "One promise, three separate problems: nobody approved it, it's missing from the contract, and the contract says something different. They're separate because fixing one doesn't fix the others." |
-| 1:15 | **No approval recorded** → attach `HB-05_v2_named_exception.md` → point at the confirm line → Signed off by → **Save & check** | "Product approves a named exception. I attach it to the finding, confirm what it is — this step exists because I attached the wrong file in my first live demo — and check." |
-| 1:35 | Read the result banner | "The approval closed. The contract problems are still open — an approval doesn't put anything into the contract. That's the point of the tool: a partial fix stays visibly partial." |
-| 1:50 | **Missing from contract** → attach `HB-06_v2_annex_aligned.md` (Draft SOW) → **Save & check** | "Now Delivery aligns the SOW to real-time." *(The model reads the new SOW: a few seconds.)* "Both contract findings close, and it tells me this one document closed both." |
-| 2:15 | Back to overview; open **Resolved findings** | "Every resolved finding names the evidence that closed it and who signed it off." |
-| 2:25 | VASP row → a finding → **Record a decision** → **Okay to proceed** with a reason → back to overview | "Sometimes the business decides to go ahead anyway. That's recorded with a name and a reason — and look: unresolved didn't move. A decision is not a fix." |
-| 2:45 | Close | "Where does the AI come in? The model reads the paperwork and pulls out every promise with an exact quote. Rules make the decisions, because their verdicts can be checked. Demonstrated on fictional deals with a complete catalogue; tested on a sealed deal it had never seen." |
+| 0:00 | Overview, nothing clicked | "When a deal is signed, Delivery inherits the contract, but the customer remembers the proposal and the calls. This is Harbour Bank, a fictional deal. The tool has read every document and lists the promises that the paperwork doesn't back up." |
+| 0:20 | Click the **Polygon** row (second) | "Let's take the one where the contract contradicts the customer. They were told real-time screening; the draft contract says hourly batch." |
+| 0:35 | Point at the two findings, at the bold **Checked against** lines | "Two separate problems: nobody approved it, and the contract says something different. Each line in bold is what the code checked, word for word, against the documents." |
+| 1:00 | **No approval recorded** → attach `HB-05_v2_named_exception.md` → Pricing and services note → sign off → **Save & check** | "Product approves a named exception. I attach it and check." *(Point at the result.)* "The approval closed. The contract problem is still open, because an approval doesn't change the contract. A partial fix stays visibly partial." |
+| 1:30 | **Contract says something different** → attach `HB-06_v2_annex_aligned.md` → Draft SOW → **Save & check** | "Now the SOW is aligned to real time. The conflict closes, and the tool spots one more gap: the 1 December launch date the customer was promised isn't in the SOW. Fixing one problem surfaces the next." |
+| 2:00 | Open the **1 December** finding → **Okay to proceed** → reason: *Date depends on the customer's sandbox access, now confirmed for 10 Nov. Commercial to confirm the SOW timeline before signing.* → back to overview | "Some things need a judgement. I record it with my name and a reason." *(Point at the counts: 5 unresolved, 4 awaiting decision.)* "Unresolved didn't move. A decision is not a fix." |
+| 2:30 | Close | "Where does the AI come in? The model reads all the paperwork and proposes problems, with exact quotes. Code checks every quote and the product catalogue before anything is shown, and only code can close a finding. I tested it on a deal it had never seen: it found all 8 planted issues, with no false alarms." |
 
 ## If something goes wrong on camera
 
-- **"Nothing was saved … API key":** the key isn't set in Terminal 1. Stop, set it, restart the server, and record again.
-- **Wrong file attached:** the red warning shows it; say "this is exactly why the type step exists" and choose again.
-- **Counts look different:** you didn't reset first. Stop, reset, start again.
+- **"Nothing was saved … API key":** the key isn't set in Terminal 1. Stop, set it, restart the server, record again.
+- **Counts aren't 6 and 6 at the start:** you didn't reset. Stop, reset, start again.
+- **A pricing note shows "version 3":** Save & check was clicked twice. Reset and record again.
 
 ## What not to say
 
-- Don't call it validated or accurate on real deals: "demonstrated on fictional deals".
-- Don't say the agent decides anything: it doesn't.
-- Don't promise integrations: they're on the Later list.
+- Don't read the grey sentence above the bold line: it is the model's summary and is not checked (it says "signed SOW"; the SOW is a draft).
+- Don't call it validated or accurate on real deals: "demonstrated on fictional deals; tested on one sealed deal".
+- Don't say rules decide: in v2 the model finds, code checks and closes, people decide.
+- Don't promise integrations.

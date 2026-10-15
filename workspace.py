@@ -465,7 +465,12 @@ def told_and_contract(conn, did: int, c: dict, raw_presence: str) -> tuple:
             return told, "No longer in the documents"
         if terms.get("contract"):
             return told, terms["contract"]
-        return told, "Not included" if raw_presence == "absent" else "No gap found"
+        # An open "Missing from contract" finding wins over the latest model reading: the overview must never say
+        # "No gap found" beside a gap that is still open (15 Oct; closure follows the stored claim, not model variance).
+        open_gap = conn.execute(
+            "SELECT 1 FROM issues i JOIN issue_current_state s ON s.issue_id = i.id WHERE i.commitment_id = ?"
+            " AND i.issue_type = 'contract_gap' AND s.state <> 'Resolved' LIMIT 1", (c["id"],)).fetchone()
+        return told, "Not included" if open_gap or raw_presence == "absent" else "No gap found"
     for criteria_json, cid in conn.execute(
             "SELECT i.closure_criteria, i.commitment_id FROM issues i JOIN issue_current_state s ON s.issue_id = i.id"
             " WHERE i.commitment_id = ? AND i.issue_type = 'conflicting_terms' AND s.state <> 'Resolved'", (c["id"],)):

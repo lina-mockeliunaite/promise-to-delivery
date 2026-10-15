@@ -826,3 +826,17 @@ Full analysis: `docs/RESULTS_atlas_remit_v2_2026-10-10.md`. Committed before the
 **Excluding a cited document never closes a finding.** If a document an open finding cites (a promise quote, or the contract clause in a conflict) is excluded from the review, the finding moves to *Needs evidence* with the reason "excluded from the review: <document>". It returns to normal checking when the document is included again or replaced by a new version. Rejected: re-verifying the claim without the document. The quote would not be found, the claim would "no longer hold", and the finding would close because evidence was removed rather than because the gap was fixed.
 **The scope note says what could not be checked at all.** On a v2 deal, the register states when there is no draft contract or SOW ("nothing is checked against the contract") and when there is no pricing and services note ("approvals read as not recorded"). v2 reports only what it can verify, so a short list of findings must not read as a clean deal when the documents needed to check were missing.
 **No change to the frozen detector or verifier.** `detect_v2.py` and the sealed results are untouched.
+
+## 2026-10-15, 13:05 — Polygon walk-through on v2; demo script rewritten; overview contradiction fixed; recording skipped
+
+**Walk-through (Harbour Bank, real app):** reset 6 unresolved / 6 awaiting. Named exception (HB-05 v2) closed only the Polygon approval, no model call. Aligned SOW (HB-06 v2) closed the conflict by re-verifying its stored claim; served from the saved 10 Oct model output (same inputs, $0). New finding raised as on 10 Oct: "from the 1 December launch" missing from the SOW. Decision recorded: *Okay to proceed* with reason; counts 5 unresolved / 4 awaiting. Unresolved did not move.
+**Seen live: model variance did not close anything.** In the SOW review the model re-proposed the Payout ledger contract gap in a form the verifier rejected; the issue stayed open ("Still holds on the current documents") because closure re-verifies the stored claim.
+**Fixed (display only, `workspace.py`):** the overview's Contract column showed "No gap found" beside an open "Missing from contract" finding, because it followed the latest model reading. It now shows "Not included" whenever a contract-gap issue is open. 614 tests pass. No change to `detect_v2.py`, the verifier or the sealed results.
+**Demo script rewritten for v2** (`docs/DEMO_SCRIPT_15Oct.md`) from the walk-through: 6 → approval closes alone → SOW closes the conflict and surfaces 1 December → named decision, unresolved unchanged.
+**Recording: skipped (Lina, 15 Oct).** Checkpoint 2 will be shown live from the script.
+**Known issues logged, not fixed:**
+- The model's summary sentence can be wrong (it called the draft SOW "signed"); only the bold "Checked against" line is verified. Candidate: label the summary "Model's summary (not checked)".
+- Re-uploading an identical file creates a new version (pricing note v3 after a double click) instead of "no change".
+- Overview ties are broken by an internal ID, not by severity (a conflict can sit below gaps).
+- The recheck banner can list the same finding as both "Still open" and "New finding raised"; the closing reason shows an internal file name.
+- A conflict closes when the contradicting clause disappears; whether the promise is then covered is left to a fresh, model-raised, code-verified finding.
