@@ -867,3 +867,12 @@ Full analysis: `docs/RESULTS_atlas_remit_v2_2026-10-10.md`. Committed before the
 **Where gaps started:** each promise with an open gap is placed at the stage of the earliest document its stored claim quotes. Counted per promise, so the bar matches the list below it. Harbour Bank: all 3 at Proposal / RFP.
 **Deal brief:** owner-confirmed summary and deliverables from `data/profiles/<deal>.json`; never model-written; user deals have none yet.
 **No schema change, no change to findings** (a test checks register() is identical before and after). Seal tests caught a first draft that sent document keys and file names to the page; fixed to type labels only. 624 Python tests pass.
+
+## 2026-10-15, 22:00 — One source of truth across views; brief re-confirmation
+
+**Trigger:** a simulated Delivery-lead review (Lina's assistant, from screenshots; not a user test) found three inconsistencies: the handoff said "No contract gap found" beside an open gap; "Approved exceptions: None" beside a recorded allowed exception; the deal brief still said Polygon runs in hourly batches after the SOW changed.
+**Cause:** in v2, register()'s contract and approval labels came from the model's latest reading, not from the findings. The 15 Oct afternoon fix had patched the overview only, not the source (Claude's miss).
+**Fixed at the source:** in v2 the contract label follows open contract-gap or conflict findings; the approval label follows the open approval finding, or "Exception approved" when an allowed-exception fix closed it (with the closing reason naming the approver). Every view (overview, register, handoff) now reads the same values.
+**Brief re-confirmation:** a deal brief records the document version it was confirmed against; when a newer version arrives it shows "Confirmed against … version 1; version 2 has arrived since. The deal owner should reconfirm." Same idea as decision re-confirmation.
+**Tests:** `tests/test_one_truth.py` fails if any view disagrees about a promise's contract or approval position, before or after both Harbour Bank fixes; checks the exception is listed with its approver; checks the brief flags re-confirmation. 627 Python tests pass.
+**Noted for the card redesign:** the product check should say whether a limit is technical or commercial (an approved exception changes commercial terms; it does not prove capacity).

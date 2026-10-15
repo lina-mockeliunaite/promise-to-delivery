@@ -8,5 +8,9 @@
     "NUSD wallet screening for Solana payouts"
   ],
   "confirmed_by": "Deal owner (fictional)",
-  "basis": "draft SOW, 25 Nov"
+  "basis": "draft SOW, 25 Nov",
+  "confirmed_against": {
+    "source": "CP-06",
+    "version": 1
+  }
 }

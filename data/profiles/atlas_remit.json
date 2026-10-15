@@ -9,5 +9,9 @@
   ],
   "go_live": "2027-02-01",
   "confirmed_by": "Deal owner (fictional)",
-  "basis": "draft SOW v0.3, 26 Oct"
+  "basis": "draft SOW v0.3, 26 Oct",
+  "confirmed_against": {
+    "source": "AR-06",
+    "version": 1
+  }
 }

@@ -39,8 +39,21 @@ AUTH_LABELS = {
     "not_assessed": "Not assessed", None: "Not applicable",
 }
 # v2 reports problems only: 'not_assessed' there means no verified problem was found, not that nobody looked.
-V2_AUTH_LABELS = {"not_assessed": "No approval issue found", "no_approval_evidence": "No approval recorded"}
-V2_PRESENCE_LABELS = {"not_assessed": "No contract gap found", "absent": "Not in the contract as promised"}
+V2_AUTH_LABELS = {"not_assessed": "No approval issue found", "no_approval_evidence": "No approval recorded",
+                  "exception_approved": "Exception approved"}
+V2_PRESENCE_LABELS = {"not_assessed": "No contract gap found", "absent": "Not in the contract as promised",
+                      "conflict_open": "Contract says something different"}
+
+
+def _exception_fix(conn, issue_ids: list):
+    """The closing reason if an approval finding was closed by a recorded allowed-exception fix, else None."""
+    for iid in issue_ids:
+        row = conn.execute(
+            "SELECT k.reason FROM closure_checks k JOIN fixes f ON f.id = k.fix_id WHERE k.issue_id = ? AND k.outcome = 'met'"
+            " AND f.route = 'allowed_exception' ORDER BY k.id DESC LIMIT 1", (iid,)).fetchone()
+        if row:
+            return row[0]
+    return None
 PRESENCE_LABELS = {"included_in_draft_contract": "In the draft contract", "absent": "Not in the contract",
                    "not_assessed": "Not assessed"}
 
@@ -349,6 +362,25 @@ def register(conn, slug: str) -> dict:
                 presence_label = f"Not in the contract: the contract says {term} instead."
                 break
         shown_status = display_status(status, language)
+        if is_v2:
+            # One source of truth (15 Oct, after the simulated Delivery review): in v2 the contract and approval labels
+            # follow the findings and recorded fixes, never the model's latest reading, so every view agrees.
+            open_types = {i["type"] for i in issues if i["state"] != "Resolved"}
+            if "conflicting_terms" in open_types:
+                presence, shown_presence = "conflict_open", next(
+                    (i["reason"] for i in issues if i["type"] == "conflicting_terms" and i["state"] != "Resolved"), shown_presence)
+            elif "contract_gap" in open_types:
+                presence = "absent"
+            elif presence == "absent":
+                presence = "not_assessed"
+            if "approval" in open_types:
+                auth = "no_approval_evidence"
+            else:
+                exc = _exception_fix(conn, [i["id"] for i in issues if i["type"] == "approval"])
+                if exc:
+                    auth, shown_auth = "exception_approved", exc
+                elif auth == "no_approval_evidence":
+                    auth = "not_assessed"
         commitments.append({
             "id": cid, "name": display_name(cname, statements), "note": note, "status": shown_status, "language": language,
             "check_note": CHECK_NOTE if shown_status != status else "",
@@ -593,5 +625,5 @@ def overview(conn, slug: str) -> dict:
                              "must_fix_flags": flags}
     import deal_stage  # revamp, 15 Oct: stage from the documents, owner-confirmed brief; reads only
     reg["stage"] = deal_stage.deal_stage(conn, slug)
-    reg["brief"] = deal_stage.deal_brief(slug)
+    reg["brief"] = deal_stage.deal_brief(conn, slug)
     return reg

@@ -7,5 +7,9 @@
   ],
   "go_live": "2026-12-01",
   "confirmed_by": "Deal owner (fictional)",
-  "basis": "draft SOW, 20 Oct"
+  "basis": "draft SOW, 20 Oct",
+  "confirmed_against": {
+    "source": "HB-06",
+    "version": 1
+  }
 }

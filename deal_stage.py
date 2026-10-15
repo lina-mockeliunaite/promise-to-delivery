@@ -136,10 +136,28 @@ def deal_stage(conn, slug: str) -> dict:
             "override": override if basis == "override" else None, "stages": stages, "headline": headline}
 
 
-def deal_brief(slug: str) -> dict | None:
-    """The owner-confirmed summary and deliverables, or None when the deal has none."""
+def deal_brief(conn, slug: str) -> dict | None:
+    """The owner-confirmed summary and deliverables, or None when the deal has none. Like a decision, a brief is
+    confirmed against one document version: when a newer version of that document arrives, the brief is shown as
+    needing re-confirmation, never silently as current (15 Oct, after the simulated Delivery review)."""
     p = load_profile(slug)
     if not p.get("summary"):
         return None
+    stale, stale_note = False, ""
+    basis = p.get("confirmed_against") or {}
+    if basis.get("source"):
+        did = ledger_fixes.deal_id(conn, slug)
+        row = conn.execute(
+            "SELECT MAX(v.version_no), (SELECT v2.doc_type FROM source_versions v2 WHERE v2.source_id = s.id ORDER BY"
+            " v2.version_no DESC LIMIT 1) FROM sources s JOIN source_versions v ON v.source_id = s.id"
+            " WHERE s.deal_id = ? AND s.source_key = ?", (did, basis["source"])).fetchone()
+        latest, dtype = (row or (None, None))
+        if latest and latest > int(basis.get("version") or 1):
+            from workspace import DOC_TYPE_LABELS
+            name = DOC_TYPE_LABELS.get(dtype, "source document")
+            stale = True
+            stale_note = (f"Confirmed against {name} version {basis.get('version') or 1}; version {latest} has arrived since. "
+                          "The deal owner should reconfirm this brief.")
     return {"summary": p["summary"], "deliverables": list(p.get("deliverables") or []),
-            "confirmed_by": p.get("confirmed_by") or "", "basis": p.get("basis") or "", "go_live": p.get("go_live") or ""}
+            "confirmed_by": p.get("confirmed_by") or "", "basis": p.get("basis") or "", "go_live": p.get("go_live") or "",
+            "needs_reconfirmation": stale, "reconfirm_note": stale_note}

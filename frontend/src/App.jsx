@@ -403,6 +403,7 @@ function DealBrief({ brief }) {
           {brief.basis ? ` · from ${brief.basis}` : ""}
         </span>
       </div>
+      {brief.needs_reconfirmation && <p className="brief-stale">{brief.reconfirm_note}</p>}
       <p className="brief-summary">{brief.summary}</p>
       {brief.deliverables.length > 0 && (
         <>
