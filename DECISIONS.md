@@ -844,3 +844,18 @@ Full analysis: `docs/RESULTS_atlas_remit_v2_2026-10-10.md`. Committed before the
 ## 2026-10-15, 16:10 — Clean promises stay unlisted until after Checkpoint 2
 
 **Chose (Lina):** do not change v2 to list promises without findings before 21 Oct. Listing every promise needs a promise inventory in the model output, which changes the prompt that passed the sealed Atlas Remit run; the 8/8 result would no longer describe the demoed configuration without a fresh sealed check. Stated plainly instead: the handoff lists the promises that need attention; a full promise inventory is the next step. Ask at Checkpoint 2 whether a Delivery or CS lead would miss the complete list.
+
+## 2026-10-15, 16:53 — Checkpoint 2 held early (COO); product becomes a visibility tool; deadlines lifted
+
+**Checkpoint 2 held today with a COO** (notes: `docs/CP2_NOTES_2026-10-15.md`). Main message: a visibility tool, not a workflow tool; final approvals happen elsewhere; simplify; a sales-stage bar at the top; deal summary and key deliverables; open items with quick actions; add your own items and notes; modern look.
+**Chose (Lina):** revamp the product into a visibility tool, add the stage bar, and drop the 21/22 Oct deadlines; it needs to make sense to a COO.
+**Claude's caution, stated before deciding:** one reviewer, a COO rather than a Delivery lead; the tested, distinctive part is checking that a fix actually closed a gap, which a single prompt cannot do. Proposed keeping that check underneath (items close on their own when a new document version fixes them) rather than as the main path.
+**First step:** a mockup of the new deal page (Design canvas "Promise to Delivery — Deal Snapshot") before any code changes.
+
+## 2026-10-15, 19:00 — Revamp design agreed for testing (mockup v2)
+
+**Mockup:** Design canvas "Promise to Delivery — Deal Snapshot", two screens of Harbour Bank: (1) Contracting, live view; (2) Signed, frozen handoff snapshot.
+**Adopted from review (Lina's assistant + Claude):** each item shows three facts (customer was told / contract says / product check); priority stays separate from decisions, and a decision never closes a gap; manually added items carry a human source and close only when their owner marks them resolved; a scope line states what was checked and that only promises with gaps are listed; the product catalogue is a listed source; decisions show whether they were reconfirmed against the signed documents; the frozen snapshot is kept apart from live updates.
+**Stage bar:** Discovery → Evaluation → Proposal / RFP → Shortlisted → Contracting → Signed → Handover, showing which stage each open gap was first promised in; Contracting is marked as the last cheap point to fix; Handover freezes the snapshot. Pattern informed by a typical B2B pipeline and handover practice; no employer names, figures or wording used.
+**Positioning corrected:** not "the recheck is the only defensible part" (post-signature obligation tools exist) but tracing sales promises → contract → product capability across changing documents, before and at signature. The single-prompt comparison is one deal; claim it narrowly.
+**Next:** test both screens with one Delivery or CS lead (handoff screen first, unexplained) before building.
