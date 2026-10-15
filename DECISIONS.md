@@ -840,3 +840,7 @@ Full analysis: `docs/RESULTS_atlas_remit_v2_2026-10-10.md`. Committed before the
 - Overview ties are broken by an internal ID, not by severity (a conflict can sit below gaps).
 - The recheck banner can list the same finding as both "Still open" and "New finding raised"; the closing reason shows an internal file name.
 - A conflict closes when the contradicting clause disappears; whether the promise is then covered is left to a fresh, model-raised, code-verified finding.
+
+## 2026-10-15, 16:10 — Clean promises stay unlisted until after Checkpoint 2
+
+**Chose (Lina):** do not change v2 to list promises without findings before 21 Oct. Listing every promise needs a promise inventory in the model output, which changes the prompt that passed the sealed Atlas Remit run; the 8/8 result would no longer describe the demoed configuration without a fresh sealed check. Stated plainly instead: the handoff lists the promises that need attention; a full promise inventory is the next step. Ask at Checkpoint 2 whether a Delivery or CS lead would miss the complete list.
