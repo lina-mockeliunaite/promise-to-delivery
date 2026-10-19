@@ -1032,7 +1032,7 @@ export default function App() {
   const back = () => { setCurrent(null); setClassic(false); loadDeals(); };
   if (deals && current && !classic) {
     return (
-      <main className="home">
+      <main className="home home-deal">
         <DealPage key={current} deal={current} onBack={back} onDealsChanged={loadDeals} onClassic={() => setClassic(true)} />
       </main>
     );

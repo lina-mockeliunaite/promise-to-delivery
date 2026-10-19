@@ -10,7 +10,7 @@ import * as api from "./api.js";
 import { fmtDate, fmtDateTime, uploadKind } from "./format.js";
 import {
   CLOSING_ONE_LINE, STATUS_CHIP, cleanReason, contractSide, contractText, toldQuotes, countsLine, extractedAs, findingDetail, firstPromised, groupByStage,
-  SIGNED_NOTE, isSignedDoc, mismatchLine, missingForHandover, plainName, recordedBy, rowTitle, sentence, sourcesLine, stageLine, suggestFix, useName, whatChanged,
+  SIGNED_NOTE, docLabel, isSignedDoc, mismatchLine, missingForHandover, plainName, recordedBy, rowTitle, sentence, sourcesLine, stageLine, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
 import { NAME, TAGLINE } from "./brand.js";
@@ -32,7 +32,25 @@ const I = {
   plus: "M12 5v14M5 12h14",
   calendar: "M4 6h16v14H4zM4 10h16M9 3v4M15 3v4",
   back: "M19 12H5M11 18l-6-6 6-6",
+  close: "M6 6l12 12M18 6L6 18",
+  info: "M12 16v-4M12 8h.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0z",
+  upload: "M12 16V4M7 9l5-5 5 5M4 20h16",
+  arrow: "M5 12h14M13 6l6 6-6 6",
 };
+
+const fmtSize = (bytes) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`);
+
+// The info box at the top of a dialog: what will happen, in our existing wording.
+function Hint({ children }) {
+  const lines = [].concat(children).filter(Boolean);
+  if (!lines.length) return null;
+  return (
+    <div className="dp-hintbox">
+      <Icon d={I.info} size={16} />
+      <div>{lines.map((l) => <p key={l}>{l}</p>)}</div>
+    </div>
+  );
+}
 
 function readUpload(file) {
   return new Promise((resolve, reject) => {
@@ -212,17 +230,22 @@ function NotePanel({ role, label, who, note, name, setName, onSave }) {
             {error && <span className="dp-error">{error}</span>}
           </div>
         </form>
+      ) : note ? (
+        <p className="dp-note-text">{`“${note.note}”`}</p>
+      ) : null}
+      {!editing && !note ? (
+        <div className="dp-note-empty">
+          <span>Not written yet.</span>
+          <button type="button" className="dp-link-btn dp-brand" onClick={() => { setText(""); setEditing(true); }}>Add note</button>
+        </div>
       ) : (
-        <p className={`dp-note-text ${note ? "" : "is-empty"}`}>{note ? `“${note.note}”` : "Not written yet."}</p>
+        <div className="dp-note-foot">
+          <span>{note ? recordedBy(note.by, note.at, fmtDateTime) : ""}</span>
+          {!editing && (
+            <button type="button" className="dp-link-btn dp-brand" onClick={() => { setText(note?.note ?? ""); setEditing(true); }}>Update note</button>
+          )}
+        </div>
       )}
-      <div className="dp-note-foot">
-        <span>{note ? recordedBy(note.by, note.at, fmtDateTime) : ""}</span>
-        {!editing && (
-          <button type="button" className="dp-link-btn dp-brand" onClick={() => { setText(note?.note ?? ""); setEditing(true); }}>
-            {note ? "Update note" : "Add note"}
-          </button>
-        )}
-      </div>
     </div>
   );
 }
@@ -274,7 +297,7 @@ function ChangePanel({ change, onClose }) {
   );
 }
 
-function Modal({ title, sub, onClose, children }) {
+function Modal({ title, sub, dot, onClose, children }) {
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -284,8 +307,8 @@ function Modal({ title, sub, onClose, children }) {
     <div className="dp-modal" role="dialog" aria-modal="true" aria-label={title} onClick={onClose}>
       <div className="dp-modal-body dp-pop" onClick={(e) => e.stopPropagation()}>
         <div className="dp-modal-head">
-          <div><strong>{title}</strong>{sub && <span className="dp-faint dp-small dp-block">{sub}</span>}</div>
-          <button type="button" className="dp-btn" onClick={onClose}>Close</button>
+          <div className="dp-modal-title">{dot && <span className={`dp-title-dot is-${dot}`} aria-hidden="true" />}<div><strong>{title}</strong>{sub && <span className="dp-faint dp-small dp-block">{sub}</span>}</div></div>
+          <button type="button" className="dp-x" onClick={onClose} aria-label="Close dialog"><Icon d={I.close} size={16} /></button>
         </div>
         <div className="dp-pop-body">{children}</div>
       </div>
@@ -298,9 +321,10 @@ function ActionModal({ deal, c, mode, documents, docTypes, name, setName, canDec
   const [how, setHow] = useState("keep"); // keep: stays Needs attention, note shown in the row; addressed: settled without a document
   const [note, setNote] = useState("");
   const [draft, setDraft] = useState("");
+  const [changing, setChanging] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
-  const author = (name || draft).trim();
+  const author = (!name.trim() || changing ? draft : name).trim();
   const saveNote = async (e) => {
     e.preventDefault();
     setBusy(true);
@@ -308,7 +332,7 @@ function ActionModal({ deal, c, mode, documents, docTypes, name, setName, canDec
     try {
       if (how === "addressed") await api.resolveByNote(deal, { issue_ids: open.map((i) => i.id), resolved_by: author, reason: note });
       else for (const i of open) await api.recordDecision(deal, { kind: "okay_to_proceed", issue_id: i.id, by: author, reason: note });
-      if (!name.trim()) setName(author);
+      if (author !== name.trim()) setName(author);
       onNoted();
     } catch (err) {
       setError(err.message);
@@ -318,30 +342,47 @@ function ActionModal({ deal, c, mode, documents, docTypes, name, setName, canDec
   };
   const blocked = how === "keep" && !canDecide;
   return (
-    <Modal title={rowTitle(c)} sub={`Needs attention: ${mismatchLine(open, c.contract)}`} onClose={onClose}>
+    <Modal title={mode === "doc" ? "Add updated document" : "Record a note"} dot={mode === "doc" ? "green" : "amber"} onClose={onClose}>
+      <div className="dp-commit">
+        <span className="dp-commit-dot" aria-hidden="true" />
+        <div>
+          <p className="dp-commit-title"><b>Commitment:</b> “{rowTitle(c)}”</p>
+          <span className="dp-commit-sub">Needs attention: {mismatchLine(open, c.contract)}</span>
+        </div>
+      </div>
       {mode === "doc" ? (
-        <>
-          <p className="dp-faint dp-small dp-pop-line">{CLOSING_ONE_LINE}</p>
-          <AddDocument deal={deal} documents={documents} docTypes={docTypes} preset={suggestFix(open, documents)} onDone={onDocDone} onClose={onClose} />
-        </>
+        <AddDocument deal={deal} documents={documents} docTypes={docTypes} preset={suggestFix(open, documents)} lead={CLOSING_ONE_LINE} onDone={onDocDone} onClose={onClose} />
       ) : (
         <form className="dp-add" onSubmit={saveNote}>
-          <p className="dp-faint dp-small dp-pop-line">{CLOSING_ONE_LINE}</p>
-          <div className="dp-choice">
+          <Hint>{CLOSING_ONE_LINE}</Hint>
+          <div className="dp-field"><span>What should happen to it?</span></div>
+          <div className="dp-choice" role="radiogroup" aria-label="What to do with the note">
             <label className={how === "keep" ? "is-on" : ""}>
               <input type="radio" name="how" checked={how === "keep"} onChange={() => setHow("keep")} />
-              <span><strong>Keep it open, add context.</strong> It stays under Needs attention with your note shown inside the row,
+              <span><strong>Keep it open, add context.</strong> <em className="dp-default">Default</em><br />It stays under Needs attention with your note shown inside the row,
                 for example "Delivery will raise it at kick-off".</span>
             </label>
             <label className={how === "addressed" ? "is-on" : ""}>
               <input type="radio" name="how" checked={how === "addressed"} onChange={() => setHow("addressed")} />
-              <span><strong>Mark as addressed by note.</strong> The documents still differ. It moves to "Addressed by note", stays in
+              <span><strong>Mark as addressed by note.</strong><br />The documents still differ. It moves to "Addressed by note", stays in
                 the handover record, and reopens if the documents change.</span>
             </label>
           </div>
-          <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={4} maxLength={2000} autoFocus
-                    placeholder="What was agreed, and who will act on it" />
-          <NameField stored={name} draft={draft} onDraft={setDraft} />
+          <label className="dp-field">
+            <span>Note</span>
+            <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={4} maxLength={2000} autoFocus
+                      placeholder="What was agreed, and who will act on it" />
+          </label>
+          <div className="dp-author">
+            {!name.trim() || changing ? (
+              <label className="dp-name-field">
+                <span>Your name</span>
+                <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="e.g. Sam (Delivery)" maxLength={120} required />
+              </label>
+            ) : (
+              <span>Recording as <strong>{plainName(name)}</strong> · <button type="button" className="dp-link-btn dp-brand" onClick={() => { setDraft(name); setChanging(true); }}>change</button></span>
+            )}
+          </div>
           {blocked && (
             <div className="dp-warn" role="alert">
               <span>A note can be kept on a gap only while the check is current ({freshnessLabel}). Check the deal again first.</span>
@@ -351,10 +392,10 @@ function ActionModal({ deal, c, mode, documents, docTypes, name, setName, canDec
               </span>
             </div>
           )}
-          <div className="dp-row">
-            <button type="submit" className="dp-btn dp-btn-dark" disabled={busy || !note.trim() || !author || blocked}>{busy ? "Saving…" : "Save note"}</button>
-            <button type="button" className="dp-btn" onClick={onClose}>Cancel</button>
+          <div className="dp-actions">
             {error && <span className="dp-error" role="alert">{error}</span>}
+            <button type="button" className="dp-btn dp-btn-ghost" onClick={onClose}>Cancel</button>
+            <button type="submit" className="dp-btn dp-btn-dark" disabled={busy || !note.trim() || !author || blocked}>{busy ? "Saving…" : <>Save note <Icon d={I.check} size={14} /></>}</button>
           </div>
         </form>
       )}
@@ -391,11 +432,12 @@ function ClosingHelp({ onClose }) {
   );
 }
 
-function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
+function AddDocument({ deal, documents, docTypes, onDone, onClose, preset, lead }) {
   const [form, setForm] = useState({ source_key: preset?.source_key ?? "", doc_type: preset?.doc_type ?? "draft_sow",
                                      doc_date: new Date().toISOString().slice(0, 10), file: null });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  const [over, setOver] = useState(false);
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: k === "file" ? e.target.files[0] ?? null : e.target.value }));
   const submit = async (e) => {
     e.preventDefault();
@@ -419,16 +461,14 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
   };
   return (
     <form className="dp-add" onSubmit={submit}>
-      <div className="dp-add-head">
-        {preset?.hint && <p className="dp-add-hint">{preset.hint}</p>}
-        <span className="dp-faint">The check runs again on all the deal's documents. A gap closes only if the new paperwork shows it no longer holds.</span>
-      </div>
+      <Hint>{[lead, preset?.hint]}</Hint>
+      <p className="dp-faint dp-small dp-note-line">The check runs again on all the deal's documents. A gap closes only if the new paperwork shows it no longer holds.</p>
       <div className="dp-add-grid">
         <label>
           This is
           <select value={form.source_key} onChange={set("source_key")}>
             <option value="">A new document</option>
-            {documents.map((d) => <option key={d.source_key} value={d.source_key}>A new version of: {d.name}</option>)}
+            {documents.map((d) => <option key={d.source_key} value={d.source_key}>A new version of: {d.name} (v{d.version} → v{d.version + 1})</option>)}
           </select>
         </label>
         {!form.source_key && (
@@ -445,16 +485,31 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
             </label>
           </>
         )}
-        <label>
-          File
+      </div>
+      <div className="dp-field">
+        <span>Document upload</span>
+        <label className={`dp-drop ${over ? "is-over" : ""}`}
+               onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)}
+               onDrop={(e) => { e.preventDefault(); setOver(false); const f = e.dataTransfer.files[0]; if (f) setForm((x) => ({ ...x, file: f })); }}>
+          <span className="dp-drop-icon"><Icon d={I.upload} size={22} /></span>
+          <span className="dp-drop-main">Drop file here or <u>browse files</u></span>
+          <span className="dp-drop-sub">Markdown, text, PDF, Word, Excel or PowerPoint</span>
           <input type="file" accept=".md,.txt,.pdf,.docx,.xlsx,.pptx" onChange={set("file")} />
         </label>
+        {form.file && (
+          <div className="dp-file-chip">
+            <Icon d={I.doc} size={16} />
+            <span className="dp-file-name">{form.file.name}</span>
+            <span className="dp-file-size">{fmtSize(form.file.size)}</span>
+            <button type="button" className="dp-x" aria-label="Remove attached file" onClick={() => setForm((x) => ({ ...x, file: null }))}><Icon d={I.close} size={14} /></button>
+          </div>
+        )}
       </div>
       {!form.source_key && isSignedDoc(form.doc_type) && <p className="dp-faint dp-small">{SIGNED_NOTE}</p>}
-      <div className="dp-row">
-        <button type="submit" className="dp-btn dp-btn-dark" disabled={busy || !form.file}>{busy ? "Checking…" : "Add and check"}</button>
-        <button type="button" className="dp-btn" onClick={onClose} disabled={busy}>Cancel</button>
+      <div className="dp-actions">
         {error && <span className="dp-error" role="alert">{error}</span>}
+        <button type="button" className="dp-btn dp-btn-ghost" onClick={onClose} disabled={busy}>Cancel</button>
+        <button type="submit" className="dp-btn dp-btn-dark" disabled={busy || !form.file}>{busy ? "Checking…" : <>Add and check <Icon d={I.arrow} size={14} /></>}</button>
       </div>
     </form>
   );
@@ -482,11 +537,11 @@ function DocumentList({ deal, stages, documents, name, setName, onChanged, onVie
       <div className="dp-doc-row">
         {d.link ? (
           <a href={d.link} target="_blank" rel="noopener noreferrer" className="dp-doc-name" title="Opens where the document lives">
-            {d.name}{d.version > 1 ? ` · v${d.version}` : ""}
+            {docLabel(d.name, d.date)}{d.version > 1 ? ` · v${d.version}` : ""}
           </a>
         ) : (
           <button type="button" className="dp-doc-name" onClick={() => onView(d)} title="Read the text the check used">
-            {d.name}{d.version > 1 ? ` · v${d.version}` : ""}
+            {docLabel(d.name, d.date)}{d.version > 1 ? ` · v${d.version}` : ""}
           </button>
         )}
         <span className="dp-doc-meta">
@@ -525,10 +580,12 @@ function DocumentList({ deal, stages, documents, name, setName, onChanged, onVie
             <div className="dp-tl-body">
               <span className="dp-tl-name">
                 {s.label}
-                {s.state === "current" && <span className="dp-tl-tag">Current stage</span>}
-                {s.state === "todo" && <span className="dp-tl-tag">Not yet</span>}
+                <span className="dp-tl-right">
+                  {s.gaps_started > 0 && <span className="dp-stage-gaps">{s.gaps_started} {s.gaps_started === 1 ? "gap" : "gaps"} started here</span>}
+                  {s.state === "current" && <span className="dp-tl-tag">Current stage</span>}
+                  {s.state === "todo" && <span className="dp-tl-tag">Not yet</span>}
+                </span>
               </span>
-              {s.gaps_started > 0 && <span className="dp-stage-gaps">{s.gaps_started} {s.gaps_started === 1 ? "gap" : "gaps"} started here</span>}
               {s.key === "contracting" && s.note && <span className="dp-tl-note">{s.note}</span>}
               {s.docs.length > 0 && <ul className="dp-docs">{s.docs.map(doc)}</ul>}
               {s.docs.length === 0 && s.state === "done" && <span className="dp-tl-empty">No documents</span>}
@@ -656,13 +713,14 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
       </div>
 
       <div className="dp-grid">
-        <main className="dp-main">
+        <div className="dp-main">
           <section className="dp-card dp-head">
             <div className="dp-head-row">
               <div>
                 <div className="dp-title-row">
                   <h1>{reg.name}</h1>
                   <span className="dp-stage-pill">Stage: {reg.stage.current_label}</span>
+                  <button type="button" className="dp-btn dp-catalogue-btn" onClick={() => setCatFocus("")}>Product catalogue</button>
                 </div>
                 <div className="dp-meta">
                   {reg.brief?.go_live && <span className="dp-meta-strong"><Icon d={I.calendar} /> Target go-live: {fmtDate(reg.brief.go_live)}</span>}
@@ -673,11 +731,8 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
                       {checking ? "Checking…" : "Check again"}
                     </button>
                   )}
+                  {stageLine(reg.stage) && <span className="dp-stageline">{stageLine(reg.stage)}</span>}
                 </div>
-                {stageLine(reg.stage) && <div className="dp-stageline">{stageLine(reg.stage)}</div>}
-              </div>
-              <div className="dp-row">
-                <button type="button" className="dp-btn" onClick={() => setCatFocus("")}>Product catalogue</button>
               </div>
             </div>
             {reg.brief && (
@@ -765,7 +820,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
             Lists commitments where the customer's expectation, the contract and what we can sell don't line up. Checked against the documents listed and the product catalogue. All companies, people and deals are fictional.
             {onClassic && SHOW_DETAILED && <> · <button type="button" className="dp-link-btn" onClick={onClassic}>Open the detailed view</button></>}
           </footer>
-        </main>
+        </div>
 
         <aside className="dp-aside">
           <DocumentList deal={deal} stages={reg.stage.stages} documents={included} name={name} setName={setName} onChanged={load} onView={setViewing}
@@ -782,9 +837,8 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
                     onSave={(who) => { const run = askName.fn; setName(who); setAskName(null); run?.(who); }} />
       )}
       {adding && (
-        <Modal title="Add a document" sub="A new document, or a new version of one already in the deal" onClose={() => setAdding(false)}>
-          <p className="dp-faint dp-small dp-pop-line">{CLOSING_ONE_LINE}</p>
-          <AddDocument deal={deal} documents={docs.documents} docTypes={docs.doc_types} onClose={() => setAdding(false)} onDone={docDone} />
+        <Modal title="Add a document" sub="A new document, or a new version of one already in the deal" dot="green" onClose={() => setAdding(false)}>
+          <AddDocument deal={deal} documents={docs.documents} docTypes={docs.doc_types} lead={CLOSING_ONE_LINE} onClose={() => setAdding(false)} onDone={docDone} />
         </Modal>
       )}
       {acting && (

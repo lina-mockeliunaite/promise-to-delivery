@@ -312,3 +312,16 @@ export function groupByStage(stages, documents) {
 // Shown under a signed document: it marks the deal signed and nothing else.
 export const SIGNED_NOTE = "Marks the deal signed. Its wording isn't checked; the checks used the drafts.";
 export const isSignedDoc = (docType) => docType === "signed_contract" || docType === "signed_sow";
+
+// A sidebar document name without a date that only repeats the date column: "Call transcript of 15 Sep 2026" with date
+// 2026-09-15 shows as "Call transcript". Display only; the stored name is untouched, and a different date is kept.
+export function docLabel(name, iso) {
+  const label = String(name ?? "");
+  const m = /^(.*?)\s+(?:of|dated|from|on)?\s*(\d{1,2} [A-Za-z]{3,9} \d{4})$/.exec(label);
+  if (!m) return label;
+  const shown = (iso ?? "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+  if (!shown) return label;
+  const full = `${Number(shown[3])} ${MONTHS[Number(shown[2]) - 1]} ${shown[1]}`;
+  const given = m[2].replace(/^(\d+ [A-Za-z]{3})[A-Za-z]* /, "$1 ");
+  return given === full ? m[1] : label;
+}

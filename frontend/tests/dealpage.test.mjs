@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  SIGNED_NOTE, attentionText, cleanReason, countsLine, extractedAs, findingDetail, firstDocDate, firstPromised, groupByStage, isSignedDoc, mismatchLine, plainName,
+  SIGNED_NOTE, attentionText, cleanReason, docLabel, countsLine, extractedAs, findingDetail, firstDocDate, firstPromised, groupByStage, isSignedDoc, mismatchLine, plainName,
   recordedBy, rowTitle, sourcesLine, stageLine, suggestFix, verdictLine, whatChanged,
 } from "../src/dealpage.js";
 
@@ -237,4 +237,13 @@ test("the contract column never says 'Not included' and shows what was searched 
   assert.doesNotMatch(contractText("Not included"), /Not included|binding/i);
   const side = contractSide([{ evidence: { missing_phrases: ["BioCatch", "coached by a scammer"] } }], "Not included");
   assert.deepEqual(side, { missing: ["BioCatch", "coached by a scammer"] });
+});
+
+test("a sidebar document name drops a date that only repeats the date column", () => {
+  assert.equal(docLabel("Call transcript of 15 Sep 2026", "2026-09-15"), "Call transcript");
+  assert.equal(docLabel("Call transcript of 22 Sep 2026", "2026-09-22"), "Call transcript");
+  assert.equal(docLabel("Call transcript of 15 Sep 2026", "2026-09-16"), "Call transcript of 15 Sep 2026"); // a different date stays
+  assert.equal(docLabel("Draft SOW", "2026-10-09"), "Draft SOW");
+  assert.equal(docLabel("Pricing and services note", ""), "Pricing and services note");
+  assert.equal(docLabel(null, "2026-10-09"), "");
 });
