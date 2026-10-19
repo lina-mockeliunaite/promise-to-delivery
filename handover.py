@@ -310,7 +310,25 @@ def handover(conn, slug: str) -> dict:
         fingerprint = hashlib.sha256(stored.encode("utf-8")).hexdigest()
     return {"complete": done is not None, "completed_by": done["completed_by"] if done else None,
             "completed_at": done["at"] if done else None, "notes": notes(conn, did), "snapshot": snap,
-            "fingerprint": fingerprint, "signature": signature(conn, did)}
+            "fingerprint": fingerprint, "signature": signature(conn, did),
+            "display_names": _display_names(conn, did, slug) if snap else {}}
+
+
+def _display_names(conn, did: int, slug: str) -> dict:
+    """{promise name as saved in the snapshot: owner-confirmed plain title}. Read at display time and never stored, so the
+    snapshot and its fingerprint are untouched. A promise without a title is simply absent."""
+    import workspace
+    titles = workspace.commitment_titles(slug)
+    if not titles:
+        return {}
+    out = {}
+    for cid, key in conn.execute("SELECT id, commitment_key FROM commitments WHERE deal_id = ?", (did,)):
+        if key not in titles:
+            continue
+        for (name,) in conn.execute("SELECT name FROM commitment_assessments WHERE commitment_id = ? AND support_state = 'supported'"
+                                    " ORDER BY id DESC LIMIT 1", (cid,)):
+            out[workspace.display_name(name, [])] = titles[key]
+    return out
 
 
 # --- Deal list ---------------------------------------------------------------------------------------------------------
@@ -339,10 +357,14 @@ def deal_rows(conn, rows: list) -> list:
         current = stage["current"]
         # Counted per promise, like the stage bar's "gaps started here", so the list and the deal page agree.
         noted = note_resolved_ids(conn, did)
-        open_gaps = len({cid for iid, cid in conn.execute(
+        live = conn.execute(
             "SELECT s.issue_id, c.id FROM issue_current_state s JOIN commitments c ON c.id = s.commitment_id"
-            " WHERE c.deal_id = ? AND s.state <> 'Resolved'", (did,)) if iid not in noted})
-        out.append({**row, "open_gaps": open_gaps,
+            " WHERE c.deal_id = ? AND s.state <> 'Resolved'", (did,)).fetchall()
+        needing = {cid for iid, cid in live if iid not in noted}
+        open_gaps = len(needing)
+        # 19 Oct: promises whose every open gap is settled by a current note, as the deal page's "Addressed by note" rows
+        addressed = len({cid for iid, cid in live if iid in noted} - needing)
+        out.append({**row, "open_gaps": open_gaps, "addressed_by_note": addressed,
                     "stage": current, "stage_label": stage["current_label"],
                     "owner": profile.get("owner") or (sales["by"] if sales else None),
                     "last_updated": last_updated(conn, did),

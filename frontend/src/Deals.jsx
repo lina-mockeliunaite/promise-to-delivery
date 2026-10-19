@@ -2,7 +2,8 @@
 // Visibility only. Every number comes from /api/workspace/deals; there are no invented metrics, statuses or actions.
 import { useMemo, useState } from "react";
 import * as api from "./api.js";
-import { FILTERS, SORTS, counts, gapText, initials, metrics, page, relativeTime, visibleDeals } from "./deals.js";
+import { FILTERS, SORTS, counts, initials, page, relativeTime, visibleDeals } from "./deals.js";
+import { attentionText } from "./dealpage.js";
 import CatalogueModal from "./CatalogueModal.jsx";
 import "./Deals.css";
 
@@ -20,24 +21,6 @@ const ICONS = {
   plus: "M12 5v14M5 12h14",
 };
 
-function Tile({ label, value, unit, note, pct, tone }) {
-  return (
-    <div className="dl-tile">
-      <span className="dl-tile-label">{label}</span>
-      <div className="dl-tile-value">
-        <span>{value}</span>
-        {unit && <span className="dl-tile-unit">{unit}</span>}
-      </div>
-      {pct !== undefined && (
-        <div className="dl-bar" aria-hidden="true">
-          <div className={`dl-bar-fill tone-${tone}`} style={{ width: `${pct}%` }} />
-        </div>
-      )}
-      <span className="dl-tile-note">{note}</span>
-    </div>
-  );
-}
-
 function StagePill({ deal }) {
   if (deal.handover_complete) {
     return (
@@ -54,16 +37,18 @@ function StagePill({ deal }) {
 }
 
 function GapPill({ deal }) {
+  const noted = deal.addressed_by_note ?? 0;
   if (deal.open_gaps === 0) {
     return (
       <span className="dl-gap dl-gap-none">
-        <Icon d={ICONS.check} size={12} /> No open gaps
+        <Icon d={ICONS.check} size={12} /> {attentionText(0, noted)}
       </span>
     );
   }
   return (
     <span className={`dl-gap ${deal.handover_complete ? "dl-gap-frozen" : ""}`}>
-      <span className="dl-dot" /> {gapText(deal.open_gaps)}
+      <span className="dl-dot" /> {attentionText(deal.open_gaps)}
+      {noted > 0 && <span className="dl-gap-sub">{noted} addressed by note</span>}
       {deal.handover_complete && <span className="dl-gap-sub">at handover</span>}
     </span>
   );
@@ -111,7 +96,6 @@ export default function Deals({ deals, onOpen, onCreated }) {
   const [catalogue, setCatalogue] = useState(false);
 
   const n = useMemo(() => counts(deals), [deals]);
-  const m = useMemo(() => metrics(deals), [deals]);
   const rows = useMemo(() => visibleDeals(deals, { filter, query, sort }), [deals, filter, query, sort]);
   const shown = page(rows, pageNo);
   const sortLabel = SORTS.find((s) => s.key === sort)?.label.toLowerCase();
@@ -136,15 +120,6 @@ export default function Deals({ deals, onOpen, onCreated }) {
         </div>
       </section>
       {catalogue && <CatalogueModal onClose={() => setCatalogue(false)} onChanged={onCreated ? () => onCreated(null) : undefined} />}
-
-      <section className="dl-tiles" aria-label="Summary">
-        <Tile label="In handover" value={m.inHandover.value} unit={m.inHandover.value === 1 ? "deal" : "deals"}
-              pct={m.inHandover.pct} tone="primary" note="Contracting or later" />
-        <Tile label="Live deals with gaps" value={m.withGaps.value} unit={`of ${m.withGaps.of}`} pct={m.withGaps.pct}
-              tone="amber" note="Before handover is complete" />
-        <Tile label="Handover complete" value={m.complete.value} unit={m.complete.value === 1 ? "deal" : "deals"}
-              pct={m.complete.pct} tone="muted" note="Frozen records" />
-      </section>
 
       <section className="dl-bar-row">
         <div className="dl-tabs" role="tablist" aria-label="Filter deals">
@@ -179,7 +154,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
               <tr>
                 <th scope="col">Deal</th>
                 <th scope="col">Stage</th>
-                <th scope="col">Open gaps</th>
+                <th scope="col">Need attention</th>
                 <th scope="col">Deal owner</th>
                 <th scope="col">Last updated</th>
                 <th scope="col" className="dl-right"><span className="dl-sr">Open</span></th>

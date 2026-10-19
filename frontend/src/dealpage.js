@@ -157,13 +157,13 @@ export function toldQuotes(statements) {
     .map((s) => ({ quote: s.quote, source: s.doc_type_label ?? s.source, date: s.date ?? "" }));
 }
 
-// What is still missing before the handover can be completed, in the order a person would do it.
-export function missingForHandover({ isSigned, notes, canAct }) {
+// What is still missing before the handover can be completed, in the order a person would do it. No name is listed: the
+// name is asked for when the button is pressed (19 Oct).
+export function missingForHandover({ isSigned, notes }) {
   const out = [];
   if (!isSigned) out.push("save the signing date");
   if (!notes?.sales) out.push("add the Sales note");
   if (!notes?.delivery) out.push("add the Delivery note");
-  if (!canAct) out.push("add your name at the top");
   return out;
 }
 
@@ -183,4 +183,126 @@ export function changeHeadline({ closed, opened, stillOpen }) {
 export function closingLine(reason) {
   const why = (reason ?? "").replace(/^Closed:\s*/, "").trim();
   return why ? why.charAt(0).toUpperCase() + why.slice(1) : "";
+}
+
+
+// --- Simplified deal page (19 Oct) ------------------------------------------------------------------------------------
+// Everything below is built only from verified finding labels, stored terms and owner-confirmed wording, never from AI text.
+
+export const FINDING_SHORT = {
+  "No approval recorded": "Not approved internally",
+  "Missing from contract": "Not in the contract",
+  "Contract says something different": "Contract differs",
+  "Not offered": "Not offered",
+};
+const FINDING_DETAIL = {
+  "No approval recorded": "No approval found in the supplied documents",
+  "Missing from contract": "Not in the draft contract or SOW",
+  "Not offered": "Not offered: no exception can fix this; only changing the promise can",
+};
+const SHORT_TERM = 45; // a stored contract term longer than this is left to the expanded row
+
+// The contract's own wording for a conflict, when it is short enough to sit on a one-line row.
+function shortTerm(issue, contract) {
+  const term = String(issue?.evidence?.contract_value || contract || "").trim();
+  return term && term.length <= SHORT_TERM && !/^(not included|no matching wording found)$/i.test(term) ? term : "";
+}
+
+// "Not approved internally · Not in the contract": the short form of each open finding, joined with " · ".
+// issues: the findings still showing; contract: the row's stored contract term.
+export function mismatchLine(issues, contract = "") {
+  const seen = new Set();
+  const parts = [];
+  for (const i of issues ?? []) {
+    const label = i.finding;
+    if (seen.has(label)) continue;
+    seen.add(label);
+    const short = FINDING_SHORT[label] ?? label;
+    const term = label === "Contract says something different" ? shortTerm(i, contract) : "";
+    parts.push(term ? `${short}: ${term}` : short);
+  }
+  return parts.join(" · ");
+}
+
+// The long form, shown in front of the check's reason in the expanded row.
+export function findingDetail(issue, contract = "") {
+  if (issue.finding === "Contract says something different") {
+    const term = String(issue.evidence?.contract_value || contract || "").trim();
+    return term ? `The contract says something different: "${term}"` : "The contract says something different";
+  }
+  return FINDING_DETAIL[issue.finding] ?? issue.finding;
+}
+
+// "First promised in the RFP response, 29 Sep": the earliest statement's source label and date.
+export function firstPromised(statements) {
+  const dated = (statements ?? []).filter((s) => s.doc_type_label);
+  if (!dated.length) return "";
+  const first = [...dated].sort((a, b) => (a.date || "9999").localeCompare(b.date || "9999"))[0];
+  const label = /^[A-Z][a-z]/.test(first.doc_type_label) ? first.doc_type_label[0].toLowerCase() + first.doc_type_label.slice(1) : first.doc_type_label;
+  return `First promised in the ${label}${first.date ? `, ${short(first.date)}` : ""}`;
+}
+
+// The title shown for a commitment: the owner-confirmed plain title if there is one, otherwise the extracted name.
+export const rowTitle = (c) => c.display_name || c.name;
+export const extractedAs = (c) => (c.display_name && c.display_name !== c.name ? c.name : "");
+
+// "3 need attention · 1 addressed by note · 1 closed by documents": zero parts are left out.
+export function countsLine({ open = 0, noted = 0, closed = 0 }) {
+  const parts = [];
+  parts.push(open ? `${open} ${open === 1 ? "needs" : "need"} attention` : (noted || closed) ? "Nothing needs attention" : "");
+  if (noted) parts.push(`${noted} addressed by note`);
+  if (closed) parts.push(`${closed} closed by documents`);
+  return parts.filter(Boolean).join(" · ");
+}
+
+// The handover record's honest verdict. "No open gaps" is never said when anything was addressed by note.
+export function verdictLine({ open = 0, noted = 0, closed = 0 }) {
+  if (!open) return noted ? `Handed over with no open gaps; ${noted} addressed by note${closed ? `, ${closed} closed by documents` : ""}.`
+    : "Handed over with no open gaps on the documents checked.";
+  const parts = [`${open} needing attention`];
+  if (noted) parts.push(`${noted} addressed by note`);
+  if (closed) parts.push(`${closed} closed by documents`);
+  return `Handed over with ${parts.join(", ")}.`;
+}
+
+// The deal list's gap cell: "2 need attention", or "Nothing needs attention" with what a note settled.
+export function attentionText(open, noted = 0) {
+  if (open) return `${open} ${open === 1 ? "needs" : "need"} attention`;
+  return noted ? `Nothing needs attention · ${noted} addressed by note` : "Nothing needs attention";
+}
+
+// "Stage: Contracting · gaps first made at Proposal / RFP"
+export function stageLine(stage) {
+  if (!stage?.current) return "";
+  const where = (stage.stages ?? []).filter((s) => s.gaps_started > 0).map((s) => s.label);
+  return `Stage: ${stage.current_label}${where.length ? ` · gaps first made at ${where.join(" and ")}` : ""}`;
+}
+
+// "Recorded by Sam · 16 Oct 2026"; the date is left out when the saved record has none.
+export function recordedBy(by, at, fmt) {
+  return `Recorded by ${by}${at ? ` · ${fmt(at)}` : ""}`;
+}
+
+// The three row states, worded once for the live page and the frozen record. "Addressed by note" is outlined, never solid.
+export const STATUS_CHIP = {
+  open: { tone: "amber", label: "Needs attention", title: "The documents still differ and nobody has settled it." },
+  noted: { tone: "note", label: "Addressed by note", title: "Addressed by a named person without a document. Not in the documents; reopens if the documents change." },
+  closed: { tone: "green", label: "Closed by documents", title: "The current documents no longer show the gap." },
+};
+
+// A sentence ends once: the wording of a finding sometimes already ends in a full stop or a quote.
+export const sentence = (text) => (/[.!?"]$/.test(text) ? text : `${text}.`);
+
+// The explanation of how a commitment closes, once, for the pop-up and the one-line version inside dialogs.
+export const CLOSING_ONE_LINE = "A commitment closes only when the check on the updated documents shows it no longer holds. A note never closes anything.";
+
+
+// The deal's stages in order, each with the included documents placed there (19 Oct). The backend places each document by
+// the stage bar's own rule and sends it as `stage`; a stage with no documents keeps its place with an empty list.
+export function groupByStage(stages, documents) {
+  return (stages ?? []).map((s) => ({
+    ...s,
+    docs: (documents ?? []).filter((d) => d.included !== false && d.stage === s.key)
+      .sort((a, b) => (a.date ?? "").localeCompare(b.date ?? "") || a.source_key.localeCompare(b.source_key)),
+  }));
 }

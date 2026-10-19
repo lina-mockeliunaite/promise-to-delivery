@@ -168,12 +168,14 @@ def documents(conn, slug: str) -> list:
     notes = adapters.notes_for(conn, [r[1] for r in rows])
     import handover  # 16 Oct: where each document lives (a Drive link), set by a person; never generated
     links = handover.links(conn, did)
+    import deal_stage  # 19 Oct: the stage each included document sits at, by the stage bar's own rule; read-only
+    stage_of = deal_stage.place_documents(deal_stage._docs(conn, did))
     for key, vid, version_no, doc_type, date, included, adapter_name, filename in rows:
         out.append({
             "source_key": key, "name": labels[key], "source_version_id": vid, "version": version_no,
             "format": adapters.format_label(adapter_name, filename), "problems": notes.get(vid, []),
             "doc_type": doc_type, "doc_type_label": DOC_TYPE_LABELS.get(doc_type, doc_type), "date": date,
-            "included": bool(included), "link": links.get(key),
+            "included": bool(included), "link": links.get(key), "stage": stage_of.get(key),
             "role": ("Read for promises" if doc_type in config.EXTRACTABLE_DOC_TYPES
                      else "Approval evidence" if doc_type == "pricing_services_note" else "Reference only"),
         })
@@ -279,8 +281,17 @@ def conflict_term(conn, did: int, criteria: dict):
     return None
 
 
+def commitment_titles(slug: str) -> dict:
+    """Owner-confirmed plain titles from the deal profile, keyed by the stable commitment key (19 Oct). Never generated;
+    read at display time only, so they are not part of any hash. Deals without a profile have none."""
+    import deal_stage
+    titles = deal_stage.load_profile(slug).get("titles")
+    return {str(k): str(v) for k, v in titles.items() if str(v).strip()} if isinstance(titles, dict) else {}
+
+
 def register(conn, slug: str) -> dict:
     did = ledger_fixes.deal_id(conn, slug)
+    titles = commitment_titles(slug)
     name = conn.execute("SELECT display_name FROM deals WHERE id = ?", (did,)).fetchone()[0]
     fresh = ledger_fixes.freshness(conn, did)
     names = document_labels(conn, did)
@@ -384,7 +395,7 @@ def register(conn, slug: str) -> dict:
                 elif auth == "no_approval_evidence":
                     auth = "not_assessed"
         commitments.append({
-            "id": cid, "name": display_name(cname, statements), "note": note, "status": shown_status, "language": language,
+            "id": cid, "name": display_name(cname, statements), "display_name": titles.get(key), "note": note, "status": shown_status, "language": language,
             "check_note": CHECK_NOTE if shown_status != status else "",
             "authorisation": (V2_AUTH_LABELS if is_v2 else AUTH_LABELS).get(auth, AUTH_LABELS.get(auth, auth)),
             "authorisation_evidence": shown_auth or plain(auth_ev, names),

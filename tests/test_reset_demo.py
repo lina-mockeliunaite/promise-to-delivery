@@ -131,6 +131,69 @@ class TestReset(ResetCase):
         self.assertFalse((config.DATA_DIR / "ledger.sqlite.resetting").exists())
 
 
+class TestTitlesSurviveReset(ResetCase):
+    """19 Oct: plain titles are keyed by commitment key, so the keys must be the same after every reset."""
+
+    def test_alder_keeps_the_same_three_commitment_keys_and_titles_after_reset(self):
+        import deal_stage
+        import handover
+        import ledger
+        import workspace
+        titles = deal_stage.load_profile("alder_bank")["titles"]
+        self.assertEqual(len(titles), 3)
+        for _ in range(2):  # a second reset must not move the keys either
+            reset_demo.reset(self.db)
+            conn = ledger.connect(self.db)
+            self.addCleanup(conn.close)
+            did = ledger_fixes.deal_id(conn, "alder_bank")
+            keys = {k for (k,) in conn.execute("SELECT commitment_key FROM commitments WHERE deal_id = ?", (did,))}
+            self.assertEqual(keys, set(titles))
+            shown = {c["name"]: c["display_name"] for c in workspace.overview(conn, "alder_bank")["commitments"]}
+            self.assertEqual(sorted(shown.values()), sorted(titles.values()))
+            self.assertEqual(handover._display_names(conn, did, "alder_bank"), {n: t for n, t in shown.items()})
+
+    def test_other_deals_have_no_titles(self):
+        import ledger
+        import workspace
+        reset_demo.reset(self.db)
+        conn = ledger.connect(self.db)
+        self.addCleanup(conn.close)
+        self.assertEqual(workspace.commitment_titles("harbour_bank"), {})
+        self.assertTrue(all(c["display_name"] is None for c in workspace.overview(conn, "harbour_bank")["commitments"]))
+
+
+class TestDocumentStages(ResetCase):
+    """19 Oct: each document returned by the documents API carries the stage the stage bar places it at."""
+
+    def test_alder_documents_carry_the_stage_the_stage_bar_uses(self):
+        import ledger
+        import workspace
+        reset_demo.reset(self.db)
+        conn = ledger.connect(self.db)
+        self.addCleanup(conn.close)
+        stages = {d["source_key"]: d["stage"] for d in workspace.documents(conn, "alder_bank")}
+        self.assertEqual(stages, {"AB-01": "discovery", "AB-02": "evaluation", "AB-03": "proposal", "AB-04": "proposal",
+                                  "AB-05": "proposal", "AB-06": "contracting", "AB-07": "contracting", "AB-08": "contracting"})
+        bar = {s["key"]: len(s["documents"]) for s in workspace.overview(conn, "alder_bank")["stage"]["stages"]}
+        for key in bar:  # the sidebar and the stage bar's own counts agree, including a stage with none (shortlisted)
+            self.assertEqual(sum(1 for v in stages.values() if v == key), bar[key], key)
+
+    def test_a_document_taken_out_has_no_stage_and_nothing_else_changes(self):
+        import ledger
+        import ledger_fixes
+        import workspace
+        reset_demo.reset(self.db)
+        conn = ledger.connect(self.db)
+        self.addCleanup(conn.close)
+        before = {d["source_key"]: d["stage"] for d in workspace.documents(conn, "alder_bank")}
+        did = ledger_fixes.deal_id(conn, "alder_bank")
+        conn.execute("UPDATE source_versions SET included = 0 WHERE source_id = (SELECT id FROM sources WHERE deal_id = ?"
+                     " AND source_key = 'AB-08')", (did,))
+        after = {d["source_key"]: d["stage"] for d in workspace.documents(conn, "alder_bank")}
+        self.assertIsNone(after["AB-08"])
+        self.assertEqual({k: v for k, v in after.items() if k != "AB-08"}, {k: v for k, v in before.items() if k != "AB-08"})
+
+
 class TestBoundaries(ResetCase):
     def test_it_never_writes_to_data(self):
         global _active

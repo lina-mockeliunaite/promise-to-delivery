@@ -1,7 +1,7 @@
 // Run with: node --test frontend/tests/
 import test from "node:test";
 import assert from "node:assert/strict";
-import { counts, gapText, initials, metrics, page, relativeTime, visibleDeals } from "../src/deals.js";
+import { FILTERS, SORTS, counts, initials, page, relativeTime, visibleDeals } from "../src/deals.js";
 
 const deal = (name, o) => ({ deal: name.toLowerCase(), name, owner: null, stage_label: "Contracting", open_gaps: 0,
   in_handover: true, handover_complete: false, last_updated: "2026-10-16T01:00:00Z", ...o });
@@ -15,15 +15,6 @@ const deals = [
 
 test("filters count only what they say", () => {
   assert.deepEqual(counts(deals), { handover: 3, open: 2, complete: 1, earlier: 1 });
-});
-
-test("the tiles add up from the rows and leave frozen deals out of open gaps", () => {
-  const m = metrics(deals);
-  assert.equal(m.inHandover.value, 3);
-  assert.equal(m.openGaps.value, 4);
-  assert.equal(m.openGaps.deals, 2);
-  assert.equal(m.withGaps.pct, 100);
-  assert.equal(m.complete.value, 1);
 });
 
 test("search matches name, owner or stage; sort by last updated puts the newest first", () => {
@@ -53,11 +44,13 @@ test("times read as people say them", () => {
   assert.equal(relativeTime(null, now), "Not yet");
 });
 
-test("initials and gap wording", () => {
+test("the filter and sort say 'need attention', not 'open gaps'", () => {
+  assert.equal(FILTERS.find((f) => f.key === "open").label, "Need attention");
+  assert.equal(SORTS.find((x) => x.key === "gaps").label, "Need attention");
+});
+
+test("initials", () => {
   assert.equal(initials("Maya Tan"), "MT");
   assert.equal(initials("Sam (delivery)"), "S");
   assert.equal(initials(""), "?");
-  assert.equal(gapText(0), "No open gaps");
-  assert.equal(gapText(1), "1 open gap");
-  assert.equal(gapText(3), "3 open gaps");
 });

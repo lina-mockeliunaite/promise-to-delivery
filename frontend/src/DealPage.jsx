@@ -1,10 +1,13 @@
-// Deal page (16 Oct; design from Google Stitch, screen 2, adapted to real data). Visibility, not workflow:
+// Deal page (16 Oct; simplified 19 Oct). Visibility, not workflow:
 // what the customer was told, what the contract says, what the check found, who has seen it, both handover notes.
 // The only way a gap closes is a new document version that the check confirms; notes and "seen" never close anything.
 import { useCallback, useEffect, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime, uploadKind } from "./format.js";
-import { cleanReason, firstDocDate, sourcesLine, suggestFix, useName, whatChanged } from "./dealpage.js";
+import {
+  CLOSING_ONE_LINE, STATUS_CHIP, cleanReason, countsLine, extractedAs, findingDetail, firstPromised, groupByStage,
+  mismatchLine, missingForHandover, recordedBy, rowTitle, sentence, sourcesLine, stageLine, suggestFix, useName, whatChanged,
+} from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
 import CatalogueModal from "./CatalogueModal.jsx";
 import "./DealPage.css";
@@ -37,59 +40,35 @@ function readUpload(file) {
   });
 }
 
-function StageBar({ stage }) {
-  if (!stage?.current) return null;
-  return (
-    <div className="dp-stages">
-      {stage.stages.map((s, n) => (
-        <div key={s.key} className={`dp-stage is-${s.state}`}>
-          <div className="dp-stage-track" />
-          <span className="dp-stage-name">
-            {n + 1}. {s.label}
-            {s.state === "current" && <span className="dp-pulse" aria-hidden="true" />}
-          </span>
-          <span className="dp-stage-sub">
-            {s.state === "current" && s.note ? s.note
-              : s.documents.length ? `${s.documents.length} ${s.documents.length === 1 ? "document" : "documents"} · ${fmtDate(firstDocDate(s)).replace(/ \d{4}$/, "")}`
-              : s.state === "todo" ? (s.note || "Not yet") : "No documents"}
-          </span>
-          {s.gaps_started > 0 && <span className="dp-stage-gaps">{s.gaps_started} {s.gaps_started === 1 ? "gap" : "gaps"} started here</span>}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// One row per promise in a single list (16 Oct): collapsed it is the title and a status, open in amber, resolved in
-// green. Clicking opens the detail. Open rows carry the actions; resolved rows say how they were resolved.
-const STATUS = {
-  open: { tone: "amber", label: (n) => `Open · ${n} ${n === 1 ? "gap" : "gaps"}` },
-  noted: { tone: "note", label: () => "Resolved by note", title: "Settled by a named person without a document. Not in the documents; reopens if the documents change." },
-  closed: { tone: "green", label: () => "Closed by documents", title: "The current documents no longer show the gap." },
-};
-
-function PromiseRow({ c, status, frozen, onSeen, canAct, onCatalogue, onResolve, me = "", expanded = false, onToggle }) {
+// One row per commitment in a single list: collapsed it tells the story (title, what does not line up, where it was first
+// promised, status); open shows the three columns. Only updated documents close a commitment; notes and "seen" never do.
+function PromiseRow({ c, status, onSeen, onCatalogue, onAct, me = "", expanded = false, onToggle }) {
   const unresolved = c.issues.filter((i) => i.state !== "Resolved");
   const closedIssues = c.issues.filter((i) => i.state === "Resolved");
   const shown = status === "closed" ? closedIssues : unresolved;
   const seen = [...new Map(unresolved.flatMap((i) => i.seen || []).map((s) => [s.by, s])).values()];
   const detail = (c.presence_detail || "").startsWith("Not found anywhere") ? c.presence_detail : "";
-  const st = STATUS[status];
+  const st = STATUS_CHIP[status];
   const noteRes = unresolved.find((i) => i.note_resolution)?.note_resolution;
+  const mismatch = status === "closed" ? "" : mismatchLine(unresolved, c.contract);
+  const first = firstPromised(c.statements);
   return (
     <li className={`dp-prow is-${status} ${expanded ? "is-open" : ""}`}>
       <div className="dp-prow-head" onClick={onToggle} role="button" tabIndex={0} aria-expanded={expanded}
            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onToggle())}>
         <span className={`dp-chevron ${expanded ? "is-open" : ""}`} aria-hidden="true">›</span>
-        <span className="dp-prow-title">{c.name}</span>
+        <span className="dp-prow-main">
+          <span className="dp-prow-title">{rowTitle(c)}</span>
+          {mismatch && <span className="dp-prow-line">{mismatch}</span>}
+          {first && <span className="dp-prow-first">{first}</span>}
+        </span>
         <span className={`dp-chip dp-chip-${st.tone}`} title={st.title}>
           {status === "open" ? <span className="dp-dot" /> : <Icon d={I.check} size={12} />}
-          {st.label(unresolved.length)}
+          {st.label}
         </span>
       </div>
       {expanded && (
         <div className="dp-prow-body">
-          <span className="dp-kicker">{shown.map((i) => i.finding).join(" · ")}</span>
           <div className="dp-three">
             <div className="dp-fact">
               <span className="dp-fact-label">Customer was told</span>
@@ -104,7 +83,10 @@ function PromiseRow({ c, status, frozen, onSeen, canAct, onCatalogue, onResolve,
             <div className="dp-fact dp-fact-found">
               <span className="dp-fact-label">{status === "closed" ? "What was found, and what closed it" : "What we found"}</span>
               {shown.map((i) => (
-                <p key={i.id} className="dp-finding"><strong>{i.finding}.</strong> {status === "closed" ? (i.resolved_by?.text || "Closed in the documents") : cleanReason(i.reason)}</p>
+                <p key={i.id} className="dp-finding">
+                  <strong>{status === "closed" ? `${i.finding}.` : sentence(findingDetail(i, c.contract))}</strong>{" "}
+                  {status === "closed" ? (i.resolved_by?.text || "Closed in the documents") : cleanReason(i.reason)}
+                </p>
               ))}
               {[...new Set(shown.map((i) => i.catalogue_path).filter(Boolean))].map((p) => (
                 <button key={p} type="button" className="cat-open" onClick={() => onCatalogue(p)} title="Open the product catalogue at this entry">
@@ -116,6 +98,7 @@ function PromiseRow({ c, status, frozen, onSeen, canAct, onCatalogue, onResolve,
               )}
             </div>
           </div>
+          {extractedAs(c) && <span className="dp-fact-src">Extracted as: {c.name}</span>}
           {status !== "closed" && closedIssues.length > 0 && (
             <div className="dp-decision is-done">
               <span className="dp-kicker">Already closed by the documents</span>
@@ -124,21 +107,24 @@ function PromiseRow({ c, status, frozen, onSeen, canAct, onCatalogue, onResolve,
           )}
           {status === "noted" && noteRes && (
             <div className="dp-decision is-done is-note">
-              <span className="dp-kicker">Resolved by a note · not in the documents · reopens if the documents change</span>
-              <span><strong>{noteRes.by}</strong> · {fmtDateTime(noteRes.at)}: “{noteRes.reason}”</span>
+              <span className="dp-kicker">Addressed by note · not in the documents · reopens if the documents change</span>
+              <span>“{noteRes.reason}”</span>
+              <span className="dp-faint dp-small">{recordedBy(noteRes.by, noteRes.at, fmtDate)}</span>
             </div>
           )}
           {status === "open" && noteRes && !noteRes.current && (
             <div className="dp-decision is-stale">
-              <span className="dp-kicker">Was resolved by a note · reopened because the documents changed since</span>
-              <span><strong>{noteRes.by}:</strong> {noteRes.reason} <span className="dp-faint">· use Resolve… to re-confirm</span></span>
+              <span className="dp-kicker">Was addressed by a note · reopened because the documents changed since</span>
+              <span>“{noteRes.reason}”</span>
+              <span className="dp-faint dp-small">{recordedBy(noteRes.by, noteRes.at, fmtDate)} · use Add updated document or Record a note to re-confirm</span>
             </div>
           )}
           {status === "open" && [...new Map(unresolved.filter((i) => i.decision && i.decision.status !== "none")
             .map((i) => [`${i.decision.by}|${i.decision.reason}`, i.decision])).values()].map((d) => (
             <div key={`${d.by}|${d.reason}`} className={`dp-decision ${d.status === "reconfirm" ? "is-stale" : ""}`}>
-              <span className="dp-kicker">{d.status === "reconfirm" ? "Note needs re-confirming: the documents changed since" : "Note · gap still open"}</span>
-              <span><strong>{d.by}:</strong> {d.reason}</span>
+              <span className="dp-kicker">{d.status === "reconfirm" ? "Note needs re-confirming: the documents changed since" : "Note · still needs attention"}</span>
+              <span>“{d.reason}”</span>
+              <span className="dp-faint dp-small">{recordedBy(d.by, d.at, fmtDate)}</span>
             </div>
           ))}
           {status === "open" && (
@@ -146,23 +132,18 @@ function PromiseRow({ c, status, frozen, onSeen, canAct, onCatalogue, onResolve,
               <span>
                 <span className="dp-faint">Seen by:</span>{" "}
                 {seen.length ? seen.map((s) => `${s.by} (${fmtDate(s.at).replace(/ \d{4}$/, "")})`).join(" · ") : <span className="dp-faint">nobody yet</span>}
+                {" "}
+                {seen.some((x) => x.by === me.trim()) ? (
+                  <span className="dp-seen-me"><Icon d={I.check} size={13} /> Seen by you</span>
+                ) : (
+                  <button type="button" className="dp-link-btn dp-quiet" onClick={() => onSeen(unresolved)}
+                          title="Records that you have looked at this. It does not close or change anything.">Mark as seen</button>
+                )}
               </span>
-              {!frozen && (
-                <span className="dp-row">
-                  {seen.some((x) => x.by === me.trim()) ? (
-                    <span className="dp-seen-me"><Icon d={I.check} size={13} /> Seen by you</span>
-                  ) : (
-                    <button type="button" className="dp-link-btn" disabled={!canAct} onClick={() => onSeen(unresolved)}
-                            title={canAct ? "Records that you have looked at this. It does not close the gap." : "Add your name at the top first"}>
-                      <Icon d={I.eye} size={14} /> Mark as seen
-                    </button>
-                  )}
-                  <button type="button" className="dp-btn dp-btn-dark dp-resolve" disabled={!canAct} onClick={() => onResolve(c)}
-                          title={canAct ? "Add a document that fixes it, or record a note" : "Add your name at the top first"}>
-                    Resolve…
-                  </button>
-                </span>
-              )}
+              <span className="dp-row">
+                <button type="button" className="dp-btn" onClick={() => onAct(c, "doc")}>Add updated document</button>
+                <button type="button" className="dp-btn" onClick={() => onAct(c, "note")}>Record a note</button>
+              </span>
             </footer>
           )}
         </div>
@@ -171,15 +152,29 @@ function PromiseRow({ c, status, frozen, onSeen, canAct, onCatalogue, onResolve,
   );
 }
 
-function NotePanel({ role, label, who, note, frozen, canAct, onSave }) {
+// Asks for a name only when one is needed and none is stored (19 Oct: no name box, no gate). Used inside forms.
+function NameField({ stored, draft, onDraft }) {
+  if (stored.trim()) return null;
+  return (
+    <label className="dp-name-field">
+      <span>Your name</span>
+      <input value={draft} onChange={(e) => onDraft(e.target.value)} placeholder="e.g. Sam (Delivery)" maxLength={120} required />
+    </label>
+  );
+}
+
+function NotePanel({ role, label, who, note, name, setName, onSave }) {
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState("");
+  const [draft, setDraft] = useState("");
   const [error, setError] = useState(null);
+  const author = (name || draft).trim();
   const save = async (e) => {
     e.preventDefault();
     setError(null);
     try {
-      await onSave(role, text);
+      await onSave(role, text, author);
+      if (!name.trim()) setName(author);
       setEditing(false);
     } catch (err) {
       setError(err.message);
@@ -197,9 +192,10 @@ function NotePanel({ role, label, who, note, frozen, canAct, onSave }) {
       {editing ? (
         <form onSubmit={save} className="dp-note-form">
           <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} maxLength={2000} autoFocus
-                    placeholder={role === "sales" ? "What Delivery should know: open gaps, side promises, people to talk to" : "What you accept, what you need before kick-off"} />
+                    placeholder={role === "sales" ? "What Delivery should know: commitments needing attention, side promises, people to talk to" : "What you accept, what you need before kick-off"} />
+          <NameField stored={name} draft={draft} onDraft={setDraft} />
           <div className="dp-row">
-            <button type="submit" className="dp-btn dp-btn-dark" disabled={!text.trim()}>Save note</button>
+            <button type="submit" className="dp-btn dp-btn-dark" disabled={!text.trim() || !author}>Save note</button>
             <button type="button" className="dp-btn" onClick={() => setEditing(false)}>Cancel</button>
             {error && <span className="dp-error">{error}</span>}
           </div>
@@ -208,10 +204,9 @@ function NotePanel({ role, label, who, note, frozen, canAct, onSave }) {
         <p className={`dp-note-text ${note ? "" : "is-empty"}`}>{note ? `“${note.note}”` : "Not written yet."}</p>
       )}
       <div className="dp-note-foot">
-        <span>{note ? `Logged ${fmtDateTime(note.at)}` : ""}</span>
-        {!frozen && !editing && (
-          <button type="button" className="dp-link-btn dp-brand" disabled={!canAct}
-                  onClick={() => { setText(note?.note ?? ""); setEditing(true); }}>
+        <span>{note ? recordedBy(note.by, note.at, fmtDateTime) : ""}</span>
+        {!editing && (
+          <button type="button" className="dp-link-btn dp-brand" onClick={() => { setText(note?.note ?? ""); setEditing(true); }}>
             {note ? "Update note" : "Add note"}
           </button>
         )}
@@ -249,7 +244,7 @@ function ChangePanel({ change, onClose }) {
       )}
       {stillOpen.length > 0 && (
         <div className="dp-change-block is-open">
-          <span className="dp-change-label">Still open on the same promise</span>
+          <span className="dp-change-label">Still needs attention on the same commitment</span>
           {stillOpen.map((x) => <div key={`${x.promise}|${x.finding}`} className="dp-change-item"><strong>{x.promise}: {x.finding}</strong></div>)}
         </div>
       )}
@@ -261,7 +256,7 @@ function ChangePanel({ change, onClose }) {
       )}
       <p className="dp-small dp-change-foot">
         {nothing ? "Nothing closed and nothing new: the document did not change any gap. " : "Nothing else changed. "}
-        {openPromises} {openPromises === 1 ? "promise still has" : "promises still have"} open gaps.
+        {openPromises} {openPromises === 1 ? "commitment still needs" : "commitments still need"} attention.
       </p>
     </section>
   );
@@ -286,20 +281,22 @@ function Modal({ title, sub, onClose, children }) {
   );
 }
 
-function ResolveModal({ deal, c, documents, docTypes, name, canDecide, onDocDone, onNoted, onClose }) {
+function ActionModal({ deal, c, mode, documents, docTypes, name, setName, canDecide, freshnessLabel, message, checking, onCheckAgain, onDocDone, onNoted, onClose }) {
   const open = c.issues.filter((i) => i.state !== "Resolved");
-  const [tab, setTab] = useState("doc");
-  const [mode, setMode] = useState("resolve"); // resolve: settled without a document; keep: on record, gap stays open
+  const [how, setHow] = useState("keep"); // keep: stays Needs attention, note shown in the row; addressed: settled without a document
   const [note, setNote] = useState("");
+  const [draft, setDraft] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  const author = (name || draft).trim();
   const saveNote = async (e) => {
     e.preventDefault();
     setBusy(true);
     setError(null);
     try {
-      if (mode === "resolve") await api.resolveByNote(deal, { issue_ids: open.map((i) => i.id), resolved_by: name, reason: note });
-      else for (const i of open) await api.recordDecision(deal, { kind: "okay_to_proceed", issue_id: i.id, by: name, reason: note });
+      if (how === "addressed") await api.resolveByNote(deal, { issue_ids: open.map((i) => i.id), resolved_by: author, reason: note });
+      else for (const i of open) await api.recordDecision(deal, { kind: "okay_to_proceed", issue_id: i.id, by: author, reason: note });
+      if (!name.trim()) setName(author);
       onNoted();
     } catch (err) {
       setError(err.message);
@@ -307,34 +304,43 @@ function ResolveModal({ deal, c, documents, docTypes, name, canDecide, onDocDone
       setBusy(false);
     }
   };
+  const blocked = how === "keep" && !canDecide;
   return (
-    <Modal title={c.name} sub={`Open: ${open.map((i) => i.finding).join(" · ")}`} onClose={onClose}>
-      <div className="dp-tabs" role="tablist">
-        <button type="button" role="tab" aria-selected={tab === "doc"} className={tab === "doc" ? "is-on" : ""} onClick={() => setTab("doc")}>Add a document</button>
-        <button type="button" role="tab" aria-selected={tab === "note"} className={tab === "note" ? "is-on" : ""} onClick={() => setTab("note")}>Record a note</button>
-      </div>
-      {tab === "doc" ? (
-        <AddDocument deal={deal} documents={documents} docTypes={docTypes} preset={suggestFix(open, documents)} onDone={onDocDone} onClose={onClose} />
+    <Modal title={rowTitle(c)} sub={`Needs attention: ${mismatchLine(open, c.contract)}`} onClose={onClose}>
+      {mode === "doc" ? (
+        <>
+          <p className="dp-faint dp-small dp-pop-line">{CLOSING_ONE_LINE}</p>
+          <AddDocument deal={deal} documents={documents} docTypes={docTypes} preset={suggestFix(open, documents)} onDone={onDocDone} onClose={onClose} />
+        </>
       ) : (
         <form className="dp-add" onSubmit={saveNote}>
+          <p className="dp-faint dp-small dp-pop-line">{CLOSING_ONE_LINE}</p>
           <div className="dp-choice">
-            <label className={mode === "resolve" ? "is-on" : ""}>
-              <input type="radio" name="mode" checked={mode === "resolve"} onChange={() => setMode("resolve")} />
-              <span><strong>Resolve it with this note.</strong> No document is needed, for example "the customer agreed AWS on the 14 Oct call".
-                It moves to "Resolved by a note", marked <em>not in the documents</em>, and reopens if the documents change.</span>
+            <label className={how === "keep" ? "is-on" : ""}>
+              <input type="radio" name="how" checked={how === "keep"} onChange={() => setHow("keep")} />
+              <span><strong>Keep it open, add context.</strong> It stays under Needs attention with your note shown inside the row,
+                for example "Delivery will raise it at kick-off".</span>
             </label>
-            <label className={mode === "keep" ? "is-on" : ""}>
-              <input type="radio" name="mode" checked={mode === "keep"} onChange={() => setMode("keep")} />
-              <span><strong>Keep it open, note for the record.</strong> For example "Delivery will raise it at kick-off".</span>
+            <label className={how === "addressed" ? "is-on" : ""}>
+              <input type="radio" name="how" checked={how === "addressed"} onChange={() => setHow("addressed")} />
+              <span><strong>Mark as addressed by note.</strong> The documents still differ. It moves to "Addressed by note", stays in
+                the handover record, and reopens if the documents change.</span>
             </label>
           </div>
           <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={4} maxLength={2000} autoFocus
                     placeholder="What was agreed, and who will act on it" />
-          {mode === "keep" && !canDecide && <p className="dp-error">The deal needs checking again before a note can be recorded. Close this and use "Check again".</p>}
+          <NameField stored={name} draft={draft} onDraft={setDraft} />
+          {blocked && (
+            <div className="dp-warn" role="alert">
+              <span>A note can be kept on a gap only while the check is current ({freshnessLabel}). Check the deal again first.</span>
+              <span className="dp-row">
+                <button type="button" className="dp-btn" disabled={checking} onClick={onCheckAgain}>{checking ? "Checking…" : "Check again"}</button>
+                {message?.kind === "error" && <span className="dp-error">{message.text}</span>}
+              </span>
+            </div>
+          )}
           <div className="dp-row">
-            <button type="submit" className="dp-btn dp-btn-dark" disabled={busy || !note.trim() || !name.trim() || (mode === "keep" && !canDecide)}>
-              {busy ? "Saving…" : mode === "resolve" ? `Resolve as ${name || "…"}` : `Record note as ${name || "…"}`}
-            </button>
+            <button type="submit" className="dp-btn dp-btn-dark" disabled={busy || !note.trim() || !author || blocked}>{busy ? "Saving…" : "Save note"}</button>
             <button type="button" className="dp-btn" onClick={onClose}>Cancel</button>
             {error && <span className="dp-error" role="alert">{error}</span>}
           </div>
@@ -344,15 +350,47 @@ function ResolveModal({ deal, c, documents, docTypes, name, canDecide, onDocDone
   );
 }
 
-function SignatureForm({ canAct, onSave }) {
+function NamePrompt({ initial, onSave, onClose }) {
+  const [value, setValue] = useState(initial);
+  return (
+    <Modal title="Your name" sub="Recorded with what you add. Remembered in this browser only." onClose={onClose}>
+      <form className="dp-add" onSubmit={(e) => { e.preventDefault(); onSave(value.trim()); }}>
+        <input value={value} onChange={(e) => setValue(e.target.value)} placeholder="e.g. Sam (Delivery)" maxLength={120} autoFocus />
+        <div className="dp-row">
+          <button type="submit" className="dp-btn dp-btn-dark" disabled={!value.trim()}>Continue</button>
+          <button type="button" className="dp-btn" onClick={onClose}>Cancel</button>
+        </div>
+      </form>
+    </Modal>
+  );
+}
+
+function ClosingHelp({ onClose }) {
+  return (
+    <Modal title="How closing works" onClose={onClose}>
+      <ol className="dp-how-list">
+        <li>Someone adds a document: a new version of one already here, or a new one.</li>
+        <li>The check runs again on all the deal's documents.</li>
+        <li>A commitment closes only when the paperwork now backs it, in one of three ways: the contract or SOW now says it, a named approval is recorded, or the promise itself is changed or withdrawn. The reason is shown.</li>
+      </ol>
+      <p className="dp-faint dp-small">Without a document, a named person can record a note. Marked as addressed, it is listed apart as "Addressed by note", marked not in the documents, and reopens if the documents change.</p>
+      <p className="dp-faint dp-small">A new document can also uncover a new gap. Removing a document never closes one. "Mark as seen" and notes kept open never close anything.</p>
+    </Modal>
+  );
+}
+
+function SignatureForm({ name, setName, onSave }) {
   const [on, setOn] = useState(new Date().toISOString().slice(0, 10));
+  const [draft, setDraft] = useState("");
+  const author = (name || draft).trim();
   return (
     <div className="dp-sign">
       <span className="dp-small"><strong className="dp-ink">Contract signed?</strong> Record the date. It is shown as recorded by you, not read from the documents.</span>
       <span className="dp-row">
         <input type="date" value={on} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setOn(e.target.value)} />
-        <button type="button" className="dp-btn" disabled={!canAct || !on} onClick={() => onSave(on)}
-                title={canAct ? "" : "Add your name at the top first"}>Record signature</button>
+        <NameField stored={name} draft={draft} onDraft={setDraft} />
+        <button type="button" className="dp-btn" disabled={!on || !author}
+                onClick={async () => { if (!name.trim()) setName(author); await onSave(on, author); }}>Record signing date</button>
       </span>
     </div>
   );
@@ -426,7 +464,8 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
   );
 }
 
-function DocumentList({ deal, documents, frozen, canAct, name, onChanged, onView, onAdd }) {
+function DocumentList({ deal, stages, documents, name, setName, onChanged, onView, onAdd }) {
+  const [draft, setDraft] = useState("");
   const [linking, setLinking] = useState(null);
   const [url, setUrl] = useState("");
   const [error, setError] = useState(null);
@@ -434,59 +473,71 @@ function DocumentList({ deal, documents, frozen, canAct, name, onChanged, onView
     e.preventDefault();
     setError(null);
     try {
-      await api.setDocumentLink(deal, { source_key: linking, url, set_by: name });
+      await api.setDocumentLink(deal, { source_key: linking, url, set_by: (name || draft).trim() });
+      if (!name.trim()) setName(draft.trim());
       setLinking(null);
       onChanged();
     } catch (err) {
       setError(err.message);
     }
   };
+  const doc = (d) => (
+    <li key={d.source_key} className={d.doc_type.startsWith("draft_") ? "is-contract" : ""}>
+      <div className="dp-doc-row">
+        {d.link ? (
+          <a href={d.link} target="_blank" rel="noopener noreferrer" className="dp-doc-name" title="Opens where the document lives">
+            {d.name}{d.version > 1 ? ` · v${d.version}` : ""} <Icon d={I.link} size={12} />
+          </a>
+        ) : (
+          <button type="button" className="dp-doc-name" onClick={() => onView(d)} title="Read the text the check used">
+            {d.name}{d.version > 1 ? ` · v${d.version}` : ""}
+          </button>
+        )}
+        <span className="dp-doc-meta">
+          <span className="dp-mono">{fmtDate(d.date).replace(/ \d{4}$/, "")}</span>
+          <button type="button" className={`dp-icon-btn ${d.link ? "is-set" : ""}`}
+                  onClick={() => { setLinking(linking === d.source_key ? null : d.source_key); setUrl(d.link ?? ""); }}
+                  title={d.link ? "Change the Drive link" : "Save a Drive link"} aria-label={d.link ? "Change the Drive link" : "Save a Drive link"}>
+            <Icon d={I.link} size={13} />
+          </button>
+        </span>
+      </div>
+      {linking === d.source_key && (
+        <form className="dp-link-form" onSubmit={saveLink}>
+          <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://drive.google.com/…" autoFocus />
+          <NameField stored={name} draft={draft} onDraft={setDraft} />
+          <button type="submit" className="dp-btn dp-btn-dark" disabled={!url.trim() || !(name || draft).trim()}>Save</button>
+          <button type="button" className="dp-btn" onClick={() => setLinking(null)}>Cancel</button>
+          {error && <span className="dp-error">{error}</span>}
+        </form>
+      )}
+    </li>
+  );
   return (
     <div className="dp-card dp-side">
       <div className="dp-side-head">
         <span className="dp-side-title"><Icon d={I.doc} /> Documents checked <span className="dp-count">{documents.length}</span></span>
-        {!frozen && (
-          <button type="button" className="dp-btn dp-btn-small" disabled={!canAct} onClick={onAdd}
-                  title={canAct ? "Add a document or a new version" : "Add your name at the top first"}>
-            <Icon d={I.plus} size={13} /> Add
-          </button>
-        )}
+        <button type="button" className="dp-btn dp-btn-small" onClick={onAdd} title="Add a document or a new version">
+          <Icon d={I.plus} size={13} /> Add
+        </button>
       </div>
-      <ul className="dp-docs">
-        {documents.map((d) => (
-          <li key={d.source_key} className={d.doc_type.startsWith("draft_") ? "is-contract" : ""}>
-            <div className="dp-doc-row">
-              {d.link ? (
-                <a href={d.link} target="_blank" rel="noopener noreferrer" className="dp-doc-name" title="Opens where the document lives">
-                  {d.name}{d.version > 1 ? ` · v${d.version}` : ""} <Icon d={I.link} size={12} />
-                </a>
-              ) : (
-                <button type="button" className="dp-doc-name" onClick={() => onView(d)} title="Read the text the check used">
-                  {d.name}{d.version > 1 ? ` · v${d.version}` : ""}
-                </button>
-              )}
-              <span className="dp-doc-meta">
-                <span className="dp-mono">{fmtDate(d.date).replace(/ \d{4}$/, "")}</span>
-                {!frozen && (
-                  <button type="button" className={`dp-icon-btn ${d.link ? "is-set" : ""}`} disabled={!canAct}
-                          onClick={() => { setLinking(linking === d.source_key ? null : d.source_key); setUrl(d.link ?? ""); }}
-                          title={d.link ? "Change the Drive link" : "Save a Drive link"} aria-label={d.link ? "Change the Drive link" : "Save a Drive link"}>
-                    <Icon d={I.link} size={13} />
-                  </button>
-                )}
+      <ol className="dp-timeline">
+        {groupByStage(stages, documents).map((s) => (
+          <li key={s.key} className={`dp-tl is-${s.state}`}>
+            <span className="dp-tl-dot" aria-hidden="true" />
+            <div className="dp-tl-body">
+              <span className="dp-tl-name">
+                {s.label}
+                {s.state === "current" && <span className="dp-tl-tag">Current</span>}
+                {s.state === "todo" && <span className="dp-tl-tag">Not yet</span>}
               </span>
+              {s.gaps_started > 0 && <span className="dp-stage-gaps">{s.gaps_started} {s.gaps_started === 1 ? "gap" : "gaps"} started here</span>}
+              {s.key === "contracting" && s.note && <span className="dp-tl-note">{s.note}</span>}
+              {s.docs.length > 0 && <ul className="dp-docs">{s.docs.map(doc)}</ul>}
             </div>
-            {linking === d.source_key && (
-              <form className="dp-link-form" onSubmit={saveLink}>
-                <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://drive.google.com/…" autoFocus />
-                <button type="submit" className="dp-btn dp-btn-dark" disabled={!url.trim()}>Save</button>
-                <button type="button" className="dp-btn" onClick={() => setLinking(null)}>Cancel</button>
-                {error && <span className="dp-error">{error}</span>}
-              </form>
-            )}
           </li>
         ))}
-      </ul>
+      </ol>
     </div>
   );
 }
@@ -521,11 +572,14 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   const [viewing, setViewing] = useState(null);
   const [name, setName] = useName();
   const [completing, setCompleting] = useState(false);
+  const [completeDraft, setCompleteDraft] = useState("");
   const [catFocus, setCatFocus] = useState(null); // null = closed, "" = open unfocused, "CAP-…/AU" = open at an entry
   const [checking, setChecking] = useState(false);
   const [change, setChange] = useState(null); // the "What changed" panel after a document or a recheck
-  const [resolving, setResolving] = useState(null); // the promise whose Resolve pop-up is open
-  const [expanded, setExpanded] = useState(() => new Set()); // gap cards shown in full; collapsed by default
+  const [acting, setActing] = useState(null); // { c, mode }: the commitment whose "Add updated document" / "Record a note" dialog is open
+  const [askName, setAskName] = useState(null); // { fn, initial }: the name prompt, only for actions that have no form of their own
+  const [help, setHelp] = useState(false);
+  const [expanded, setExpanded] = useState(() => new Set()); // rows shown in full; collapsed by default
   const toggleCard = (id) => setExpanded((prev) => { const n = new Set(prev); n.has(id) ? n.delete(id) : n.add(id); return n; });
 
   const load = useCallback(() => {
@@ -546,10 +600,20 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
       setMessage({ kind: "error", text: err.message });
     }
   };
+  // Runs fn with the stored name, asking for one first if there is none. Nothing is disabled for want of a name.
+  const withName = (fn) => (name.trim() ? fn(name.trim()) : setAskName({ fn, initial: "" }));
+
+  const checkAgain = () => {
+    setChecking(true);
+    return act(async () => {
+      const r = await api.reviewDeal(deal);
+      setMessage({ kind: "ok", text: `Checked again${r.review?.model_calls ? "" : " with no model call"}. Findings are current.` });
+    }).finally(() => setChecking(false));
+  };
 
   const docDone = async (review, doc) => {
     setAdding(false);
-    setResolving(null);
+    setActing(null);
     setMessage(null);
     const after = await api.fetchRegister(deal);
     setChange({ ...whatChanged(reg, after), doc, modelCalls: review.model_calls });
@@ -561,13 +625,11 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   if (error) return <div className="dp"><p className="dp-error">{error}</p></div>;
   if (!reg || !docs) return <div className="dp"><p className="dp-faint">Loading…</p></div>;
 
-  // Once the handover is complete the page shows the frozen record, read from the saved snapshot (screen 3).
+  // Once the handover is complete the page shows the frozen record, read from the saved snapshot.
   if (reg.handover.complete) return <FrozenRecord deal={deal} onBack={onBack} />;
-  const frozen = false;
-  const canAct = !!name.trim();
-  const openRows = reg.open_rows.map((id) => reg.commitments.find((c) => c.id === id));
-  // One list: open promises first (most gaps first), then resolved ones; a promise keeps its row when it is resolved.
   const byId = (id) => reg.commitments.find((c) => c.id === id);
+  const openRows = reg.open_rows.map(byId);
+  // One list: those needing attention first (most gaps first), then those addressed by note, then closed by the documents.
   const closedIds = [...new Set(reg.resolved_findings.map((r) => r.commitment_id))]
     .filter((id) => !reg.open_rows.includes(id) && !(reg.noted_rows || []).includes(id));
   const promiseRows = [
@@ -575,29 +637,25 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
     ...(reg.noted_rows || []).map((id) => ({ c: byId(id), status: "noted" })),
     ...closedIds.map((id) => ({ c: byId(id), status: "closed" })),
   ].filter((r) => r.c);
-  const resolvedCount = promiseRows.length - openRows.length;
   const notes = reg.handover.notes;
-  const bothNotes = notes.sales && notes.delivery;
   const STAGE_ORDER = ["discovery", "evaluation", "proposal", "shortlisted", "contracting", "signed", "handover"];
   const isSigned = STAGE_ORDER.indexOf(reg.stage.current) >= STAGE_ORDER.indexOf("signed");
   const signed = reg.handover.signature;
   const included = docs.documents.filter((d) => d.included);
+  const missing = missingForHandover({ isSigned, notes });
+  const completer = (name || completeDraft).trim();
 
   return (
     <div className="dp">
       <div className="dp-topbar">
         <button type="button" className="dp-back" onClick={onBack}><Icon d={I.back} /> All deals</button>
-        <label className="dp-me">
-          <span>Your name</span>
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Sam (Delivery)" maxLength={120} />
-        </label>
+        {name.trim() && (
+          <span className="dp-me">
+            Recording as <strong>{name.trim()}</strong> ·{" "}
+            <button type="button" className="dp-link-btn dp-brand" onClick={() => setAskName({ fn: null, initial: name })}>change</button>
+          </span>
+        )}
       </div>
-
-      {frozen && (
-        <div className="dp-frozen">
-          <Icon d={I.lock} /> Handover complete · frozen on {fmtDateTime(reg.handover.completed_at)} by {reg.handover.completed_by}. This record no longer changes.
-        </div>
-      )}
 
       <div className="dp-grid">
         <main className="dp-main">
@@ -606,53 +664,34 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
               <div>
                 <div className="dp-title-row">
                   <h1>{reg.name}</h1>
-                  <span className="dp-chip dp-chip-green">{frozen ? "Handover snapshot" : "Live deal view"}</span>
                   <span className="dp-chip dp-chip-grey">{reg.stage.current_label}</span>
                   {signed && <span className="dp-chip dp-chip-green" title="Recorded by a person, not read from the documents">Signed {fmtDate(signed.signed_on)} · recorded by {signed.recorded_by}</span>}
                 </div>
                 <div className="dp-meta">
                   {reg.brief?.go_live && <span className="dp-meta-strong"><Icon d={I.calendar} /> Target go-live: {fmtDate(reg.brief.go_live)}</span>}
-                  <span className="dp-mono">Last checked {fmtDateTime(reg.freshness.finished_at)}</span>
+                  <span className="dp-mono">Checked {fmtDate(reg.freshness.finished_at)} against {included.length} {included.length === 1 ? "document" : "documents"}</span>
                   {reg.freshness_label !== "Up to date" && <span className="dp-chip dp-chip-amber">{reg.freshness_label}</span>}
                   {reg.freshness.state === "Review out of date" && (
-                    <button type="button" className="dp-link-btn dp-brand" disabled={checking}
-                            onClick={() => { setChecking(true); act(async () => {
-                              const r = await api.reviewDeal(deal);
-                              setMessage({ kind: "ok", text: `Checked again${r.review?.model_calls ? "" : " with no model call"}. Findings are current.` });
-                            }).finally(() => setChecking(false)); }}>
+                    <button type="button" className="dp-link-btn dp-brand" disabled={checking} onClick={checkAgain}>
                       {checking ? "Checking…" : "Check again"}
                     </button>
                   )}
                 </div>
+                {stageLine(reg.stage) && <div className="dp-stageline">{stageLine(reg.stage)}</div>}
               </div>
               <div className="dp-row">
                 <button type="button" className="dp-btn" onClick={() => setCatFocus("")}>Product catalogue</button>
               </div>
             </div>
-
-            <div className="dp-summary">
-              <div>
-                <strong>{openRows.length} {openRows.length === 1 ? "promise has" : "promises have"} open gaps.</strong>
-                {reg.stage.headline && <span className="dp-faint"> {reg.stage.headline}.</span>}
-              </div>
-              <div className="dp-row">
-                <span className="dp-pill"><span className="dp-dot dp-amber" />Open: <strong>{openRows.length}</strong></span>
-                <span className="dp-pill"><span className="dp-dot dp-green" />Closed by documents: <strong>{reg.resolved_findings.length}</strong></span>
-                {reg.noted_rows?.length > 0 && <span className="dp-pill"><span className="dp-dot dp-green" />Resolved by note: <strong>{reg.noted_rows.length}</strong></span>}
-              </div>
-            </div>
-
-            <StageBar stage={reg.stage} />
           </section>
 
           {message && <div className={`dp-message is-${message.kind}`} role="status">{message.text}</div>}
           {change && <ChangePanel change={change} onClose={() => setChange(null)} />}
 
-
           {reg.brief && (
             <section className="dp-card">
               <div className="dp-sec-head">
-                <h2 className="dp-upper">The deal in brief</h2>
+                <h2 className="dp-upper">What we're delivering</h2>
                 <span className="dp-faint">Confirmed by <strong className="dp-ink">{reg.brief.confirmed_by}</strong>{reg.brief.basis ? ` from ${reg.brief.basis}` : ""}</span>
               </div>
               <p className="dp-brief">{reg.brief.summary}</p>
@@ -668,9 +707,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
           <section className="dp-card dp-promises">
             <div className="dp-sec-head">
               <div className="dp-row">
-                <h2>Promises</h2>
-                {openRows.length > 0 && <span className="dp-chip dp-chip-amber"><span className="dp-dot" />{openRows.length} open</span>}
-                {resolvedCount > 0 && <span className="dp-chip dp-chip-green"><Icon d={I.check} size={12} />{resolvedCount} resolved</span>}
+                <h2>Commitments needing attention</h2>
                 {promiseRows.length > 0 && (
                   <button type="button" className="dp-link-btn dp-brand"
                           onClick={() => setExpanded(expanded.size === promiseRows.length ? new Set() : new Set(promiseRows.map((r) => r.c.id)))}>
@@ -678,90 +715,90 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
                   </button>
                 )}
               </div>
-              <span className="dp-faint dp-small">A gap closes on its own when a new document version shows it no longer holds.</span>
+              <span className="dp-counts">{countsLine({ open: openRows.length, noted: (reg.noted_rows || []).length, closed: closedIds.length })}</span>
             </div>
-            {promiseRows.length === 0 && <p className="dp-faint">No promises with gaps on the current documents.</p>}
+            {promiseRows.length === 0 && <p className="dp-faint">No commitments with gaps on the current documents.</p>}
             <ul className="dp-plist">
               {promiseRows.map(({ c, status }) => (
-                <PromiseRow key={c.id} c={c} status={status} frozen={frozen} canAct={canAct} onCatalogue={setCatFocus} onResolve={setResolving} me={name}
+                <PromiseRow key={c.id} c={c} status={status} onCatalogue={setCatFocus} me={name}
+                            onAct={(row, mode) => setActing({ c: row, mode })}
                             expanded={expanded.has(c.id)} onToggle={() => toggleCard(c.id)}
-                            onSeen={(issues) => act(async () => { for (const i of issues) await api.markSeen(deal, { issue_id: i.id, seen_by: name }); })} />
+                            onSeen={(issues) => withName((who) => act(async () => { for (const i of issues) await api.markSeen(deal, { issue_id: i.id, seen_by: who }); }))} />
               ))}
             </ul>
           </section>
 
           <section className="dp-card">
             <div className="dp-sec-head">
-              <h2>Handover notes</h2>
-              <span className={`dp-chip ${frozen ? "dp-chip-grey" : bothNotes ? "dp-chip-green" : "dp-chip-amber"}`}>
-                {frozen ? "Frozen" : bothNotes ? "Both notes in" : "Waiting for notes"}
+              <h2>Handover</h2>
+              <span className={`dp-chip ${notes.sales && notes.delivery ? "dp-chip-green" : "dp-chip-amber"}`}>
+                {notes.sales && notes.delivery ? "Both notes in" : "Waiting for notes"}
               </span>
             </div>
             <div className="dp-notes">
-              <NotePanel role="sales" label="Deal owner's handoff note" who="Sales" note={notes.sales} frozen={frozen} canAct={canAct}
-                         onSave={(role, text) => api.saveHandoverNote(deal, { role, note: text, entered_by: name }).then(() => { load(); onDealsChanged?.(); })} />
-              <NotePanel role="delivery" label="Delivery acceptance note" who="Delivery" note={notes.delivery} frozen={frozen} canAct={canAct}
-                         onSave={(role, text) => api.saveHandoverNote(deal, { role, note: text, entered_by: name }).then(() => { load(); onDealsChanged?.(); })} />
+              <NotePanel role="sales" label="Deal owner's handoff note" who="Sales" note={notes.sales} name={name} setName={setName}
+                         onSave={(role, text, by) => api.saveHandoverNote(deal, { role, note: text, entered_by: by }).then(() => { load(); onDealsChanged?.(); })} />
+              <NotePanel role="delivery" label="Delivery acceptance note" who="Delivery" note={notes.delivery} name={name} setName={setName}
+                         onSave={(role, text, by) => api.saveHandoverNote(deal, { role, note: text, entered_by: by }).then(() => { load(); onDealsChanged?.(); })} />
             </div>
-            {!frozen && !isSigned && (
-              <SignatureForm canAct={canAct} onSave={(on) => act(() => api.recordSignature(deal, { signed_on: on, recorded_by: name }))} />
+            {!isSigned && (
+              <SignatureForm name={name} setName={setName} onSave={(on, by) => act(() => api.recordSignature(deal, { signed_on: on, recorded_by: by }))} />
             )}
-            {!frozen && (
-              <div className="dp-complete">
-                <span className="dp-faint"><Icon d={I.lock} size={14} /> Completing the handover freezes this record. Open gaps stay visible as they stood.</span>
-                {completing ? (
-                  <span className="dp-row">
-                    <span className="dp-small">Complete as <strong>{name}</strong>?</span>
-                    <button type="button" className="dp-btn dp-btn-dark" onClick={() => act(() => api.completeHandover(deal, { completed_by: name })).then(() => setCompleting(false))}>Yes, complete</button>
-                    <button type="button" className="dp-btn" onClick={() => setCompleting(false)}>Cancel</button>
-                  </span>
-                ) : (
-                  <button type="button" className="dp-btn dp-btn-dark" disabled={!bothNotes || !canAct || !isSigned} onClick={() => setCompleting(true)}
-                          title={!isSigned ? "Record the signature first" : !bothNotes ? "Add both notes first" : !canAct ? "Add your name at the top first" : ""}>
-                    <Icon d={I.check} /> Complete handover
-                  </button>
-                )}
-              </div>
-            )}
-            {!frozen && (!bothNotes || !isSigned) && (
-              <p className="dp-faint dp-small dp-hint">{!isSigned ? "The handover can be completed once the deal is signed." : "Add both notes first."}</p>
+            <div className="dp-complete">
+              <span className="dp-faint"><Icon d={I.lock} size={14} /> Completing the handover freezes this record. Commitments needing attention stay visible as they stood.</span>
+              {completing ? (
+                <span className="dp-row">
+                  <span className="dp-small">Complete as</span>
+                  {name.trim() ? <strong>{name.trim()}</strong>
+                    : <input className="dp-inline-name" value={completeDraft} onChange={(e) => setCompleteDraft(e.target.value)} placeholder="Your name" maxLength={120} autoFocus />}
+                  <span className="dp-small">?</span>
+                  <button type="button" className="dp-btn dp-btn-dark" disabled={!completer}
+                          onClick={() => { if (!name.trim()) setName(completer); act(() => api.completeHandover(deal, { completed_by: completer })).then(() => setCompleting(false)); }}>Yes, complete</button>
+                  <button type="button" className="dp-btn" onClick={() => setCompleting(false)}>Cancel</button>
+                </span>
+              ) : (
+                <button type="button" className="dp-btn dp-btn-dark" disabled={missing.length > 0} onClick={() => setCompleting(true)}>
+                  <Icon d={I.check} /> Complete handover
+                </button>
+              )}
+            </div>
+            {missing.length > 0 && (
+              <p className="dp-faint dp-small dp-hint">To complete the handover: {missing.join(" · ")}.</p>
             )}
           </section>
 
           <footer className="dp-foot">
-            Lists only promises that the paperwork doesn't back. Checked against the draft contract, SOW and product catalogue.
+            Lists commitments where the customer's expectation, the contract and what we can sell don't line up. Checked against the documents listed and the product catalogue.
             {onClassic && SHOW_DETAILED && <> · <button type="button" className="dp-link-btn" onClick={onClassic}>Open the detailed view</button></>}
           </footer>
         </main>
 
         <aside className="dp-aside">
-          <DocumentList deal={deal} documents={included} frozen={frozen} canAct={canAct} name={name} onChanged={load} onView={setViewing}
+          <DocumentList deal={deal} stages={reg.stage.stages} documents={included} name={name} setName={setName} onChanged={load} onView={setViewing}
                         onAdd={() => setAdding(true)} />
-          <div className="dp-card dp-side dp-how">
-            <span className="dp-side-title">How a gap closes</span>
-            <ol>
-              <li>Someone adds a document: a new version of one already here, or a new one.</li>
-              <li>The check runs again on all the deal's documents.</li>
-              <li>A gap closes only when the paperwork now backs the promise, in one of three ways: the contract or SOW now says it, a named approval is recorded, or the promise itself is changed or withdrawn. The reason is shown.</li>
-            </ol>
-            <p className="dp-faint dp-small">Without a document, a named person can resolve a gap with a note. It is listed apart, marked "not in the documents", and reopens if the documents change.</p>
-            <p className="dp-faint dp-small">A new document can also uncover a new gap. Removing a document never closes one.</p>
-            <p className="dp-faint dp-small">"Mark as seen" and notes kept for the record never close a gap.</p>
-          </div>
+          <button type="button" className="dp-link-btn dp-brand dp-help-link" onClick={() => setHelp(true)}>How closing works</button>
         </aside>
       </div>
 
       {viewing && <DocViewer deal={deal} doc={viewing} onClose={() => setViewing(null)} />}
       {catFocus !== null && <CatalogueModal focus={catFocus} onClose={() => setCatFocus(null)} onChanged={load} />}
-      {adding && !frozen && (
+      {help && <ClosingHelp onClose={() => setHelp(false)} />}
+      {askName && (
+        <NamePrompt initial={askName.initial} onClose={() => setAskName(null)}
+                    onSave={(who) => { const run = askName.fn; setName(who); setAskName(null); run?.(who); }} />
+      )}
+      {adding && (
         <Modal title="Add a document" sub="A new document, or a new version of one already in the deal" onClose={() => setAdding(false)}>
+          <p className="dp-faint dp-small dp-pop-line">{CLOSING_ONE_LINE}</p>
           <AddDocument deal={deal} documents={docs.documents} docTypes={docs.doc_types} onClose={() => setAdding(false)} onDone={docDone} />
         </Modal>
       )}
-      {resolving && !frozen && (
-        <ResolveModal deal={deal} c={resolving} documents={docs.documents} docTypes={docs.doc_types} name={name} canDecide={reg.can_decide}
-                      onDocDone={docDone} onClose={() => setResolving(null)}
-                      onNoted={() => { setResolving(null); load(); onDealsChanged?.(); }} />
+      {acting && (
+        <ActionModal deal={deal} c={acting.c} mode={acting.mode} documents={docs.documents} docTypes={docs.doc_types}
+                     name={name} setName={setName} canDecide={reg.can_decide} freshnessLabel={reg.freshness_label}
+                     message={message} checking={checking} onCheckAgain={checkAgain}
+                     onDocDone={docDone} onClose={() => setActing(null)}
+                     onNoted={() => { setActing(null); load(); onDealsChanged?.(); }} />
       )}
     </div>
   );

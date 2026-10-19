@@ -189,11 +189,9 @@
 .dp-foot { text-align: center; font-size: 11px; color: var(--faint); padding: 4px 0 8px; }
 
 /* Frozen handover record (screen 3). Same tokens as the deal page; a dark bar marks the record as frozen. */
-.fr-bar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 10px 16px; margin-bottom: 20px; border-radius: 10px;
-  background: #1f2937; color: rgba(255, 255, 255, 0.82); font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12px; }
-.fr-bar strong { color: #fff; font-weight: 600; }
-.fr-tag { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 4px; background: rgba(255, 255, 255, 0.12);
-  color: #fff; font-family: "Geist", system-ui, sans-serif; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+.fr-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 14px; margin-bottom: 16px; border-radius: 10px;
+  background: var(--soft); border: 1px solid var(--line); color: var(--muted); font-size: 12px; }
+.fr-bar strong { color: var(--ink); font-weight: 600; }
 .fr-head { margin-bottom: 16px; }
 .fr-eyebrow { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); }
 .fr-head h1 { font-size: 28px; font-weight: 600; letter-spacing: -0.025em; margin: 4px 0 6px; }
@@ -286,9 +284,9 @@
 .dp-plist { list-style: none; margin: 0; padding: 0; }
 .dp-prow { border-top: 1px solid var(--line-2); }
 .dp-prow:first-child { border-top: 0; }
-.dp-prow-head { display: flex; align-items: center; gap: 10px; padding: 12px 4px; cursor: pointer; }
+.dp-prow-head { display: flex; align-items: flex-start; gap: 10px; padding: 12px 4px; cursor: pointer; }
 .dp-prow-head:hover .dp-prow-title { color: var(--brand); }
-.dp-prow-title { flex: 1; min-width: 0; font-size: 14px; font-weight: 600; color: var(--ink); }
+.dp-prow-title { min-width: 0; font-size: 14px; font-weight: 600; color: var(--ink); }
 .dp-prow.is-noted .dp-prow-title, .dp-prow.is-closed .dp-prow-title { font-weight: 500; color: var(--body); }
 .dp-prow-head .dp-chip svg { color: inherit; }
 .dp-prow-body { display: flex; flex-direction: column; gap: 10px; padding: 0 4px 16px 26px; }
@@ -301,3 +299,43 @@
 /* Frozen record uses the same promise list (17 Oct) */
 .fr-two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media print { .fr .dp-prow-head { padding: 8px 0; } .fr .dp-prow-body { padding-left: 0; } }
+
+/* Simplified deal page (19 Oct): the row tells its story collapsed; one count; a name asked for only when needed */
+.dp-prow-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.dp-prow-line { font-size: 12px; color: var(--amber-text); }
+.dp-prow.is-closed .dp-prow-line { display: none; }
+.dp-prow-first { font-size: 11px; color: var(--muted); }
+.dp-prow-head .dp-chip { margin-top: 1px; flex: none; }
+.dp-counts { font-size: 12px; font-weight: 500; color: var(--body); }
+.dp-stageline { display: flex; flex-direction: column; gap: 10px; padding: 4px 0 8px; font-size: 12px; color: var(--muted); }
+.dp-quiet { text-decoration: underline; text-underline-offset: 2px; margin-left: 6px; }
+.dp-name-field { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.dp-name-field input, .dp-inline-name { height: 30px; padding: 0 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: inherit; font-size: 12px; width: 14rem; }
+.dp-pop-line { margin: 0 0 10px; }
+.dp-help-link { align-self: flex-start; font-size: 12px; }
+.dp-how-list { margin: 0 0 10px; padding-left: 18px; font-size: 13px; display: flex; flex-direction: column; gap: 6px; }
+.dp-warn { display: flex; flex-direction: column; gap: 8px; }
+.fr-record { padding: 0; }
+.fr-record > summary { cursor: pointer; padding: 12px 16px; font-size: 12px; font-weight: 500; color: var(--muted); }
+.fr-record-body { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; padding: 4px 16px 16px; }
+.fr-record-body > div { display: flex; flex-direction: column; gap: 8px; }
+@media (max-width: 760px) { .fr-record-body { grid-template-columns: 1fr; } }
+@media print { .fr-record > summary { display: none; } }
+
+/* Stage timeline in the sidebar (19 Oct): documents grouped by deal stage. Plain styling; restyled later. */
+.dp-timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.dp-tl { position: relative; display: flex; gap: 10px; padding-bottom: 14px; }
+.dp-tl:last-child { padding-bottom: 0; }
+.dp-tl::before { content: ""; position: absolute; left: 5px; top: 14px; bottom: -2px; width: 1px; background: var(--line); }
+.dp-tl:last-child::before { display: none; }
+.dp-tl-dot { flex: none; width: 11px; height: 11px; margin-top: 3px; border-radius: 50%; border: 1.5px solid var(--muted); background: var(--muted); box-sizing: border-box; }
+.dp-tl.is-todo .dp-tl-dot, .dp-tl.is-none .dp-tl-dot { background: transparent; border-color: var(--faint); }
+.dp-tl.is-current .dp-tl-dot { background: var(--brand); border-color: var(--brand); }
+.dp-tl-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.dp-tl-name { display: flex; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 500; color: var(--ink); }
+.dp-tl.is-todo .dp-tl-name, .dp-tl.is-none .dp-tl-name { color: var(--faint); font-weight: 400; }
+.dp-tl.is-current .dp-tl-name { font-weight: 700; }
+.dp-tl-tag { font-size: 10px; font-weight: 500; color: var(--muted); }
+.dp-tl.is-current .dp-tl-tag { color: var(--brand); }
+.dp-tl-note { font-size: 11px; color: var(--muted); }
+.dp-tl .dp-docs { margin-top: 2px; }

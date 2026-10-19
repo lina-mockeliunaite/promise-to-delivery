@@ -191,6 +191,7 @@ class TestResolvedByNote(HandoverCase):
         self.assertNotIn(c["id"], after["open_rows"])
         self.assertIn(c["id"], after["noted_rows"])
         self.assertEqual(hb()["open_gaps"], gaps_before - 1)
+        self.assertEqual(hb()["addressed_by_note"], 1)  # the home list says "addressed by note", never just "no open gaps"
         self.assertEqual(states(before), states(after))  # the documents' verdict is untouched: still open by the documents
         self.assertFalse(any(i["id"] in ids for x in after["resolved_findings"] for i in [{"id": x["issue_id"]}]))
         item = next(i for cc in after["commitments"] for i in cc["issues"] if i["id"] == ids[0])

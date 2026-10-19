@@ -14,5 +14,10 @@
   "confirmed_against": {
     "source": "AB-06",
     "version": 1
+  },
+  "titles": {
+    "v2-6e5a9364550eece7": "Coaching-scam detection live at launch",
+    "v2-9b2a6caa8d45126a": "750,000 payments a day by the end of year one",
+    "v2-5d0b02e39b1dfda4": "Hosting on Microsoft Azure"
   }
 }
