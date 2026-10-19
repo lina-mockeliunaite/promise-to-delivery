@@ -152,3 +152,8 @@ tr:hover .dl-open .dl-icon { transform: translateX(2px); transition: transform 0
 
 /* Back link shown above a deal when it was opened from the list */
 .dl-back { display: inline-flex; align-items: center; gap: 6px; border: 0; background: transparent; color: var(--accent, #005c55); font: inherit; font-weight: 600; cursor: pointer; padding: 4px 0; margin-bottom: 8px; }
+
+/* Product name (19 Oct) */
+.dl-brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; font-size: 12px; color: var(--dl-muted); }
+.dl-brand strong { font-size: 15px; letter-spacing: -0.01em; color: var(--dl-text); }
+.dl-pagefoot { text-align: center; font-size: 11px; color: var(--dl-muted); padding: 8px 0; }

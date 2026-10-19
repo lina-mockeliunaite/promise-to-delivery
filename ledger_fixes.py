@@ -220,9 +220,13 @@ def decision_evidence_sha256(conn, did: int) -> str:
 
 
 def source_set_sha256(conn, did: int) -> str:
+    """The documents the checks read. Signed paperwork (19 Oct) is left out: the checks never read it, so adding one must
+    not make the review stale or reopen a note. For a deal without signed documents the hash is exactly what it was."""
+    marks = ",".join("?" * len(config.SIGNED_DOC_TYPES))
     lines = [f"{k}:{n}:{h}:{t}:{d}" for k, n, h, t, d in conn.execute(
         "SELECT s.source_key, v.version_no, v.canonical_sha256, v.doc_type, v.doc_date FROM source_versions v"
-        " JOIN sources s ON s.id = v.source_id WHERE s.deal_id = ? AND v.included = 1", (did,))]
+        f" JOIN sources s ON s.id = v.source_id WHERE s.deal_id = ? AND v.included = 1 AND v.doc_type NOT IN ({marks})",
+        (did, *config.SIGNED_DOC_TYPES))]
     return ledger_import.sha256_hex("\n".join(sorted(lines)))
 
 

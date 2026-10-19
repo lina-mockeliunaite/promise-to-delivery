@@ -49,7 +49,6 @@ export const setAccountable = (deal, body) => postJson(`${d(deal)}/accountable`,
 export const markSeen = (deal, body) => postJson(`${d(deal)}/seen`, body);
 export const saveHandoverNote = (deal, body) => postJson(`${d(deal)}/handover/notes`, body);
 export const setDocumentLink = (deal, body) => postJson(`${d(deal)}/documents/link`, body);
-export const recordSignature = (deal, body) => postJson(`${d(deal)}/signature`, body);
 export const resolveByNote = (deal, body) => postJson(`${d(deal)}/resolve-note`, body);
 export const completeHandover = (deal, body) => postJson(`${d(deal)}/handover/complete`, body);
 export const fetchHandover = (deal) => getJson(`${d(deal)}/handover`);

@@ -194,6 +194,97 @@ class TestDocumentStages(ResetCase):
         self.assertEqual({k: v for k, v in after.items() if k != "AB-08"}, {k: v for k, v in before.items() if k != "AB-08"})
 
 
+class _NoModel:
+    """A client that fails the test the moment anything tries to call the model."""
+
+    def __getattr__(self, name):
+        raise AssertionError(f"the model was called ({name})")
+
+
+class TestSignedPaperwork(ResetCase):
+    """19 Oct: the deal is Signed only by a signed contract or SOW in the documents; the checks never read it."""
+
+    def conn(self):
+        import ledger
+        reset_demo.reset(self.db)
+        conn = ledger.connect(self.db)
+        self.addCleanup(conn.close)
+        return conn
+
+    def findings(self, conn):
+        import workspace
+        # A rerun words an open finding's reason with a lead ("Still holds on the current documents.") the first review lacks.
+        lead = "Still holds on the current documents. "
+        return [(c["name"], sorted((i["type"], i["state"], i["reason"].removeprefix(lead)) for i in c["issues"]))
+                for c in workspace.overview(conn, "alder_bank")["commitments"]]
+
+    def test_the_reset_leaves_alder_unsigned_at_contracting(self):
+        import workspace
+        conn = self.conn()
+        stage = workspace.overview(conn, "alder_bank")["stage"]
+        self.assertEqual((stage["current"], stage["basis"]), ("contracting", "documents"))
+        self.assertNotIn("AB-09", {d["source_key"] for d in workspace.documents(conn, "alder_bank")})
+
+    def test_uploading_the_signed_contract_signs_the_deal_and_check_again_makes_no_model_call(self):
+        import ledger_fixes
+        import ledger_v2
+        import workspace
+        conn = self.conn()
+        before = self.findings(conn)
+        text = (config.DATA_DIR / "scenarios" / "AB-09_signed_contract.md").read_text(encoding="utf-8")
+        did = ledger_fixes.deal_id(conn, "alder_bank")
+        self.assertFalse(ledger_v2.needs_model(conn, "alder_bank", "AB-09", "signed_contract", text))
+        ledger_fixes.add_source(conn, "alder_bank", "Signed contract", text, "AB-09_signed_contract.md", "signed_contract", "2026-10-20")
+        self.assertEqual(workspace.overview(conn, "alder_bank")["stage"]["current"], "signed")
+        self.assertEqual(ledger_fixes.freshness(conn, did)["state"], "Up to date")  # documents the checks don't read: not stale
+        self.assertNotIn("signed_contract", {d["doc_type"] for d in ledger_v2.current_docs(conn, did)})  # the checks never read it
+        result = ledger_v2.review(conn, "alder_bank", client=_NoModel())
+        self.assertEqual(result["model_calls"], 0)
+        self.assertEqual(ledger_fixes.freshness(conn, did)["state"], "Up to date")
+        self.assertEqual(self.findings(conn), before)  # not one finding changed
+
+    def test_a_note_survives_the_signed_contract_and_the_review_stays_current(self):
+        import handover
+        import ledger_fixes
+        import workspace
+        import workspace_records
+        conn = self.conn()
+        did = ledger_fixes.deal_id(conn, "alder_bank")
+        before = ledger_fixes.source_set_sha256(conn, did)
+        reg = workspace.overview(conn, "alder_bank")
+        first, second = reg["open_rows"][0], reg["open_rows"][1]
+        ids = lambda cid: [i["id"] for c in reg["commitments"] if c["id"] == cid for i in c["issues"] if i["state"] != "Resolved"]
+        for iid in ids(first):
+            handover.resolve_by_note(conn, "alder_bank", iid, "Sam (Delivery)", "The customer agreed on the 14 Oct call.")
+        decided = ids(second)[0]
+        workspace_records.okay_to_proceed(conn, "alder_bank", decided, "Sam (Delivery)", "Delivery will raise it at kick-off.")
+        conn.commit()
+        self.assertIn(first, workspace.overview(conn, "alder_bank")["noted_rows"])
+        text = (config.DATA_DIR / "scenarios" / "AB-09_signed_contract.md").read_text(encoding="utf-8")
+        ledger_fixes.add_source(conn, "alder_bank", "Signed contract", text, "AB-09_signed_contract.md", "signed_contract", "2026-10-20")
+        self.assertEqual(ledger_fixes.source_set_sha256(conn, did), before)  # signed paperwork is not in the hash
+        after = workspace.overview(conn, "alder_bank")
+        self.assertEqual(after["stage"]["current"], "signed")
+        self.assertEqual(after["freshness"]["state"], "Up to date")
+        self.assertIn(first, after["noted_rows"])  # still "Addressed by note", not reopened
+        note = next(i["note_resolution"] for c in after["commitments"] if c["id"] == first for i in c["issues"] if i["note_resolution"])
+        self.assertTrue(note["current"])
+        item = next(i for c in after["commitments"] if c["id"] == second for i in c["issues"] if i["id"] == decided)
+        self.assertEqual(item["decision"]["status"], "okay")  # the kept-open note is still current too
+
+    def test_a_signed_sow_signs_the_deal_too_and_both_types_are_reference_only(self):
+        import ledger_fixes
+        import workspace
+        conn = self.conn()
+        for kind in ("signed_contract", "signed_sow"):
+            self.assertIn(kind, config.REFERENCE_ONLY_DOC_TYPES)
+            self.assertNotIn(kind, config.EXTRACTABLE_DOC_TYPES)
+        ledger_fixes.add_source(conn, "alder_bank", "Signed SOW", "Signed by both parties.", "sow.md", "signed_sow", "2026-10-20")
+        self.assertEqual(workspace.overview(conn, "alder_bank")["stage"]["current"], "signed")
+        placed = {d["source_key"]: d["stage"] for d in workspace.documents(conn, "alder_bank")}
+        self.assertEqual(list(placed.values()).count("signed"), 1)
+
+
 class TestBoundaries(ResetCase):
     def test_it_never_writes_to_data(self):
         global _active

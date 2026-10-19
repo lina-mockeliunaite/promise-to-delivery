@@ -34,6 +34,8 @@ import score_v2
 HERE = Path(__file__).resolve().parent
 SCHEMA_PATH = HERE / "v2_schema.sql"
 INTERNAL_ONLY = set(detect_v2.INTERNAL_TYPES)
+SIGNED_TYPES = tuple(config.SIGNED_DOC_TYPES)  # 19 Oct: reference-only; they mark the deal Signed and nothing else
+NO_MODEL = INTERNAL_ONLY | set(SIGNED_TYPES)  # adding, changing or removing one of these never needs a model call
 ISSUE_TYPE = {"approval_required": "approval", "absolute_limit": "approval", "over_limit": "approval",
               "contract_gap": "contract_gap", "conflicting_terms": "conflicting_terms"}
 OWNER = {"approval": "Product", "contract_gap": "Commercial", "conflicting_terms": "Commercial"}
@@ -57,12 +59,14 @@ def ensure_schema(conn) -> None:
 
 # --- Inputs ---------------------------------------------------------------------------------------------------------
 def current_docs(conn, did: int) -> list:
-    """[{source_id, doc_type, date, text, version_id}] for the latest included version of every source."""
+    """[{source_id, doc_type, date, text, version_id}] for the latest included version of every source. Signed paperwork
+    (19 Oct) is left out: it marks the deal Signed and is never sent to the model or used by the checks."""
+    marks = ",".join("?" * len(SIGNED_TYPES))
     return [{"source_id": k, "doc_type": t, "date": d or "", "text": x, "version_id": v} for k, t, d, x, v in conn.execute(
         "SELECT s.source_key, v.doc_type, v.doc_date, v.canonical_text, v.id FROM sources s JOIN source_versions v"
         " ON v.source_id = s.id WHERE s.deal_id = ? AND v.included = 1 AND v.version_no ="
         " (SELECT MAX(version_no) FROM source_versions WHERE source_id = s.id AND included = 1)"
-        " ORDER BY v.doc_date, s.source_key", (did,))]
+        f" AND v.doc_type NOT IN ({marks}) ORDER BY v.doc_date, s.source_key", (did, *SIGNED_TYPES))]
 
 
 def _sha(text) -> str:
@@ -277,7 +281,7 @@ def _checked_line(f: dict) -> str:
 
 def needs_model(conn, slug: str, source_key, doc_type: str, canonical_text: str, catalogue_path=None) -> bool:
     """True if adding this document (or this new version of source_key) would need a model call that no cache answers."""
-    if doc_type in INTERNAL_ONLY:
+    if doc_type in NO_MODEL:
         return False
     did = ledger_fixes.deal_id(conn, slug)
     docs = [d for d in current_docs(conn, did) if d["source_id"] != source_key]
@@ -309,7 +313,7 @@ def _needs_detection(conn, prev_id, docs: list) -> bool:
     removed = before - {d["version_id"] for d in docs}
     removed_types = {t for (t,) in conn.execute(
         f"SELECT doc_type FROM source_versions WHERE id IN ({','.join('?' * len(removed))})", tuple(removed))} if removed else set()
-    return bool(removed_types - INTERNAL_ONLY) or any(d["doc_type"] not in INTERNAL_ONLY for d in changed)
+    return bool(removed_types - NO_MODEL) or any(d["doc_type"] not in NO_MODEL for d in changed)
 
 
 def review(conn, slug: str, client=None, fix_id=None, catalogue_path=None) -> dict:

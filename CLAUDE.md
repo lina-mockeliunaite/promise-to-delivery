@@ -1,12 +1,12 @@
 # Rules for Claude Code in this repo
 
-## Sealed test set
-- Until Lina explicitly releases the test set for the 14 October 2026 evaluation, do not read, list, search, hash, edit or otherwise inspect `data/coral_pay/` or `data/coral_pay.sha256`, including through scripts, Git history or tool output.
-- Exclude both paths from every repository-wide search or script that traverses the repository. If a task appears to require either path, stop and ask Lina.
-- Before starting, read `.claude/settings.json` to confirm the four deny rules are present. Never test the seal by attempting to access either path. This file is an instruction, not the access control.
+## Released test sets
+- `data/coral_pay/` and `data/coral_pay.sha256`: sealed for the single v1 run of 10 Oct 2026 (06:12 UTC). Released from then on as development data (19 Oct): code and tools may read the documents.
+- Never edit the sealed results or labels of Coral Pay or Atlas Remit, and never rerun the sealed evaluation. Never edit the documents or the seal files either.
+- `.claude/settings.json` still carries the old Coral Pay read/edit deny rules. They are access control, not this file's instruction; Lina decides when to drop them. Never test them by attempting access.
 
-## Second sealed test set (10 Oct, v2)
-- `data/atlas_remit/` and `data/atlas_remit.sha256`: sealed for the single v2 run, which took place on 10 Oct 2026 (08:44 UTC). Released from then on as development data; still never edit the documents, labels or seal.
+## Atlas Remit (10 Oct, v2)
+- `data/atlas_remit/` and `data/atlas_remit.sha256`: sealed for the single v2 run, which took place on 10 Oct 2026 (08:44 UTC). Released from then on as development data; the rule above still applies: never edit the documents, labels, results or seal.
 
 ## Development data
 - `data/harbour_bank/` is the development deal. Extraction may read its source documents, but not its labels.

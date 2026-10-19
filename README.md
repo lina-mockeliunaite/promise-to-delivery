@@ -1,8 +1,8 @@
-# Promise to Delivery
+# Dealshape
 
-**Hand over the deal as it was promised.**
+**See the deal as it was actually promised.**
 
-When a deal is signed, Delivery inherits the contract — but the customer remembers the proposal, the RFP answers and the calls. Promise to Delivery reads a deal's paper trail and builds the handoff record: each promise in its exact words and source, flagged where the customer was told more than the contract includes, or more than the company approved. People fix those gaps with evidence, and a recheck shows which ones actually closed.
+When a deal is signed, Delivery inherits the contract — but the customer remembers the proposal, the RFP answers and the calls. Dealshape reads a deal's paper trail and builds the handoff record: each promise in its exact words and source, flagged where the customer was told more than the contract includes, or more than the company approved. People fix those gaps with evidence, and a recheck shows which ones actually closed.
 
 *Demonstrated on fictional deals with a complete capability catalogue.* A local prototype built in October 2026 to learn how to design, build and evaluate an AI system end to end.
 
@@ -67,6 +67,7 @@ After the Coral Pay result, detection was rebuilt: one model call proposes each 
 - **Re-confirmation is deal-wide.** Any new evidence asks for every earlier decision to be re-confirmed. Safe, but noisy on a large deal; narrowing it needs dependency tracking.
 - **Synthetic data, small set.** Results describe performance on fictional deals written for this build, not generalisation.
 - **Formats.** PDF text layer only (no OCR); Excel by stored values only; PowerPoint slide text only (not speaker notes). Office formats are checked on development documents only.
+- **Signed paperwork.** A signed contract or SOW marks the deal signed; its wording is not checked against the drafts.
 - **Not in this build:** post-signature tracking, live CRM or Drive connectors, AI-suggested business impact, legal advice.
 
 ## How it was tested

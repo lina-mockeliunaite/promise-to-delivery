@@ -32,6 +32,7 @@ DOC_TYPE_LABELS = {
     "call_transcript": "Call transcript", "rfp_response": "RFP response", "proposal": "Proposal",
     "draft_sow": "Draft SOW", "draft_contract": "Draft contract", "pricing_services_note": "Pricing and services note",
     "customer_email": "Customer email", "security_questionnaire": "Security questionnaire",
+    "signed_contract": "Signed contract", "signed_sow": "Signed SOW",
 }
 AUTH_LABELS = {
     "standard_authorised": "Standard, authorised", "exception_approved": "Exception approved",

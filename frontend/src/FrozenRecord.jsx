@@ -5,8 +5,9 @@ import { useEffect, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
 import {
-  STATUS_CHIP, cleanReason, countsLine, extractedAs, findingDetail, firstPromised, mismatchLine, recordedBy, sentence, verdictLine,
+  STATUS_CHIP, cleanReason, countsLine, extractedAs, findingDetail, firstPromised, mismatchLine, plainName, recordedBy, sentence, verdictLine,
 } from "./dealpage.js";
+import { NAME, TAGLINE } from "./brand.js";
 import "./DealPage.css";
 
 const Lock = ({ size = 14 }) => (
@@ -101,15 +102,16 @@ export default function FrozenRecord({ deal, onBack }) {
       </div>
 
       <div className="fr-bar">
-        <Lock size={13} /> <span>Handover complete · locked on <strong>{fmtDate(hv.completed_at)}</strong> by <strong>{hv.completed_by}</strong></span>
+        <Lock size={13} /> <span>Handover complete · locked on <strong>{fmtDate(hv.completed_at)}</strong> by <strong>{plainName(hv.completed_by)}</strong></span>
       </div>
 
       <section className="fr-head">
+        <span className="fr-eyebrow">{NAME} · {TAGLINE}</span>
         <h1>{s.deal}: what Delivery inherits</h1>
         <div className="dp-meta">
           <span className="dp-chip dp-chip-grey">Stage at handover: {s.stage}</span>
           {s.brief?.go_live && <span className="dp-meta-strong">Go-live {fmtDate(s.brief.go_live)}</span>}
-          <span className="dp-faint">Checked {s.documents.length} documents and the product catalogue · Fictional deal · {s.scope_note}</span>
+          <span className="dp-faint">Checked {s.documents.length} documents and the product catalogue · {s.scope_note}</span>
         </div>
       </section>
 
@@ -117,7 +119,7 @@ export default function FrozenRecord({ deal, onBack }) {
         <section className="dp-card">
           <div className="dp-sec-head">
             <h2 className="dp-upper">What we're delivering</h2>
-            <span className="dp-faint">Confirmed by <strong className="dp-ink">{s.brief.confirmed_by}</strong>{s.brief.basis ? ` from ${s.brief.basis}` : ""}</span>
+            <span className="dp-faint">Confirmed by <strong className="dp-ink">{plainName(s.brief.confirmed_by)}</strong>{s.brief.basis ? ` from ${s.brief.basis}` : ""}</span>
           </div>
           <p className="dp-brief">{s.brief.summary}</p>
           {s.brief.deliverables?.length > 0 && (
@@ -182,7 +184,7 @@ export default function FrozenRecord({ deal, onBack }) {
                 <footer className="dp-gap-foot">
                   <span className="dp-row">
                     <span className="dp-faint">Seen by:</span>
-                    {seen.length ? seen.map((x) => <span key={x.by} className="fr-seen">✓ {x.by}</span>) : <span className="dp-faint">nobody before handover</span>}
+                    {seen.length ? seen.map((x) => <span key={x.by} className="fr-seen">✓ {plainName(x.by)}</span>) : <span className="dp-faint">nobody before handover</span>}
                   </span>
                   <span className="dp-faint dp-row"><Lock size={12} /> Locked</span>
                 </footer>
@@ -232,7 +234,7 @@ export default function FrozenRecord({ deal, onBack }) {
               <div key={role} className="dp-note">
                 <div className="dp-note-head">
                   <div>
-                    <span className="dp-note-who">{note?.by ?? (role === "sales" ? "Sales" : "Delivery")}</span>
+                    <span className="dp-note-who">{plainName(note?.by) || (role === "sales" ? "Sales" : "Delivery")}</span>
                     <span className="dp-note-role">{note?.label ?? (role === "sales" ? "Deal owner's handoff note" : "Delivery acceptance note")}</span>
                   </div>
                   <Lock />
@@ -276,6 +278,8 @@ export default function FrozenRecord({ deal, onBack }) {
           )}
         </div>
       </details>
+
+      <footer className="dp-foot"><strong>{NAME}</strong> · {TAGLINE}<br />All companies, people and deals are fictional.</footer>
     </div>
   );
 }

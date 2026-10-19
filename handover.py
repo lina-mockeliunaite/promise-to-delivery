@@ -204,32 +204,14 @@ def note_resolved_ids(conn, did: int) -> set:
     return out
 
 
-# --- Signature (recorded by a person) ---------------------------------------------------------------------------------
+# --- Signature (old records only, 19 Oct) ---------------------------------------------------------------------------------
 def signature(conn, did: int):
-    """{'signed_on', 'recorded_by', 'at'} once a person has recorded the signature, else None."""
+    """{'signed_on', 'recorded_by', 'at'} for a signature recorded by a person before 19 Oct, else None. Read only: nothing
+    records one any more, and it no longer moves the stage (the stage comes from the documents)."""
     if not _has(conn, "deal_signatures"):
         return None
     row = conn.execute("SELECT signed_on, recorded_by, created_at FROM deal_signatures WHERE deal_id = ?", (did,)).fetchone()
     return {"signed_on": row[0], "recorded_by": row[1], "at": row[2]} if row else None
-
-
-def record_signature(conn, slug: str, signed_on, recorded_by) -> dict:
-    import re
-    from datetime import date
-    did = _open_for_changes(conn, slug)
-    who = _text(recorded_by, "your name", 120)
-    if not (isinstance(signed_on, str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}", signed_on)):
-        raise HandoverError("Give the signature date.")
-    try:
-        when = date.fromisoformat(signed_on)
-    except ValueError:
-        raise HandoverError("Give the signature date.") from None
-    if when > date.today():
-        raise HandoverError("The signature date can't be in the future.")
-    if signature(conn, did):
-        raise HandoverError("The signature is already recorded for this deal.", 409)
-    _insert(conn, "INSERT INTO deal_signatures (deal_id, signed_on, recorded_by) VALUES (?, ?, ?)", (did, signed_on, who))
-    return signature(conn, did)
 
 
 # --- Handover complete -------------------------------------------------------------------------------------------------
@@ -286,7 +268,7 @@ def complete(conn, slug: str, completed_by) -> dict:
     who = _text(completed_by, "your name", 120)
     stage = deal_stage.deal_stage(conn, slug)["current"]
     if stage is None or deal_stage.STAGE_INDEX[stage] < deal_stage.STAGE_INDEX["signed"]:
-        raise HandoverError("The handover can be completed once the deal is signed. Record the signature first.", 409)
+        raise HandoverError("The handover can be completed once the deal is signed. Upload the signed contract or SOW first.", 409)
     have = notes(conn, did)
     missing = [ROLES[r].lower() for r in ROLES if have[r] is None]
     if missing:

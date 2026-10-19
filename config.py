@@ -69,7 +69,12 @@ EXTRACTABLE_DOC_TYPES = [
 REFERENCE_ONLY_DOC_TYPES = [
     "pricing_services_note",
     "customer_email",
+    # 19 Oct: signed paperwork marks the deal Signed (deal_stage.DOC_STAGE) and nothing else. Never sent to the model and
+    # never used by the checks, which keep reading the drafts (ledger_v2.current_docs leaves these out).
+    "signed_contract",
+    "signed_sow",
 ]
+SIGNED_DOC_TYPES = ["signed_contract", "signed_sow"]
 
 # Any doc_type in neither list is logged and flagged.
 

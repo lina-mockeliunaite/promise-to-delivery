@@ -27,8 +27,16 @@ class HandoverCase(WorkspaceCase):
         return self.client.get("/api/deals/harbour_bank/documents").json()["documents"][0]["source_key"]
 
     def sign(self, on="2026-10-15"):
-        r = self.post("/api/deals/harbour_bank/signature", {"signed_on": on, "recorded_by": "Maya (sales)"})
+        """The deal is signed by a signed contract in the documents (19 Oct); no person can record a signature."""
+        r = self.post("/api/deals/harbour_bank/documents", {
+            "name": "Signed contract", "doc_type": "signed_contract", "doc_date": on, "filename": "signed.md",
+            "text": "Signed by both parties."})
         self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(self.register()["freshness"]["state"], "Up to date")  # the checks never read it: not stale
+        r = self.post("/api/deals/harbour_bank/review", {})
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(r.json()["review"]["model_calls"], 0)  # signed paperwork never needs the model
+        self.assertEqual(self.register()["freshness"]["state"], "Up to date")
 
     def both_notes(self):
         self.assertEqual(self.post("/api/deals/harbour_bank/handover/notes",
@@ -106,12 +114,27 @@ class TestHandoverComplete(HandoverCase):
         r = self.post("/api/deals/harbour_bank/handover/complete", {"completed_by": "Sam (delivery)"})
         self.assertEqual(r.status_code, 409)
         self.assertIn("signed", r.json()["detail"])
-        self.assertEqual(self.post("/api/deals/harbour_bank/signature", {"signed_on": "2999-01-01", "recorded_by": "x"}).status_code, 400)
+        self.assertIn("Upload the signed contract", r.json()["detail"])
         self.sign()
         stage = self.register()["stage"]
-        self.assertEqual((stage["current"], stage["basis"]), ("signed", "signature"))
-        self.assertEqual(self.post("/api/deals/harbour_bank/signature", {"signed_on": "2026-10-15", "recorded_by": "x"}).status_code, 409)
+        self.assertEqual((stage["current"], stage["basis"]), ("signed", "documents"))
         self.assertEqual(self.post("/api/deals/harbour_bank/handover/complete", {"completed_by": "Sam (delivery)"}).status_code, 200)
+
+    def test_no_person_can_record_a_signature_and_an_old_record_no_longer_moves_the_stage(self):
+        self.assertIn(self.post("/api/deals/harbour_bank/signature", {"signed_on": "2026-10-15", "recorded_by": "x"}).status_code, (404, 405))
+        import handover
+        import ledger
+        raw = ledger.connect(self.db)
+        handover.ensure_schema(raw)
+        raw.execute("INSERT INTO deal_signatures (deal_id, signed_on, recorded_by) VALUES"
+                    " ((SELECT id FROM deals WHERE slug = 'harbour_bank'), '2026-10-15', 'Maya (sales)')")
+        raw.commit()
+        raw.close()
+        reg = self.register()
+        self.assertNotEqual(reg["stage"]["current"], "signed")
+        self.assertEqual(reg["handover"]["signature"]["recorded_by"], "Maya (sales)")  # kept, still readable
+        self.both_notes()
+        self.assertEqual(self.post("/api/deals/harbour_bank/handover/complete", {"completed_by": "Sam"}).status_code, 409)
 
     def test_completion_needs_both_notes(self):
         self.sign()
@@ -139,7 +162,6 @@ class TestHandoverComplete(HandoverCase):
             ("/api/deals/harbour_bank/handover/notes", {"role": "sales", "note": "x", "entered_by": "y"}),
             ("/api/deals/harbour_bank/documents/link", {"source_key": self.a_document(), "url": "https://x.y", "set_by": "y"}),
             ("/api/deals/harbour_bank/handover/complete", {"completed_by": "again"}),
-            ("/api/deals/harbour_bank/signature", {"signed_on": "2026-10-14", "recorded_by": "y"}),
             ("/api/deals/harbour_bank/note", {"note": "x", "entered_by": "y"}),
             ("/api/deals/harbour_bank/decisions", {"kind": "must_fix", "issue_id": issue, "by": "y", "reason": "z"}),
             ("/api/deals/harbour_bank/review", {}),
@@ -157,6 +179,7 @@ class TestHandoverComplete(HandoverCase):
 
 class TestNotesOnGaps(HandoverCase):
     def test_a_note_on_a_gap_keeps_it_open_and_is_frozen_with_the_record(self):
+        self.sign()
         issue = self.first_open_issue()
         before = self.register()["finding_counts"]["unresolved"]
         r = self.post("/api/deals/harbour_bank/decisions", {"kind": "okay_to_proceed", "issue_id": issue, "by": "Sam (delivery)",
@@ -167,7 +190,6 @@ class TestNotesOnGaps(HandoverCase):
         item = next(i for c in reg["commitments"] for i in c["issues"] if i["id"] == issue)
         self.assertEqual((item["state"] != "Resolved", item["decision"]["status"], item["decision"]["by"]), (True, "okay", "Sam (delivery)"))
         self.both_notes()
-        self.sign()
         snap = self.post("/api/deals/harbour_bank/handover/complete", {"completed_by": "Sam (delivery)"}).json()["snapshot"]
         notes = [f["note"] for it in snap["open_items"] for f in it["findings"] if f["note"]]
         self.assertIn({"by": "Sam (delivery)", "reason": "Delivery will raise it at kick-off.", "current": True}, notes)
@@ -209,10 +231,10 @@ class TestResolvedByNote(HandoverCase):
         self.assertFalse(item["note_resolution"]["current"])
 
     def test_it_is_frozen_apart_from_the_open_gaps(self):
+        self.sign()
         c, ids = self.open_promise()
         self.post("/api/deals/harbour_bank/resolve-note", {"issue_ids": ids, "resolved_by": "Sam", "reason": "Agreed on a call."})
         self.both_notes()
-        self.sign()
         snap = self.post("/api/deals/harbour_bank/handover/complete", {"completed_by": "Sam"}).json()["snapshot"]
         self.assertIn(c["name"], [x["promise"] for x in snap["resolved_by_note"]])
         self.assertNotIn(c["name"], [x["promise"] for x in snap["open_items"]])

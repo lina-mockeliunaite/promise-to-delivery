@@ -3,8 +3,9 @@
 import { useMemo, useState } from "react";
 import * as api from "./api.js";
 import { FILTERS, SORTS, counts, initials, page, relativeTime, visibleDeals } from "./deals.js";
-import { attentionText } from "./dealpage.js";
+import { attentionText, plainName } from "./dealpage.js";
 import CatalogueModal from "./CatalogueModal.jsx";
+import { NAME, TAGLINE } from "./brand.js";
 import "./Deals.css";
 
 const Icon = ({ d, size = 16 }) => (
@@ -102,6 +103,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
 
   return (
     <div className="dl">
+      <header className="dl-brand"><strong>{NAME}</strong><span>{TAGLINE}</span></header>
       <section className="dl-head">
         <div>
           <span className="dl-eyebrow">Sales to delivery handover</span>
@@ -173,7 +175,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
                     {d.owner ? (
                       <span className="dl-owner">
                         <span className="dl-avatar" aria-hidden="true">{initials(d.owner)}</span>
-                        {d.owner}
+                        {plainName(d.owner)}
                       </span>
                     ) : (
                       <span className="dl-muted">Not set</span>
@@ -212,6 +214,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
           )}
         </footer>
       </section>
+      <footer className="dl-pagefoot"><strong>{NAME}</strong> · {TAGLINE}</footer>
     </div>
   );
 }

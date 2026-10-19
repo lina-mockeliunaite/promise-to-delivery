@@ -158,10 +158,10 @@ export function toldQuotes(statements) {
 }
 
 // What is still missing before the handover can be completed, in the order a person would do it. No name is listed: the
-// name is asked for when the button is pressed (19 Oct).
+// name is asked for when the button is pressed. The deal is signed only by a signed contract or SOW in the documents (19 Oct).
 export function missingForHandover({ isSigned, notes }) {
   const out = [];
-  if (!isSigned) out.push("save the signing date");
+  if (!isSigned) out.push("upload the signed contract");
   if (!notes?.sales) out.push("add the Sales note");
   if (!notes?.delivery) out.push("add the Delivery note");
   return out;
@@ -190,7 +190,7 @@ export function closingLine(reason) {
 // Everything below is built only from verified finding labels, stored terms and owner-confirmed wording, never from AI text.
 
 export const FINDING_SHORT = {
-  "No approval recorded": "Not approved internally",
+  "No approval recorded": "No approval found",
   "Missing from contract": "Not in the contract",
   "Contract says something different": "Contract differs",
   "Not offered": "Not offered",
@@ -208,7 +208,7 @@ function shortTerm(issue, contract) {
   return term && term.length <= SHORT_TERM && !/^(not included|no matching wording found)$/i.test(term) ? term : "";
 }
 
-// "Not approved internally · Not in the contract": the short form of each open finding, joined with " · ".
+// "No approval found · Not in the contract": the short form of each open finding, joined with " · ".
 // issues: the findings still showing; contract: the row's stored contract term.
 export function mismatchLine(issues, contract = "") {
   const seen = new Set();
@@ -271,16 +271,18 @@ export function attentionText(open, noted = 0) {
   return noted ? `Nothing needs attention · ${noted} addressed by note` : "Nothing needs attention";
 }
 
-// "Stage: Contracting · gaps first made at Proposal / RFP"
+// "Gaps first made at Proposal / RFP": the stage itself is the header's pill, so this line adds only where gaps started.
 export function stageLine(stage) {
-  if (!stage?.current) return "";
-  const where = (stage.stages ?? []).filter((s) => s.gaps_started > 0).map((s) => s.label);
-  return `Stage: ${stage.current_label}${where.length ? ` · gaps first made at ${where.join(" and ")}` : ""}`;
+  const where = (stage?.stages ?? []).filter((s) => s.gaps_started > 0).map((s) => s.label);
+  return where.length ? `Gaps first made at ${where.join(" and ")}` : "";
 }
+
+// Names are shown without the ", fictional" tag the demo data carries. Display only: nothing stored changes.
+export const plainName = (name) => String(name ?? "").replace(/,\s*fictional\s*\)/gi, ")").replace(/\s*\(\s*fictional\s*\)/gi, "").trim();
 
 // "Recorded by Sam · 16 Oct 2026"; the date is left out when the saved record has none.
 export function recordedBy(by, at, fmt) {
-  return `Recorded by ${by}${at ? ` · ${fmt(at)}` : ""}`;
+  return `Recorded by ${plainName(by)}${at ? ` · ${fmt(at)}` : ""}`;
 }
 
 // The three row states, worded once for the live page and the frozen record. "Addressed by note" is outlined, never solid.
@@ -306,3 +308,7 @@ export function groupByStage(stages, documents) {
       .sort((a, b) => (a.date ?? "").localeCompare(b.date ?? "") || a.source_key.localeCompare(b.source_key)),
   }));
 }
+
+// Shown under a signed document: it marks the deal signed and nothing else.
+export const SIGNED_NOTE = "Marks the deal signed. Its wording isn't checked; the checks used the drafts.";
+export const isSignedDoc = (docType) => docType === "signed_contract" || docType === "signed_sow";

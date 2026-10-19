@@ -107,10 +107,8 @@ def deal_stage(conn, slug: str) -> dict:
     current, basis = reached, "documents"
     if override.get("stage") in STAGE_INDEX:
         current, basis = override["stage"], "override"
-    import handover  # 16 Oct: a signature recorded by a person moves the deal to Signed (the pipeline reads drafts only)
-    signed = handover.signature(conn, did)
-    if signed and (current is None or STAGE_INDEX[current] < STAGE_INDEX["signed"]):
-        current, basis = "signed", "signature"
+    # 19 Oct: the stage comes from the documents only (Signed needs a signed contract or SOW). No person can record a
+    # signature; records made before this change stay in their table, untouched, and no longer move the stage.
 
     order = {d["key"]: n for n, d in enumerate(docs)}
     started = {}
@@ -143,7 +141,6 @@ def deal_stage(conn, slug: str) -> dict:
                     else f"{started[top]} of {total} promises with open gaps were first made at {name}" if total > 1
                     else f"The promise with an open gap was first made at {name}")
     return {"current": current, "current_label": dict(STAGES).get(current, "No documents yet"), "basis": basis,
-            "signature": signed,
             "override": override if basis == "override" else None, "stages": stages, "headline": headline}
 
 

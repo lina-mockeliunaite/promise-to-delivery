@@ -1043,8 +1043,8 @@ export default function App() {
         <button type="button" className="dl-back" onClick={() => setClassic(false)}>
           ← Back to the deal page
         </button>
-        <p className="eyebrow">Promise to Delivery</p>
-        <h1>Hand over the deal as it was promised.</h1>
+        <p className="eyebrow">Dealshape</p>
+        <h1>See the deal as it was actually promised.</h1>
       </header>
       {error && <Notice kind="error">{error}</Notice>}
       {deals && current && <Workspace key={current} deal={current} onDealsChanged={loadDeals} />}

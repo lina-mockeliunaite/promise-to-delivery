@@ -328,14 +328,29 @@
 .dp-tl:last-child { padding-bottom: 0; }
 .dp-tl::before { content: ""; position: absolute; left: 5px; top: 14px; bottom: -2px; width: 1px; background: var(--line); }
 .dp-tl:last-child::before { display: none; }
-.dp-tl-dot { flex: none; width: 11px; height: 11px; margin-top: 3px; border-radius: 50%; border: 1.5px solid var(--muted); background: var(--muted); box-sizing: border-box; }
+.dp-tl-dot { flex: none; width: 11px; height: 11px; margin-top: 3px; border-radius: 50%; border: 1.5px solid var(--faint); background: var(--faint); box-sizing: border-box; }
 .dp-tl.is-todo .dp-tl-dot, .dp-tl.is-none .dp-tl-dot { background: transparent; border-color: var(--faint); }
-.dp-tl.is-current .dp-tl-dot { background: var(--brand); border-color: var(--brand); }
+.dp-tl.is-current { margin: 0 -8px 6px; padding: 8px; border-radius: 8px; background: color-mix(in srgb, var(--brand) 11%, transparent); }
+.dp-tl.is-current::before { left: 13px; top: 24px; }
+.dp-tl.is-current .dp-tl-dot { width: 15px; height: 15px; margin-top: 1px; background: var(--brand); border-color: var(--brand); }
 .dp-tl-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
 .dp-tl-name { display: flex; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 500; color: var(--ink); }
 .dp-tl.is-todo .dp-tl-name, .dp-tl.is-none .dp-tl-name { color: var(--faint); font-weight: 400; }
 .dp-tl.is-current .dp-tl-name { font-weight: 700; }
 .dp-tl-tag { font-size: 10px; font-weight: 500; color: var(--muted); }
-.dp-tl.is-current .dp-tl-tag { color: var(--brand); }
+.dp-tl.is-current .dp-tl-tag { color: var(--brand); font-weight: 600; }
 .dp-tl-note { font-size: 11px; color: var(--muted); }
 .dp-tl .dp-docs { margin-top: 2px; }
+.dp-tl-empty { font-size: 11px; color: var(--faint); }
+.dp-signed-note { font-size: 11px; color: var(--muted); }
+.dp-stage-pill { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 600;
+  color: var(--brand); background: color-mix(in srgb, var(--brand) 12%, transparent); border: 1px solid color-mix(in srgb, var(--brand) 35%, transparent); }
+/* Each document's link icon sits on its row's centre line, the same size on every row */
+.dp-doc-name { display: inline-flex; align-items: center; gap: 4px; }
+.dp-doc-meta { align-self: center; }
+.dp-icon-btn { align-items: center; justify-content: center; width: 22px; height: 22px; padding: 0; }
+
+/* Product name (19 Oct) */
+.dp-brand { font-size: 13px; font-weight: 700; letter-spacing: -0.01em; color: var(--ink); }
+.dp-foot strong { color: var(--muted); font-weight: 600; }
+.fr-head .fr-eyebrow { text-transform: none; letter-spacing: 0; font-weight: 500; }

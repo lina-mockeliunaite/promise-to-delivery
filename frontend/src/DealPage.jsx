@@ -6,9 +6,10 @@ import * as api from "./api.js";
 import { fmtDate, fmtDateTime, uploadKind } from "./format.js";
 import {
   CLOSING_ONE_LINE, STATUS_CHIP, cleanReason, countsLine, extractedAs, findingDetail, firstPromised, groupByStage,
-  mismatchLine, missingForHandover, recordedBy, rowTitle, sentence, sourcesLine, stageLine, suggestFix, useName, whatChanged,
+  SIGNED_NOTE, isSignedDoc, mismatchLine, missingForHandover, plainName, recordedBy, rowTitle, sentence, sourcesLine, stageLine, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
+import { NAME, TAGLINE } from "./brand.js";
 import CatalogueModal from "./CatalogueModal.jsx";
 import "./DealPage.css";
 
@@ -131,7 +132,7 @@ function PromiseRow({ c, status, onSeen, onCatalogue, onAct, me = "", expanded =
             <footer className="dp-gap-foot">
               <span>
                 <span className="dp-faint">Seen by:</span>{" "}
-                {seen.length ? seen.map((s) => `${s.by} (${fmtDate(s.at).replace(/ \d{4}$/, "")})`).join(" · ") : <span className="dp-faint">nobody yet</span>}
+                {seen.length ? seen.map((s) => `${plainName(s.by)} (${fmtDate(s.at).replace(/ \d{4}$/, "")})`).join(" · ") : <span className="dp-faint">nobody yet</span>}
                 {" "}
                 {seen.some((x) => x.by === me.trim()) ? (
                   <span className="dp-seen-me"><Icon d={I.check} size={13} /> Seen by you</span>
@@ -184,7 +185,7 @@ function NotePanel({ role, label, who, note, name, setName, onSave }) {
     <div className="dp-note">
       <div className="dp-note-head">
         <div>
-          <span className="dp-note-who">{note ? note.by : who}</span>
+          <span className="dp-note-who">{note ? plainName(note.by) : who}</span>
           <span className="dp-note-role">{label}</span>
         </div>
         <span className={`dp-chip ${note ? "dp-chip-green" : "dp-chip-grey"}`}>{note ? "Note added" : "No note yet"}</span>
@@ -379,23 +380,6 @@ function ClosingHelp({ onClose }) {
   );
 }
 
-function SignatureForm({ name, setName, onSave }) {
-  const [on, setOn] = useState(new Date().toISOString().slice(0, 10));
-  const [draft, setDraft] = useState("");
-  const author = (name || draft).trim();
-  return (
-    <div className="dp-sign">
-      <span className="dp-small"><strong className="dp-ink">Contract signed?</strong> Record the date. It is shown as recorded by you, not read from the documents.</span>
-      <span className="dp-row">
-        <input type="date" value={on} max={new Date().toISOString().slice(0, 10)} onChange={(e) => setOn(e.target.value)} />
-        <NameField stored={name} draft={draft} onDraft={setDraft} />
-        <button type="button" className="dp-btn" disabled={!on || !author}
-                onClick={async () => { if (!name.trim()) setName(author); await onSave(on, author); }}>Record signing date</button>
-      </span>
-    </div>
-  );
-}
-
 function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
   const [form, setForm] = useState({ source_key: preset?.source_key ?? "", doc_type: preset?.doc_type ?? "draft_sow",
                                      doc_date: new Date().toISOString().slice(0, 10), file: null });
@@ -455,6 +439,7 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
           <input type="file" accept=".md,.txt,.pdf,.docx,.xlsx,.pptx" onChange={set("file")} />
         </label>
       </div>
+      {!form.source_key && isSignedDoc(form.doc_type) && <p className="dp-faint dp-small">{SIGNED_NOTE}</p>}
       <div className="dp-row">
         <button type="submit" className="dp-btn dp-btn-dark" disabled={busy || !form.file}>{busy ? "Checking…" : "Add and check"}</button>
         <button type="button" className="dp-btn" onClick={onClose} disabled={busy}>Cancel</button>
@@ -502,6 +487,7 @@ function DocumentList({ deal, stages, documents, name, setName, onChanged, onVie
           </button>
         </span>
       </div>
+      {isSignedDoc(d.doc_type) && <span className="dp-signed-note">{SIGNED_NOTE}</span>}
       {linking === d.source_key && (
         <form className="dp-link-form" onSubmit={saveLink}>
           <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://drive.google.com/…" autoFocus />
@@ -528,12 +514,13 @@ function DocumentList({ deal, stages, documents, name, setName, onChanged, onVie
             <div className="dp-tl-body">
               <span className="dp-tl-name">
                 {s.label}
-                {s.state === "current" && <span className="dp-tl-tag">Current</span>}
+                {s.state === "current" && <span className="dp-tl-tag">Current stage</span>}
                 {s.state === "todo" && <span className="dp-tl-tag">Not yet</span>}
               </span>
               {s.gaps_started > 0 && <span className="dp-stage-gaps">{s.gaps_started} {s.gaps_started === 1 ? "gap" : "gaps"} started here</span>}
               {s.key === "contracting" && s.note && <span className="dp-tl-note">{s.note}</span>}
               {s.docs.length > 0 && <ul className="dp-docs">{s.docs.map(doc)}</ul>}
+              {s.docs.length === 0 && s.state === "done" && <span className="dp-tl-empty">No documents</span>}
             </div>
           </li>
         ))}
@@ -639,8 +626,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   ].filter((r) => r.c);
   const notes = reg.handover.notes;
   const STAGE_ORDER = ["discovery", "evaluation", "proposal", "shortlisted", "contracting", "signed", "handover"];
-  const isSigned = STAGE_ORDER.indexOf(reg.stage.current) >= STAGE_ORDER.indexOf("signed");
-  const signed = reg.handover.signature;
+  const isSigned = STAGE_ORDER.indexOf(reg.stage.current) >= STAGE_ORDER.indexOf("signed"); // from the documents only
   const included = docs.documents.filter((d) => d.included);
   const missing = missingForHandover({ isSigned, notes });
   const completer = (name || completeDraft).trim();
@@ -649,6 +635,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
     <div className="dp">
       <div className="dp-topbar">
         <button type="button" className="dp-back" onClick={onBack}><Icon d={I.back} /> All deals</button>
+        <span className="dp-brand" title={TAGLINE}>{NAME}</span>
         {name.trim() && (
           <span className="dp-me">
             Recording as <strong>{name.trim()}</strong> ·{" "}
@@ -664,8 +651,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
               <div>
                 <div className="dp-title-row">
                   <h1>{reg.name}</h1>
-                  <span className="dp-chip dp-chip-grey">{reg.stage.current_label}</span>
-                  {signed && <span className="dp-chip dp-chip-green" title="Recorded by a person, not read from the documents">Signed {fmtDate(signed.signed_on)} · recorded by {signed.recorded_by}</span>}
+                  <span className="dp-stage-pill">Stage: {reg.stage.current_label}</span>
                 </div>
                 <div className="dp-meta">
                   {reg.brief?.go_live && <span className="dp-meta-strong"><Icon d={I.calendar} /> Target go-live: {fmtDate(reg.brief.go_live)}</span>}
@@ -692,7 +678,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
             <section className="dp-card">
               <div className="dp-sec-head">
                 <h2 className="dp-upper">What we're delivering</h2>
-                <span className="dp-faint">Confirmed by <strong className="dp-ink">{reg.brief.confirmed_by}</strong>{reg.brief.basis ? ` from ${reg.brief.basis}` : ""}</span>
+                <span className="dp-faint">Confirmed by <strong className="dp-ink">{plainName(reg.brief.confirmed_by)}</strong>{reg.brief.basis ? ` from ${reg.brief.basis}` : ""}</span>
               </div>
               <p className="dp-brief">{reg.brief.summary}</p>
               {reg.brief.deliverables.length > 0 && (
@@ -741,9 +727,6 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
               <NotePanel role="delivery" label="Delivery acceptance note" who="Delivery" note={notes.delivery} name={name} setName={setName}
                          onSave={(role, text, by) => api.saveHandoverNote(deal, { role, note: text, entered_by: by }).then(() => { load(); onDealsChanged?.(); })} />
             </div>
-            {!isSigned && (
-              <SignatureForm name={name} setName={setName} onSave={(on, by) => act(() => api.recordSignature(deal, { signed_on: on, recorded_by: by }))} />
-            )}
             <div className="dp-complete">
               <span className="dp-faint"><Icon d={I.lock} size={14} /> Completing the handover freezes this record. Commitments needing attention stay visible as they stood.</span>
               {completing ? (
@@ -768,7 +751,8 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
           </section>
 
           <footer className="dp-foot">
-            Lists commitments where the customer's expectation, the contract and what we can sell don't line up. Checked against the documents listed and the product catalogue.
+            <strong>{NAME}</strong> · {TAGLINE}<br />
+            Lists commitments where the customer's expectation, the contract and what we can sell don't line up. Checked against the documents listed and the product catalogue. All companies, people and deals are fictional.
             {onClassic && SHOW_DETAILED && <> · <button type="button" className="dp-link-btn" onClick={onClassic}>Open the detailed view</button></>}
           </footer>
         </main>

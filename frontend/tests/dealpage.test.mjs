@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  attentionText, cleanReason, countsLine, extractedAs, findingDetail, firstDocDate, firstPromised, groupByStage, mismatchLine,
+  SIGNED_NOTE, attentionText, cleanReason, countsLine, extractedAs, findingDetail, firstDocDate, firstPromised, groupByStage, isSignedDoc, mismatchLine, plainName,
   recordedBy, rowTitle, sourcesLine, stageLine, suggestFix, verdictLine, whatChanged,
 } from "../src/dealpage.js";
 
@@ -83,7 +83,7 @@ test("quotes are listed once, newest first", () => {
 
 test("completion lists every missing requirement", () => {
   assert.deepEqual(missingForHandover({ isSigned: false, notes: { sales: null, delivery: { note: "x" } }, canAct: true }),
-                   ["save the signing date", "add the Sales note"]);
+                   ["upload the signed contract", "add the Sales note"]);
   assert.deepEqual(missingForHandover({ isSigned: true, notes: { sales: {}, delivery: {} }, canAct: true }), []);
 });
 
@@ -116,8 +116,8 @@ const ALDER = [
 
 test("the mismatch line is built from verified finding labels, for Alder's three commitments", () => {
   assert.deepEqual(ALDER.map((c) => mismatchLine(c.issues, c.contract)), [
-    "Not approved internally · Not in the contract",
-    "Not approved internally · Not in the contract",
+    "No approval found · Not in the contract",
+    "No approval found · Not in the contract",
     "Not offered · Contract differs: Amazon Web Services in the Sydney region",
   ]);
 });
@@ -173,17 +173,17 @@ test("the handover verdict is honest about notes", () => {
   assert.doesNotMatch(verdictLine({ open: 0, noted: 2 }), /no open gaps on the documents/);
 });
 
-test("the stage line names where the gaps were first made", () => {
+test("the stage line says only where the gaps were first made; the stage itself is the header's pill", () => {
   const stage = { current: "contracting", current_label: "Contracting",
     stages: [{ label: "Proposal / RFP", gaps_started: 3 }, { label: "Contracting", gaps_started: 0 }] };
-  assert.equal(stageLine(stage), "Stage: Contracting · gaps first made at Proposal / RFP");
-  assert.equal(stageLine({ ...stage, stages: [] }), "Stage: Contracting");
+  assert.equal(stageLine(stage), "Gaps first made at Proposal / RFP");
+  assert.equal(stageLine({ ...stage, stages: [] }), "");
   assert.equal(stageLine({ current: null }), "");
 });
 
 test("the handover button lists what is missing in words, and never asks for a name", () => {
   assert.deepEqual(missingForHandover({ isSigned: false, notes: { sales: null, delivery: { by: "Sam" } }, canAct: false }),
-    ["save the signing date", "add the Sales note"]);
+    ["upload the signed contract", "add the Sales note"]);
   assert.deepEqual(missingForHandover({ isSigned: true, notes: { sales: {}, delivery: {} } }), []);
 });
 
@@ -217,4 +217,18 @@ test("documents that are excluded or have no stage are not placed", () => {
   const g = groupByStage(STAGES, [alderDoc("X-1", "2026-10-01", "proposal", { included: false }), alderDoc("X-2", "2026-10-01", null)]);
   assert.equal(g.flatMap((s) => s.docs).length, 0);
   assert.deepEqual(groupByStage(undefined, undefined), []);
+});
+
+test("', fictional' is dropped from displayed names only", () => {
+  assert.equal(plainName("Tom Fraser (Account Executive, fictional)"), "Tom Fraser (Account Executive)");
+  assert.equal(plainName("Deal owner (fictional)"), "Deal owner");
+  assert.equal(plainName("Maya Tan"), "Maya Tan");
+  assert.equal(plainName(null), "");
+  assert.equal(recordedBy("Tom Fraser (Account Executive, fictional)", null, String), "Recorded by Tom Fraser (Account Executive)");
+});
+
+test("signed paperwork is recognised and carries its one-line note", () => {
+  assert.ok(isSignedDoc("signed_contract") && isSignedDoc("signed_sow"));
+  assert.ok(!isSignedDoc("draft_contract") && !isSignedDoc(undefined));
+  assert.equal(SIGNED_NOTE, "Marks the deal signed. Its wording isn't checked; the checks used the drafts.");
 });

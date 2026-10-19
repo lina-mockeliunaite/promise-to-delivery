@@ -495,14 +495,6 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
         except handover.HandoverError as exc:
             raise handover_error(exc) from None
 
-    @app.post("/api/deals/{deal}/signature", dependencies=[Depends(write_guard)])
-    def hv_signature(deal: str, body: dict = Body(...), conn=Depends(db)):
-        workspace_deal(deal, conn)
-        try:
-            return {"signature": handover.record_signature(conn, deal, body.get("signed_on"), body.get("recorded_by"))}
-        except handover.HandoverError as exc:
-            raise handover_error(exc) from None
-
     @app.post("/api/deals/{deal}/handover/complete", dependencies=[Depends(write_guard)])
     def hv_complete(deal: str, body: dict = Body(...), conn=Depends(db)):
         workspace_deal(deal, conn)
