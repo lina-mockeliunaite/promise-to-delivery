@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-[#FAFAF9] text-slate-800 antialiased" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Alder Bank · Dealshape</title>
+<!-- Tailwind CSS CDN with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#012e23',
+              hover: '#093d30',
+              accent: '#1c4438',
+              surface: '#f0f6f3',
+              border: '#cde0d7'
+            },
+            canvas: '#FAFAF9',
+            card: '#FFFFFF'
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+          },
+          boxShadow: {
+            'elevation-sm': '0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02)',
+            'elevation-md': '0 2px 4px rgba(15, 23, 42, 0.02), 0 6px 16px rgba(15, 23, 42, 0.03)',
+            'elevation-card': '0 1px 3px rgba(15, 23, 42, 0.03), 0 10px 28px -4px rgba(15, 23, 42, 0.04)'
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom Font & Editorial Styling -->
+<style data-purpose="typography">
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;550;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    body {
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .font-tabular {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+<!-- END: Custom Font & Editorial Styling -->
+</head>
+<body class="min-h-full flex flex-col font-sans selection:bg-[#1c4438] selection:text-white text-[13px] leading-relaxed bg-[#FAFAF9] text-slate-800">
+<!-- Ambient light wash banner in header -->
+<div class="fixed top-0 left-0 right-0 h-96 pointer-events-none bg-gradient-to-b from-emerald-500/[0.035] via-teal-500/[0.015] to-transparent -z-10"></div>
+<!-- BEGIN: TopHeader -->
+<header class="w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-30 transition-all">
+<div class="max-w-[1440px] mx-auto px-6 h-13 flex items-center justify-between text-xs">
+<!-- Left: Navigation back link -->
+<div class="flex items-center gap-4">
+<a class="group inline-flex items-center gap-2 font-medium text-slate-500 hover:text-slate-900 transition-colors py-1 px-2 -ml-2 rounded-lg hover:bg-slate-100/70" href="#all-deals">
+<svg class="w-4 h-4 text-slate-400 group-hover:-translate-x-0.5 group-hover:text-slate-700 transition-all stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="tracking-tight">All deals</span>
+</a>
+</div>
+<!-- Center: Brand identity with subtle status dot -->
+<div class="flex items-center gap-2.5">
+<div class="w-6 h-6 rounded-md bg-[#012e23] flex items-center justify-center text-white font-semibold text-[11px] shadow-sm shadow-[#012e23]/30">
+<svg class="w-3.5 h-3.5 text-emerald-300" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+</svg>
+</div>
+<span class="font-semibold tracking-tight text-slate-900 text-sm">Dealshape</span>
+</div>
+<!-- Right: User meta & catalog action -->
+<div class="flex items-center gap-3 text-slate-600">
+<div class="flex items-center gap-2 bg-slate-50/90 border border-slate-200/70 py-1 px-2.5 rounded-full text-[11px]">
+<div class="w-4 h-4 rounded-full bg-emerald-100 text-[#012e23] flex items-center justify-center font-bold text-[9px]">LM</div>
+<span>Recording as <strong class="font-medium text-slate-900">Lina Mockeliunaite</strong></span>
+<span class="text-slate-300">·</span>
+<a class="text-slate-500 underline underline-offset-2 hover:text-slate-900 transition-colors" href="#change-user">change</a>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: MainContentContainer -->
+<main class="flex-1 max-w-[1440px] w-full mx-auto px-6 py-7">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-7 items-start">
+<!-- ============================================================== -->
+<!-- LEFT COLUMN: Deal intelligence & Commitments (approx. 65%)      -->
+<!-- ============================================================== -->
+<div class="lg:col-span-8 space-y-6" data-purpose="deal-main-column">
+<!-- BEGIN: DealOverviewCard -->
+<section class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-elevation-card relative overflow-hidden transition-all" data-purpose="deal-header-overview">
+<!-- Subtle top accent line -->
+<div class="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-emerald-600/70 via-teal-500/40 to-transparent"></div>
+<div class="flex flex-wrap items-center justify-between gap-4 pb-1">
+<div class="flex items-center gap-3">
+<h1 class="text-2xl font-bold tracking-tight text-slate-900">Alder Bank</h1>
+<span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#f0f6f3] text-[#012e23] border border-[#cde0d7] shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-[#1c4438] animate-pulse"></span>
+                Stage: Contracting
+              </span>
+</div>
+<a class="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 bg-white hover:bg-slate-50 border border-slate-200/90 shadow-elevation-sm hover:border-slate-300 transition-all" href="#catalogue">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M4 6h16M4 10h16M4 14h16M4 18h16" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+              Product catalogue
+            </a>
+</div>
+<!-- Metadata & Re-check Status Row -->
+<div class="flex flex-wrap items-center gap-x-3 gap-y-2 text-xs text-slate-600 pt-2">
+<span class="inline-flex items-center gap-1.5 font-medium text-slate-900 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-200/60">
+<svg class="w-3.5 h-3.5 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<rect height="18" rx="2" ry="2" stroke-width="1.75" width="18" x="3" y="4"></rect>
+<line stroke-width="1.75" x1="16" x2="16" y1="2" y2="6"></line>
+<line stroke-width="1.75" x1="8" x2="8" y1="2" y2="6"></line>
+<line stroke-width="1.75" x1="3" x2="21" y1="10" y2="10"></line>
+</svg>
+              Target go-live: <span class="font-tabular">1 Feb 2027</span>
+</span>
+<span class="text-slate-300">·</span>
+<div class="flex items-center gap-1.5 text-slate-600">
+<span>Checked <span class="font-tabular">19 Oct 2026</span> against 8 documents</span>
+<span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-50 text-amber-800 border border-amber-200">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                Review out of date
+              </span>
+</div>
+<span class="text-slate-300">·</span>
+<button class="font-semibold text-slate-900 hover:text-[#012e23] underline underline-offset-2 transition-colors">Check again</button>
+</div>
+<!-- Refined Visual Health Indicator: Commitment Alignment Meter -->
+<div class="pt-4 pb-1 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+<div class="flex items-center gap-2 text-[12px] text-slate-500">
+<span class="inline-block w-2 h-2 rounded-full bg-amber-500"></span>
+<span>Gaps first made at <strong class="font-semibold text-slate-700">Proposal / RFP</strong></span>
+</div>
+<!-- Sleek alignment progress segment pill -->
+<div class="flex items-center gap-3">
+<span class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Commitment Alignment</span>
+<div class="flex items-center gap-1.5 bg-slate-50 p-1 rounded-full border border-slate-200/60 shadow-xs">
+<!-- 3 Needs Attention -->
+<div class="flex items-center gap-1 bg-amber-100/90 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-semibold font-tabular">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  3 needs attention
+                </div>
+<!-- 1 Addressed -->
+<div class="flex items-center gap-1 bg-slate-200/70 text-slate-700 px-2 py-0.5 rounded-full text-[10px] font-medium font-tabular">
+                  1 addressed
+                </div>
+<!-- 1 Closed -->
+<div class="flex items-center gap-1 bg-emerald-100/80 text-emerald-800 px-2 py-0.5 rounded-full text-[10px] font-semibold font-tabular">
+<svg class="w-2.5 h-2.5" fill="currentColor" viewbox="0 0 20 20">
+<path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path>
+</svg>
+                  1 closed
+                </div>
+</div>
+</div>
+</div>
+</section>
+<!-- END: DealOverviewCard -->
+<!-- BEGIN: WhatWereDeliveringCard -->
+<section class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-elevation-card space-y-4" data-purpose="delivery-scope-summary">
+<div class="flex items-center justify-between text-xs border-b border-slate-100 pb-3">
+<div class="flex items-center gap-2">
+<span class="w-2 h-2 rounded-sm bg-[#1c4438]"></span>
+<span class="font-semibold tracking-wider text-[11px] uppercase text-slate-800">What we're delivering</span>
+</div>
+<span class="text-slate-500 text-[11px]">
+              Confirmed by <strong class="font-medium text-slate-800">Tom Fraser (Account Executive)</strong> from draft SOW, 9 Oct
+            </span>
+</div>
+<p class="text-slate-700 leading-relaxed text-[13px] font-normal">
+            Elva provides scam protection for Alder Bank’s outbound instant payments, holding each payment until Elva returns a decision, from a 1 February 2027 launch. Go-live depends on Alder providing sandbox access to its payments platform by 1 December.
+          </p>
+<!-- Deliverables modern card / badge grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 pt-2 text-xs">
+<div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/70 border border-slate-200/60 hover:bg-slate-50 transition-colors">
+<div class="w-4 h-4 rounded-full bg-emerald-100/90 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
+<svg class="w-2.5 h-2.5 stroke-[2.5]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-slate-700 font-medium">Dedicated environment on AWS, Sydney region</span>
+</div>
+<div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/70 border border-slate-200/60 hover:bg-slate-50 transition-colors">
+<div class="w-4 h-4 rounded-full bg-emerald-100/90 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
+<svg class="w-2.5 h-2.5 stroke-[2.5]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-slate-700 font-medium">Real-time scoring for instant payments of AUD 1,000 or more; hourly batches below that</span>
+</div>
+<div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/70 border border-slate-200/60 hover:bg-slate-50 transition-colors">
+<div class="w-4 h-4 rounded-full bg-emerald-100/90 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
+<svg class="w-2.5 h-2.5 stroke-[2.5]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-slate-700 font-medium">Up to 200,000 payments a day at launch</span>
+</div>
+<div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/70 border border-slate-200/60 hover:bg-slate-50 transition-colors">
+<div class="w-4 h-4 rounded-full bg-emerald-100/90 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
+<svg class="w-2.5 h-2.5 stroke-[2.5]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-slate-700 font-medium">Case management workspace with full case audit history</span>
+</div>
+<div class="flex items-start gap-2.5 p-2.5 rounded-xl bg-slate-50/70 border border-slate-200/60 md:col-span-2 hover:bg-slate-50 transition-colors">
+<div class="w-4 h-4 rounded-full bg-emerald-100/90 text-emerald-800 flex items-center justify-center shrink-0 mt-0.5">
+<svg class="w-2.5 h-2.5 stroke-[2.5]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<span class="text-slate-700 font-medium">Weekly project status meeting during implementation</span>
+</div>
+</div>
+</section>
+<!-- END: WhatWereDeliveringCard -->
+<!-- BEGIN: CommitmentsNeedingAttentionSection -->
+<section class="bg-white border border-slate-200/80 rounded-2xl shadow-elevation-card overflow-hidden" data-purpose="commitments-section">
+<!-- Commitments Section Header -->
+<div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<h2 class="font-semibold text-slate-900 text-sm tracking-tight">Commitments needing attention</h2>
+<button class="text-xs font-medium text-slate-500 hover:text-slate-900 underline underline-offset-2 transition-colors">Expand all</button>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200/80 shadow-xs font-tabular">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
+              3 need attention
+            </span>
+</div>
+<!-- Commitments Item 1: Expanded Detailed Inspection -->
+<article class="border-b border-slate-100 bg-white" data-purpose="commitment-item-expanded">
+<div class="p-6 space-y-5">
+<!-- Item Header / Alert Bar -->
+<div class="flex items-start justify-between gap-4">
+<div class="space-y-1">
+<div class="flex items-center gap-2.5">
+<button class="w-5 h-5 rounded-md hover:bg-slate-100 flex items-center justify-center text-slate-600 transition-colors">
+<svg class="w-4 h-4 stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 9l-7 7-7-7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</button>
+<h3 class="font-semibold text-slate-900 text-sm tracking-tight">Coaching-scam detection live at launch</h3>
+</div>
+<p class="text-xs font-semibold text-amber-700 pl-7 flex items-center gap-1.5">
+<span class="w-1 h-1 rounded-full bg-amber-500"></span>
+                    No approval found · Not in the contract
+                  </p>
+<p class="text-[11px] text-slate-400 pl-7 font-tabular">First promised in the RFP response, 29 Sep</p>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 whitespace-nowrap shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                  Needs attention
+                </span>
+</div>
+<!-- 3 Column Triangulation Grid with Refined Intelligence Style -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-3.5 pl-7">
+<!-- Column 1: Customer Expectation -->
+<div class="bg-slate-50/70 border border-slate-200/80 rounded-xl p-4 space-y-2.5 relative overflow-hidden flex flex-col justify-between">
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<div class="text-[10px] font-bold tracking-wider text-slate-500 uppercase">Customer was told</div>
+<svg class="w-3.5 h-3.5 text-slate-400" fill="currentColor" viewbox="0 0 24 24">
+<path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10h-9.983zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10h-9.983z"></path>
+</svg>
+</div>
+<div class="font-semibold text-slate-900 text-xs">BioCatch</div>
+<blockquote class="text-xs text-slate-600 italic bg-white/70 p-2.5 rounded-lg border border-slate-200/60">
+                      "Elva will use behavioural signals to flag customers who appear to be coached by a scammer, live from the 1 February 2027 launch."
+                    </blockquote>
+</div>
+<div class="pt-2 text-[11px] text-slate-400 font-mono font-tabular border-t border-slate-200/50">
+                    Proposal (2 Oct) · RFP response (29 Sep)
+                  </div>
+</div>
+<!-- Column 2: Contractual Commitment -->
+<div class="bg-rose-50/30 border border-rose-200/60 rounded-xl p-4 space-y-2.5 relative overflow-hidden flex flex-col justify-between">
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<div class="text-[10px] font-bold tracking-wider text-rose-600 uppercase">Contract says</div>
+<svg class="w-3.5 h-3.5 text-rose-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="10" stroke-width="1.8"></circle>
+<line stroke-width="1.8" x1="4.93" x2="19.07" y1="4.93" y2="19.07"></line>
+</svg>
+</div>
+<div class="font-semibold text-rose-950 text-xs flex items-center gap-1.5">
+<span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500"></span>
+                      Not included
+                    </div>
+<p class="text-xs text-slate-600 font-mono text-[11px] leading-relaxed bg-white/80 p-2.5 rounded-lg border border-rose-200/40">
+                      Not found anywhere in the contract or SOW: "BioCatch", "coached by a scammer".
+                    </p>
+</div>
+<div class="pt-2 text-[10px] text-rose-500/80 font-medium">Missing from binding documents</div>
+</div>
+<!-- Column 3: Audit Intelligence Findings -->
+<div class="bg-gradient-to-br from-[#FFFDF7] to-amber-50/40 border border-amber-200/90 rounded-xl p-4 space-y-3 relative overflow-hidden shadow-xs">
+<div class="flex items-center justify-between">
+<div class="text-[10px] font-bold tracking-wider text-amber-900 uppercase flex items-center gap-1.5">
+<svg class="w-3 h-3 text-amber-600" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2L15 8L22 9L17 14L18 21L12 18L6 21L7 14L2 9L9 8L12 2Z"></path>
+</svg>
+                      What we found
+                    </div>
+<span class="text-[9px] uppercase tracking-wider font-semibold bg-amber-100 text-amber-800 px-1.5 py-0.5 rounded">Analysis</span>
+</div>
+<div class="text-xs text-slate-700 space-y-2 leading-relaxed">
+<p>
+<strong class="font-semibold text-slate-900">No approval found in the supplied documents.</strong> CAP-027 is in beta and requires a named approval before it can be sold, but the pricing note records no named approver for Alder Bank, so this promise of live coaching detection at launch is not yet authorised.
+                    </p>
+<p>
+<strong class="font-semibold text-slate-900">Not in the draft contract or SOW.</strong> The SOW and contract make no mention of BioCatch or coaching detection at all, so this customer-facing promise is absent from the contract chain entirely.
+                    </p>
+</div>
+<div class="pt-1 flex items-center justify-between text-xs">
+<a class="text-[#012e23] font-semibold underline underline-offset-2 flex items-center gap-1 hover:text-emerald-800 transition-colors" href="#cap-027">
+<span>Catalogue: CAP-027 · AU</span>
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</a>
+</div>
+<div class="pt-2 border-t border-amber-200/60 text-[10px] text-slate-500 italic">
+                    AI-written summary · the quotes behind it are checked against the documents
+                  </div>
+</div>
+</div>
+<!-- Extracted raw quote context pill -->
+<div class="pl-7">
+<div class="inline-flex items-center gap-2 bg-slate-50 border border-slate-200/70 rounded-lg px-3 py-1.5 text-[11px] font-mono text-slate-600">
+<span class="text-slate-400 font-sans text-[10px] uppercase font-bold tracking-wider">Extracted:</span>
+<span>BioCatch-based coaching detection live from 1 February 2027 launch</span>
+</div>
+</div>
+<!-- Commitment Card Actions -->
+<div class="pl-7 pt-3 flex flex-wrap items-center justify-between gap-4 border-t border-slate-100">
+<div class="text-xs text-slate-500 flex items-center gap-1.5">
+<div class="w-2 h-2 rounded-full bg-slate-300"></div>
+<span>Seen by: nobody yet</span>
+<span class="mx-1 text-slate-300">·</span>
+<button class="font-medium text-slate-700 underline underline-offset-2 hover:text-slate-900 transition-colors">Mark as seen</button>
+</div>
+<div class="flex items-center gap-2.5">
+<button class="px-3.5 py-1.5 rounded-lg text-xs font-medium text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 shadow-elevation-sm transition-all" type="button">
+                    Record a note
+                  </button>
+<button class="px-3.5 py-1.5 rounded-lg text-xs font-medium text-white bg-[#012e23] hover:bg-[#093d30] shadow-sm shadow-[#012e23]/20 transition-all" type="button">
+                    Add updated document
+                  </button>
+</div>
+</div>
+</div>
+</article>
+<!-- Commitments Item 2: Collapsed Azure Issue -->
+<article class="p-4 px-6 border-b border-slate-100 hover:bg-slate-50/70 transition-colors cursor-pointer group" data-purpose="commitment-item-collapsed">
+<div class="flex items-center justify-between gap-4">
+<div class="space-y-0.5">
+<div class="flex items-center gap-2.5">
+<svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="font-semibold text-slate-900 text-xs tracking-tight">Hosting on Microsoft Azure</span>
+</div>
+<p class="text-xs font-medium text-amber-700 pl-6">Not offered · Contract differs: Amazon Web Services in the Sydney region</p>
+<p class="text-[11px] text-slate-400 pl-6 font-tabular">First promised in the RFP response, 29 Sep</p>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                Needs attention
+              </span>
+</div>
+</article>
+<!-- Commitments Item 3: Collapsed Payments Scale Issue -->
+<article class="p-4 px-6 border-b border-slate-100 hover:bg-slate-50/70 transition-colors cursor-pointer group" data-purpose="commitment-item-collapsed">
+<div class="flex items-center justify-between gap-4">
+<div class="space-y-0.5">
+<div class="flex items-center gap-2.5">
+<svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="font-semibold text-slate-900 text-xs tracking-tight">750,000 payments a day by the end of year one</span>
+</div>
+<p class="text-xs font-medium text-amber-700 pl-6">No approval found · Not in the contract</p>
+<p class="text-[11px] text-slate-400 pl-6 font-tabular">First promised in the proposal, 2 Oct</p>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200 shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                Needs attention
+              </span>
+</div>
+</article>
+<!-- Commitments Item 4: Addressed by note (Outlined neutral status with author chip) -->
+<article class="p-4 px-6 border-b border-slate-100 hover:bg-slate-50/70 transition-colors cursor-pointer group" data-purpose="commitment-item-addressed">
+<div class="flex items-center justify-between gap-4">
+<div class="space-y-1">
+<div class="flex items-center gap-2.5">
+<svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="font-medium text-slate-800 text-xs tracking-tight">Dedicated Disaster Recovery RPO under 15 minutes</span>
+</div>
+<div class="flex items-center gap-2 pl-6">
+<span class="text-xs text-slate-500">Customer agreed standard AWS Sydney DR SLA on 14 Oct call</span>
+<span class="text-slate-300">·</span>
+<span class="inline-flex items-center gap-1 text-[11px] font-medium text-slate-600 bg-slate-100 border border-slate-200 px-2 py-0.2 rounded-full">
+                    Note by Tom Fraser
+                  </span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-white text-slate-700 border border-slate-300 shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                Addressed by note
+              </span>
+</div>
+</article>
+<!-- Commitments Item 5: Closed by documents (Solid green status with checkmark badge) -->
+<article class="p-4 px-6 hover:bg-slate-50/70 transition-colors cursor-pointer group bg-emerald-50/15" data-purpose="commitment-item-resolved">
+<div class="flex items-center justify-between gap-4">
+<div class="space-y-1">
+<div class="flex items-center gap-2.5">
+<svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-700 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span class="font-medium text-slate-800 text-xs tracking-tight">Hourly batch processing fallback endpoint</span>
+</div>
+<div class="flex items-center gap-2 pl-6">
+<p class="text-xs text-slate-500">Added and defined in Draft SOW v1.2 section 4.1</p>
+<span class="text-emerald-700/60 font-mono text-[10px] bg-emerald-50 border border-emerald-200/60 px-1.5 py-0.5 rounded">SOW v1.2 §4.1</span>
+</div>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#DCFCE7] text-[#166534] border border-[#BBF7D0] shadow-xs">
+<svg class="w-3 h-3 text-[#166534] stroke-[2.5]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+                Closed by documents
+              </span>
+</div>
+</article>
+</section>
+<!-- END: CommitmentsNeedingAttentionSection -->
+<!-- BEGIN: HandoverSection -->
+<section class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-elevation-card space-y-5" data-purpose="handover-process">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2.5">
+<div class="w-6 h-6 rounded-md bg-amber-100/70 text-amber-800 flex items-center justify-center">
+<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+</div>
+<h2 class="font-semibold text-slate-900 text-sm tracking-tight">Handover</h2>
+</div>
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-800 border border-amber-200 shadow-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              Waiting for notes
+            </span>
+</div>
+<!-- Dual Notes Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<!-- Sales Note Card -->
+<div class="border border-slate-200/90 rounded-xl p-4 bg-slate-50/50 flex flex-col justify-between space-y-3 hover:border-slate-300 transition-colors">
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-[#012e23] text-white flex items-center justify-center text-[10px] font-bold">S</div>
+<span class="font-semibold text-xs text-slate-900">Sales</span>
+</div>
+<span class="text-[11px] font-medium text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded-full shadow-2xs">No note yet</span>
+</div>
+<div class="text-[11px] text-slate-500 font-medium">Deal owner's handoff note</div>
+<div class="p-3 bg-white border border-dashed border-slate-300 rounded-lg text-xs text-slate-400 min-h-[72px] leading-relaxed">
+                  What Delivery should know: commitments needing attention, side promises, people to talk to
+                </div>
+</div>
+<div class="flex justify-end pt-1">
+<button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 shadow-2xs transition-all" type="button">
+<svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                  Add note
+                </button>
+</div>
+</div>
+<!-- Delivery Acceptance Note Card -->
+<div class="border border-slate-200/90 rounded-xl p-4 bg-slate-50/50 flex flex-col justify-between space-y-3 hover:border-slate-300 transition-colors">
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-2">
+<div class="w-5 h-5 rounded-full bg-slate-700 text-white flex items-center justify-center text-[10px] font-bold">D</div>
+<span class="font-semibold text-xs text-slate-900">Delivery</span>
+</div>
+<span class="text-[11px] font-medium text-slate-500 bg-white border border-slate-200 px-2 py-0.5 rounded-full shadow-2xs">No note yet</span>
+</div>
+<div class="text-[11px] text-slate-500 font-medium">Delivery acceptance note</div>
+<div class="p-3 bg-white border border-dashed border-slate-300 rounded-lg text-xs text-slate-400 min-h-[72px] leading-relaxed flex items-center justify-center italic">
+                  Not written yet.
+                </div>
+</div>
+<div class="flex justify-end pt-1">
+<button class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 shadow-2xs transition-all" type="button">
+<svg class="w-3 h-3 text-slate-500" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+                  Add note
+                </button>
+</div>
+</div>
+</div>
+<!-- Handover Final Lock Controls Banner -->
+<div class="pt-4 border-t border-slate-100 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 bg-slate-50/60 p-4 rounded-xl border border-slate-200/60">
+<div class="flex items-center gap-2.5 text-xs text-slate-600 max-w-md">
+<div class="w-8 h-8 rounded-lg bg-slate-200/70 text-slate-600 flex items-center justify-center shrink-0">
+<svg class="w-4 h-4 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<rect height="11" rx="2" ry="2" stroke-width="1.75" width="18" x="3" y="11"></rect>
+<path d="M7 11V7a5 5 0 0110 0v4" stroke-width="1.75"></path>
+</svg>
+</div>
+<span>Completing the handover freezes this record. Commitments needing attention stay visible as they stood.</span>
+</div>
+<div class="flex flex-col items-end gap-1.5 w-full md:w-auto">
+<button class="w-full md:w-auto px-4 py-2 rounded-lg text-xs font-medium bg-slate-200 text-slate-400 cursor-not-allowed select-none transition-all" disabled="" type="button">
+                Complete handover
+              </button>
+<span class="text-[11px] text-slate-400 text-right">
+                To complete the handover: upload the signed contract · add the Sales note · add the Delivery note.
+              </span>
+</div>
+</div>
+</section>
+<!-- END: HandoverSection -->
+</div>
+<!-- ============================================================== -->
+<!-- RIGHT COLUMN: Timeline & Documents Lifecycle (approx. 35%)     -->
+<!-- ============================================================== -->
+<aside class="lg:col-span-4 space-y-4" data-purpose="deal-timeline-sidebar">
+<div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-elevation-card space-y-5 sticky top-20">
+<!-- Documents checked header -->
+<div class="flex items-center justify-between border-b border-slate-100 pb-3">
+<div class="flex items-center gap-2.5">
+<div class="w-6 h-6 rounded-md bg-slate-100 flex items-center justify-center text-slate-600">
+<svg class="w-3.5 h-3.5 stroke-[1.8]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+</div>
+<h3 class="text-xs font-bold tracking-wider uppercase text-slate-800">Documents Checked</h3>
+<span class="bg-slate-100 border border-slate-200/70 font-mono text-[11px] px-2 py-0.5 rounded-full text-slate-700 font-semibold font-tabular">8</span>
+</div>
+<button class="inline-flex items-center gap-1 text-xs font-semibold text-slate-700 hover:text-slate-900 px-2.5 py-1 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 shadow-2xs transition-all" type="button">
+<span class="text-slate-400">+</span> Add
+            </button>
+</div>
+<!-- Vertical Progressive Timeline ('Deal Journey') -->
+<div class="relative pl-6 space-y-6 before:absolute before:left-[9px] before:top-2 before:bottom-3 before:w-[2px] before:bg-slate-200/80">
+<!-- Stage 1: Discovery -->
+<div class="relative group">
+<div class="absolute -left-[20px] top-1.5 w-3 h-3 rounded-full bg-slate-400 ring-4 ring-white shadow-2xs"></div>
+<div class="text-xs font-semibold text-slate-800 tracking-tight">Discovery</div>
+<div class="mt-2 space-y-1.5 text-xs text-slate-600">
+<div class="flex items-center justify-between hover:text-slate-900 group/link p-1.5 -mx-1.5 rounded-lg hover:bg-slate-50 transition-colors">
+<div class="flex items-center gap-2">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<span>Call transcript of 15 Sep 2026</span>
+</div>
+<div class="flex items-center gap-1 text-slate-400 font-mono text-[11px] font-tabular">
+<span>15 Sep</span>
+<svg class="w-3 h-3 group-hover/link:text-slate-700 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+<!-- Stage 2: Evaluation -->
+<div class="relative group">
+<div class="absolute -left-[20px] top-1.5 w-3 h-3 rounded-full bg-slate-400 ring-4 ring-white shadow-2xs"></div>
+<div class="text-xs font-semibold text-slate-800 tracking-tight">Evaluation</div>
+<div class="mt-2 space-y-1.5 text-xs text-slate-600">
+<div class="flex items-center justify-between hover:text-slate-900 group/link p-1.5 -mx-1.5 rounded-lg hover:bg-slate-50 transition-colors">
+<div class="flex items-center gap-2">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 100-6 3 3 0 000 6z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<span>Call transcript of 22 Sep 2026</span>
+</div>
+<div class="flex items-center gap-1 text-slate-400 font-mono text-[11px] font-tabular">
+<span>22 Sep</span>
+<svg class="w-3 h-3 group-hover/link:text-slate-700 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+<!-- Stage 3: Proposal / RFP (Critical gap inception) -->
+<div class="relative group">
+<div class="absolute -left-[20px] top-1.5 w-3 h-3 rounded-full bg-amber-500 ring-4 ring-white shadow-2xs"></div>
+<div class="flex items-center justify-between">
+<span class="text-xs font-semibold text-slate-800 tracking-tight">Proposal / RFP</span>
+<span class="text-[10px] font-semibold text-amber-800 bg-amber-50 border border-amber-200/90 px-2 py-0.5 rounded-full shadow-2xs">
+                  3 gaps started here
+                </span>
+</div>
+<div class="mt-2.5 space-y-1.5 text-xs text-slate-600">
+<div class="flex items-center justify-between hover:text-slate-900 group/link p-1.5 -mx-1.5 rounded-lg hover:bg-slate-50 transition-colors">
+<div class="flex items-center gap-2">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<span>RFP response</span>
+</div>
+<div class="flex items-center gap-1 text-slate-400 font-mono text-[11px] font-tabular">
+<span>29 Sep</span>
+<svg class="w-3 h-3 group-hover/link:text-slate-700 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<div class="flex items-center justify-between hover:text-slate-900 group/link p-1.5 -mx-1.5 rounded-lg hover:bg-slate-50 transition-colors">
+<div class="flex items-center gap-2">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<span>Proposal</span>
+</div>
+<div class="flex items-center gap-1 text-slate-400 font-mono text-[11px] font-tabular">
+<span>2 Oct</span>
+<svg class="w-3 h-3 group-hover/link:text-slate-700 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<div class="flex items-center justify-between hover:text-slate-900 group/link p-1.5 -mx-1.5 rounded-lg hover:bg-slate-50 transition-colors">
+<div class="flex items-center gap-2">
+<svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<span>Pricing and services note</span>
+</div>
+<div class="flex items-center gap-1 text-slate-400 font-mono text-[11px] font-tabular">
+<span>6 Oct</span>
+<svg class="w-3 h-3 group-hover/link:text-slate-700 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+<!-- Stage 4: Shortlisted (Empty) -->
+<div class="relative group">
+<div class="absolute -left-[20px] top-1.5 w-3 h-3 rounded-full bg-slate-300 ring-4 ring-white shadow-2xs"></div>
+<div class="text-xs font-semibold text-slate-400">Shortlisted</div>
+<div class="mt-1 text-[11px] text-slate-400 italic">No documents</div>
+</div>
+<!-- Stage 5: Contracting (Current Active Stage) -->
+<div class="relative -ml-4 pl-4 p-3.5 bg-gradient-to-br from-[#f0f6f3] to-emerald-50/40 border border-[#cde0d7] rounded-xl shadow-xs">
+<div class="absolute -left-1.5 top-4 w-3.5 h-3.5 rounded-full bg-[#1c4438] ring-4 ring-[#FAFAF9] shadow-sm flex items-center justify-center">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-200 animate-ping"></span>
+</div>
+<div class="flex items-center justify-between">
+<span class="text-xs font-bold text-slate-900 tracking-tight">Contracting</span>
+<span class="text-[9px] font-bold text-[#012e23] uppercase tracking-wider bg-white/80 border border-[#cde0d7] px-2 py-0.5 rounded-full shadow-2xs">Current stage</span>
+</div>
+<p class="text-[11px] text-emerald-800 font-medium mt-0.5">Last point to fix gaps cheaply</p>
+<div class="mt-3 space-y-2 text-xs">
+<div class="flex items-center justify-between text-[#012e23] font-medium group/link hover:bg-white/60 p-1 rounded-md transition-colors">
+<div class="flex items-center gap-2">
+<svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<span class="hover:underline">Draft SOW</span>
+</div>
+<div class="flex items-center gap-1.5 text-slate-500 font-mono text-[11px] font-tabular">
+<span>9 Oct</span>
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<div class="flex items-center justify-between text-[#012e23] font-medium group/link hover:bg-white/60 p-1 rounded-md transition-colors">
+<div class="flex items-center gap-2">
+<svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<span class="hover:underline">Draft contract</span>
+</div>
+<div class="flex items-center gap-1.5 text-slate-500 font-mono text-[11px] font-tabular">
+<span>12 Oct</span>
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+<div class="flex items-center justify-between text-[#012e23] font-medium group/link hover:bg-white/60 p-1 rounded-md transition-colors">
+<div class="flex items-center gap-2">
+<svg class="w-3.5 h-3.5 text-emerald-700" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"></path>
+</svg>
+<span class="hover:underline">Customer email</span>
+</div>
+<div class="flex items-center gap-1.5 text-slate-500 font-mono text-[11px] font-tabular">
+<span>14 Oct</span>
+<svg class="w-3 h-3" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</div>
+</div>
+</div>
+</div>
+<!-- Stage 6: Signed -->
+<div class="relative group">
+<div class="absolute -left-[20px] top-1.5 w-3 h-3 rounded-full border-2 border-slate-300 bg-white ring-4 ring-white shadow-2xs"></div>
+<div class="flex items-center justify-between">
+<span class="text-xs font-medium text-slate-400">Signed</span>
+<span class="text-[11px] text-slate-400">Not yet</span>
+</div>
+</div>
+<!-- Stage 7: Handover -->
+<div class="relative group">
+<div class="absolute -left-[20px] top-1.5 w-3 h-3 rounded-full border-2 border-slate-300 bg-white ring-4 ring-white shadow-2xs"></div>
+<div class="flex items-center justify-between">
+<span class="text-xs font-medium text-slate-400">Handover</span>
+<span class="text-[11px] text-slate-400">Not yet</span>
+</div>
+</div>
+</div>
+<!-- Quiet Help Link -->
+<div class="pt-3 border-t border-slate-100 flex items-center justify-between">
+<a class="text-xs text-slate-500 hover:text-slate-800 transition-colors inline-flex items-center gap-1.5 group" href="#how-closing-works">
+<svg class="w-3.5 h-3.5 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<circle cx="12" cy="12" r="10" stroke-width="1.8"></circle>
+<path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3m.08 4h.01" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+<span>How closing works</span>
+<svg class="w-3 h-3 text-slate-400 group-hover:translate-x-0.5 group-hover:text-slate-700 transition-all" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M9 5l7 7-7 7" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"></path>
+</svg>
+</a>
+</div>
+</div>
+</aside>
+</div>
+</main>
+<!-- END: MainContentContainer -->
+<!-- BEGIN: EditorialFooter -->
+<footer class="w-full border-t border-slate-200/80 bg-white/70 py-8 px-6 mt-16 text-center text-xs text-slate-400 leading-normal">
+<div class="max-w-2xl mx-auto space-y-1.5">
+<p>
+<strong class="font-semibold text-slate-700 tracking-tight">Dealshape</strong> · See the deal as it was actually promised.
+      </p>
+<p class="text-[11px] text-slate-400 leading-relaxed">
+        Lists commitments where the customer's expectation, the contract and what we can sell don't line up. Checked against the documents listed and the product catalogue. All companies, people and deals are fictional.
+      </p>
+</div>
+</footer>
+<!-- END: EditorialFooter -->
+</body></html>

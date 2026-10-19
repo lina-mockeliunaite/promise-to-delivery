@@ -58,7 +58,7 @@ test("the Resolve pop-up suggests the document that usually fixes the gap", () =
 import { contractText, gapLine, contractSide, toldQuotes, missingForHandover, changeHeadline } from "../src/dealpage.js";
 
 test("evidence lines use only verified facts and say what the check can establish", () => {
-  assert.equal(contractText("Not included"), "No matching wording found");
+  assert.equal(contractText("Not included"), "No matching wording found in the draft contract or SOW");
   assert.equal(contractText("Amazon Web Services"), "Amazon Web Services");
   assert.match(gapLine("Not offered", { unlisted_value: "Microsoft Azure" }, "CAP-019/AU"), /no Microsoft Azure option .* in AU\. No exception/);
   assert.equal(gapLine("No approval recorded", { limit_name: "max_transactions_per_day", promised_quantity: 750000, limit_value: 500000 }),
@@ -72,7 +72,7 @@ test("the contract side prefers verified contract wording, then the searched phr
   const miss = { evidence: { missing_phrases: ["BioCatch", "coached by a scammer"] } };
   assert.deepEqual(contractSide([miss, q], "x"), { quote: "Provider will host on AWS.", source: "Draft SOW" });
   assert.deepEqual(contractSide([miss], "Not included"), { missing: ["BioCatch", "coached by a scammer"] });
-  assert.deepEqual(contractSide([{ evidence: {} }], "Not included"), { text: "No matching wording found" });
+  assert.deepEqual(contractSide([{ evidence: {} }], "Not included"), { text: "No matching wording found in the draft contract or SOW" });
 });
 
 test("quotes are listed once, newest first", () => {
@@ -231,4 +231,10 @@ test("signed paperwork is recognised and carries its one-line note", () => {
   assert.ok(isSignedDoc("signed_contract") && isSignedDoc("signed_sow"));
   assert.ok(!isSignedDoc("draft_contract") && !isSignedDoc(undefined));
   assert.equal(SIGNED_NOTE, "Marks the deal signed. Its wording isn't checked; the checks used the drafts.");
+});
+
+test("the contract column never says 'Not included' and shows what was searched for", () => {
+  assert.doesNotMatch(contractText("Not included"), /Not included|binding/i);
+  const side = contractSide([{ evidence: { missing_phrases: ["BioCatch", "coached by a scammer"] } }], "Not included");
+  assert.deepEqual(side, { missing: ["BioCatch", "coached by a scammer"] });
 });

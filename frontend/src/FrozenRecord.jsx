@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
 import {
-  STATUS_CHIP, cleanReason, countsLine, extractedAs, findingDetail, firstPromised, mismatchLine, plainName, recordedBy, sentence, verdictLine,
+  STATUS_CHIP, cleanReason, countsLine, extractedAs, findingDetail, firstPromised, contractText, mismatchLine, plainName, recordedBy, sentence, verdictLine,
 } from "./dealpage.js";
 import { NAME, TAGLINE } from "./brand.js";
 import "./DealPage.css";
@@ -164,7 +164,7 @@ export default function FrozenRecord({ deal, onBack }) {
                   </div>
                   <div className="dp-fact">
                     <span className="dp-fact-label">Contract says</span>
-                    <p>{it.contract}</p>
+                    <p>{contractText(it.contract)}</p>
                     {it.contract_detail && <span className="dp-fact-src">{it.contract_detail}</span>}
                   </div>
                   <div className="dp-fact dp-fact-found">
@@ -201,7 +201,7 @@ export default function FrozenRecord({ deal, onBack }) {
                          expanded={expanded.has(x.promise)} onToggle={() => toggle(x.promise)}>
                 <div className="dp-three fr-two">
                   <div className="dp-fact"><span className="dp-fact-label">Customer was told</span><p>{x.told}</p></div>
-                  <div className="dp-fact"><span className="dp-fact-label">Contract says</span><p>{x.contract}</p></div>
+                  <div className="dp-fact"><span className="dp-fact-label">Contract says</span><p>{contractText(x.contract)}</p></div>
                 </div>
                 {alreadyClosed(x.promise)}
                 {n && (

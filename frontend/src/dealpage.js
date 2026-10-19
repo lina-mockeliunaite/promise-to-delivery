@@ -106,7 +106,7 @@ export function suggestFix(open, documents) {
 
 // The contract column's short term, worded as what the check can actually establish.
 export function contractText(term) {
-  if (term === "Not included") return "No matching wording found";
+  if (term === "Not included") return "No matching wording found in the draft contract or SOW";
   return term ?? "";
 }
 

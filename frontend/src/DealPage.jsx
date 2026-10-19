@@ -2,10 +2,14 @@
 // what the customer was told, what the contract says, what the check found, who has seen it, both handover notes.
 // The only way a gap closes is a new document version that the check confirms; notes and "seen" never close anything.
 import { useCallback, useEffect, useState } from "react";
+import "@fontsource/inter/latin-400.css";
+import "@fontsource/inter/latin-500.css";
+import "@fontsource/inter/latin-600.css";
+import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime, uploadKind } from "./format.js";
 import {
-  CLOSING_ONE_LINE, STATUS_CHIP, cleanReason, countsLine, extractedAs, findingDetail, firstPromised, groupByStage,
+  CLOSING_ONE_LINE, STATUS_CHIP, cleanReason, contractSide, contractText, toldQuotes, countsLine, extractedAs, findingDetail, firstPromised, groupByStage,
   SIGNED_NOTE, isSignedDoc, mismatchLine, missingForHandover, plainName, recordedBy, rowTitle, sentence, sourcesLine, stageLine, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
@@ -48,7 +52,8 @@ function PromiseRow({ c, status, onSeen, onCatalogue, onAct, me = "", expanded =
   const closedIssues = c.issues.filter((i) => i.state === "Resolved");
   const shown = status === "closed" ? closedIssues : unresolved;
   const seen = [...new Map(unresolved.flatMap((i) => i.seen || []).map((s) => [s.by, s])).values()];
-  const detail = (c.presence_detail || "").startsWith("Not found anywhere") ? c.presence_detail : "";
+  const told = toldQuotes(c.statements);
+  const theirs = contractSide(c.issues, c.contract);
   const st = STATUS_CHIP[status];
   const noteRes = unresolved.find((i) => i.note_resolution)?.note_resolution;
   const mismatch = status === "closed" ? "" : mismatchLine(unresolved, c.contract);
@@ -62,9 +67,10 @@ function PromiseRow({ c, status, onSeen, onCatalogue, onAct, me = "", expanded =
           <span className="dp-prow-title">{rowTitle(c)}</span>
           {mismatch && <span className="dp-prow-line">{mismatch}</span>}
           {first && <span className="dp-prow-first">{first}</span>}
+          {status === "noted" && noteRes && <span className="dp-prow-note">{recordedBy(noteRes.by, noteRes.at, fmtDate)}</span>}
         </span>
         <span className={`dp-chip dp-chip-${st.tone}`} title={st.title}>
-          {status === "open" ? <span className="dp-dot" /> : <Icon d={I.check} size={12} />}
+          {status === "open" ? <span className="dp-dot" /> : status === "closed" ? <Icon d={I.check} size={12} /> : <span className="dp-dot dp-dot-grey" />}
           {st.label}
         </span>
       </div>
@@ -73,13 +79,15 @@ function PromiseRow({ c, status, onSeen, onCatalogue, onAct, me = "", expanded =
           <div className="dp-three">
             <div className="dp-fact">
               <span className="dp-fact-label">Customer was told</span>
-              <p>{c.told}</p>
+              {told.length ? told.map((t) => <blockquote key={t.quote} className="dp-quote">“{t.quote}”</blockquote>) : <p>{c.told}</p>}
               <span className="dp-fact-src">{sourcesLine(c.statements)}</span>
             </div>
-            <div className="dp-fact">
+            <div className="dp-fact dp-fact-contract">
               <span className="dp-fact-label">Contract says</span>
-              <p>{c.contract}</p>
-              {detail && <span className="dp-fact-src">{detail}</span>}
+              <p>{contractText(c.contract)}</p>
+              {theirs.quote && <blockquote className="dp-quote">“{theirs.quote}”</blockquote>}
+              {theirs.quote && theirs.source && <span className="dp-fact-src">{theirs.source}</span>}
+              {theirs.missing && <span className="dp-fact-src">Searched for: {theirs.missing.map((m) => `“${m}”`).join(", ")}</span>}
             </div>
             <div className="dp-fact dp-fact-found">
               <span className="dp-fact-label">{status === "closed" ? "What was found, and what closed it" : "What we found"}</span>
@@ -99,7 +107,7 @@ function PromiseRow({ c, status, onSeen, onCatalogue, onAct, me = "", expanded =
               )}
             </div>
           </div>
-          {extractedAs(c) && <span className="dp-fact-src">Extracted as: {c.name}</span>}
+          {extractedAs(c) && <span className="dp-extracted"><b>Extracted as</b> {c.name}</span>}
           {status !== "closed" && closedIssues.length > 0 && (
             <div className="dp-decision is-done">
               <span className="dp-kicker">Already closed by the documents</span>
@@ -142,8 +150,8 @@ function PromiseRow({ c, status, onSeen, onCatalogue, onAct, me = "", expanded =
                 )}
               </span>
               <span className="dp-row">
-                <button type="button" className="dp-btn" onClick={() => onAct(c, "doc")}>Add updated document</button>
                 <button type="button" className="dp-btn" onClick={() => onAct(c, "note")}>Record a note</button>
+                <button type="button" className="dp-btn dp-btn-dark" onClick={() => onAct(c, "doc")}>Add updated document</button>
               </span>
             </footer>
           )}
@@ -184,9 +192,12 @@ function NotePanel({ role, label, who, note, name, setName, onSave }) {
   return (
     <div className="dp-note">
       <div className="dp-note-head">
-        <div>
-          <span className="dp-note-who">{note ? plainName(note.by) : who}</span>
-          <span className="dp-note-role">{label}</span>
+        <div className="dp-note-id">
+          <span className="dp-avatar" aria-hidden="true">{who[0]}</span>
+          <div>
+            <span className="dp-note-who">{note ? plainName(note.by) : who}</span>
+            <span className="dp-note-role">{label}</span>
+          </div>
         </div>
         <span className={`dp-chip ${note ? "dp-chip-green" : "dp-chip-grey"}`}>{note ? "Note added" : "No note yet"}</span>
       </div>
@@ -471,7 +482,7 @@ function DocumentList({ deal, stages, documents, name, setName, onChanged, onVie
       <div className="dp-doc-row">
         {d.link ? (
           <a href={d.link} target="_blank" rel="noopener noreferrer" className="dp-doc-name" title="Opens where the document lives">
-            {d.name}{d.version > 1 ? ` · v${d.version}` : ""} <Icon d={I.link} size={12} />
+            {d.name}{d.version > 1 ? ` · v${d.version}` : ""}
           </a>
         ) : (
           <button type="button" className="dp-doc-name" onClick={() => onView(d)} title="Read the text the check used">
@@ -509,7 +520,7 @@ function DocumentList({ deal, stages, documents, name, setName, onChanged, onVie
       </div>
       <ol className="dp-timeline">
         {groupByStage(stages, documents).map((s) => (
-          <li key={s.key} className={`dp-tl is-${s.state}`}>
+          <li key={s.key} className={`dp-tl is-${s.state} ${s.gaps_started > 0 ? "has-gaps" : ""}`}>
             <span className="dp-tl-dot" aria-hidden="true" />
             <div className="dp-tl-body">
               <span className="dp-tl-name">
@@ -635,7 +646,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
     <div className="dp">
       <div className="dp-topbar">
         <button type="button" className="dp-back" onClick={onBack}><Icon d={I.back} /> All deals</button>
-        <span className="dp-brand" title={TAGLINE}>{NAME}</span>
+        <span className="dp-wordmark" title={TAGLINE}>{NAME}</span>
         {name.trim() && (
           <span className="dp-me">
             Recording as <strong>{name.trim()}</strong> ·{" "}
@@ -656,7 +667,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
                 <div className="dp-meta">
                   {reg.brief?.go_live && <span className="dp-meta-strong"><Icon d={I.calendar} /> Target go-live: {fmtDate(reg.brief.go_live)}</span>}
                   <span className="dp-mono">Checked {fmtDate(reg.freshness.finished_at)} against {included.length} {included.length === 1 ? "document" : "documents"}</span>
-                  {reg.freshness_label !== "Up to date" && <span className="dp-chip dp-chip-amber">{reg.freshness_label}</span>}
+                  {reg.freshness.state === "Review out of date" && <span className="dp-chip dp-chip-amber"><span className="dp-dot" />Review out of date</span>}
                   {reg.freshness.state === "Review out of date" && (
                     <button type="button" className="dp-link-btn dp-brand" disabled={checking} onClick={checkAgain}>
                       {checking ? "Checking…" : "Check again"}
@@ -669,26 +680,25 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
                 <button type="button" className="dp-btn" onClick={() => setCatFocus("")}>Product catalogue</button>
               </div>
             </div>
+            {reg.brief && (
+              <div className="dp-delivering">
+                <div className="dp-sec-head">
+                  <h2 className="dp-upper">What we're delivering</h2>
+                  <span className="dp-faint">Confirmed by <strong className="dp-ink">{plainName(reg.brief.confirmed_by)}</strong>{reg.brief.basis ? ` from ${reg.brief.basis}` : ""}</span>
+                </div>
+                <p className="dp-brief">{reg.brief.summary}</p>
+                {reg.brief.deliverables.length > 0 && (
+                  <div className="dp-deliverables">
+                    {reg.brief.deliverables.map((d) => <span key={d}><span className="dp-dot dp-brand-bg" />{d}</span>)}
+                  </div>
+                )}
+                {reg.brief.needs_reconfirmation && <div className="dp-warn">{reg.brief.reconfirm_note}</div>}
+              </div>
+            )}
           </section>
 
           {message && <div className={`dp-message is-${message.kind}`} role="status">{message.text}</div>}
           {change && <ChangePanel change={change} onClose={() => setChange(null)} />}
-
-          {reg.brief && (
-            <section className="dp-card">
-              <div className="dp-sec-head">
-                <h2 className="dp-upper">What we're delivering</h2>
-                <span className="dp-faint">Confirmed by <strong className="dp-ink">{plainName(reg.brief.confirmed_by)}</strong>{reg.brief.basis ? ` from ${reg.brief.basis}` : ""}</span>
-              </div>
-              <p className="dp-brief">{reg.brief.summary}</p>
-              {reg.brief.deliverables.length > 0 && (
-                <div className="dp-deliverables">
-                  {reg.brief.deliverables.map((d) => <span key={d}><span className="dp-dot dp-brand-bg" />{d}</span>)}
-                </div>
-              )}
-              {reg.brief.needs_reconfirmation && <div className="dp-warn">{reg.brief.reconfirm_note}</div>}
-            </section>
-          )}
 
           <section className="dp-card dp-promises">
             <div className="dp-sec-head">
