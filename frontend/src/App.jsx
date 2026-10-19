@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import * as api from "./api.js";
 import Handoff from "./Handoff.jsx";
+import Deals from "./Deals.jsx";
+import DealPage from "./DealPage.jsx";
 import { TYPE_EFFECT, alsoLine, checkLine, checkUpload, fmtDate, fmtDateTime, guessType, plural, typeFromName, uploadKind } from "./format.js";
 
 const OWNERS = ["Product", "Commercial", "Delivery", "Customer Success", "Support"];
@@ -26,49 +28,6 @@ function Notice({ kind = "info", children }) {
     <div className={`notice notice-${kind}`} role={kind === "error" ? "alert" : "status"}>
       {children}
     </div>
-  );
-}
-
-function DealList({ deals, current, onPick, onCreated }) {
-  const [name, setName] = useState("");
-  const [error, setError] = useState(null);
-  const create = async (e) => {
-    e.preventDefault();
-    setError(null);
-    try {
-      const { deal } = await api.createDeal(name);
-      setName("");
-      onCreated(deal);
-    } catch (err) {
-      setError(err.message);
-    }
-  };
-  return (
-    <nav className="deals" aria-label="Deals">
-      <h2>Deals</h2>
-      <ul>
-        {deals.map((d) => (
-          <li key={d.deal}>
-            <button type="button" className={d.deal === current ? "deal active" : "deal"} onClick={() => onPick(d.deal)}>
-              <span className="deal-name">{d.name}</span>
-              <span className="deal-meta">
-                {d.freshness.state} · {d.open_issues} open
-              </span>
-            </button>
-          </li>
-        ))}
-      </ul>
-      <form onSubmit={create} className="stack">
-        <label>
-          New deal
-          <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Customer and deal name" />
-        </label>
-        <button type="submit" disabled={!name.trim()}>
-          Create deal
-        </button>
-        {error && <Notice kind="error">{error}</Notice>}
-      </form>
-    </nav>
   );
 }
 
@@ -1048,32 +1007,47 @@ function Workspace({ deal, onDealsChanged }) {
 export default function App() {
   const [deals, setDeals] = useState(null);
   const [current, setCurrent] = useState(null);
+  const [classic, setClassic] = useState(false); // the detailed (pre-revamp) view, kept reachable during the revamp
   const [error, setError] = useState(null);
 
   const loadDeals = useCallback(() => {
     api.fetchDeals().then(
       (r) => {
         setDeals(r.deals);
-        setCurrent((c) => c ?? r.deals[0]?.deal ?? null);
       },
       (err) => setError(err.message),
     );
   }, []);
   useEffect(loadDeals, [loadDeals]);
 
+  // 16 Oct: the deal list is the home screen (Stitch screen 1); a deal opens on its own page with a way back.
+  if (deals && !current) {
+    return (
+      <main className="home">
+        {error && <Notice kind="error">{error}</Notice>}
+        <Deals deals={deals} onOpen={setCurrent} onCreated={(d) => { setCurrent(d); loadDeals(); }} />
+      </main>
+    );
+  }
+  const back = () => { setCurrent(null); setClassic(false); loadDeals(); };
+  if (deals && current && !classic) {
+    return (
+      <main className="home">
+        <DealPage key={current} deal={current} onBack={back} onDealsChanged={loadDeals} onClassic={() => setClassic(true)} />
+      </main>
+    );
+  }
   return (
     <main>
       <header className="top">
+        <button type="button" className="dl-back" onClick={() => setClassic(false)}>
+          ← Back to the deal page
+        </button>
         <p className="eyebrow">Promise to Delivery</p>
         <h1>Hand over the deal as it was promised.</h1>
       </header>
       {error && <Notice kind="error">{error}</Notice>}
-      {deals && (
-        <div className="layout">
-          <DealList deals={deals} current={current} onPick={setCurrent} onCreated={(d) => { setCurrent(d); loadDeals(); }} />
-          {current ? <Workspace key={current} deal={current} onDealsChanged={loadDeals} /> : <Notice>Create a deal to begin.</Notice>}
-        </div>
-      )}
+      {deals && current && <Workspace key={current} deal={current} onDealsChanged={loadDeals} />}
     </main>
   );
 }

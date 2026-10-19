@@ -193,6 +193,21 @@ def _terms_summary(findings: list, catalogue: dict = None) -> tuple:
 
 
 # --- Closure --------------------------------------------------------------------------------------------------------
+NOTE_QUOTE_GONE = "the pricing-note quote is not verbatim in a pricing note"
+
+
+def _explain(claim: dict, docs: list, catalogue: dict, problems: list) -> str:
+    """The problem that best explains a closure, for the reason and the credited documents (16 Oct). The verifier stops at
+    the first failed check: when a finding quoted the old pricing-note line ('no exception approved') and a new version
+    replaced it, that check is 'the quote is gone', which hides the real change ('an approval is now recorded'). Ask the
+    verifier again without the old quote to find it. Explanation only: whether the finding closes is decided by `problems`."""
+    if problems[0] == NOTE_QUOTE_GONE and claim.get("note_quote"):
+        deeper = detect_v2.verify({**claim, "note_quote": None}, docs, catalogue)
+        if deeper and deeper[0].startswith("the pricing note records an approval"):
+            return deeper[0]
+    return problems[0]
+
+
 def closing_reason(problem: str, labels: dict) -> str:
     """The verifier's reason a stored claim no longer holds, as a sentence for the reader."""
     m = re.match(r"the pricing note records an approval: (.*)", problem)
@@ -212,6 +227,8 @@ def closing_reason(problem: str, labels: dict) -> str:
     m = re.match(r"'(.+)' also appears in the contract quote", problem)
     if m:
         return f"Closed: the contract now says “{m.group(1)}”, as promised."
+    if problem == NOTE_QUOTE_GONE:
+        return "Closed: the pricing-note line this finding relied on is no longer in the current pricing note."
     return "Closed: the original finding no longer holds against the current documents (" + problem + ")."
 
 
@@ -219,7 +236,7 @@ def _evidence(claim: dict, docs: list, problem: str = "") -> list:
     """The current documents behind a closure: the pricing notes when an approval is now recorded, the contract chain
     when the contract changed, the promise's own sources when the promise changed; for anything else, all three."""
     keys = {q["source_id"] for q in claim.get("promise_quotes") or []}
-    if problem.startswith("the pricing note records an approval"):
+    if problem.startswith("the pricing note records an approval") or problem == NOTE_QUOTE_GONE:
         chosen = [d for d in docs if d["doc_type"] in detect_v2.INTERNAL_TYPES]
     elif "contract" in problem:
         chosen = [d for d in docs if d["doc_type"] in detect_v2.CONTRACT_TYPES]
@@ -265,7 +282,7 @@ def needs_model(conn, slug: str, source_key, doc_type: str, canonical_text: str,
     did = ledger_fixes.deal_id(conn, slug)
     docs = [d for d in current_docs(conn, did) if d["source_id"] != source_key]
     docs.append({"source_id": source_key or "new", "doc_type": doc_type, "date": "", "text": canonical_text, "version_id": None})
-    raw = Path(catalogue_path or config.DATA_DIR / "catalogue.json").read_bytes()
+    raw = Path(catalogue_path).read_bytes() if catalogue_path else integrity.catalogue_bytes(conn)
     return not _cache_path(input_sha256(docs, raw, config.EXTRACTION_MODEL)).is_file()
 
 
@@ -300,7 +317,7 @@ def review(conn, slug: str, client=None, fix_id=None, catalogue_path=None) -> di
     did = ledger_fixes.deal_id(conn, slug)
     integrity.ensure_schema(conn)
     ensure_schema(conn)
-    catalogue_raw = Path(catalogue_path or config.DATA_DIR / "catalogue.json").read_bytes()
+    catalogue_raw = Path(catalogue_path).read_bytes() if catalogue_path else integrity.catalogue_bytes(conn)
     catalogue = json.loads(catalogue_raw.decode("utf-8"))
     fix = None
     if fix_id is not None:
@@ -441,8 +458,9 @@ def _write(conn, did, slug, docs, catalogue, catalogue_raw, det, prev_id, fix) -
             problems = detect_v2.verify(claim, docs, catalogue) if claim else ["no stored claim"]
             blocked = absolute and fix is not None and fix[1] == "allowed_exception" and fix_for is not None
             if problems and not blocked and fresh is None:
-                outcome, ev, unmet, re_raised = "met", _evidence(claim, docs, problems[0]), None, 0
-                reason = closing_reason(problems[0], labels)
+                why = _explain(claim, docs, catalogue, problems)
+                outcome, ev, unmet, re_raised = "met", _evidence(claim, docs, why), None, 0
+                reason = closing_reason(why, labels)
                 counts["met"] += 1
             else:
                 live = claim if not problems else fresh

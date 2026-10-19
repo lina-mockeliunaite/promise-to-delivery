@@ -28,10 +28,12 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 import adapters
+import catalogue_store
 import config
 import extraction_cache
 import finding_check
 import handoff
+import handover
 import integrity
 import ledger
 import ledger_fixes
@@ -49,6 +51,7 @@ NOT_FOUND = "Not found"
 # more than this is refused before its body is read, but only for a deal the app serves and a well-formed write.
 MAX_UPLOAD_BODY = 14 * 1024 * 1024
 UPLOAD_PATH = re.compile(r"^/api/deals/([^/]+)/documents$")
+DEAL_PATH = re.compile(r"^/api/deals/([^/]+)/")
 
 
 def require_ui_deal(deal: str) -> str:
@@ -109,6 +112,25 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
             return conn.execute("SELECT 1 FROM deals WHERE slug = ? AND kind = ?", (deal, kind)).fetchone() is not None
         finally:
             conn.close()
+
+    def frozen_deal(deal: str) -> bool:
+        """Handover complete for this deal (16 Oct). Checked once, here, for every change to any deal."""
+        path = ledger_path if ledger_path is not None else config.LEDGER_DB_PATH
+        if not Path(path).exists():
+            return False
+        conn = ledger.connect(path, check_same_thread=False)
+        try:
+            return handover.is_frozen(conn, deal)
+        finally:
+            conn.close()
+
+    @app.middleware("http")
+    async def refuse_changes_after_handover(request, call_next):
+        # One choke point: once the handover is complete, no route can change the deal, including routes added later.
+        match = DEAL_PATH.match(request.url.path)
+        if match and request.method not in ("GET", "HEAD", "OPTIONS") and frozen_deal(match.group(1)):
+            return JSONResponse({"detail": handover.FROZEN}, status_code=409)
+        return await call_next(request)
 
     @app.middleware("http")
     async def refuse_oversize_uploads(request, call_next):
@@ -243,7 +265,7 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
 
     @app.get("/api/workspace/deals")
     def ws_deals(conn=Depends(db)):
-        return {"deals": workspace.deal_list(conn)}
+        return {"deals": handover.deal_rows(conn, workspace.deal_list(conn))}
 
     @app.post("/api/user-deals", dependencies=[Depends(write_guard)])
     def ws_create_deal(body: dict = Body(...), conn=Depends(db)):
@@ -420,6 +442,79 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
         except (TypeError, ValueError):
             raise HTTPException(status_code=404, detail=NOT_FOUND) from None
         return {"ok": True}
+
+    # --- Product catalogue (16 Oct): the published catalogue plus capabilities added in the app ----------------------
+    @app.get("/api/catalogue")
+    def cat_view(conn=Depends(db)):
+        return catalogue_store.view(conn)
+
+    @app.post("/api/catalogue/capabilities", dependencies=[Depends(write_guard)])
+    def cat_add(body: dict = Body(...), conn=Depends(db)):
+        try:
+            return {"capability": catalogue_store.add_capability(conn, body)}
+        except catalogue_store.CatalogueError as exc:
+            raise HTTPException(status_code=exc.status, detail=str(exc)) from None
+
+    # --- Handover (16 Oct, after Checkpoint 3): seen marks, both notes, document links, handover complete ---------
+    # Visibility records only. None of these routes changes a finding.
+    def handover_error(exc):
+        return HTTPException(status_code=exc.status, detail=str(exc))
+
+    @app.post("/api/deals/{deal}/seen", dependencies=[Depends(write_guard)])
+    def hv_seen(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        try:
+            return handover.mark_seen(conn, deal, body.get("issue_id"), body.get("seen_by"))
+        except handover.HandoverError as exc:
+            raise handover_error(exc) from None
+
+    @app.post("/api/deals/{deal}/handover/notes", dependencies=[Depends(write_guard)])
+    def hv_note(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        try:
+            return {"notes": handover.set_note(conn, deal, body.get("role"), body.get("note"), body.get("entered_by"))}
+        except handover.HandoverError as exc:
+            raise handover_error(exc) from None
+
+    @app.post("/api/deals/{deal}/documents/link", dependencies=[Depends(write_guard)])
+    def hv_link(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        try:
+            return handover.set_link(conn, deal, body.get("source_key"), body.get("url"), body.get("set_by"))
+        except handover.HandoverError as exc:
+            raise handover_error(exc) from None
+
+    @app.post("/api/deals/{deal}/resolve-note", dependencies=[Depends(write_guard)])
+    def hv_resolve_note(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        try:
+            ids = body.get("issue_ids") or []
+            if not isinstance(ids, list) or not ids:
+                raise handover.HandoverError("Choose the gap to resolve.")
+            return {"resolved": [handover.resolve_by_note(conn, deal, i, body.get("resolved_by"), body.get("reason")) for i in ids]}
+        except handover.HandoverError as exc:
+            raise handover_error(exc) from None
+
+    @app.post("/api/deals/{deal}/signature", dependencies=[Depends(write_guard)])
+    def hv_signature(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        try:
+            return {"signature": handover.record_signature(conn, deal, body.get("signed_on"), body.get("recorded_by"))}
+        except handover.HandoverError as exc:
+            raise handover_error(exc) from None
+
+    @app.post("/api/deals/{deal}/handover/complete", dependencies=[Depends(write_guard)])
+    def hv_complete(deal: str, body: dict = Body(...), conn=Depends(db)):
+        workspace_deal(deal, conn)
+        try:
+            return handover.complete(conn, deal, body.get("completed_by"))
+        except handover.HandoverError as exc:
+            raise handover_error(exc) from None
+
+    @app.get("/api/deals/{deal}/handover")
+    def hv_view(deal: str, conn=Depends(db)):
+        workspace_deal(deal, conn)
+        return handover.handover(conn, deal)
 
     # --- Handoff (saved snapshots and exports) --------------------------------------------------------------
     def saved_version(deal: str, version, conn):

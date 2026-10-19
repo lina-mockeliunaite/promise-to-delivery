@@ -1,4 +1,5 @@
 {
+  "owner": "Sarah Jenkins",
   "summary": "Elva provides controls for Atlas Direct, Atlas Remit's NUSD payout service, targeted for launch on 1 February 2027, hosted on AWS in Singapore.",
   "deliverables": [
     "Tenant on Amazon Web Services, Singapore region",

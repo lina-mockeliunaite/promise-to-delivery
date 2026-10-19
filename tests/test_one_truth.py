@@ -36,6 +36,13 @@ class TestOneTruth(V2Case):
             if "approval" in open_types:
                 self.assertEqual(c["authorisation"], "No approval recorded", c["name"])
 
+    def test_the_deal_list_counts_the_same_open_gaps_as_the_stage_bar(self):
+        import handover  # 16 Oct: the home screen's "open gaps" must match the deal page's stage bar
+        rows = handover.deal_rows(self.conn, workspace.deal_list(self.conn))
+        for row in rows:
+            stage = deal_stage.deal_stage(self.conn, row["deal"])
+            self.assertEqual(row["open_gaps"], sum(s["gaps_started"] for s in stage["stages"]), row["deal"])
+
     def test_all_views_agree_on_the_seeded_deals(self):
         for slug in ("harbour_bank", "coral_pay", "atlas_remit"):
             self.assert_views_agree(slug)

@@ -70,10 +70,12 @@ class V2Case(unittest.TestCase):
 class TestBuild(V2Case):
     def test_seeded_reset_makes_no_model_call_and_every_finding_verifies(self):
         self.assertEqual({s: r["model_calls"] for s, r in self.built.items()}, {s: 0 for s in config.V2_DEALS})
-        self.assertEqual({s: r["rejected"] for s, r in self.built.items()}, {s: 0 for s in config.V2_DEALS})
+        expected_rejected = {s: 0 for s in config.V2_DEALS}
+        expected_rejected["alder_bank"] = 1  # demo deal: a true conflict rejected on wording (data/alder_bank/BRIEF.md)
+        self.assertEqual({s: r["rejected"] for s, r in self.built.items()}, expected_rejected)
         self.assertEqual({s: r["origin"] for s, r in self.built.items()}, {s: "seed" for s in config.V2_DEALS})
         counts = {s: workspace.overview(self.conn, s)["finding_counts"]["unresolved"] for s in config.V2_DEALS}
-        self.assertEqual(counts, {"harbour_bank": 6, "coral_pay": 3, "atlas_remit": 7})
+        self.assertEqual(counts, {"alder_bank": 6, "harbour_bank": 6, "coral_pay": 3, "atlas_remit": 7})
 
     def test_every_deal_is_current_so_decisions_can_be_made(self):
         for s in config.V2_DEALS:

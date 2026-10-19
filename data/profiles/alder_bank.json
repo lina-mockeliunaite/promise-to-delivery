@@ -1,0 +1,18 @@
+{
+  "owner": "Tom Fraser",
+  "summary": "Elva provides scam protection for Alder Bank's outbound instant payments, holding each payment until Elva returns a decision, from a 1 February 2027 launch. Go-live depends on Alder providing sandbox access to its payments platform by 1 December.",
+  "deliverables": [
+    "Dedicated environment on AWS, Sydney region",
+    "Real-time scoring for instant payments of AUD 1,000 or more; hourly batches below that",
+    "Up to 200,000 payments a day at launch",
+    "Case management workspace with full case audit history",
+    "Weekly project status meeting during implementation"
+  ],
+  "go_live": "2027-02-01",
+  "confirmed_by": "Tom Fraser (Account Executive, fictional)",
+  "basis": "draft SOW, 9 Oct",
+  "confirmed_against": {
+    "source": "AB-06",
+    "version": 1
+  }
+}

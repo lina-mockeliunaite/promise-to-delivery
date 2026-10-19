@@ -166,12 +166,14 @@ def documents(conn, slug: str) -> list:
         " FROM sources s JOIN source_versions v ON v.source_id = s.id WHERE s.deal_id = ? AND v.version_no ="
         " (SELECT MAX(version_no) FROM source_versions WHERE source_id = s.id) ORDER BY v.doc_date, s.source_key", (did,)).fetchall()
     notes = adapters.notes_for(conn, [r[1] for r in rows])
+    import handover  # 16 Oct: where each document lives (a Drive link), set by a person; never generated
+    links = handover.links(conn, did)
     for key, vid, version_no, doc_type, date, included, adapter_name, filename in rows:
         out.append({
             "source_key": key, "name": labels[key], "source_version_id": vid, "version": version_no,
             "format": adapters.format_label(adapter_name, filename), "problems": notes.get(vid, []),
             "doc_type": doc_type, "doc_type_label": DOC_TYPE_LABELS.get(doc_type, doc_type), "date": date,
-            "included": bool(included),
+            "included": bool(included), "link": links.get(key),
             "role": ("Read for promises" if doc_type in config.EXTRACTABLE_DOC_TYPES
                      else "Approval evidence" if doc_type == "pricing_services_note" else "Reference only"),
         })
@@ -485,6 +487,41 @@ def short_terms(conn, cid: int):
     return None
 
 
+def _catalogue_limit(cat: dict, path, limit_name):
+    """The catalogue's number for a limit at a claim's path ('CAP-003/AU' + 'max_transactions_per_day'), or None."""
+    if not cat or not path or not limit_name:
+        return None
+    parts = path.split("/")
+    cap = next((c for c in cat.get("capabilities", []) if c.get("id") == parts[0]), None)
+    node = (cap or {}).get("regions", {}).get(parts[1]) if len(parts) > 1 else None
+    for name in parts[2:]:
+        node = next((node[k][name] for k in ("networks", "assets", "modes") if node and name in node.get(k, {})), None)
+    value = ((node or {}).get("limits") or {}).get(limit_name)
+    return value if isinstance(value, int) else None
+
+
+def claim_evidence(claim: dict, labels: dict, cat: dict | None = None) -> dict:
+    """The parts of a gap's stored claim that code verified when it was raised (17 Oct, for evidence-first screens):
+    the contract wording behind a conflict, the phrases searched for and not found, the pricing-note line relied on, and
+    the catalogue facts. Read only; quotes are shown with the plain document label, never a file name or key."""
+    def quote(q):
+        if not q or not q.get("quote"):
+            return None
+        return {"quote": q["quote"], "source": labels.get(q.get("source_id"), "a deal document")}
+    return {
+        "contract_quote": quote(claim.get("contract_quote")),
+        "note_quote": quote(claim.get("note_quote")),
+        "missing_phrases": list(claim.get("missing_phrases") or []),
+        "unlisted_value": claim.get("unlisted_value"),
+        "limit_name": claim.get("limit_name"),
+        "limit_value": _catalogue_limit(cat, claim.get("catalogue_path"), claim.get("limit_name")),
+        "promised_quantity": claim.get("promised_quantity"),
+        "subject": claim.get("subject"),
+        "promised_value": claim.get("promised_value"),
+        "contract_value": claim.get("contract_value"),
+    }
+
+
 def told_and_contract(conn, did: int, c: dict, raw_presence: str) -> tuple:
     """('Told' short term, 'Contract' short term) for an overview row. Where a conflict names the differing term, both
     sides show that term ('real-time' / 'batch'); otherwise how firm the promise was and whether the contract has it."""
@@ -515,7 +552,8 @@ def told_and_contract(conn, did: int, c: dict, raw_presence: str) -> tuple:
                                           "exploratory": "Exploratory"}.get(c["language"], c["language"])
     if told and c["language"] in ("conditional", "exploratory") and told.lower() != c["language"]:
         told = f"{told} ({c['language']})"
-    contract = {"included_in_draft_contract": "Included", "absent": "Not included"}.get(raw_presence, "Not assessed")
+    contract = {"included_in_draft_contract": "Included", "absent": "Not included"}.get(
+        raw_presence, "Not checked yet" if c["language"] == "firm" else "Not checked: not a firm promise")
     if not c["supported"]:
         contract = "No longer in the documents"
     return told, contract
@@ -550,12 +588,15 @@ def resolved_by(conn, did: int, issue_id: int, labels: dict):
 def overview(conn, slug: str) -> dict:
     """register() plus what the redesigned overview and finding blocks show. Reads only. Human records (decisions,
     accountable people, the deal note) are shown beside findings; none of them is used to compute a finding's state."""
+    import handover
     import integrity
     import workspace_records
 
     reg = register(conn, slug)
     did = ledger_fixes.deal_id(conn, slug)
     labels = document_labels(conn, did)
+    import catalogue_store  # 17 Oct: the catalogue the checks use, to show a limit's number beside the gap
+    cat = catalogue_store.effective(conn)
     fresh = reg["freshness"]
     can_decide, _ = integrity.is_current(conn, did)
     if fresh["state"] == "Up to date" and not can_decide:
@@ -571,8 +612,10 @@ def overview(conn, slug: str) -> dict:
         " JOIN commitment_assessments a ON a.id = s.assessment_id WHERE c.deal_id = ?", (did,)).fetchall())
 
     unresolved = awaiting = reconfirm = flags = 0
+    noted_ids = handover.note_resolved_ids(conn, did)  # 16 Oct: open by the documents, resolved by a current note
     for c in reg["commitments"]:
         open_n = 0
+        noted_n = 0
         people, decisions = [], []
         for i in c["issues"]:
             absolute = i["absolute_limit"]
@@ -582,9 +625,18 @@ def overview(conn, slug: str) -> dict:
             impact = integrity.impact_status(conn, slug, i["id"])
             i["impact"] = "Not assessed" if impact["status"] == "none" else impact["status"]
             i["resolved_by"] = resolved_by(conn, did, i["id"], labels) if i["state"] == "Resolved" else None
+            i["seen"] = handover.seen_for(conn, i["id"])  # 16 Oct: who has looked at it; never changes the finding
+            i["note_resolution"] = handover.note_resolution(conn, did, i["id"]) if i["state"] != "Resolved" else None
+            crit = conn.execute("SELECT closure_criteria FROM issues WHERE id = ?", (i["id"],)).fetchone()
+            claim = (json.loads(crit[0] or "{}") or {}).get("claim") or {} if crit else {}
+            i["catalogue_path"] = claim.get("catalogue_path")  # the entry the check cited, for the catalogue pop-up
+            i["evidence"] = claim_evidence(claim, labels, cat)  # 17 Oct: the code-verified parts of the claim, for the screens
             if i["decision"]["must_fix"]:
                 flags += 1
             if i["state"] == "Resolved":
+                continue
+            if i["id"] in noted_ids:
+                noted_n += 1
                 continue
             open_n += 1
             unresolved += 1
@@ -611,11 +663,13 @@ def overview(conn, slug: str) -> dict:
         c["decision_line"] = (" · ".join(f"{decisions.count(d)} {d.lower()}" if decisions.count(d) > 1 or len(set(decisions)) > 1 else d
                                          for d in dict.fromkeys(decisions)) if decisions else "")
         c["must_fix"] = any(i["decision"]["must_fix"] for i in c["issues"])
-        c["group"] = "open" if open_n else ("resolved" if c["issues"] else "other")
+        c["noted_count"] = noted_n
+        c["group"] = "open" if open_n else "noted" if noted_n else ("resolved" if c["issues"] else "other")
 
     rows = [c for c in reg["commitments"] if c["group"] == "open"]
     rows.sort(key=lambda c: (-c["open_count"], c["name"].lower()))
     reg["open_rows"] = [c["id"] for c in rows]
+    reg["noted_rows"] = [c["id"] for c in sorted((c for c in reg["commitments"] if c["group"] == "noted"), key=lambda c: c["name"].lower())]
     reg["resolved_findings"] = [
         {"commitment_id": c["id"], "commitment": c["name"], "issue_id": i["id"], "finding": i["finding"],
          "resolved_by": i["resolved_by"]["text"] if i["resolved_by"] else "Resolved"}
@@ -626,4 +680,6 @@ def overview(conn, slug: str) -> dict:
     import deal_stage  # revamp, 15 Oct: stage from the documents, owner-confirmed brief; reads only
     reg["stage"] = deal_stage.deal_stage(conn, slug)
     reg["brief"] = deal_stage.deal_brief(conn, slug)
+    hv = handover.handover(conn, slug)
+    reg["handover"] = {k: hv[k] for k in ("complete", "completed_by", "completed_at", "notes", "signature")}
     return reg

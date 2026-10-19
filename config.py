@@ -92,11 +92,13 @@ ALLOWED_DEALS = [
     "questionnaire_cases",  # security-questionnaire extraction fixture, 10 Oct; extraction only, never in LEDGER_DEALS
     "coral_pay",  # sealed test deal for v1; run once 10 Oct 06:12 UTC, released as development data since
     "atlas_remit",  # sealed test deal for v2; run once 10 Oct 08:44 UTC, released as development data since
+    "alder_bank",  # demo deal, 16 Oct: written after v2 was frozen, no labels; not an evaluation set
 ]
 
 
 # Deals the local web UI may show. Narrower than ALLOWED_DEALS: hard_cases is for the pipeline only.
 UI_DEALS = [
+    "alder_bank",  # lead demo deal from 16 Oct (instant payments with scam protection)
     "harbour_bank",
     "coral_pay",
     "atlas_remit",
@@ -112,6 +114,7 @@ V2_SEED_FILES = {
     "harbour_bank": "v2_dev_20261010T083854Z.json",
     "coral_pay": "v2_dev_20261010T083854Z.json",
     "atlas_remit": "sealed_v2_atlas_remit_20261010T084453Z.json",
+    "alder_bank": "v2_demo_alder_bank_20261016T065312Z.json",  # demo run; 6 shown, 1 true finding rejected (BRIEF.md)
 }
 V2_CACHE_DIR = ROOT / "results" / "v2_cache"
 # Deals created in the app are reviewed by v2 (10 Oct). False only in tests that cover the v1 rules path.

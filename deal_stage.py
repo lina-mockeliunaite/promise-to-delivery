@@ -80,10 +80,14 @@ def load_profile(slug: str) -> dict:
 def _gap_sources(conn, did: int) -> list:
     """For each promise with an open gap, the source keys its open issues' stored claims quote it from (v2 only).
     Counted per promise, not per finding, so the bar matches the promises listed below it."""
+    import handover  # 16 Oct: a gap resolved by a current note is not counted as open anywhere
+    noted = handover.note_resolved_ids(conn, did)
     by_promise = {}
-    for cid, criteria_json in conn.execute(
-            "SELECT i.commitment_id, i.closure_criteria FROM issues i JOIN issue_current_state s ON s.issue_id = i.id"
+    for iid, cid, criteria_json in conn.execute(
+            "SELECT i.id, i.commitment_id, i.closure_criteria FROM issues i JOIN issue_current_state s ON s.issue_id = i.id"
             " JOIN commitments c ON c.id = i.commitment_id WHERE c.deal_id = ? AND s.state <> 'Resolved'", (did,)):
+        if iid in noted:
+            continue
         claim = (json.loads(criteria_json or "{}") or {}).get("claim") or {}
         keys = [q["source_id"] for q in claim.get("promise_quotes") or [] if q.get("source_id")]
         if keys:
@@ -103,6 +107,10 @@ def deal_stage(conn, slug: str) -> dict:
     current, basis = reached, "documents"
     if override.get("stage") in STAGE_INDEX:
         current, basis = override["stage"], "override"
+    import handover  # 16 Oct: a signature recorded by a person moves the deal to Signed (the pipeline reads drafts only)
+    signed = handover.signature(conn, did)
+    if signed and (current is None or STAGE_INDEX[current] < STAGE_INDEX["signed"]):
+        current, basis = "signed", "signature"
 
     order = {d["key"]: n for n, d in enumerate(docs)}
     started = {}
@@ -113,11 +121,13 @@ def deal_stage(conn, slug: str) -> dict:
             started[placed[first]] = started.get(placed[first], 0) + 1
 
     from workspace import DOC_TYPE_LABELS  # screen names by type only: no key or file name ever reaches a response
+    import handover
+    links = handover.links(conn, did)
     stages = []
     for key, label in STAGES:
         stages.append({
             "key": key, "label": label,
-            "documents": [{"name": DOC_TYPE_LABELS.get(d["type"], d["type"]), "date": d["date"]}
+            "documents": [{"name": DOC_TYPE_LABELS.get(d["type"], d["type"]), "date": d["date"], "link": links.get(d["key"])}
                           for d in docs if placed[d["key"]] == key],
             "gaps_started": started.get(key, 0),
             "state": ("none" if current is None else "done" if STAGE_INDEX[key] < STAGE_INDEX[current]
@@ -133,6 +143,7 @@ def deal_stage(conn, slug: str) -> dict:
                     else f"{started[top]} of {total} promises with open gaps were first made at {name}" if total > 1
                     else f"The promise with an open gap was first made at {name}")
     return {"current": current, "current_label": dict(STAGES).get(current, "No documents yet"), "basis": basis,
+            "signature": signed,
             "override": override if basis == "override" else None, "stages": stages, "headline": headline}
 
 

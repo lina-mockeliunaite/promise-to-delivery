@@ -4,6 +4,7 @@ Usage:
     python run_v2.py dev                      one model call per development deal; ~$0.1 a deal
     python run_v2.py replay results/v2_dev_<time>.json   re-verify and re-score saved model output; no model call
     python run_v2.py sealed atlas_remit       the one sealed run; refuses if it has run before or the seal is broken
+    python run_v2.py demo alder_bank        one model call on a demo deal (no labels, no score); its output seeds the app
 
 Dev deals: harbour_bank, practice_cases, hard_cases, coral_pay (released 10 Oct; development data from then on).
 Results go to results/ and are never overwritten.
@@ -20,6 +21,9 @@ import score_v2
 import sealed_run
 
 DEV_DEALS = ["harbour_bank", "practice_cases", "hard_cases", "coral_pay"]
+# Demo deals (16 Oct): written after v2 was frozen, with no labels. One run each, compared by hand with the deal's
+# BRIEF.md ("Intended findings"); the saved output becomes the deal's seed in config.V2_SEED_FILES. Not an evaluation.
+DEMO_DEALS = ["alder_bank"]
 SEALED_V2 = "atlas_remit"
 
 
@@ -94,6 +98,28 @@ def sealed(client, deal: str, root: Path = None) -> dict:
             "seal_files_verified": len(seal), "deals": [result], "baseline": baseline}
 
 
+def demo(client, deal: str) -> dict:
+    if deal not in DEMO_DEALS:
+        raise sealed_run.Refused(f"{deal} is not a demo deal")
+    docs = detect_v2.deal_documents(deal)
+    return {"kind": "v2_demo", "v2_version": detect_v2.V2_VERSION, "model": config.EXTRACTION_MODEL,
+            "deals": [{"deal": deal, **detect_v2.review(client, docs, _catalogue())}]}
+
+
+def render_demo(out: dict) -> str:
+    d = out["deals"][0]
+    lines = [f"{out['kind']} · {d['deal']} · v2_version {out['v2_version']} · {out.get('file', '')}",
+             f"accepted {len(d['accepted'])} · rejected {len(d['rejected'])} · cost ${d.get('cost_usd') or 0:.4f}"
+             + (f" · PARSE ERROR {d['parse_error']}" if d.get("parse_error") else "")
+             + (f" · stop={d['stop_reason']}" if d.get("stop_reason") not in (None, "end_turn") else "")]
+    for f in d["accepted"]:
+        lines.append(f"  shown     {f['kind']:18} {f.get('catalogue_path') or '':24} {f['commitment'][:70]}")
+    for f in d["rejected"]:
+        lines.append(f"  rejected  {f['kind']:18} {f['commitment'][:60]} :: {'; '.join(f['problems'])[:120]}")
+    lines.append("Compare with data/<deal>/BRIEF.md, 'Intended findings'.")
+    return "\n".join(lines)
+
+
 def render(out: dict) -> str:
     lines = [f"{out['kind']} · v2_version {out['v2_version']} · {out.get('file', '')}",
              f"{'deal':16} {'found':>9} {'false':>6} {'dup':>4} {'rejected(true)':>15} {'cost':>8}"]
@@ -123,7 +149,7 @@ def render(out: dict) -> str:
 
 
 def main(argv: list) -> int:
-    if not argv or argv[0] not in ("dev", "replay", "sealed"):
+    if not argv or argv[0] not in ("dev", "replay", "sealed", "demo"):
         print(__doc__, file=sys.stderr)
         return 2
     if argv[0] == "replay":
@@ -138,6 +164,19 @@ def main(argv: list) -> int:
     if argv[0] == "dev":
         out = dev(client)
         path = _save("v2_dev", out)
+    elif argv[0] == "demo":
+        if len(argv) != 2:
+            print("usage: python run_v2.py demo <deal>", file=sys.stderr)
+            return 2
+        try:
+            out = demo(client, argv[1])
+        except sealed_run.Refused as exc:
+            print(f"Refused: {exc}", file=sys.stderr)
+            return 1
+        path = _save(f"v2_demo_{argv[1]}", out)
+        print(render_demo(out))
+        print(f"saved {path.name}")
+        return 0
     else:
         if len(argv) != 2:
             print("usage: python run_v2.py sealed <deal>", file=sys.stderr)

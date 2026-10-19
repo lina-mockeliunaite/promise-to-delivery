@@ -1,0 +1,242 @@
+// Home screen: deals in handover (16 Oct; design from Google Stitch, screen 1, adapted to real data).
+// Visibility only. Every number comes from /api/workspace/deals; there are no invented metrics, statuses or actions.
+import { useMemo, useState } from "react";
+import * as api from "./api.js";
+import { FILTERS, SORTS, counts, gapText, initials, metrics, page, relativeTime, visibleDeals } from "./deals.js";
+import CatalogueModal from "./CatalogueModal.jsx";
+import "./Deals.css";
+
+const Icon = ({ d, size = 16 }) => (
+  <svg className="dl-icon" width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" fill="none"
+       stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d={d} />
+  </svg>
+);
+const ICONS = {
+  search: "M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16zM21 21l-4.3-4.3",
+  arrow: "M5 12h14M13 6l6 6-6 6",
+  lock: "M7 11V7a5 5 0 0 1 10 0v4M5 11h14v10H5z",
+  check: "M5 12l5 5L20 7",
+  plus: "M12 5v14M5 12h14",
+};
+
+function Tile({ label, value, unit, note, pct, tone }) {
+  return (
+    <div className="dl-tile">
+      <span className="dl-tile-label">{label}</span>
+      <div className="dl-tile-value">
+        <span>{value}</span>
+        {unit && <span className="dl-tile-unit">{unit}</span>}
+      </div>
+      {pct !== undefined && (
+        <div className="dl-bar" aria-hidden="true">
+          <div className={`dl-bar-fill tone-${tone}`} style={{ width: `${pct}%` }} />
+        </div>
+      )}
+      <span className="dl-tile-note">{note}</span>
+    </div>
+  );
+}
+
+function StagePill({ deal }) {
+  if (deal.handover_complete) {
+    return (
+      <span className="dl-pill dl-pill-frozen">
+        <Icon d={ICONS.lock} size={12} /> Handover · Complete
+      </span>
+    );
+  }
+  return (
+    <span className={`dl-pill ${deal.stage === "signed" ? "dl-pill-signed" : ""}`}>
+      <span className="dl-dot" /> {deal.stage_label}
+    </span>
+  );
+}
+
+function GapPill({ deal }) {
+  if (deal.open_gaps === 0) {
+    return (
+      <span className="dl-gap dl-gap-none">
+        <Icon d={ICONS.check} size={12} /> No open gaps
+      </span>
+    );
+  }
+  return (
+    <span className={`dl-gap ${deal.handover_complete ? "dl-gap-frozen" : ""}`}>
+      <span className="dl-dot" /> {gapText(deal.open_gaps)}
+      {deal.handover_complete && <span className="dl-gap-sub">at handover</span>}
+    </span>
+  );
+}
+
+function NewDeal({ onCreated }) {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [error, setError] = useState(null);
+  const create = async (e) => {
+    e.preventDefault();
+    setError(null);
+    try {
+      const { deal } = await api.createDeal(name);
+      setName("");
+      setOpen(false);
+      onCreated(deal);
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+  if (!open) {
+    return (
+      <button type="button" className="dl-btn dl-btn-primary" onClick={() => setOpen(true)}>
+        <Icon d={ICONS.plus} /> New deal
+      </button>
+    );
+  }
+  return (
+    <form className="dl-new" onSubmit={create}>
+      <input autoFocus value={name} onChange={(e) => setName(e.target.value)} placeholder="Customer and deal name"
+             aria-label="New deal name" />
+      <button type="submit" className="dl-btn dl-btn-primary" disabled={!name.trim()}>Create</button>
+      <button type="button" className="dl-btn" onClick={() => setOpen(false)}>Cancel</button>
+      {error && <span className="dl-error" role="alert">{error}</span>}
+    </form>
+  );
+}
+
+export default function Deals({ deals, onOpen, onCreated }) {
+  const [filter, setFilter] = useState("handover");
+  const [query, setQuery] = useState("");
+  const [sort, setSort] = useState("updated");
+  const [pageNo, setPageNo] = useState(1);
+  const [catalogue, setCatalogue] = useState(false);
+
+  const n = useMemo(() => counts(deals), [deals]);
+  const m = useMemo(() => metrics(deals), [deals]);
+  const rows = useMemo(() => visibleDeals(deals, { filter, query, sort }), [deals, filter, query, sort]);
+  const shown = page(rows, pageNo);
+  const sortLabel = SORTS.find((s) => s.key === sort)?.label.toLowerCase();
+
+  return (
+    <div className="dl">
+      <section className="dl-head">
+        <div>
+          <span className="dl-eyebrow">Sales to delivery handover</span>
+          <div className="dl-title-row">
+            <h1>Deals in handover</h1>
+            <span className="dl-count">{n.handover} {n.handover === 1 ? "deal" : "deals"}</span>
+          </div>
+          <p className="dl-sub">
+            What Delivery is inheriting: promises the paperwork doesn't back, where they were first made, and the
+            record frozen at handover.
+          </p>
+        </div>
+        <div className="dl-actions">
+          <button type="button" className="dl-btn" onClick={() => setCatalogue(true)}>Product catalogue</button>
+          <NewDeal onCreated={onCreated} />
+        </div>
+      </section>
+      {catalogue && <CatalogueModal onClose={() => setCatalogue(false)} onChanged={onCreated ? () => onCreated(null) : undefined} />}
+
+      <section className="dl-tiles" aria-label="Summary">
+        <Tile label="In handover" value={m.inHandover.value} unit={m.inHandover.value === 1 ? "deal" : "deals"}
+              pct={m.inHandover.pct} tone="primary" note="Contracting or later" />
+        <Tile label="Live deals with gaps" value={m.withGaps.value} unit={`of ${m.withGaps.of}`} pct={m.withGaps.pct}
+              tone="amber" note="Before handover is complete" />
+        <Tile label="Handover complete" value={m.complete.value} unit={m.complete.value === 1 ? "deal" : "deals"}
+              pct={m.complete.pct} tone="muted" note="Frozen records" />
+      </section>
+
+      <section className="dl-bar-row">
+        <div className="dl-tabs" role="tablist" aria-label="Filter deals">
+          {FILTERS.filter((f) => f.key !== "earlier" || n.earlier > 0).map((f) => (
+            <button key={f.key} type="button" role="tab" aria-selected={filter === f.key}
+                    className={`dl-tab ${filter === f.key ? "is-active" : ""}`}
+                    onClick={() => { setFilter(f.key); setPageNo(1); }}>
+              {f.label}
+              <span className={`dl-tab-n ${f.key === "open" ? "tone-amber" : ""}`}>{n[f.key]}</span>
+            </button>
+          ))}
+        </div>
+        <div className="dl-tools">
+          <label className="dl-search">
+            <Icon d={ICONS.search} />
+            <input value={query} onChange={(e) => { setQuery(e.target.value); setPageNo(1); }}
+                   placeholder="Search by deal, owner or stage" aria-label="Search deals" />
+          </label>
+          <label className="dl-sort">
+            <span>Sort</span>
+            <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort deals">
+              {SORTS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
+            </select>
+          </label>
+        </div>
+      </section>
+
+      <section className="dl-table-card">
+        <div className="dl-scroll">
+          <table className="dl-table">
+            <thead>
+              <tr>
+                <th scope="col">Deal</th>
+                <th scope="col">Stage</th>
+                <th scope="col">Open gaps</th>
+                <th scope="col">Deal owner</th>
+                <th scope="col">Last updated</th>
+                <th scope="col" className="dl-right"><span className="dl-sr">Open</span></th>
+              </tr>
+            </thead>
+            <tbody>
+              {shown.rows.map((d) => (
+                <tr key={d.deal} className={d.handover_complete ? "is-frozen" : ""} onClick={() => onOpen(d.deal)}>
+                  <td>
+                    <span className="dl-deal-name">{d.name}</span>
+                    {d.kind === "user" && <span className="dl-tag">Uploaded</span>}
+                  </td>
+                  <td><StagePill deal={d} /></td>
+                  <td><GapPill deal={d} /></td>
+                  <td>
+                    {d.owner ? (
+                      <span className="dl-owner">
+                        <span className="dl-avatar" aria-hidden="true">{initials(d.owner)}</span>
+                        {d.owner}
+                      </span>
+                    ) : (
+                      <span className="dl-muted">Not set</span>
+                    )}
+                  </td>
+                  <td>
+                    <span className="dl-mono" title={d.last_updated ?? ""}>{relativeTime(d.last_updated)}</span>
+                  </td>
+                  <td className="dl-right">
+                    <button type="button" className={`dl-open ${d.handover_complete ? "is-muted" : ""}`}
+                            onClick={(e) => { e.stopPropagation(); onOpen(d.deal); }}>
+                      {d.handover_complete ? "Open snapshot" : "Open deal"} <Icon d={ICONS.arrow} size={14} />
+                    </button>
+                  </td>
+                </tr>
+              ))}
+              {shown.rows.length === 0 && (
+                <tr className="dl-empty">
+                  <td colSpan={6}>{query ? "No deals match that search." : "No deals here yet."}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+        <footer className="dl-foot">
+          <span>
+            Showing <strong>{shown.rows.length}</strong> of <strong>{rows.length}</strong> · Sorted by {sortLabel} ·{" "}
+            <span className="dl-muted">Lists only promises the paperwork doesn't back.</span>
+          </span>
+          {shown.pages > 1 && (
+            <span className="dl-pager">
+              <button type="button" className="dl-btn" disabled={shown.page === 1} onClick={() => setPageNo(shown.page - 1)}>Previous</button>
+              <span className="dl-mono">{shown.page} / {shown.pages}</span>
+              <button type="button" className="dl-btn" disabled={shown.page === shown.pages} onClick={() => setPageNo(shown.page + 1)}>Next</button>
+            </span>
+          )}
+        </footer>
+      </section>
+    </div>
+  );
+}

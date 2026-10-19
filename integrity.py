@@ -63,8 +63,11 @@ def _has(conn, table: str) -> bool:
 
 
 # --- Hash definitions ------------------------------------------------------------------------------------------------
-def catalogue_bytes() -> bytes:
-    return (config.DATA_DIR / "catalogue.json").read_bytes()
+def catalogue_bytes(conn=None) -> bytes:
+    """The catalogue the checks use: the published file, plus capabilities added in the app when conn has any
+    (catalogue_store, 16 Oct). Without additions it is the published file byte for byte."""
+    import catalogue_store
+    return catalogue_store.effective_bytes(conn)
 
 
 def canonical_catalogue(raw: bytes) -> bytes:
@@ -106,7 +109,7 @@ def compare(conn, did: int, source_set, evidence, definition: int, stored_config
         reasons.append(DOCUMENTS)
     if ledger_fixes.decision_evidence_sha256(conn, did) != evidence:
         reasons.append(EVIDENCE)
-    reasons += config_reasons(definition, stored_config, raw)
+    reasons += config_reasons(definition, stored_config, catalogue_bytes(conn) if raw is None else raw)
     return {"current": not reasons, "reasons": reasons}
 
 

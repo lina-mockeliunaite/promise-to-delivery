@@ -1,0 +1,376 @@
+{
+  "kind": "v2_demo",
+  "v2_version": 2,
+  "model": "claude-sonnet-5",
+  "deals": [
+    {
+      "deal": "alder_bank",
+      "model": "claude-sonnet-5",
+      "stop_reason": "end_turn",
+      "usage": {
+        "input_tokens": 9443,
+        "output_tokens": 6981
+      },
+      "cost_usd": 0.088696,
+      "findings": [
+        {
+          "kind": "approval_required",
+          "commitment": "Behavioural (BioCatch) coaching-detection signals will flag coached customers from the 1 February 2027 launch",
+          "promise_quotes": [
+            {
+              "source_id": "AB-03",
+              "quote": "Through its connector to BioCatch, Elva will use behavioural signals from Alder's mobile and internet banking to flag customers who appear to be coached by a scammer, live from the 1 February 2027 launch."
+            },
+            {
+              "source_id": "AB-04",
+              "quote": "Behavioural signals from BioCatch will flag customers who appear to be coached by a scammer, from the 1 February 2027 launch."
+            }
+          ],
+          "catalogue_path": "CAP-027/AU",
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "AB-05",
+            "quote": "No named exception approved for Alder Bank"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The BioCatch behavioural connector is in beta and requires a named approval, but the pricing note records no approved named exception for Alder Bank, so this cannot yet be sold as promised."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Behavioural (BioCatch) coaching-detection signals will flag coached customers from the 1 February 2027 launch",
+          "promise_quotes": [
+            {
+              "source_id": "AB-04",
+              "quote": "Behavioural signals from BioCatch will flag customers who appear to be coached by a scammer, from the 1 February 2027 launch."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "BioCatch",
+            "coached by a scammer",
+            "behavioural signals"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The coaching-detection commitment made in the proposal and RFP response does not appear anywhere in the SOW, Annex A, or the draft contract, so Delivery has no contractual obligation or spec covering it."
+        },
+        {
+          "kind": "absolute_limit",
+          "commitment": "Hosting of Alder's dedicated environment on Microsoft Azure",
+          "promise_quotes": [
+            {
+              "source_id": "AB-03",
+              "quote": "Elva will host Alder's dedicated environment on Microsoft Azure in the Australia East region."
+            }
+          ],
+          "catalogue_path": "CAP-019/AU",
+          "unlisted_value": "Microsoft Azure",
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Elva's regional cloud deployment capability only supports AWS and GCP in Australia; Azure is not an offered cloud and cannot be approved as an exception."
+        },
+        {
+          "kind": "conflicting_terms",
+          "commitment": "Hosting cloud provider for Alder's dedicated environment",
+          "promise_quotes": [
+            {
+              "source_id": "AB-03",
+              "quote": "Elva will host Alder's dedicated environment on Microsoft Azure in the Australia East region."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": {
+            "source_id": "AB-06",
+            "quote": "Provider will host the Customer's dedicated environment on Amazon Web Services in the Sydney region."
+          },
+          "note_quote": null,
+          "subject": "environment",
+          "promised_value": "Microsoft Azure",
+          "contract_value": "Amazon Web Services",
+          "reason": "The RFP response promises Azure hosting while the SOW commits to AWS hosting, a direct conflict on the hosting cloud that must be reconciled before signature."
+        },
+        {
+          "kind": "conflicting_terms",
+          "commitment": "Real-time scoring of every outbound instant payment before release",
+          "promise_quotes": [
+            {
+              "source_id": "AB-04",
+              "quote": "Every outbound instant payment will be scored in real time before it is released, from the 1 February 2027 launch."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": {
+            "source_id": "AB-06",
+            "quote": "Outbound instant payments below AUD 1,000 are scored in batches at hourly intervals after release."
+          },
+          "note_quote": null,
+          "subject": "payment",
+          "promised_value": "all outbound instant payments scored in real time regardless of amount",
+          "contract_value": "payments below AUD 1,000 scored in batches at hourly intervals after release, not in real time",
+          "reason": "The proposal promises every payment is checked in real time before release, but the incorporated Annex A only scores payments under AUD 1,000 in hourly batches after release, contradicting the 'stop it before it leaves' promise and the customer's board commitment."
+        },
+        {
+          "kind": "over_limit",
+          "commitment": "Real-time scoring will handle up to 750,000 payments per day by the end of the first year",
+          "promise_quotes": [
+            {
+              "source_id": "AB-04",
+              "quote": "Real-time scoring will handle up to 750,000 payments per day by the end of the first year."
+            }
+          ],
+          "catalogue_path": "CAP-003/AU",
+          "unlisted_value": null,
+          "limit_name": "max_transactions_per_day",
+          "promised_quantity": 750000,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "AB-05",
+            "quote": "No approval for 750,000/day"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "750,000 transactions per day exceeds the catalogue's 500,000/day limit for real-time transaction monitoring in Australia, and no exception has been approved."
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Real-time scoring will handle up to 750,000 payments per day by the end of the first year",
+          "promise_quotes": [
+            {
+              "source_id": "AB-04",
+              "quote": "Real-time scoring will handle up to 750,000 payments per day by the end of the first year."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "750,000 payments per day",
+            "by the end of the first year"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The year-one volume commitment of 750,000 payments per day is not reflected anywhere in the SOW or contract, which only commits to 200,000 payments per day at launch."
+        }
+      ],
+      "v2_version": 2,
+      "accepted": [
+        {
+          "kind": "approval_required",
+          "commitment": "Behavioural (BioCatch) coaching-detection signals will flag coached customers from the 1 February 2027 launch",
+          "promise_quotes": [
+            {
+              "source_id": "AB-03",
+              "quote": "Through its connector to BioCatch, Elva will use behavioural signals from Alder's mobile and internet banking to flag customers who appear to be coached by a scammer, live from the 1 February 2027 launch."
+            },
+            {
+              "source_id": "AB-04",
+              "quote": "Behavioural signals from BioCatch will flag customers who appear to be coached by a scammer, from the 1 February 2027 launch."
+            }
+          ],
+          "catalogue_path": "CAP-027/AU",
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "AB-05",
+            "quote": "No named exception approved for Alder Bank"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The BioCatch behavioural connector is in beta and requires a named approval, but the pricing note records no approved named exception for Alder Bank, so this cannot yet be sold as promised.",
+          "problems": []
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Behavioural (BioCatch) coaching-detection signals will flag coached customers from the 1 February 2027 launch",
+          "promise_quotes": [
+            {
+              "source_id": "AB-04",
+              "quote": "Behavioural signals from BioCatch will flag customers who appear to be coached by a scammer, from the 1 February 2027 launch."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "BioCatch",
+            "coached by a scammer",
+            "behavioural signals"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The coaching-detection commitment made in the proposal and RFP response does not appear anywhere in the SOW, Annex A, or the draft contract, so Delivery has no contractual obligation or spec covering it.",
+          "problems": []
+        },
+        {
+          "kind": "absolute_limit",
+          "commitment": "Hosting of Alder's dedicated environment on Microsoft Azure",
+          "promise_quotes": [
+            {
+              "source_id": "AB-03",
+              "quote": "Elva will host Alder's dedicated environment on Microsoft Azure in the Australia East region."
+            }
+          ],
+          "catalogue_path": "CAP-019/AU",
+          "unlisted_value": "Microsoft Azure",
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "Elva's regional cloud deployment capability only supports AWS and GCP in Australia; Azure is not an offered cloud and cannot be approved as an exception.",
+          "problems": []
+        },
+        {
+          "kind": "conflicting_terms",
+          "commitment": "Hosting cloud provider for Alder's dedicated environment",
+          "promise_quotes": [
+            {
+              "source_id": "AB-03",
+              "quote": "Elva will host Alder's dedicated environment on Microsoft Azure in the Australia East region."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": {
+            "source_id": "AB-06",
+            "quote": "Provider will host the Customer's dedicated environment on Amazon Web Services in the Sydney region."
+          },
+          "note_quote": null,
+          "subject": "environment",
+          "promised_value": "Microsoft Azure",
+          "contract_value": "Amazon Web Services",
+          "reason": "The RFP response promises Azure hosting while the SOW commits to AWS hosting, a direct conflict on the hosting cloud that must be reconciled before signature.",
+          "problems": []
+        },
+        {
+          "kind": "over_limit",
+          "commitment": "Real-time scoring will handle up to 750,000 payments per day by the end of the first year",
+          "promise_quotes": [
+            {
+              "source_id": "AB-04",
+              "quote": "Real-time scoring will handle up to 750,000 payments per day by the end of the first year."
+            }
+          ],
+          "catalogue_path": "CAP-003/AU",
+          "unlisted_value": null,
+          "limit_name": "max_transactions_per_day",
+          "promised_quantity": 750000,
+          "missing_phrases": [],
+          "contract_quote": null,
+          "note_quote": {
+            "source_id": "AB-05",
+            "quote": "No approval for 750,000/day"
+          },
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "750,000 transactions per day exceeds the catalogue's 500,000/day limit for real-time transaction monitoring in Australia, and no exception has been approved.",
+          "problems": []
+        }
+      ],
+      "rejected": [
+        {
+          "kind": "conflicting_terms",
+          "commitment": "Real-time scoring of every outbound instant payment before release",
+          "promise_quotes": [
+            {
+              "source_id": "AB-04",
+              "quote": "Every outbound instant payment will be scored in real time before it is released, from the 1 February 2027 launch."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [],
+          "contract_quote": {
+            "source_id": "AB-06",
+            "quote": "Outbound instant payments below AUD 1,000 are scored in batches at hourly intervals after release."
+          },
+          "note_quote": null,
+          "subject": "payment",
+          "promised_value": "all outbound instant payments scored in real time regardless of amount",
+          "contract_value": "payments below AUD 1,000 scored in batches at hourly intervals after release, not in real time",
+          "reason": "The proposal promises every payment is checked in real time before release, but the incorporated Annex A only scores payments under AUD 1,000 in hourly batches after release, contradicting the 'stop it before it leaves' promise and the customer's board commitment.",
+          "problems": [
+            "'all outbound instant payments scored in real time regardless of amount' does not appear in the promise"
+          ]
+        },
+        {
+          "kind": "contract_gap",
+          "commitment": "Real-time scoring will handle up to 750,000 payments per day by the end of the first year",
+          "promise_quotes": [
+            {
+              "source_id": "AB-04",
+              "quote": "Real-time scoring will handle up to 750,000 payments per day by the end of the first year."
+            }
+          ],
+          "catalogue_path": null,
+          "unlisted_value": null,
+          "limit_name": null,
+          "promised_quantity": null,
+          "missing_phrases": [
+            "750,000 payments per day",
+            "by the end of the first year"
+          ],
+          "contract_quote": null,
+          "note_quote": null,
+          "subject": null,
+          "promised_value": null,
+          "contract_value": null,
+          "reason": "The year-one volume commitment of 750,000 payments per day is not reflected anywhere in the SOW or contract, which only commits to 200,000 payments per day at launch.",
+          "problems": [
+            "'by the end of the first year' is longer than six words; a long phrase is absent from any contract by wording alone"
+          ]
+        }
+      ]
+    }
+  ],
+  "file": "v2_demo_alder_bank_20261016T064642Z.json"
+}

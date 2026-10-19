@@ -1,0 +1,13 @@
+{
+  "deal": "alder_bank",
+  "documents": [
+    {"source_id": "AB-01", "file": "AB-01_discovery_call.md",        "doc_type": "call_transcript",       "date": "2026-09-15"},
+    {"source_id": "AB-02", "file": "AB-02_technical_call.md",        "doc_type": "call_transcript",       "date": "2026-09-22"},
+    {"source_id": "AB-03", "file": "AB-03_rfp_response.md",          "doc_type": "rfp_response",          "date": "2026-09-29"},
+    {"source_id": "AB-04", "file": "AB-04_proposal.md",              "doc_type": "proposal",              "date": "2026-10-02"},
+    {"source_id": "AB-05", "file": "AB-05_pricing_services_note.md", "doc_type": "pricing_services_note", "date": "2026-10-06"},
+    {"source_id": "AB-06", "file": "AB-06_draft_sow.md",             "doc_type": "draft_sow",             "date": "2026-10-09"},
+    {"source_id": "AB-07", "file": "AB-07_draft_contract.md",        "doc_type": "draft_contract",        "date": "2026-10-12"},
+    {"source_id": "AB-08", "file": "AB-08_customer_email.md",        "doc_type": "customer_email",        "date": "2026-10-14"}
+  ]
+}

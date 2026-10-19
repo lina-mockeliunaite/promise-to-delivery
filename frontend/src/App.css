@@ -356,3 +356,6 @@ th { font-family: var(--mono); font-size: 11.5px; font-weight: 500; letter-spaci
 .viewer { border-radius: var(--radius); }
 .doc-text { font-family: var(--mono); }
 .brief-stale { margin: 0 0 12px; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--warn-soft); color: var(--warn); font-weight: 600; font-size: 14px; }
+
+/* 16 Oct: the deal list home screen runs wider than the deal pages */
+main.home { max-width: 1440px; }

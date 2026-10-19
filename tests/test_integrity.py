@@ -143,7 +143,7 @@ class TestReviewsAndHandoffs(IntegrityCase):
         self.save()
         changed = json.loads((config.DATA_DIR / "catalogue.json").read_text(encoding="utf-8"))
         changed["_edited"] = "test"
-        with mock.patch.object(integrity, "catalogue_bytes", lambda: json.dumps(changed).encode()):
+        with mock.patch.object(integrity, "catalogue_bytes", lambda conn=None: json.dumps(changed).encode()):
             fresh = self.freshness()
             self.assertEqual((fresh["state"], fresh["reasons"]), ("Review out of date", [integrity.RULES]))
             view = handoff.get_version(self.conn, "harbour_bank")
@@ -156,7 +156,7 @@ class TestReviewsAndHandoffs(IntegrityCase):
     def test_re_indenting_the_catalogue_is_not_a_change(self):
         self.save()
         raw = json.loads((config.DATA_DIR / "catalogue.json").read_text(encoding="utf-8"))
-        with mock.patch.object(integrity, "catalogue_bytes", lambda: json.dumps(raw, indent=7).encode()):
+        with mock.patch.object(integrity, "catalogue_bytes", lambda conn=None: json.dumps(raw, indent=7).encode()):
             self.assertEqual(self.freshness()["state"], "Up to date")
             self.assertFalse(handoff.get_version(self.conn, "harbour_bank")["changed_since_saved"])
 

@@ -45,4 +45,15 @@ export const recordDecision = (deal, body) => postJson(`${d(deal)}/decisions`, b
 export const clearFlag = (deal, body) => postJson(`${d(deal)}/decisions/clear`, body);
 export const saveNote = (deal, body) => postJson(`${d(deal)}/note`, body);
 export const setAccountable = (deal, body) => postJson(`${d(deal)}/accountable`, body);
+// Handover (16 Oct): seen marks, both notes, document links, handover complete. None of these changes a finding.
+export const markSeen = (deal, body) => postJson(`${d(deal)}/seen`, body);
+export const saveHandoverNote = (deal, body) => postJson(`${d(deal)}/handover/notes`, body);
+export const setDocumentLink = (deal, body) => postJson(`${d(deal)}/documents/link`, body);
+export const recordSignature = (deal, body) => postJson(`${d(deal)}/signature`, body);
+export const resolveByNote = (deal, body) => postJson(`${d(deal)}/resolve-note`, body);
+export const completeHandover = (deal, body) => postJson(`${d(deal)}/handover/complete`, body);
+export const fetchHandover = (deal) => getJson(`${d(deal)}/handover`);
+// Product catalogue (16 Oct): the published catalogue plus capabilities added in the app.
+export const fetchCatalogue = () => getJson("/api/catalogue");
+export const addCapability = (body) => postJson("/api/catalogue/capabilities", body);
 export const fetchDocumentText = (deal, versionId) => getJson(`${d(deal)}/documents/text?version=${encodeURIComponent(versionId)}`);
