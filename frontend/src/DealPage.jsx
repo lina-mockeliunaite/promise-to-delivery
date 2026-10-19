@@ -9,7 +9,7 @@ import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime, uploadKind } from "./format.js";
 import {
-  CLOSING_ONE_LINE, STATUS_CHIP, cleanReason, contractSide, contractText, toldQuotes, countsLine, extractedAs, findingDetail, firstPromised, groupByStage,
+  CLOSING_ONE_LINE, FINDING_SHORT, STATUS_CHIP, cleanReason, contractSide, contractText, toldQuotes, countsLine, extractedAs, findingDetail, firstPromised, groupByStage,
   SIGNED_NOTE, docLabel, isSignedDoc, mismatchLine, missingForHandover, plainName, recordedBy, rowTitle, sentence, sourcesLine, stageLine, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
@@ -36,6 +36,8 @@ const I = {
   info: "M12 16v-4M12 8h.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0z",
   upload: "M12 16V4M7 9l5-5 5 5M4 20h16",
   arrow: "M5 12h14M13 6l6 6-6 6",
+  alert: "M12 7v6M12 17h.01",
+  sync: "M21 12a9 9 0 1 1-3-6.7M21 4v5h-5",
 };
 
 const fmtSize = (bytes) => (bytes < 1024 * 1024 ? `${Math.max(1, Math.round(bytes / 1024))} KB` : `${(bytes / 1024 / 1024).toFixed(1)} MB`);
@@ -250,49 +252,63 @@ function NotePanel({ role, label, who, note, name, setName, onSave }) {
   );
 }
 
-function ChangePanel({ change, onClose }) {
+function ChangePanel({ change, titleOf, onClose }) {
   const { closed, opened, stillOpen, openPromises } = change;
   const nothing = !closed.length && !opened.length;
+  const short = (f) => FINDING_SHORT[f] ?? f;
   return (
     <section className="dp-card dp-change" role="status" aria-live="polite">
-      <div className="dp-change-head">
-        <div>
-          <span className="dp-kicker">What changed</span>
-          <h2>After adding {change.doc}</h2>
-          <span className="dp-faint dp-small">
+      <div className="dp-change-body">
+        <div className="dp-change-head">
+          <h2><Icon d={I.sync} size={18} /> After adding {change.doc}</h2>
+          <p className="dp-change-model"><span className="dp-dot dp-dot-green" />
             {change.modelCalls ? "The model read the new document; code checked every finding again." : "No model call was needed: code checked every finding again."}
-          </span>
+          </p>
         </div>
-        <button type="button" className="dp-btn" onClick={onClose}>Done</button>
-      </div>
-      {closed.length > 0 && (
-        <div className="dp-change-block is-closed">
-          <span className="dp-change-label">Closed ({closed.length})</span>
+        <div className="dp-change-rows">
           {closed.map((x) => (
-            <div key={`${x.promise}|${x.finding}`} className="dp-change-item">
-              <strong>{x.promise}: {x.finding}</strong>
-              <span>{x.why}</span>
-              {x.by && <span className="dp-faint dp-small">{x.by}</span>}
+            <div key={`c|${x.promise}|${x.finding}`} className="dp-change-row is-closed">
+              <span className="dp-change-mark"><Icon d={I.check} size={13} /></span>
+              <div>
+                <div className="dp-change-line">
+                  <strong>{titleOf(x.promise)}: {short(x.finding)}</strong>
+                  <span className="dp-tag is-green">Closed by documents</span>
+                </div>
+                <p>{x.why}</p>
+                {x.by && <p className="dp-change-by">{x.by}</p>}
+              </div>
             </div>
           ))}
+          {stillOpen.map((x) => (
+            <div key={`s|${x.promise}|${x.finding}`} className="dp-change-row is-open">
+              <span className="dp-change-mark"><Icon d={I.alert} size={13} /></span>
+              <div>
+                <div className="dp-change-line"><strong>Still needs attention: {short(x.finding)}</strong></div>
+                <p className="dp-change-by">{titleOf(x.promise)}</p>
+              </div>
+            </div>
+          ))}
+          {opened.map((x) => (
+            <div key={`n|${x.promise}|${x.finding}`} className="dp-change-row is-open">
+              <span className="dp-change-mark"><Icon d={I.alert} size={13} /></span>
+              <div>
+                <div className="dp-change-line">
+                  <strong>{titleOf(x.promise)}: {short(x.finding)}</strong>
+                  <span className="dp-tag is-amber">New</span>
+                </div>
+              </div>
+            </div>
+          ))}
+          {nothing && <p className="dp-change-nothing">Nothing closed and nothing new: the document did not change any gap.</p>}
         </div>
-      )}
-      {stillOpen.length > 0 && (
-        <div className="dp-change-block is-open">
-          <span className="dp-change-label">Still needs attention on the same commitment</span>
-          {stillOpen.map((x) => <div key={`${x.promise}|${x.finding}`} className="dp-change-item"><strong>{x.promise}: {x.finding}</strong></div>)}
+        <div className="dp-change-foot">
+          <span className="dp-change-count">{openPromises} {openPromises === 1 ? "commitment still needs" : "commitments still need"} attention.</span>
+          <span className="dp-row">
+            <button type="button" className="dp-link-btn" onClick={() => document.getElementById("dp-commitments")?.scrollIntoView({ behavior: "smooth", block: "start" })}>View commitments below</button>
+            <button type="button" className="dp-btn dp-btn-dark" onClick={onClose}>Done</button>
+          </span>
         </div>
-      )}
-      {opened.length > 0 && (
-        <div className="dp-change-block is-new">
-          <span className="dp-change-label">New gap{opened.length === 1 ? "" : "s"} found ({opened.length})</span>
-          {opened.map((x) => <div key={`${x.promise}|${x.finding}`} className="dp-change-item"><strong>{x.promise}: {x.finding}</strong></div>)}
-        </div>
-      )}
-      <p className="dp-small dp-change-foot">
-        {nothing ? "Nothing closed and nothing new: the document did not change any gap. " : "Nothing else changed. "}
-        {openPromises} {openPromises === 1 ? "commitment still needs" : "commitments still need"} attention.
-      </p>
+      </div>
     </section>
   );
 }
@@ -753,9 +769,9 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
           </section>
 
           {message && <div className={`dp-message is-${message.kind}`} role="status">{message.text}</div>}
-          {change && <ChangePanel change={change} onClose={() => setChange(null)} />}
+          {change && <ChangePanel change={change} titleOf={(n) => reg.commitments.find((c) => c.name === n)?.display_name || n} onClose={() => setChange(null)} />}
 
-          <section className="dp-card dp-promises">
+          <section className="dp-card dp-promises" id="dp-commitments">
             <div className="dp-sec-head">
               <div className="dp-row">
                 <h2>Commitments needing attention</h2>

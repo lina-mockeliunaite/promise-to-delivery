@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-[#FAFAF9] text-slate-800 antialiased" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Alder Bank · Dealshape</title>
+<!-- Tailwind CSS CDN with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#012e23',
+              hover: '#093d30',
+              accent: '#1c4438',
+              surface: '#f0f6f3',
+              border: '#cde0d7'
+            },
+            canvas: '#FAFAF9',
+            card: '#FFFFFF'
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+          },
+          boxShadow: {
+            'elevation-sm': '0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02)',
+            'elevation-md': '0 2px 4px rgba(15, 23, 42, 0.02), 0 6px 16px rgba(15, 23, 42, 0.03)',
+            'elevation-card': '0 1px 3px rgba(15, 23, 42, 0.03), 0 10px 28px -4px rgba(15, 23, 42, 0.04)'
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom Font & Editorial Styling -->
+<style data-purpose="typography">
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;550;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    body {
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .font-tabular {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+<!-- END: Custom Font & Editorial Styling -->
+<meta content="web_dashboard" name="shell-type"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/></head>
+<body class="min-h-full flex flex-col font-sans selection:bg-[#1c4438] selection:text-white text-[13px] leading-relaxed bg-[#FAFAF9] text-slate-800">
+<!-- Ambient light wash banner in header -->
+<div class="fixed top-0 left-0 right-0 h-96 pointer-events-none bg-gradient-to-b from-emerald-500/[0.035] via-teal-500/[0.015] to-transparent -z-10"></div>
+<!-- BEGIN: TopHeader -->
+<header class="w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-30 transition-all">
+<div class="max-w-[1440px] mx-auto px-6 h-13 flex items-center justify-between text-xs">
+<!-- Left: Navigation back link -->
+<div class="flex items-center gap-4">
+<a class="group inline-flex items-center gap-2 font-medium text-slate-500 hover:text-slate-900 transition-colors py-1 px-2 -ml-2 rounded-lg hover:bg-slate-100/70" href="#all-deals">
+<svg class="w-4 h-4 text-slate-400 group-hover:-translate-x-0.5 group-hover:text-slate-700 transition-all stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="tracking-tight">All deals</span>
+</a>
+</div>
+<!-- Center: Brand identity with subtle status dot -->
+<div class="flex items-center gap-2.5">
+<div class="w-6 h-6 rounded-md bg-[#012e23] flex items-center justify-center text-white font-semibold text-[11px] shadow-sm shadow-[#012e23]/30">
+<svg class="w-3.5 h-3.5 text-emerald-300" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+</svg>
+</div>
+<span class="font-semibold tracking-tight text-slate-900 text-sm">Dealshape</span>
+</div>
+<!-- Right: User meta & catalog action -->
+<div class="flex items-center gap-3 text-slate-600">
+<div class="flex items-center gap-2 bg-slate-50/90 border border-slate-200/70 py-1 px-2.5 rounded-full text-[11px]">
+<div class="w-4 h-4 rounded-full bg-emerald-100 text-[#012e23] flex items-center justify-center font-bold text-[9px]">LM</div>
+<span>Recording as <strong class="font-medium text-slate-900">Lina Mockeliunaite</strong></span>
+<span class="text-slate-300">·</span>
+<a class="text-slate-500 underline underline-offset-2 hover:text-slate-900 transition-colors" href="#change-user">change</a>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: MainContentContainer -->
+<main class="flex-1 max-w-[1440px] w-full mx-auto px-6 py-7"><div class="flex flex-col w-full">
+<!-- Eyebrow & Page Header -->
+<div class="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-8 border-b border-surface-variant/40">
+<div class="flex flex-col max-w-2xl">
+<div class="flex items-center gap-2 mb-2.5">
+<span class="font-label-code-sm text-label-code-sm tracking-wider uppercase text-primary-container font-semibold">Sales to Delivery Handover</span>
+</div>
+<div class="flex items-baseline gap-3">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Deals in handover</h1>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full text-label-code-sm font-label-code-sm bg-surface-container text-on-surface-variant">4 deals</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-2.5 leading-relaxed">
+        What Delivery is inheriting: promises the paperwork doesn't back, where they were first made, and the record frozen at handover.
+      </p>
+</div>
+<!-- Actions -->
+<div class="flex items-center gap-3 shrink-0">
+<a class="inline-flex items-center justify-center px-3.5 h-9 rounded bg-surface-container-lowest text-on-surface hover:bg-surface-container font-title-md text-title-md shadow-sm transition-colors" href="#product-catalogue">
+<span class="material-symbols-outlined text-[17px] mr-1.5 text-on-surface-variant">inventory_2</span>
+        Product catalogue
+      </a>
+<button class="inline-flex items-center justify-center px-3.5 h-9 rounded bg-primary text-on-primary hover:bg-brand-hover font-title-md text-title-md shadow-sm transition-colors" type="button">
+<span class="material-symbols-outlined text-[18px] mr-1.5">add</span>
+        New deal
+      </button>
+</div>
+</div>
+<!-- Filter & Control Bar -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4 py-5">
+<!-- Segmented Tabs -->
+<div class="inline-flex p-1 bg-surface-container-low rounded-lg shadow-elevation-sm">
+<button class="inline-flex items-center gap-2 px-3 py-1.5 rounded bg-surface-container-lowest text-on-surface font-title-md text-title-md shadow-sm" type="button">
+<span>All in handover</span>
+<span class="inline-flex items-center justify-center px-1.5 py-0.2 rounded-full font-label-code-sm text-label-code-sm bg-surface-container-high text-on-surface">4</span>
+</button>
+<button class="inline-flex items-center gap-2 px-3 py-1.5 rounded text-on-surface-variant hover:text-on-surface font-title-md text-title-md transition-colors" type="button">
+<span>Need attention</span>
+<span class="inline-flex items-center justify-center px-1.5 py-0.2 rounded-full font-label-code-sm text-label-code-sm bg-tertiary-fixed text-tertiary font-semibold">3</span>
+</button>
+<button class="inline-flex items-center gap-2 px-3 py-1.5 rounded text-on-surface-variant hover:text-on-surface font-title-md text-title-md transition-colors" type="button">
+<span>Handover complete</span>
+<span class="inline-flex items-center justify-center px-1.5 py-0.2 rounded-full font-label-code-sm text-label-code-sm bg-surface-container text-on-surface-variant">1</span>
+</button>
+</div>
+<!-- Search & Sort Controls -->
+<div class="flex items-center gap-3">
+<div class="relative w-72">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px] pointer-events-none">search</span>
+<input class="w-full h-9 pl-9 pr-3 rounded bg-surface-container-lowest text-on-surface placeholder:text-outline text-body-md font-body-md focus:bg-surface-container-lowest shadow-sm outline-none" placeholder="Search by deal, owner or stage" type="text"/>
+</div>
+<div class="relative">
+<button class="inline-flex items-center gap-2 h-9 px-3.5 rounded bg-surface-container-lowest text-on-surface font-title-md text-title-md shadow-sm hover:bg-surface-container transition-colors" type="button">
+<span class="text-on-surface-variant font-label-md text-label-md">Sort:</span>
+<span>Last updated</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">arrow_drop_down</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Deals Table Card -->
+<div class="bg-surface-container-lowest rounded-xl shadow-elevation-card overflow-hidden">
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-code-sm text-label-code-sm uppercase tracking-wider">
+<th class="py-3.5 pl-6 pr-4 font-medium" scope="col">Deal</th>
+<th class="py-3.5 px-4 font-medium" scope="col">Stage</th>
+<th class="py-3.5 px-4 font-medium" scope="col">Need attention</th>
+<th class="py-3.5 px-4 font-medium" scope="col">Deal owner</th>
+<th class="py-3.5 px-4 font-medium" scope="col">Last updated</th>
+<th class="py-3.5 pl-4 pr-6 text-right font-medium" scope="col">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container-low text-body-md font-body-md">
+<!-- Row 1: Alder Bank -->
+<tr class="hover:bg-surface-bright/70 transition-colors group">
+<td class="py-4 pl-6 pr-4 align-middle">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary font-headline-sm text-headline-sm shrink-0">
+<span class="material-symbols-outlined text-[20px] text-primary">account_balance</span>
+</div>
+<div>
+<a class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors block" href="#deal-alder-bank">
+                    Alder Bank
+                  </a>
+<span class="font-label-code-sm text-label-code-sm text-on-surface-variant">Commercial Banking Platform</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full font-label-code-sm text-label-code-sm bg-primary-fixed/50 text-on-primary-fixed-variant font-medium">
+                Contracting
+              </span>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded font-label-code-sm text-label-code-sm bg-tertiary-fixed text-tertiary font-semibold shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container animate-pulse"></span>
+                3 need attention
+              </span>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<div class="flex items-center gap-2.5">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-fixed flex items-center justify-center font-label-code-sm text-label-code-sm font-semibold">
+                  TF
+                </div>
+<span class="text-on-surface font-title-md text-title-md">Tom Fraser</span>
+</div>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<span class="font-label-code text-label-code text-on-surface-variant font-tabular">52 min ago</span>
+</td>
+<td class="py-4 pl-4 pr-6 align-middle text-right whitespace-nowrap">
+<a class="inline-flex items-center gap-1 text-primary hover:text-brand-hover font-title-md text-title-md group-hover:translate-x-0.5 transition-all" href="#deal-alder-bank">
+                Open deal
+                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</td>
+</tr>
+<!-- Row 2: Harbour Bank -->
+<tr class="hover:bg-surface-bright/70 transition-colors group">
+<td class="py-4 pl-6 pr-4 align-middle">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary font-headline-sm text-headline-sm shrink-0">
+<span class="material-symbols-outlined text-[20px] text-primary">anchor</span>
+</div>
+<div>
+<a class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors block" href="#deal-harbour-bank">
+                    Harbour Bank
+                  </a>
+<span class="font-label-code-sm text-label-code-sm text-on-surface-variant">Core Ledger Migration</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full font-label-code-sm text-label-code-sm bg-surface-container text-on-surface font-medium">
+<span class="material-symbols-outlined text-[13px] text-on-surface-variant">lock</span>
+                Handover complete
+              </span>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<span class="inline-flex items-center px-2 py-0.5 rounded font-label-code-sm text-label-code-sm bg-surface-container text-on-surface-variant">
+                1 at handover
+              </span>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<div class="flex items-center gap-2.5">
+<div class="w-6 h-6 rounded-full bg-secondary-fixed text-on-secondary-fixed-variant flex items-center justify-center font-label-code-sm text-label-code-sm font-semibold">
+                  GT
+                </div>
+<span class="text-on-surface font-title-md text-title-md">Grace Tan</span>
+</div>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<span class="font-label-code text-label-code text-on-surface-variant font-tabular">3 days ago</span>
+</td>
+<td class="py-4 pl-4 pr-6 align-middle text-right whitespace-nowrap">
+<a class="inline-flex items-center gap-1 text-on-surface hover:text-primary font-title-md text-title-md group-hover:translate-x-0.5 transition-all" href="#deal-harbour-bank">
+                Open record
+                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</td>
+</tr>
+<!-- Row 3: Coral Pay -->
+<tr class="hover:bg-surface-bright/70 transition-colors group">
+<td class="py-4 pl-6 pr-4 align-middle">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary font-headline-sm text-headline-sm shrink-0">
+<span class="material-symbols-outlined text-[20px] text-primary">payments</span>
+</div>
+<div>
+<a class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors block" href="#deal-coral-pay">
+                    Coral Pay
+                  </a>
+<span class="font-label-code-sm text-label-code-sm text-on-surface-variant">Instant Settlement API</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full font-label-code-sm text-label-code-sm bg-primary-fixed/50 text-on-primary-fixed-variant font-medium">
+                Contracting
+              </span>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded font-label-code-sm text-label-code-sm bg-tertiary-fixed text-tertiary font-semibold shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container"></span>
+                2 need attention
+              </span>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<div class="flex items-center gap-2.5">
+<div class="w-6 h-6 rounded-full bg-secondary-container text-on-secondary-fixed flex items-center justify-center font-label-code-sm text-label-code-sm font-semibold">
+                  MC
+                </div>
+<span class="text-on-surface font-title-md text-title-md">Marcus Chen</span>
+</div>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<span class="font-label-code text-label-code text-on-surface-variant font-tabular">9 days ago</span>
+</td>
+<td class="py-4 pl-4 pr-6 align-middle text-right whitespace-nowrap">
+<a class="inline-flex items-center gap-1 text-primary hover:text-brand-hover font-title-md text-title-md group-hover:translate-x-0.5 transition-all" href="#deal-coral-pay">
+                Open deal
+                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</td>
+</tr>
+<!-- Row 4: Atlas Remit -->
+<tr class="hover:bg-surface-bright/70 transition-colors group">
+<td class="py-4 pl-6 pr-4 align-middle">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary font-headline-sm text-headline-sm shrink-0">
+<span class="material-symbols-outlined text-[20px] text-primary">public</span>
+</div>
+<div>
+<a class="font-headline-md text-headline-md text-on-surface group-hover:text-primary transition-colors block" href="#deal-atlas-remit">
+                    Atlas Remit
+                  </a>
+<span class="font-label-code-sm text-label-code-sm text-on-surface-variant">Global Disbursal Rails</span>
+</div>
+</div>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<span class="inline-flex items-center px-2.5 py-1 rounded-full font-label-code-sm text-label-code-sm bg-surface-container text-on-surface-variant font-medium">
+                Proposal / RFP
+              </span>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded font-label-code-sm text-label-code-sm bg-tertiary-fixed text-tertiary font-semibold shadow-sm">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container animate-pulse"></span>
+                4 need attention
+              </span>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<span class="text-outline font-title-md text-title-md italic">Not set</span>
+</td>
+<td class="py-4 px-4 align-middle whitespace-nowrap">
+<span class="font-label-code text-label-code text-on-surface-variant font-tabular">9 days ago</span>
+</td>
+<td class="py-4 pl-4 pr-6 align-middle text-right whitespace-nowrap">
+<a class="inline-flex items-center gap-1 text-primary hover:text-brand-hover font-title-md text-title-md group-hover:translate-x-0.5 transition-all" href="#deal-atlas-remit">
+                Open deal
+                <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Table Meta Subtext -->
+<div class="px-6 py-3.5 bg-surface-container-low flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-on-surface-variant font-label-code-sm text-label-code-sm">
+<div class="flex items-center gap-2">
+<span>Showing 4 of 4 deals</span>
+<span>·</span>
+<span>Sorted by last updated</span>
+</div>
+<div class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="material-symbols-outlined text-[15px] text-tertiary">info</span>
+<span>Lists only promises the paperwork doesn't back.</span>
+</div>
+</div>
+</div>
+<!-- Reference Snapshot & Archival Card -->
+<div class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="bg-surface-container-lowest p-5 rounded-lg shadow-elevation-sm col-span-2 flex flex-col justify-between">
+<div class="flex items-center justify-between pb-3">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[18px]">verified</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">System Verification Scope</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-on-surface-variant">Handover Baseline</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+        Every deal tracked cross-references active customer emails, discovery transcripts, RFP attachments, and contract schedules against current product architecture caps. 
+      </p>
+<div class="mt-4 pt-3 flex items-center gap-4 text-label-code-sm font-label-code-sm text-on-surface-variant">
+<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-primary-container"></span> 4 Audit streams live</span>
+<span class="inline-flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-tertiary"></span> 9 Total unbacked commitments flagged</span>
+</div>
+</div>
+<!-- Reference image preview module -->
+<div class="bg-surface-container-lowest p-5 rounded-lg shadow-elevation-sm flex flex-col justify-between">
+<div class="flex items-center justify-between pb-2">
+<span class="font-label-code-sm text-label-code-sm uppercase tracking-wider text-on-surface-variant font-medium">Design Reference Record</span>
+<span class="material-symbols-outlined text-[16px] text-outline">photo_camera</span>
+</div>
+<div class="relative w-full h-24 rounded overflow-hidden bg-surface-container">
+<img alt="Reference screenshot showing Alder Bank handover dealshape dashboard" class="w-full h-full object-cover object-top opacity-85 hover:opacity-100 transition-opacity" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDRlhrn_cHyXNkvClXFZbYJaZXF4-LYpjWD0XBmAlPG4Y-RNcMpgaveR2walkdkuyJG7oGg_Hf7DDCxAsO0T3EdmWlNmgbmF5eFwGa1Y7Iy1-LxH20sxRZakn_wX9v-L30TS6QSM2z4CuUPahCaVOwPnVXA2C5wi4Gh7yk6-l6knJrnsnwI0sy5Gvoa96Iq-lZWBmN6Y-o9BG1A3U6buCcyAFJ_8WvgDYfNod2Zd-HyOnBlchrYJo_40CCeHmF8rWDt"/>
+</div>
+<div class="pt-2 flex items-center justify-between font-label-code-sm text-label-code-sm text-on-surface-variant">
+<span>Quiet Conviction v2.4</span>
+<span class="text-primary font-medium">System Spec</span>
+</div>
+</div>
+</div>
+</div></main>
+<!-- END: MainContentContainer -->
+<!-- BEGIN: EditorialFooter -->
+<footer class="w-full border-t border-slate-200/80 bg-white/70 py-8 px-6 mt-16 text-center text-xs text-slate-400 leading-normal">
+<div class="max-w-2xl mx-auto space-y-1.5">
+<p>
+<strong class="font-semibold text-slate-700 tracking-tight">Dealshape</strong> · See the deal as it was actually promised.
+      </p>
+<p class="text-[11px] text-slate-400 leading-relaxed">
+        Lists commitments where the customer's expectation, the contract and what we can sell don't line up. Checked against the documents listed and the product catalogue. All companies, people and deals are fictional.
+      </p>
+</div>
+</footer>
+<!-- END: EditorialFooter -->
+</body></html>

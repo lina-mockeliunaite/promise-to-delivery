@@ -293,7 +293,9 @@ def handover(conn, slug: str) -> dict:
     return {"complete": done is not None, "completed_by": done["completed_by"] if done else None,
             "completed_at": done["at"] if done else None, "notes": notes(conn, did), "snapshot": snap,
             "fingerprint": fingerprint, "signature": signature(conn, did),
-            "display_names": _display_names(conn, did, slug) if snap else {}}
+            "display_names": _display_names(conn, did, slug) if snap else {},
+            # 19 Oct: the deal owner, read now (profile, else the Sales note's author), as the deal list shows it; not in the snapshot
+            "owner": deal_stage.load_profile(slug).get("owner") or ((notes(conn, did)["sales"] or {}).get("by"))}
 
 
 def _display_names(conn, did: int, slug: str) -> dict:

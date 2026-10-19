@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+
+<html class="h-full bg-[#FAFAF9] text-slate-800 antialiased" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Alder Bank · Dealshape</title>
+<!-- Tailwind CSS CDN with forms and container queries -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              DEFAULT: '#012e23',
+              hover: '#093d30',
+              accent: '#1c4438',
+              surface: '#f0f6f3',
+              border: '#cde0d7'
+            },
+            canvas: '#FAFAF9',
+            card: '#FFFFFF'
+          },
+          fontFamily: {
+            sans: ['Inter', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'sans-serif'],
+            mono: ['JetBrains Mono', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace']
+          },
+          boxShadow: {
+            'elevation-sm': '0 1px 2px rgba(15, 23, 42, 0.04), 0 1px 3px rgba(15, 23, 42, 0.02)',
+            'elevation-md': '0 2px 4px rgba(15, 23, 42, 0.02), 0 6px 16px rgba(15, 23, 42, 0.03)',
+            'elevation-card': '0 1px 3px rgba(15, 23, 42, 0.03), 0 10px 28px -4px rgba(15, 23, 42, 0.04)'
+          }
+        }
+      }
+    }
+  </script>
+<!-- BEGIN: Custom Font & Editorial Styling -->
+<style data-purpose="typography">
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;450;500;550;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+    body {
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    .font-tabular {
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+<!-- END: Custom Font & Editorial Styling -->
+<meta content="web_dashboard" name="shell-type"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/></head>
+<body class="min-h-full flex flex-col font-sans selection:bg-[#1c4438] selection:text-white text-[13px] leading-relaxed bg-[#FAFAF9] text-slate-800">
+<!-- Ambient light wash banner in header -->
+<div class="fixed top-0 left-0 right-0 h-96 pointer-events-none bg-gradient-to-b from-emerald-500/[0.035] via-teal-500/[0.015] to-transparent -z-10"></div>
+<!-- BEGIN: TopHeader -->
+<header class="w-full border-b border-slate-200/80 bg-white/80 backdrop-blur-md sticky top-0 z-30 transition-all">
+<div class="max-w-[1440px] mx-auto px-6 h-13 flex items-center justify-between text-xs">
+<!-- Left: Navigation back link -->
+<div class="flex items-center gap-4">
+<a class="group inline-flex items-center gap-2 font-medium text-slate-500 hover:text-slate-900 transition-colors py-1 px-2 -ml-2 rounded-lg hover:bg-slate-100/70" href="#all-deals">
+<svg class="w-4 h-4 text-slate-400 group-hover:-translate-x-0.5 group-hover:text-slate-700 transition-all stroke-[2]" fill="none" stroke="currentColor" viewbox="0 0 24 24">
+<path d="M10.5 19.5L3 12m0 0l7.5-7.5M3 12h18" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>
+<span class="tracking-tight">All deals</span>
+</a>
+</div>
+<!-- Center: Brand identity with subtle status dot -->
+<div class="flex items-center gap-2.5">
+<div class="w-6 h-6 rounded-md bg-[#012e23] flex items-center justify-center text-white font-semibold text-[11px] shadow-sm shadow-[#012e23]/30">
+<svg class="w-3.5 h-3.5 text-emerald-300" fill="currentColor" viewbox="0 0 24 24">
+<path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path>
+</svg>
+</div>
+<span class="font-semibold tracking-tight text-slate-900 text-sm">Dealshape</span>
+</div>
+<!-- Right: User meta & catalog action -->
+<div class="flex items-center gap-3 text-slate-600">
+<div class="flex items-center gap-2 bg-slate-50/90 border border-slate-200/70 py-1 px-2.5 rounded-full text-[11px]">
+<div class="w-4 h-4 rounded-full bg-emerald-100 text-[#012e23] flex items-center justify-center font-bold text-[9px]">LM</div>
+<span>Recording as <strong class="font-medium text-slate-900">Lina Mockeliunaite</strong></span>
+<span class="text-slate-300">·</span>
+<a class="text-slate-500 underline underline-offset-2 hover:text-slate-900 transition-colors" href="#change-user">change</a>
+</div>
+</div>
+</div>
+</header>
+<!-- END: TopHeader -->
+<!-- BEGIN: MainContentContainer -->
+<main class="flex-1 max-w-[1440px] w-full mx-auto px-6 py-7"><div class="flex flex-col w-full">
+<!-- Deal Header Bar -->
+<div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 pb-6 border-b border-surface-container-high">
+<div class="flex flex-col gap-1.5 min-w-0">
+<div class="flex items-center gap-2.5">
+<span class="font-headline-md text-headline-md text-on-surface tracking-tight">Alder Bank</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-label-code-sm text-label-code-sm">Stage: Contracting</span>
+<span class="px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 font-label-code-sm text-label-code-sm flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+          Reconciled
+        </span>
+</div>
+<div class="flex flex-wrap items-center gap-x-2 text-on-surface-variant font-body-sm text-body-sm">
+<span>Target go-live: <strong class="text-on-surface font-medium">1 Feb 2027</strong></span>
+<span>·</span>
+<span>Checked just now against 9 documents</span>
+<span>·</span>
+<span class="text-tertiary font-medium">Gaps first made at Proposal / RFP</span>
+</div>
+</div>
+<!-- Deal Meta Actions -->
+<div class="flex items-center gap-2 self-start lg:self-end">
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-surface-container-lowest text-on-surface font-body-sm text-body-sm rounded shadow-sm hover:bg-surface-container-low transition-colors">
+<span class="material-symbols-outlined text-[16px] text-outline">description</span>
+<span>Audit Trail</span>
+</button>
+<button class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-primary text-on-primary font-body-sm text-body-sm rounded shadow-sm hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-[16px]">add</span>
+<span>Upload Document</span>
+</button>
+</div>
+</div>
+<!-- Primary Split-Pane View -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 pt-6">
+<!-- Left & Center Workspace (Approx 65%) -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<!-- THE "WHAT CHANGED" RECONCILIATION PANEL (SCREEN 3 KEY ELEMENT) -->
+<section class="relative rounded-xl bg-surface-container-lowest shadow-elevation-card overflow-hidden transition-all duration-300" id="what-changed-panel">
+<!-- Spruce accent bar top edge -->
+<div class="h-1 w-full bg-primary-container"></div>
+<div class="p-6 flex flex-col gap-5">
+<!-- Header zone: Change source & deterministic verification flag -->
+<div class="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-[20px]">sync_saved_locally</span>
+<h2 class="font-headline-sm text-headline-sm text-on-surface">After adding Draft SOW, new version</h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant flex items-center gap-1.5 pl-7">
+<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+<span>No model call was needed: code checked every finding again.</span>
+</p>
+</div>
+<div class="flex items-center gap-2 self-start sm:self-auto pl-7 sm:pl-0">
+<span class="font-label-code-sm text-label-code-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">diff · v1.2 → v1.3</span>
+</div>
+</div>
+<!-- Diff Results Breakdown Container -->
+<div class="grid grid-cols-1 gap-3 pt-1">
+<!-- Closed (1) Section Item -->
+<div class="p-4 rounded-lg bg-surface-container-low flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+<div class="flex items-start gap-3">
+<div class="mt-0.5 w-5 h-5 rounded bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">check</span>
+</div>
+<div class="flex flex-col gap-0.5">
+<div class="flex flex-wrap items-center gap-2">
+<span class="font-body-md text-body-md text-on-surface font-medium">Coaching-scam detection: Not in the contract</span>
+<span class="font-label-code-sm text-label-code-sm px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 font-medium">Closed by documents</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                    The new SOW version includes coaching detection (section 5). The commitment text now aligns with legal obligations.
+                  </p>
+</div>
+</div>
+<a class="text-primary hover:text-brand-accent text-right font-label-code-sm text-label-code-sm shrink-0 underline underline-offset-2" href="#compare-diff">
+                Compare text
+              </a>
+</div>
+<!-- Still needs attention Item -->
+<div class="p-4 rounded-lg bg-amber-50/70 flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+<div class="flex items-start gap-3">
+<div class="mt-0.5 w-5 h-5 rounded bg-amber-100 text-amber-900 flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-[15px]" style="font-variation-settings: 'FILL' 1;">priority_high</span>
+</div>
+<div class="flex flex-col gap-0.5">
+<div class="flex flex-wrap items-center gap-2">
+<span class="font-body-md text-body-md text-on-surface font-medium">Still needs attention: No approval found</span>
+<span class="font-label-code-sm text-label-code-sm px-1.5 py-0.5 rounded bg-amber-100 text-amber-900 font-medium">CAP-027 AU</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                    While documented in SOW section 5, the model capability requires Product Engineering approval prior to contractual signing.
+                  </p>
+</div>
+</div>
+<button class="text-amber-900 hover:text-on-surface text-right font-label-code-sm text-label-code-sm shrink-0 underline underline-offset-2">
+                Assign reviewer
+              </button>
+</div>
+</div>
+<!-- Bottom Reconciliation Footer -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-3 border-t border-surface-container">
+<div class="flex items-center gap-2 text-on-surface-variant font-body-sm text-body-sm">
+<span class="material-symbols-outlined text-[16px] text-amber-700">info</span>
+<span><strong>3 commitments</strong> still need attention before contract sign-off.</span>
+</div>
+<div class="flex items-center gap-2.5">
+<button class="px-3 py-1.5 text-on-surface-variant hover:text-on-surface font-body-sm text-body-sm transition-colors" onclick="document.getElementById('commitments-anchor').scrollIntoView({ behavior: 'smooth' });">
+                View updated commitments below
+              </button>
+<button class="px-4 py-1.5 bg-primary hover:bg-primary-container text-on-primary font-body-sm text-body-sm rounded shadow-sm transition-colors" onclick="document.getElementById('what-changed-panel').classList.add('opacity-40'); setTimeout(() =&gt; document.getElementById('what-changed-panel').remove(), 250);">
+                Done
+              </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Section: What We're Delivering (Chips Overview) -->
+<section class="p-5 rounded-xl bg-surface-container-lowest shadow-elevation-card flex flex-col gap-3">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-outline">What we're delivering</span>
+<span class="font-label-code-sm text-label-code-sm text-on-surface-variant">5 core capability modules</span>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="px-2.5 py-1 rounded-md bg-surface-container-low text-on-surface font-body-sm text-body-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span> Real-time Transaction Fraud Engine
+          </span>
+<span class="px-2.5 py-1 rounded-md bg-surface-container-low text-on-surface font-body-sm text-body-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span> Coaching-scam Behavioral Heuristics
+          </span>
+<span class="px-2.5 py-1 rounded-md bg-surface-container-low text-on-surface font-body-sm text-body-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span> ISO 20022 High-Volume Ingestion
+          </span>
+<span class="px-2.5 py-1 rounded-md bg-surface-container-low text-on-surface font-body-sm text-body-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span> APRA CPS 234 Audit Logs
+          </span>
+<span class="px-2.5 py-1 rounded-md bg-surface-container-low text-on-surface font-body-sm text-body-sm flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[14px] text-primary">verified</span> Disaster Recovery Replication
+          </span>
+</div>
+</section>
+<!-- Section: Commitments Needing Attention (Anchor) -->
+<section class="flex flex-col gap-4" id="commitments-anchor">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Commitments &amp; Contract Alignment</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Verified clauses cross-referenced across RFP responses, emails, and SOW drafts.</p>
+</div>
+<div class="flex items-center gap-1.5 font-label-code-sm text-label-code-sm bg-surface-container px-2 py-1 rounded text-on-surface-variant">
+<span>Filter:</span>
+<strong class="text-on-surface">All (5)</strong>
+</div>
+</div>
+<!-- Commitment Items List -->
+<div class="flex flex-col gap-3">
+<!-- 1. Coaching-scam detection (Recently Updated Item) -->
+<div class="p-4 rounded-xl bg-surface-container-lowest shadow-elevation-card flex flex-col gap-3 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-500"></div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface">Coaching-scam detection live at launch</span>
+<span class="font-label-code-sm text-label-code-sm px-2 py-0.5 rounded bg-emerald-100 text-emerald-900">In contract (SOW §5)</span>
+<span class="font-label-code-sm text-label-code-sm px-2 py-0.5 rounded bg-amber-100 text-amber-900">No approval found</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">Updated 2m ago</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Customer expectation formed in RFP response Q3.4 promised capability live for Phase 1. SOW v1.3 now adds clause 5.2 specifying technical scope, but CAP-027 AU internal risk waiver remains unassigned.
+            </p>
+<div class="flex flex-wrap items-center gap-3 pt-2 text-on-surface-variant font-label-code-sm text-label-code-sm">
+<span class="text-on-surface font-medium">Source:</span>
+<span>RFP_Responses_vFinal.pdf</span>
+<span>→</span>
+<span>Draft_SOW_v1.3.docx</span>
+<span class="ml-auto text-primary hover:underline cursor-pointer">Resolve approval →</span>
+</div>
+</div>
+<!-- 2. Hosting on Microsoft Azure Conflict -->
+<div class="p-4 rounded-xl bg-surface-container-lowest shadow-elevation-card flex flex-col gap-3 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-500"></div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface">Hosting on Microsoft Azure (Sydney Central)</span>
+<span class="font-label-code-sm text-label-code-sm px-2 py-0.5 rounded bg-amber-100 text-amber-900">Cloud Region Conflict</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">RFP Match</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Alder Bank Security Schedule specifies sovereign Azure tenant. Standard SaaS architecture operates on AWS Sydney (ap-southeast-2). Requires legal amendment or single-tenant carveout.
+            </p>
+<div class="flex flex-wrap items-center gap-3 pt-2 text-on-surface-variant font-label-code-sm text-label-code-sm">
+<span class="text-on-surface font-medium">Source:</span>
+<span>Alder_Infosec_Standard_2026.pdf</span>
+<span class="ml-auto text-primary hover:underline cursor-pointer">View Cloud Ops Note →</span>
+</div>
+</div>
+<!-- 3. 750,000 payments a day -->
+<div class="p-4 rounded-xl bg-surface-container-lowest shadow-elevation-card flex flex-col gap-3 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-amber-500"></div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface">750,000 payments a day throughput by end of Year 1</span>
+<span class="font-label-code-sm text-label-code-sm px-2 py-0.5 rounded bg-amber-100 text-amber-900">Not in the contract</span>
+<span class="font-label-code-sm text-label-code-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">No approval</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">Email promise</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Commercial email from Lead AE guaranteed capacity scaling at no additional tier fee during Q4 peak. SOW v1.3 caps standard tier at 500,000 tx/day.
+            </p>
+<div class="flex flex-wrap items-center gap-3 pt-2 text-on-surface-variant font-label-code-sm text-label-code-sm">
+<span class="text-on-surface font-medium">Source:</span>
+<span>Email_Thread_Capacity_Nov14.eml</span>
+<span class="ml-auto text-primary hover:underline cursor-pointer">Draft contract adjustment →</span>
+</div>
+</div>
+<!-- 4. Disaster Recovery RPO -->
+<div class="p-4 rounded-xl bg-surface-container-lowest shadow-elevation-card flex flex-col gap-3 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-600"></div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface">Dedicated Disaster Recovery RPO under 15 minutes</span>
+<span class="font-label-code-sm text-label-code-sm px-2 py-0.5 rounded bg-emerald-50 text-emerald-800">Addressed by note</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">Resolved</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Architecture exception note approved by VP Infrastructure. Replicas configured across dual availability zones.
+            </p>
+</div>
+<!-- 5. Hourly batch processing fallback -->
+<div class="p-4 rounded-xl bg-surface-container-lowest shadow-elevation-card flex flex-col gap-3 relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-emerald-600"></div>
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+<div class="flex items-center gap-2">
+<span class="font-title-md text-title-md text-on-surface">Hourly batch processing fallback endpoint</span>
+<span class="font-label-code-sm text-label-code-sm px-2 py-0.5 rounded bg-emerald-50 text-emerald-800">Closed by documents · SOW v1.3</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">Resolved</span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+              Schedule 4 (Service Level Agreement) now formally incorporates offline batched SFTP delivery specifications.
+            </p>
+</div>
+</div>
+</section>
+<!-- Section: Handover Protocol Card -->
+<section class="p-5 rounded-xl bg-surface-container-lowest shadow-elevation-card flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-outline">Post-Contract Handover State</span>
+<span class="font-label-code-sm text-label-code-sm px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">Pending Contract Signature</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="p-3.5 rounded bg-surface-container-low flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-on-surface font-body-sm text-body-sm font-medium">
+<span class="material-symbols-outlined text-[16px] text-primary">assignment_turned_in</span>
+<span>Sales Handoff Note</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Lina Mockeliunaite registered 4 custom promises; 3 fully reconciled into SOW v1.3 attachments.
+            </p>
+</div>
+<div class="p-3.5 rounded bg-surface-container-low flex flex-col gap-1.5">
+<div class="flex items-center gap-1.5 text-on-surface font-body-sm text-body-sm font-medium">
+<span class="material-symbols-outlined text-[16px] text-outline">verified_user</span>
+<span>Delivery Acceptance Note</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Implementation Lead (David T.) awaiting final clearance on the Azure vs. AWS hosting variance.
+            </p>
+</div>
+</div>
+</section>
+</div>
+<!-- Right Sidebar Inspector (Approx 35%) -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Deal Journey & Provenance Module -->
+<div class="p-6 rounded-xl bg-surface-container-lowest shadow-elevation-card flex flex-col gap-5">
+<div class="flex items-center justify-between">
+<div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Deal journey</h3>
+<span class="font-label-code-sm text-label-code-sm text-on-surface-variant">9 documents across 5 stages</span>
+</div>
+<a class="font-label-code-sm text-label-code-sm text-primary hover:underline" href="#how-it-works">How closing works</a>
+</div>
+<!-- Vertical Timeline of Stages -->
+<div class="relative flex flex-col gap-6 pl-4 before:absolute before:left-[21px] before:top-2 before:bottom-2 before:w-0.5 before:bg-surface-container-high">
+<!-- 1. Discovery -->
+<div class="relative flex items-start gap-3.5">
+<div class="w-3.5 h-3.5 rounded-full bg-emerald-600 ring-4 ring-surface-container-lowest z-10 shrink-0 mt-1"></div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">1. Discovery</span>
+<span class="font-label-code-sm text-label-code-sm text-on-surface-variant">2 documents · Call transcript, Needs assessment</span>
+</div>
+</div>
+<!-- 2. Evaluation -->
+<div class="relative flex items-start gap-3.5">
+<div class="w-3.5 h-3.5 rounded-full bg-emerald-600 ring-4 ring-surface-container-lowest z-10 shrink-0 mt-1"></div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">2. Evaluation</span>
+<span class="font-label-code-sm text-label-code-sm text-on-surface-variant">1 document · Infosec architecture questionnaire</span>
+</div>
+</div>
+<!-- 3. Proposal / RFP -->
+<div class="relative flex items-start gap-3.5">
+<div class="w-3.5 h-3.5 rounded-full bg-emerald-600 ring-4 ring-surface-container-lowest z-10 shrink-0 mt-1"></div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">3. Proposal / RFP</span>
+<span class="font-label-code-sm text-label-code-sm text-tertiary font-medium">Gaps originated here · RFP Response vFinal</span>
+</div>
+</div>
+<!-- 4. Shortlisted -->
+<div class="relative flex items-start gap-3.5">
+<div class="w-3.5 h-3.5 rounded-full bg-emerald-600 ring-4 ring-surface-container-lowest z-10 shrink-0 mt-1"></div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">4. Shortlisted</span>
+<span class="font-label-code-sm text-label-code-sm text-on-surface-variant">Commercial terms summary · AE Email log</span>
+</div>
+</div>
+<!-- 5. Contracting (CURRENT STAGE - HIGHLIGHTED) -->
+<div class="relative flex items-start gap-3.5">
+<div class="w-3.5 h-3.5 rounded-full bg-primary ring-4 ring-surface-container-lowest z-10 shrink-0 mt-1"></div>
+<div class="flex flex-col gap-2 p-3 rounded-lg bg-surface-container-low w-full">
+<div class="flex items-center justify-between">
+<span class="font-body-md text-body-md font-semibold text-primary">5. Contracting (Current)</span>
+<span class="font-label-code-sm text-label-code-sm px-1.5 py-0.5 rounded bg-primary-fixed text-on-primary-fixed font-medium">Active</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                Master Services Agreement in review. 3 drafts recorded.
+              </p>
+<!-- Recently Added Document Highlight -->
+<div class="p-2.5 rounded bg-surface-container-lowest flex items-center justify-between gap-2 shadow-sm">
+<div class="flex items-center gap-2 min-w-0">
+<span class="material-symbols-outlined text-primary text-[18px] shrink-0">article</span>
+<div class="flex flex-col min-w-0">
+<span class="font-body-sm text-body-sm font-medium text-on-surface truncate">Draft SOW, new version (v1.3)</span>
+<span class="font-label-code-sm text-label-code-sm text-outline">Uploaded 4m ago</span>
+</div>
+</div>
+<span class="font-label-code-sm text-label-code-sm px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-900 shrink-0 font-medium">New</span>
+</div>
+<!-- Other documents in this stage -->
+<div class="flex flex-col gap-1 pt-1 font-label-code-sm text-label-code-sm text-on-surface-variant">
+<span class="truncate hover:text-on-surface cursor-pointer">· MSA_AlderBank_Legal_Redline.docx</span>
+<span class="truncate hover:text-on-surface cursor-pointer">· Schedule_4_SLAs_Jan2027.pdf</span>
+</div>
+</div>
+</div>
+<!-- 6. Signed -->
+<div class="relative flex items-start gap-3.5 opacity-50">
+<div class="w-3.5 h-3.5 rounded-full bg-surface-container-high ring-4 ring-surface-container-lowest z-10 shrink-0 mt-1"></div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">6. Signed</span>
+<span class="font-label-code-sm text-label-code-sm text-on-surface-variant">Targeting 28 Jan 2027</span>
+</div>
+</div>
+<!-- 7. Handover -->
+<div class="relative flex items-start gap-3.5 opacity-50">
+<div class="w-3.5 h-3.5 rounded-full bg-surface-container-high ring-4 ring-surface-container-lowest z-10 shrink-0 mt-1"></div>
+<div class="flex flex-col">
+<span class="font-body-md text-body-md font-medium text-on-surface">7. Handover</span>
+<span class="font-label-code-sm text-label-code-sm text-on-surface-variant">Delivery team onboarding</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Quick Document Checker Inspector Card -->
+<div class="p-6 rounded-xl bg-surface-container-lowest shadow-elevation-card flex flex-col gap-4">
+<div class="flex items-center justify-between">
+<span class="font-label-md text-label-md uppercase tracking-wider text-outline">Audit Engine State</span>
+<span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+</div>
+<div class="flex flex-col gap-2 font-body-sm text-body-sm text-on-surface-variant">
+<p>
+            Deterministic clause matching active. Every document parsed against the Alder Bank commitment baseline.
+          </p>
+<div class="pt-2 flex flex-col gap-1 font-label-code-sm text-label-code-sm">
+<div class="flex justify-between py-1 border-b border-surface-container">
+<span class="text-outline">Engine version</span>
+<span class="text-on-surface">dealshape-rules-2.4.1</span>
+</div>
+<div class="flex justify-between py-1 border-b border-surface-container">
+<span class="text-outline">Total promises indexed</span>
+<span class="text-on-surface font-tabular">18 clauses</span>
+</div>
+<div class="flex justify-between py-1">
+<span class="text-outline">Last check duration</span>
+<span class="text-on-surface font-tabular">42ms (zero LLM calls)</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div></main>
+<!-- END: MainContentContainer -->
+<!-- BEGIN: EditorialFooter -->
+<footer class="w-full border-t border-slate-200/80 bg-white/70 py-8 px-6 mt-16 text-center text-xs text-slate-400 leading-normal">
+<div class="max-w-2xl mx-auto space-y-1.5">
+<p>
+<strong class="font-semibold text-slate-700 tracking-tight">Dealshape</strong> · See the deal as it was actually promised.
+      </p>
+<p class="text-[11px] text-slate-400 leading-relaxed">
+        Lists commitments where the customer's expectation, the contract and what we can sell don't line up. Checked against the documents listed and the product catalogue. All companies, people and deals are fictional.
+      </p>
+</div>
+</footer>
+<!-- END: EditorialFooter -->
+</body></html>

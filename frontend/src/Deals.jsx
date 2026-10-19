@@ -20,13 +20,15 @@ const ICONS = {
   lock: "M7 11V7a5 5 0 0 1 10 0v4M5 11h14v10H5z",
   check: "M5 12l5 5L20 7",
   plus: "M12 5v14M5 12h14",
+  box: "M21 8l-9-5-9 5v8l9 5 9-5zM3 8l9 5 9-5M12 13v8",
+  info: "M12 16v-4M12 8h.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0z",
 };
 
 function StagePill({ deal }) {
   if (deal.handover_complete) {
     return (
       <span className="dl-pill dl-pill-frozen">
-        <Icon d={ICONS.lock} size={12} /> Handover · Complete
+        <Icon d={ICONS.lock} size={12} /> Handover complete
       </span>
     );
   }
@@ -46,11 +48,13 @@ function GapPill({ deal }) {
       </span>
     );
   }
+  if (deal.handover_complete) {
+    return <span className="dl-gap dl-gap-frozen">{deal.open_gaps} at handover{noted > 0 && <span className="dl-gap-sub">{noted} addressed by note</span>}</span>;
+  }
   return (
-    <span className={`dl-gap ${deal.handover_complete ? "dl-gap-frozen" : ""}`}>
+    <span className="dl-gap">
       <span className="dl-dot" /> {attentionText(deal.open_gaps)}
       {noted > 0 && <span className="dl-gap-sub">{noted} addressed by note</span>}
-      {deal.handover_complete && <span className="dl-gap-sub">at handover</span>}
     </span>
   );
 }
@@ -112,12 +116,12 @@ export default function Deals({ deals, onOpen, onCreated }) {
             <span className="dl-count">{n.handover} {n.handover === 1 ? "deal" : "deals"}</span>
           </div>
           <p className="dl-sub">
-            What Delivery is inheriting: promises the paperwork doesn't back, where they were first made, and the
-            record frozen at handover.
+            What Delivery is inheriting: commitments where the customer's expectation, the contract and what we can sell
+            don't line up, where they were first made, and the record frozen at handover.
           </p>
         </div>
         <div className="dl-actions">
-          <button type="button" className="dl-btn" onClick={() => setCatalogue(true)}>Product catalogue</button>
+          <button type="button" className="dl-btn" onClick={() => setCatalogue(true)}><Icon d={ICONS.box} size={16} /> Product catalogue</button>
           <NewDeal onCreated={onCreated} />
         </div>
       </section>
@@ -141,7 +145,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
                    placeholder="Search by deal, owner or stage" aria-label="Search deals" />
           </label>
           <label className="dl-sort">
-            <span>Sort</span>
+            <span>Sort:</span>
             <select value={sort} onChange={(e) => setSort(e.target.value)} aria-label="Sort deals">
               {SORTS.map((s) => <option key={s.key} value={s.key}>{s.label}</option>)}
             </select>
@@ -159,15 +163,18 @@ export default function Deals({ deals, onOpen, onCreated }) {
                 <th scope="col">Need attention</th>
                 <th scope="col">Deal owner</th>
                 <th scope="col">Last updated</th>
-                <th scope="col" className="dl-right"><span className="dl-sr">Open</span></th>
+                <th scope="col" className="dl-right"><span className="dl-sr">Action</span></th>
               </tr>
             </thead>
             <tbody>
               {shown.rows.map((d) => (
                 <tr key={d.deal} className={d.handover_complete ? "is-frozen" : ""} onClick={() => onOpen(d.deal)}>
                   <td>
-                    <span className="dl-deal-name">{d.name}</span>
-                    {d.kind === "user" && <span className="dl-tag">Uploaded</span>}
+                    <span className="dl-deal-cell">
+                      <span className="dl-tile" aria-hidden="true">{initials(d.name)}</span>
+                      <span className="dl-deal-name">{d.name}</span>
+                      {d.kind === "user" && <span className="dl-tag">Uploaded</span>}
+                    </span>
                   </td>
                   <td><StagePill deal={d} /></td>
                   <td><GapPill deal={d} /></td>
@@ -187,7 +194,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
                   <td className="dl-right">
                     <button type="button" className={`dl-open ${d.handover_complete ? "is-muted" : ""}`}
                             onClick={(e) => { e.stopPropagation(); onOpen(d.deal); }}>
-                      {d.handover_complete ? "Open snapshot" : "Open deal"} <Icon d={ICONS.arrow} size={14} />
+                      {d.handover_complete ? "Open record" : "Open deal"} <Icon d={ICONS.arrow} size={14} />
                     </button>
                   </td>
                 </tr>
@@ -202,9 +209,9 @@ export default function Deals({ deals, onOpen, onCreated }) {
         </div>
         <footer className="dl-foot">
           <span>
-            Showing <strong>{shown.rows.length}</strong> of <strong>{rows.length}</strong> · Sorted by {sortLabel} ·{" "}
-            <span className="dl-muted">Lists only promises the paperwork doesn't back.</span>
+            Showing <strong>{shown.rows.length}</strong> of <strong>{rows.length}</strong> {rows.length === 1 ? "deal" : "deals"} · Sorted by {sortLabel}
           </span>
+          <span className="dl-scope"><Icon d={ICONS.info} size={14} /> Lists commitments where the customer's expectation, the contract and what we can sell don't line up.</span>
           {shown.pages > 1 && (
             <span className="dl-pager">
               <button type="button" className="dl-btn" disabled={shown.page === 1} onClick={() => setPageNo(shown.page - 1)}>Previous</button>

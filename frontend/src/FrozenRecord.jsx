@@ -96,22 +96,34 @@ export default function FrozenRecord({ deal, onBack }) {
 
   return (
     <div className="dp fr">
-      <div className="dp-topbar fr-noprint">
-        <button type="button" className="dp-back" onClick={onBack}>← All deals</button>
-        <button type="button" className="dp-btn" onClick={printAll}>Print or save as PDF</button>
+      <div className="dp-topbar">
+        <span className="dp-wordmark">{NAME}</span>
+        <span className="dp-row fr-noprint">
+          <button type="button" className="dp-back" onClick={onBack}>← All deals</button>
+          <button type="button" className="dp-btn" onClick={printAll}>Print or save as PDF</button>
+        </span>
       </div>
 
       <div className="fr-bar">
-        <Lock size={13} /> <span>Handover complete · locked on <strong>{fmtDate(hv.completed_at)}</strong> by <strong>{plainName(hv.completed_by)}</strong></span>
+        <Lock size={14} /> <span>Handover complete · locked on <strong>{fmtDate(hv.completed_at)}</strong> by <strong>{plainName(hv.completed_by)}</strong></span>
       </div>
 
-      <section className="fr-head">
-        <span className="fr-eyebrow">{NAME} · {TAGLINE}</span>
+      <section className="dp-card fr-head">
+        <span className="fr-eyebrow">Handover record · for Delivery, Customer Success and Support</span>
         <h1>{s.deal}: what Delivery inherits</h1>
-        <div className="dp-meta">
-          <span className="dp-chip dp-chip-grey">Stage at handover: {s.stage}</span>
-          {s.brief?.go_live && <span className="dp-meta-strong">Go-live {fmtDate(s.brief.go_live)}</span>}
-          <span className="dp-faint">Checked {s.documents.length} documents and the product catalogue · {s.scope_note}</span>
+        <div className="fr-pills">
+          <span className="dp-stage-pill">Stage: {s.stage}</span>
+          {s.brief?.go_live && <span className="dp-meta-strong">Target go-live: {fmtDate(s.brief.go_live)}</span>}
+          {hv.owner && <span className="dp-meta-strong">Deal owner: {plainName(hv.owner)}</span>}
+        </div>
+        <p className="dp-faint dp-small fr-checked">Checked {s.documents.length} documents and the product catalogue · {s.scope_note}</p>
+        <div className={`fr-verdict ${open.length ? "is-open" : "is-clear"}`}>
+          <strong>{verdictLine(counts)}</strong>
+          <div className="fr-chips">
+            <span className="dp-chip dp-chip-amber"><span className="dp-dot" />{counts.open} needing attention</span>
+            <span className="dp-chip dp-chip-note"><span className="dp-dot dp-dot-grey" />{counts.noted} addressed by note</span>
+            <span className="dp-chip dp-chip-green"><Check />{counts.closed} closed by documents</span>
+          </div>
         </div>
       </section>
 
@@ -119,21 +131,17 @@ export default function FrozenRecord({ deal, onBack }) {
         <section className="dp-card">
           <div className="dp-sec-head">
             <h2 className="dp-upper">What we're delivering</h2>
-            <span className="dp-faint">Confirmed by <strong className="dp-ink">{plainName(s.brief.confirmed_by)}</strong>{s.brief.basis ? ` from ${s.brief.basis}` : ""}</span>
           </div>
-          <p className="dp-brief">{s.brief.summary}</p>
+          <blockquote className="dp-brief fr-quote">{s.brief.summary}</blockquote>
           {s.brief.deliverables?.length > 0 && (
-            <div className="dp-deliverables">
-              {s.brief.deliverables.map((d) => <span key={d}><span className="dp-dot dp-brand-bg" />{d}</span>)}
-            </div>
+            <ul className="fr-deliverables">
+              {s.brief.deliverables.map((d) => <li key={d}>{d}</li>)}
+            </ul>
           )}
+          <p className="fr-confirmed">Confirmed by {plainName(s.brief.confirmed_by)}{s.brief.basis ? ` from ${s.brief.basis}` : ""}</p>
           {s.brief.needs_reconfirmation && <div className="dp-warn">{s.brief.reconfirm_note}</div>}
         </section>
       )}
-
-      <section className={`fr-verdict ${open.length ? "is-open" : "is-clear"}`}>
-        <strong>{verdictLine(counts)}</strong>
-      </section>
 
       <section className="dp-card dp-promises">
         <div className="dp-sec-head">
@@ -206,9 +214,11 @@ export default function FrozenRecord({ deal, onBack }) {
                 {alreadyClosed(x.promise)}
                 {n && (
                   <div className="dp-decision is-done is-note">
-                    <span className="dp-kicker">Addressed by note · not in the documents · Delivery inherits it on this person's word</span>
-                    <span>“{n.reason}”</span>
-                    <span className="dp-faint dp-small">{recordedBy(n.by, n.at, fmtDate)}</span>
+                    <div className="fr-note-head">
+                      <span>{recordedBy(n.by, n.at, fmtDate)}</span>
+                      <span>Addressed by note · not in the documents</span>
+                    </div>
+                    <p className="fr-note-quote">“{n.reason}”</p>
                   </div>
                 )}
               </FrozenRow>

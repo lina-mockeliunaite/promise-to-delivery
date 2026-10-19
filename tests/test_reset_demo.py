@@ -285,6 +285,19 @@ class TestSignedPaperwork(ResetCase):
         self.assertEqual(list(placed.values()).count("signed"), 1)
 
 
+class TestHandoverOwner(ResetCase):
+    def test_the_handover_view_names_the_deal_owner_for_the_locked_record(self):
+        import handover
+        import ledger
+        import ledger_fixes
+        reset_demo.reset(self.db)
+        conn = ledger.connect(self.db)
+        self.addCleanup(conn.close)
+        view = handover.handover(conn, "alder_bank")
+        self.assertEqual(view["owner"], "Tom Fraser")  # from the Alder profile, read now; the snapshot is untouched
+        self.assertFalse(view["complete"])
+
+
 class TestBoundaries(ResetCase):
     def test_it_never_writes_to_data(self):
         global _active
