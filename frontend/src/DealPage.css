@@ -82,7 +82,8 @@ body:has(.dp) { background: #f8fafc; }
 .dp-topleft { justify-self: start; display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
 .dp-back { justify-self: start; border: 0; background: none; font: inherit; font-weight: 500; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 8px; margin-left: -8px; border-radius: 999px; }
 .dp-back:hover { color: var(--ink); background: var(--btn-soft); }
-.dp-brandline { display: inline-flex; align-items: baseline; gap: 10px; }
+.dp-brandline { display: inline-flex; align-items: center; gap: 10px; }
+.brand-logo { display: block; flex: none; }
 .dp-wordmark { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
 .dp-tagline { font-size: 12px; color: var(--muted); }
 .dp-topright { justify-self: end; display: inline-flex; align-items: center; gap: 12px; }

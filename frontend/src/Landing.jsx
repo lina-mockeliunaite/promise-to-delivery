@@ -1,9 +1,10 @@
 // The landing page (20 Oct): shown on the first visit only. The product in one sentence, who it is for, and two sample scenarios,
 // each with one concrete mismatch read from that deal's own stored data. No log-in (there are no accounts); uploading belongs to
 // "+ New deal". The full deal list stays one click away.
+import Logo from "./Logo.jsx";
 import { useEffect, useState } from "react";
 import * as api from "./api.js";
-import { AUDIENCE, DESCRIPTION, FICTIONAL, NAME, TAGLINE } from "./brand.js";
+import { AUDIENCE, DESCRIPTION, FICTIONAL, TAGLINE } from "./brand.js";
 import { MismatchSentence } from "./Drawer.jsx";
 import { availableSamples, pickMismatch } from "./landing.js";
 import "@fontsource/inter/latin-400.css";
@@ -27,7 +28,7 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
     <div className="dp land">
       <div className="land-inner">
         <section className="land-intro">
-          <span className="dp-wordmark">{NAME}</span>
+          <Logo height={36} />
           <h1>{TAGLINE}</h1>
           <p className="land-desc">{DESCRIPTION}</p>
           <p className="land-aud">{AUDIENCE}</p>

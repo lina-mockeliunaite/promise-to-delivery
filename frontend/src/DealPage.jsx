@@ -2,6 +2,7 @@
 // what the check found, who has seen it, both handover notes. A commitment opens in a right-hand drawer, so the list and the
 // deal's shape stay in view. The only way a gap closes is a new document version that the check confirms; notes and "seen"
 // never close anything.
+import Logo from "./Logo.jsx";
 import { useCallback, useEffect, useRef, useState } from "react";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-500.css";
@@ -17,7 +18,7 @@ import FrozenRecord from "./FrozenRecord.jsx";
 import BriefCard from "./BriefCard.jsx";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
 import { Drawer, DrawerHead, CommitmentView, DocumentView, MismatchSentence, Icon as DIcon, ICON } from "./Drawer.jsx";
-import { FICTIONAL, NAME, TAGLINE } from "./brand.js";
+import { FICTIONAL, TAGLINE } from "./brand.js";
 import CatalogueModal from "./CatalogueModal.jsx";
 import "./DealPage.css";
 
@@ -675,7 +676,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
           <button type="button" className="dp-back" onClick={onBack}><Icon d={I.back} /> All deals</button>
           <IdentityLine name={reg.name} stage={reg.stage.current_label} goLive={reg.brief?.go_live} show={headerGone} />
         </span>
-        <span className="dp-brandline"><span className="dp-wordmark">{NAME}</span><span className="dp-tagline">{TAGLINE}</span></span>
+        <span className="dp-brandline"><Logo /><span className="dp-tagline">{TAGLINE}</span></span>
         <span className="dp-topright">
           {name.trim() && (
             <span className="dp-me">

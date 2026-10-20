@@ -37,7 +37,7 @@ body:has(.dl) { background: #f8fafc; }
 .dl-right { text-align: right; }
 
 /* Brand line */
-.dl-brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--dl-muted); }
+.dl-brand { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--dl-muted); }
 .dl-brand strong { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--dl-text); }
 
 /* Header */

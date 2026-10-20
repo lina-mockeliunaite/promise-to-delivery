@@ -1,11 +1,12 @@
 // Home screen: deals in handover (16 Oct; design from Google Stitch, screen 1, adapted to real data).
 // Visibility only. Every number comes from /api/workspace/deals; there are no invented metrics, statuses or actions.
+import Logo from "./Logo.jsx";
 import { useMemo, useState } from "react";
 import * as api from "./api.js";
 import { FILTERS, SORTS, counts, initials, lastVendor, page, relativeTime, rememberVendor, vendorsOf, visibleDeals } from "./deals.js";
 import { commitmentsNeedText, dealsText, plainName } from "./dealpage.js";
 import CatalogueModal from "./CatalogueModal.jsx";
-import { DESCRIPTION, FICTIONAL, NAME, TAGLINE } from "./brand.js";
+import { DESCRIPTION, FICTIONAL, TAGLINE } from "./brand.js";
 import "./Deals.css";
 
 const Icon = ({ d, size = 16 }) => (
@@ -109,7 +110,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
 
   return (
     <div className="dl">
-      <header className="dl-brand"><strong>{NAME}</strong><span>{TAGLINE}</span></header>
+      <header className="dl-brand"><Logo /><span>{TAGLINE}</span></header>
       <section className="dl-head">
         <div>
           <span className="dl-eyebrow">Before signing and at handover</span>
