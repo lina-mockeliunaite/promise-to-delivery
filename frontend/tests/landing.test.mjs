@@ -1,7 +1,7 @@
 // Run with: node --test frontend/tests/
 import test from "node:test";
 import assert from "node:assert/strict";
-import { SEEN_KEY, landingSeen, markLandingSeen, pickMismatch } from "../src/landing.js";
+import { SAMPLES, SEEN_KEY, availableSamples, landingSeen, markLandingSeen, pickMismatch } from "../src/landing.js";
 import { TAGLINE, DESCRIPTION, AUDIENCE } from "../src/brand.js";
 import { partsText } from "../src/dealpage.js";
 
@@ -39,4 +39,28 @@ test("the positioning copy is the agreed text", () => {
   assert.equal(TAGLINE, "Catch deal surprises before you sign.");
   assert.equal(AUDIENCE, "For B2B Sales and Delivery teams.");
   assert.match(DESCRIPTION, /^Dealshape compares what the customer was promised with the contract and your product catalogue\./);
+});
+
+test("the landing page offers the two sample scenarios, AI support first, each only when its deal exists", () => {
+  assert.deepEqual(SAMPLES.map((s) => [s.deal, s.title, s.parties]), [
+    ["noma_journeys", "AI support assistant", "Aivuna / Noma Journeys"],
+    ["alder_bank", "Financial services, scam protection", "Elva / Alder Bank"],
+  ]);
+  const both = [{ deal: "alder_bank" }, { deal: "harbour_bank" }, { deal: "noma_journeys" }];
+  assert.deepEqual(availableSamples(both).map((s) => s.deal), ["noma_journeys", "alder_bank"]);
+  assert.deepEqual(availableSamples([{ deal: "alder_bank" }]).map((s) => s.deal), ["alder_bank"]);
+  assert.deepEqual(availableSamples([]), []);
+  assert.deepEqual(availableSamples(null), []); // the server could not be reached
+});
+
+test("Aivuna's card shows the commitment the product does not offer, read from its own register", () => {
+  const reg = { commitments: [
+    { name: "Support in 12 languages", display_name: "Support in 12 languages at launch", contract: "four languages",
+      issues: [{ finding: "Contract says something different", state: "Needs action", evidence: {} }] },
+    { name: "Phone", display_name: "AI answers customers' phone calls at launch", contract: "chat and email",
+      issues: [{ finding: "Not offered", state: "Needs action", evidence: {} }, { finding: "Contract says something different", state: "Needs action", evidence: {} }] },
+  ] };
+  const m = pickMismatch(reg);
+  assert.equal(m.title, "AI answers customers' phone calls at launch");
+  assert.match(partsText(m.parts), /not offered/i);
 });

@@ -652,6 +652,60 @@ def rejected_count(conn, did: int):
     return len(json.loads(row[0])) if row else None
 
 
+def _searchable_documents(conn, did: int, slug: str) -> list:
+    """The checked documents as they stand now, for the origin line: customer-facing documents only (the internal pricing note
+    is evidence of approvals, never a promise), signed paperwork left out as everywhere. Text is normalised once, with the
+    verifier's own normalisation. The date is the version's own (version_date), so a later version is not dated by the first."""
+    import detect_v2
+    import ledger_v2
+    shown = {d["source_key"]: d for d in documents(conn, slug) if d["included"]}
+    out = []
+    for d in ledger_v2.current_docs(conn, did):
+        if d["doc_type"] in detect_v2.INTERNAL_TYPES or d["source_id"] not in shown:
+            continue
+        meta = shown[d["source_id"]]
+        out.append({"key": d["source_id"], "date": meta["version_date"] or meta["date"] or "", "label": meta["doc_type_label"],
+                    "norm": detect_v2._n(d["text"])})
+    return out
+
+
+def first_found(c: dict, docs: list):
+    """Where the promise was first found (20 Oct): the earliest dated checked document that contains one of the commitment's
+    exact quoted sentences, under the verifier's normalisation. A paraphrase elsewhere does not count. Read-time only: it
+    reads the stored quotes and the current document text and changes no finding, hash or stored record. None when no
+    current document contains a quote (the screens then fall back to the document the quote was taken from)."""
+    best = earliest_match([s["quote"] for s in c.get("statements", []) if s.get("quote")], docs)
+    return {"doc_type_label": best["label"], "date": best["date"]} if best else None  # no source key: none reaches a response
+
+
+def earliest_match(quotes: list, docs: list):
+    """The earliest dated document (ties by source key) whose normalised text contains one of the quotes, else None."""
+    import detect_v2
+    norm = [detect_v2._n(q) for q in quotes if q]
+    hits = [d for d in docs if any(q and q in d["norm"] for q in norm)]
+    return min(hits, key=lambda d: (d["date"] or "9999", d["key"])) if hits else None
+
+
+def commitment_quotes(conn, cid: int) -> list:
+    """The exact sentences a commitment was found in: the statements of its latest review, as the register lists them."""
+    return [q for (q,) in conn.execute(
+        "SELECT st.quote FROM review_statement_commitments l JOIN statements st ON st.id = l.statement_id"
+        " WHERE l.commitment_id = ? AND l.review_id = (SELECT MAX(review_id) FROM review_statement_commitments"
+        " WHERE commitment_id = ?) AND st.quote IS NOT NULL", (cid, cid))]
+
+
+def origin_keys(conn, did: int, slug: str) -> dict:
+    """{commitment id: source key of the earliest checked document containing one of its exact sentences}. The stage bar uses it,
+    so "N gaps started here" always agrees with the origin line (20 Oct). Read-time only."""
+    docs = _searchable_documents(conn, did, slug)
+    out = {}
+    for (cid,) in conn.execute("SELECT id FROM commitments WHERE deal_id = ?", (did,)).fetchall():
+        best = earliest_match(commitment_quotes(conn, cid), docs)
+        if best:
+            out[cid] = best["key"]
+    return out
+
+
 def overview(conn, slug: str) -> dict:
     """register() plus what the redesigned overview and finding blocks show. Reads only. Human records (decisions,
     accountable people, the deal note) are shown beside findings; none of them is used to compute a finding's state."""
@@ -681,7 +735,9 @@ def overview(conn, slug: str) -> dict:
 
     unresolved = awaiting = reconfirm = flags = 0
     noted_ids = handover.note_resolved_ids(conn, did)  # 16 Oct: open by the documents, resolved by a current note
+    searchable = _searchable_documents(conn, did, slug)
     for c in reg["commitments"]:
+        c["first_found"] = first_found(c, searchable)
         open_n = 0
         noted_n = 0
         people, decisions = [], []

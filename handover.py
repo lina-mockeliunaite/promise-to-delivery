@@ -230,6 +230,7 @@ def build_snapshot(conn, slug: str, completed_by: str) -> dict:
                 for s in c.get("statements", []) if s.get("quote")]
     noted_items = [{"promise": by_id[cid]["name"], "told": by_id[cid]["told"], "contract": by_id[cid]["contract"],
                     "quotes": quotes(by_id[cid]),
+                    "first_found": by_id[cid].get("first_found"),  # 20 Oct, additive: older snapshots lack it
                     "findings": [{"finding": i["finding"], "resolved_by_note": i.get("note_resolution"),
                                   "evidence": i.get("evidence"), "catalogue_path": i.get("catalogue_path")}
                                  for i in by_id[cid]["issues"] if i["state"] != "Resolved"]}
@@ -244,6 +245,7 @@ def build_snapshot(conn, slug: str, completed_by: str) -> dict:
             "told_in": sorted({(s["doc_type_label"], s.get("date") or "") for s in c.get("statements", [])},
                               key=lambda t: t[1], reverse=True),
             "quotes": quotes(c),
+            "first_found": c.get("first_found"),  # 20 Oct, additive: where the exact sentence was first found; older snapshots lack it
             "findings": [{"finding": i["finding"], "why": i["reason"], "seen": i.get("seen", []),
                           "evidence": i.get("evidence"), "catalogue_path": i.get("catalogue_path"),
                           # a note recorded on the gap (Okay to proceed): who, why, and whether it was still current

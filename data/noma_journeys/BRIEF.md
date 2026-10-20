@@ -45,4 +45,18 @@ All four finding types appear: required approval not found, missing contractual 
 
 ## Run log
 
-(To be filled in after the paid runs: at most two initial readings, with the cost of every call.)
+**20 Oct, run 1 of at most 2** (`results/v2_demo_noma_journeys_20261020T091857Z.json`; `claude-sonnet-5`, `v2_version` 2, stop `end_turn`): 7,868 input and 5,972 output tokens, **$0.0755**. **5 shown, 0 rejected.** Run 2 was not needed and was not made, so the total model spend for this deal is $0.0755. The documents and the catalogue were not changed after seeing the output. This run seeds the app (`config.V2_SEED_FILES`).
+
+| Model finding | Matches the design? |
+|---|---|
+| `absolute_limit` CAP-003/SG, "phone calls" | Yes (intended #3, not offered) |
+| `conflicting_terms`, 12 languages vs "four languages" (draft contract clause 4) | Yes (intended #1) |
+| `approval_required` CAP-008/SG, with the pricing-note line "No named exception approved for Noma Journeys" | Yes (intended #2, approval) |
+| `contract_gap`, launch specialist (phrases: "dedicated Aivuna launch specialist", "first 30 days after launch", "no extra charge") | Yes (intended #2, contract gap) |
+| `conflicting_terms`, phone calls vs "chat and email" (draft SOW section 2) | **Extra, and legitimate:** the RFP promises phone calls and the SOW limits the channels to chat and email. The design only expected the catalogue finding; this is the same mismatch seen from the contract side |
+
+**How the two phone findings appear.** Both cite the same promise sentence in the RFP response, and the register groups findings that share a promise quote into one commitment, so the deal page shows **one commitment with two gaps** ("Not offered" and "Contract says something different"), not two rows. Alder's hosting commitment is built the same way. One note on that commitment addresses both gaps.
+
+**The prompt still names Elva.** The model identified Aivuna's promises correctly, and Elva appears nowhere in its output (0 mentions), so the run gives no sign that the prompt's "the vendor, Elva" misled it. That is one run on one deal: it supports "two vendors' catalogues, one pipeline; prompt still names the original vendor", and nothing broader.
+
+**What the app shows.** 3 commitments needing attention (languages; launch specialist with two gaps; phone calls with two gaps) and 5 open findings. The scripted tests in `tests/test_noma_journeys.py` (hand-written findings, no model) check that the update documents close exactly what they should. Applying the updates in the app (pricing note, then contract) is the demo, and is not part of this run.

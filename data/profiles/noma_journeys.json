@@ -16,5 +16,10 @@
   "confirmed_against": {
     "source": "NJ-06",
     "version": 1
+  },
+  "titles": {
+    "v2-0630aebaebf7bfb9": "Support in 12 languages at launch",
+    "v2-bc90ac870bbc11cb": "Dedicated launch specialist for the first 30 days, at no extra charge",
+    "v2-fe7a3f68b4853fc2": "AI answers customers' phone calls at launch"
   }
 }

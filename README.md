@@ -28,6 +28,18 @@ It also says what it could not check: if the model proposed findings that failed
 
 One commitment can carry several gaps, and they close independently. An approval does not put a promise into the contract.
 
+## A second scenario: two vendors' catalogues, one pipeline
+
+**Noma Journeys** (fictional, Singapore) is buying an AI customer-support assistant from **Aivuna** (fictional), to answer guests' questions about bookings, changes and refunds by chat and email from 1 February 2027. Dealshape reviews that software sale, not the assistant. The same commitment-checking applies to assistants used by financial-services operations teams, and to any vendor whose promises can be set against a catalogue and a contract.
+
+| Commitment | What the paperwork says | In the demo |
+| --- | --- | --- |
+| Support in 12 languages at launch | The proposal and RFP promise 12; the draft contract specifies four. Aivuna's catalogue supports 12 | A revised contract specifying 12 closes it: **Closed by documents** |
+| A dedicated launch specialist for the first 30 days, at no extra charge | A named internal exception is required and missing; the service is also missing from the contract and SOW | The revised pricing note supplies the exception, but the contract commitment is still missing, so it **still needs attention at handover** |
+| AI answers customers' phone calls at launch | Aivuna's catalogue lists chat and email only, and the SOW says the same | A person records that Noma agreed to launch on chat and email: **Addressed by note**, the mismatch still visible |
+
+**Each deal is checked against its own vendor's catalogue.** The four earlier deals use Elva's catalogue and kept every hash, finding and freshness state when the second one was added. **What this shows, and what it doesn't:** two vendors' catalogues run through one detection pipeline, and **the detection prompt still names the original vendor.** The model read the Aivuna deal once, at a cost of $0.0755, and found the designed gaps plus one legitimate extra. That is one demonstration run, not an accuracy measurement, and it does not show that any vendor's catalogue would work. Details: `data/noma_journeys/BRIEF.md`.
+
 ## How it works
 
 1. **Read.** The deal's documents (Markdown, text, PDF, Word, Excel, PowerPoint) are grouped by deal stage. **The stage comes from the documents:** a signed contract marks the deal Signed. Nobody sets the stage by hand.
@@ -41,7 +53,7 @@ One commitment can carry several gaps, and they close independently. An approval
 
 The model does the reading. It maps sales wording to the catalogue and the contract, which hand-written rules could not do on unseen deals (see the results below). Code does the deciding: a finding exists only if its quotes and citations check out, and it closes only when code can show the claim no longer holds. **The model never closes anything.** What code cannot check is the model's reading of a paraphrase. That is what the sealed runs measure.
 
-**Alder Bank is a demo deal. It was not part of either sealed evaluation.** The published results below describe the versions that were tested.
+**Alder Bank and Noma Journeys are demo deals. Neither was part of a sealed evaluation** (only Coral Pay and Atlas Remit were; Harbour Bank is the development deal). The published results below describe the versions that were tested.
 
 ## Results, version 1 (rules decide): first sealed deal, 10 Oct 2026
 
@@ -114,7 +126,8 @@ The demo opens on the deals list with no API key. Reading a new or changed contr
 | `DECISIONS.md` | Every design choice, the alternative rejected, and why |
 | `LEARNING_LOG.md` | What I learned, got stuck on and got wrong |
 | `docs/RESULTS_*.md` | The two sealed runs in full |
-| `docs/DEMO_SCRIPT_2026-10-20_alder.md` | The four-minute demo |
+| `docs/DEMO_SCRIPT_2026-10-20_alder.md` | The four-minute demo (Elva, Alder Bank) |
+| `docs/DEMO_SCRIPT_2026-10-20_noma.md` | The second demo (Aivuna, Noma Journeys) |
 | `docs/` | Briefs, the integrity inspection, specs, design references |
 
 ## Credits and honesty

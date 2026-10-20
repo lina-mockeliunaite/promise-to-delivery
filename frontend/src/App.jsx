@@ -4,7 +4,7 @@ import Handoff from "./Handoff.jsx";
 import Deals from "./Deals.jsx";
 import DealPage from "./DealPage.jsx";
 import Landing from "./Landing.jsx";
-import { SAMPLE_DEAL, landingSeen, markLandingSeen } from "./landing.js";
+import { landingSeen, markLandingSeen } from "./landing.js";
 import { TAGLINE } from "./brand.js";
 import { readHash } from "./dealpage.js";
 import { TYPE_EFFECT, alsoLine, checkLine, checkUpload, fmtDate, fmtDateTime, guessType, plural, typeFromName, uploadKind } from "./format.js";
@@ -1030,8 +1030,7 @@ export default function App() {
   // It does not wait for the deal list: if the server cannot be reached it still shows, with one quiet line instead of the error box.
   if (!current && landing) {
     const leave = (deal) => { markLandingSeen(); setLanding(false); if (deal) setCurrent(deal); };
-    return <Landing hasSample={!!deals?.some((x) => x.deal === SAMPLE_DEAL)} unavailable={!deals && !!error}
-                    onSample={() => leave(SAMPLE_DEAL)} onList={() => leave(null)} />;
+    return <Landing deals={deals} unavailable={!deals && !!error} onOpen={(d) => leave(d)} onList={() => leave(null)} />;
   }
   // 16 Oct: the deal list is the home screen (Stitch screen 1); a deal opens on its own page with a way back.
   if (deals && !current) {

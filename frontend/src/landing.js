@@ -3,7 +3,13 @@
 import { mismatchParts, rowTitle } from "./dealpage.js";
 
 export const SEEN_KEY = "ptd.landingSeen";
-export const SAMPLE_DEAL = "alder_bank";
+// The two sample scenarios the landing page offers (20 Oct): same engine, two vendors' catalogues. Labels are fixed wording; each
+// card's mismatch is read from that deal's own stored register.
+export const SAMPLES = [
+  { deal: "noma_journeys", title: "AI support assistant", parties: "Aivuna / Noma Journeys" },
+  { deal: "alder_bank", title: "Financial services, scam protection", parties: "Elva / Alder Bank" },
+];
+export const availableSamples = (deals) => SAMPLES.filter((s) => (deals ?? []).some((d) => d.deal === s.deal));
 
 export function landingSeen(storage = globalThis.localStorage) {
   try { return storage.getItem(SEEN_KEY) === "1"; } catch { return false; }

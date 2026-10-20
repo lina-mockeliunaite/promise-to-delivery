@@ -34,9 +34,12 @@ ROOT = Path(__file__).resolve().parents[1]
 ELVA_CATALOGUE_SHA = "029e293c253eb1e5d2cdb013a8bef24b62cf2e1363dc896e0ab36a84aded3a42"
 
 
+FOUR = ["alder_bank", "harbour_bank", "coral_pay", "atlas_remit"]  # the deals that existed before the second vendor
+
+
 class TestResolver(unittest.TestCase):
     def test_the_four_existing_deals_and_user_deals_use_elvas_catalogue(self):
-        for slug in config.UI_DEALS + ["u_0123456789abcdef"]:
+        for slug in FOUR + ["u_0123456789abcdef"]:
             self.assertEqual(deal_catalogue.vendor_of(slug), "elva", slug)
             self.assertIsNone(deal_catalogue.path_for(slug), slug)  # no catalogue_path: the unchanged default resolution
 
@@ -70,7 +73,7 @@ class TestTheFourExistingDealsAreUnchanged(unittest.TestCase):
 
     def test_every_deal_is_up_to_date_on_the_hash_computed_from_elvas_catalogue_alone(self):
         want = integrity.config_sha256(integrity.HASH_DEFINITION, catalogue_store.published_bytes("elva"))
-        for slug in config.UI_DEALS:
+        for slug in FOUR:
             did = ledger_fixes.deal_id(self.conn, slug)
             review = self.conn.execute("SELECT MAX(id) FROM reviews WHERE deal_id = ?", (did,)).fetchone()[0]
             self.assertEqual(integrity.review_config(self.conn, review), (integrity.HASH_DEFINITION, want), slug)
@@ -93,6 +96,12 @@ class TestNothingStartsACheckWithoutTheResolver(unittest.TestCase):
                     offenders.append(f"{path.name}:{n}: {line.strip()[:90]}")
         self.assertEqual(offenders, [])
 
+    def test_no_test_builds_the_ledger_with_ledger_v2_build(self):
+        # ledger_v2.build passes no catalogue, so it would check the Aivuna deal against Elva's. Tests use reset_demo.build.
+        offenders = [p.name for p in (ROOT / "tests").glob("test_*.py")
+                     if p.name != Path(__file__).name and re.search(r"ledger_v2\.build\(", p.read_text(encoding="utf-8"))]
+        self.assertEqual(offenders, [])
+
     def test_reset_demo_passes_each_deals_catalogue(self):
         src = (ROOT / "reset_demo.py").read_text(encoding="utf-8")
         self.assertIn("deal_catalogue.path_for(slug)", src)
@@ -105,7 +114,8 @@ class TestTheCataloguePopupApi(unittest.TestCase):
         self.addCleanup(tmp.cleanup)
         for patch in (mock.patch.object(config, "V2_DEALS", ["noma_journeys", "harbour_bank"]),
                       mock.patch.object(config, "UI_DEALS", ["noma_journeys", "harbour_bank"]),
-                      mock.patch.object(config, "V2_CACHE_DIR", Path(tmp.name) / "cache")):
+                      mock.patch.object(config, "V2_CACHE_DIR", Path(tmp.name) / "cache"),
+                      mock.patch.dict(config.V2_SEED_FILES, {}, clear=True)):  # scripted findings only: no saved model output
             patch.start()
             self.addCleanup(patch.stop)
         self.db = Path(tmp.name) / "l.sqlite"

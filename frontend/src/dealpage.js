@@ -284,8 +284,11 @@ export function findingDetail(issue, contract = "") {
   return FINDING_DETAIL[issue.finding] ?? issue.finding;
 }
 
-// "First found in the checked documents: RFP response, 29 Sep": the earliest statement's source label and date.
-export function firstPromised(statements) {
+// "First found in the checked documents: RFP response, 29 Sep". `found` is the server's answer (workspace.first_found): the earliest
+// dated checked document that contains one of the commitment's exact quoted sentences. Without it (a locked record, which holds no
+// document text, or no current document contains the quote) it is the earliest statement's own source label and date, as before.
+export function firstPromised(statements, found) {
+  if (found?.doc_type_label) return `First found in the checked documents: ${found.doc_type_label}${found.date ? `, ${short(found.date)}` : ""}`;
   const dated = (statements ?? []).filter((s) => s.doc_type_label);
   if (!dated.length) return "";
   const first = [...dated].sort((a, b) => (a.date || "9999").localeCompare(b.date || "9999"))[0];
@@ -473,7 +476,7 @@ export function commitmentView(c, status, documents) {
   }
   return {
     key: c.ref ?? null, title: rowTitle(c), extracted: extractedAs(c), status,
-    first: firstPromised(c.statements), mismatch: mismatchParts(unresolved, c.contract), plain: mismatchLine(unresolved, c.contract),
+    first: firstPromised(c.statements, c.first_found), mismatch: mismatchParts(unresolved, c.contract), plain: mismatchLine(unresolved, c.contract),
     told: toldQuotesWithDocs(c.statements, documents),
     contract: contractView(c.contract, side, documents),
     found: status === "closed" ? [] : unresolved.map((i) => ({ label: findingDetail(i, c.contract), fact: gapLine(i.finding, i.evidence, i.catalogue_path) })),
@@ -521,7 +524,7 @@ export function frozenView({ item, status, closedFindings = [], documents = [], 
   const title = titles[name] || name;
   return {
     key: name, title, extracted: titles[name] && titles[name] !== name ? name : "", status,
-    first: firstPromised(statements), mismatch: mismatchParts(issues, item.contract), plain: mismatchLine(issues, item.contract),
+    first: firstPromised(statements, item.first_found), mismatch: mismatchParts(issues, item.contract), plain: mismatchLine(issues, item.contract),
     told: quoted.length ? quoted.map((q) => ({ quote: q.quote, label: q.source, date: q.date ?? "", doc: matchDoc(documents, [q.source], q.date) })) : [],
     toldFallback: item.told ?? "",
     contract: contractView(item.contract, side, documents),

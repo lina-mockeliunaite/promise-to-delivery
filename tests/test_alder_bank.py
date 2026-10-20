@@ -91,9 +91,10 @@ class TestAlderClosureReason(unittest.TestCase):
         import ledger
         import ledger_fixes
         import ledger_v2
+        import reset_demo
         import workspace
         with tempfile.TemporaryDirectory() as tmp, mock.patch.object(config, "V2_CACHE_DIR", Path(tmp) / "cache"):
-            ledger_v2.build(Path(tmp) / "l.sqlite")
+            reset_demo.build(Path(tmp) / "l.sqlite")
             conn = ledger.connect(Path(tmp) / "l.sqlite")
             try:
                 ledger_fixes.add_source_version(conn, "alder_bank", "AB-05", (SCEN / "AB-05_v2_named_exception.md").read_text(),

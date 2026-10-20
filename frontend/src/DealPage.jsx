@@ -85,7 +85,7 @@ function CommitRow({ c, status, active, onOpen }) {
   const unresolved = c.issues.filter((i) => i.state !== "Resolved");
   const st = STATUS_CHIP[status];
   const noteRes = unresolved.find((i) => i.note_resolution)?.note_resolution;
-  const first = firstPromised(c.statements);
+  const first = firstPromised(c.statements, c.first_found);
   return (
     <li className={`dp-prow is-${status} ${active ? "is-active" : ""}`}>
       <div className="dp-prow-head" onClick={onOpen} role="button" tabIndex={0} aria-haspopup="dialog" aria-expanded={active}

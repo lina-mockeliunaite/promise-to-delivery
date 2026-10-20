@@ -77,8 +77,8 @@ def load_profile(slug: str) -> dict:
     return {}
 
 
-def _gap_sources(conn, did: int) -> list:
-    """For each promise with an open gap, the source keys its open issues' stored claims quote it from (v2 only).
+def _gap_sources(conn, did: int) -> dict:
+    """{commitment id: the source keys its open issues' stored claims quote it from (v2 only)} for each promise with an open gap.
     Counted per promise, not per finding, so the bar matches the promises listed below it."""
     import handover  # 16 Oct: a gap resolved by a current note is not counted as open anywhere
     noted = handover.note_resolved_ids(conn, did)
@@ -92,7 +92,7 @@ def _gap_sources(conn, did: int) -> list:
         keys = [q["source_id"] for q in claim.get("promise_quotes") or [] if q.get("source_id")]
         if keys:
             by_promise.setdefault(cid, []).extend(keys)
-    return list(by_promise.values())
+    return by_promise
 
 
 def deal_stage(conn, slug: str) -> dict:
@@ -111,11 +111,16 @@ def deal_stage(conn, slug: str) -> dict:
     # signature; records made before this change stay in their table, untouched, and no longer move the stage.
 
     order = {d["key"]: n for n, d in enumerate(docs)}
+    # 20 Oct: a gap starts at the stage of the earliest checked document that contains the promise's exact sentence (the same
+    # answer as the origin line, workspace.first_found); only when no current document contains it does the stage fall back to the
+    # earliest document its stored claim quoted.
+    import workspace
+    origin = workspace.origin_keys(conn, did, slug)
     started = {}
-    for keys in _gap_sources(conn, did):
+    for cid, keys in _gap_sources(conn, did).items():
         known = [k for k in keys if k in order]
-        if known:
-            first = min(known, key=order.get)
+        first = origin.get(cid) if origin.get(cid) in order else (min(known, key=order.get) if known else None)
+        if first is not None:
             started[placed[first]] = started.get(placed[first], 0) + 1
 
     from workspace import DOC_TYPE_LABELS  # screen names by type only: no key or file name ever reaches a response

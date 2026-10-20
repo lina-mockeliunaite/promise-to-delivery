@@ -108,6 +108,7 @@ UI_DEALS = [
     "harbour_bank",
     "coral_pay",
     "atlas_remit",
+    "noma_journeys",  # second demo deal from 20 Oct (listed last so the existing deals keep their row numbers): Aivuna's catalogue, the same pipeline (data/noma_journeys/BRIEF.md)
 ]
 
 # Deals the app reviews with v2 (model detects, code verifies; DECISIONS 10 Oct). The app's ledger holds only these.
@@ -121,6 +122,7 @@ V2_SEED_FILES = {
     "coral_pay": "v2_dev_20261010T083854Z.json",
     "atlas_remit": "sealed_v2_atlas_remit_20261010T084453Z.json",
     "alder_bank": "v2_demo_alder_bank_20261016T065312Z.json",  # demo run; 6 shown, 1 true finding rejected (BRIEF.md)
+    "noma_journeys": "v2_demo_noma_journeys_20261020T091857Z.json",  # demo run 1 of 1; 5 shown, 0 rejected (BRIEF.md)
 }
 V2_CACHE_DIR = ROOT / "results" / "v2_cache"
 # Deals created in the app are reviewed by v2 (10 Oct). False only in tests that cover the v1 rules path.

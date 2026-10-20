@@ -35,8 +35,9 @@ class TestPositioningFields(unittest.TestCase):
     def test_the_scope_line_is_the_owner_confirmed_one_and_absent_elsewhere(self):
         rows = {r["deal"]: r for r in handover.deal_rows(self.conn, workspace.deal_list(self.conn))}
         self.assertEqual(rows["alder_bank"]["scope"], "Scam protection for outbound instant payments")
+        self.assertEqual(rows["noma_journeys"]["scope"], "AI support assistant for guest bookings, changes and refunds")
         for slug in rows:
-            if slug != "alder_bank":
+            if slug not in ("alder_bank", "noma_journeys"):
                 self.assertIsNone(rows[slug]["scope"], slug)
 
     def test_the_coverage_count_is_the_stored_rejected_findings(self):

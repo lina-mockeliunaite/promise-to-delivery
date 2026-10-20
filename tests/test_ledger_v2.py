@@ -15,6 +15,7 @@ import finding_check
 import handoff
 import ledger
 import ledger_v2
+import reset_demo
 import recheck
 import workspace
 import workspace_records
@@ -42,7 +43,7 @@ class V2Case(unittest.TestCase):
         p = mock.patch.object(config, "V2_CACHE_DIR", self.dir / "cache")
         p.start()
         self.addCleanup(p.stop)
-        self.built = ledger_v2.build(self.dir / "l.sqlite")
+        self.built = reset_demo.build(self.dir / "l.sqlite")
         self.conn = ledger.connect(self.dir / "l.sqlite")
         self.addCleanup(self.conn.close)
 
@@ -75,7 +76,7 @@ class TestBuild(V2Case):
         self.assertEqual({s: r["rejected"] for s, r in self.built.items()}, expected_rejected)
         self.assertEqual({s: r["origin"] for s, r in self.built.items()}, {s: "seed" for s in config.V2_DEALS})
         counts = {s: workspace.overview(self.conn, s)["finding_counts"]["unresolved"] for s in config.V2_DEALS}
-        self.assertEqual(counts, {"alder_bank": 6, "harbour_bank": 6, "coral_pay": 3, "atlas_remit": 7})
+        self.assertEqual(counts, {"alder_bank": 6, "noma_journeys": 5, "harbour_bank": 6, "coral_pay": 3, "atlas_remit": 7})
 
     def test_every_deal_is_current_so_decisions_can_be_made(self):
         for s in config.V2_DEALS:

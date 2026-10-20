@@ -161,7 +161,8 @@ class TestNomaInTheLedger(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         for patch in (mock.patch.object(config, "V2_DEALS", ["noma_journeys", "harbour_bank"]),
-                      mock.patch.object(config, "V2_CACHE_DIR", Path(tmp.name) / "cache")):
+                      mock.patch.object(config, "V2_CACHE_DIR", Path(tmp.name) / "cache"),
+                      mock.patch.dict(config.V2_SEED_FILES, {}, clear=True)):  # scripted findings only: no saved model output
             patch.start()
             self.addCleanup(patch.stop)
         self.conn = ledger.open_ledger(Path(tmp.name) / "l.sqlite")
@@ -189,8 +190,9 @@ class TestNomaInTheLedger(unittest.TestCase):
 
     def test_an_elva_catalogue_addition_makes_elva_deals_stale_and_leaves_aivuna_alone(self):
         ledger_v2.review(self.conn, "noma_journeys", self.client, None, self.path)
-        # Harbour Bank (Elva) has no review here; give it one from a seed-free scripted run on Elva's own catalogue.
-        ledger_v2.review(self.conn, "harbour_bank", FakeClient([]), None, None)
+        # Harbour Bank (Elva) gets its own saved reading, checked against Elva's catalogue (restored when the test ends).
+        config.V2_SEED_FILES["harbour_bank"] = "v2_dev_20261010T083854Z.json"
+        ledger_v2.review(self.conn, "harbour_bank", None, None, None)
         catalogue_store.add_capability(self.conn, {"name": "Test capability", "regions": ["SG"], "status": "beta",
                                                    "sellable": "requires_named_approval", "added_by": "Tester"})
         hb = ledger_fixes.deal_id(self.conn, "harbour_bank")

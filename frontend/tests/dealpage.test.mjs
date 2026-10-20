@@ -444,3 +444,22 @@ test("the home list counts deals in the tabs and commitments in the column", () 
   assert.equal(commitmentsNeedText(1), "1 commitment needs attention");
   assert.equal(commitmentsNeedText(0, 2), "Nothing needs attention · 2 addressed by note");
 });
+
+test("the origin line is the server's earliest document containing the exact sentence, else the earliest statement's own source", () => {
+  const statements = [{ doc_type_label: "Proposal", date: "2026-10-05", quote: "q" }];
+  assert.equal(firstPromised(statements, { doc_type_label: "RFP response", date: "2026-09-28" }), "First found in the checked documents: RFP response, 28 Sep");
+  assert.equal(firstPromised(statements, null), "First found in the checked documents: Proposal, 5 Oct"); // a locked record, or no match
+  assert.equal(firstPromised(statements, undefined), "First found in the checked documents: Proposal, 5 Oct");
+  assert.equal(firstPromised([], { doc_type_label: "Call transcript", date: "" }), "First found in the checked documents: Call transcript");
+  assert.equal(firstPromised([], null), "");
+  assert.equal(commitmentView({ ...LIVE_C, first_found: { doc_type_label: "Call transcript", date: "2026-09-22" } }, "open", DOCS).first,
+    "First found in the checked documents: Call transcript, 22 Sep");
+});
+
+test("the locked record shows the stored origin when the snapshot has one, else the stored quote's own document", () => {
+  const item = { promise: "P", findings: [], quotes: [{ quote: "q", source: "Proposal", date: "2026-10-05" }] };
+  assert.equal(frozenView({ item: { ...item, first_found: { doc_type_label: "RFP response", date: "2026-09-28" } }, status: "open" }).first,
+    "First found in the checked documents: RFP response, 28 Sep");
+  assert.equal(frozenView({ item, status: "open" }).first, "First found in the checked documents: Proposal, 5 Oct"); // locked earlier
+  assert.equal(frozenView({ item: { ...item, first_found: null }, status: "open" }).first, "First found in the checked documents: Proposal, 5 Oct");
+});

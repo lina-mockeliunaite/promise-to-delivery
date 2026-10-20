@@ -14,6 +14,7 @@ import config
 import deal_stage
 import ledger
 import ledger_v2
+import reset_demo
 import workspace
 
 
@@ -51,7 +52,7 @@ class TestOnDemoDeals(unittest.TestCase):
         d = Path(cls.tmp.name)
         cls.patch = mock.patch.object(config, "V2_CACHE_DIR", d / "cache")
         cls.patch.start()
-        ledger_v2.build(d / "l.sqlite")
+        reset_demo.build(d / "l.sqlite")
         cls.conn = ledger.connect(d / "l.sqlite")
 
     @classmethod
