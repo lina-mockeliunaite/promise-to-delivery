@@ -184,3 +184,15 @@ Today’s checkpoint showed me how much the UI was getting in the way of underst
 - One user action should either succeed completely or leave nothing behind. A failed check had been saving document versions. The fix was to check before writing, and to set a version aside rather than delete it.
 - Tests protect earlier rules: a test that no internal key ever reaches the screen stopped a later change.
 - **Practical:** each Terminal window starts at home, an environment variable lives only in the window where it was set, and a server left running from a closed window keeps serving old code.
+
+## 2026-10-20 (afternoon) — Outside review, a second vendor, and safeguards from my own mistakes
+
+*Drafted by Claude at close on 20 Oct from the session record, at Lina's request. Lina to edit any line that isn't true for her.*
+
+- **An outside review is useful only after I filter it.** I accepted the pre-signature positioning, the trust wording and the idea of showing check coverage. I rejected a login button with no accounts behind it, hiding the documents that answer "which documents were checked", and dropping the two-colour card rules. I also had to correct my own overclaim: two demos show "two vendors' catalogues, one pipeline", not "any vendor".
+- **Honest coverage.** The verifier refused a real concern because the model added three words, "with no exceptions", that aren't in the documents. Hiding that silently would make a review look cleaner than it is, so the screen now says when proposed findings couldn't be verified.
+- **Adding a second vendor without breaking the first.** Before promising compatibility, I checked what goes into the hash. The four existing deals kept identical hashes because nothing hashed changed, not because anything was left out. The prompt still names the original vendor, and the claim says so.
+- **"First found" has to mean what it says.** It showed the document the model quoted, not the earliest document containing that wording. Now code finds the earliest exact match, and the locked record and the sidebar use the same answer.
+- **I misfiled two documents in my own demo,** and one false closure followed. I had clicked straight through a warning. So warnings now state the consequence and put the right action first, and the form pre-selects the document the evidence actually came from.
+- **Rules versus enforcement.** "No git" written as an instruction was broken three times. A deny rule in the settings enforces it, the same principle as the product itself: don't rely on someone's word.
+- **Practical:** a 502 means the front end is up but the server isn't; I need the right folder before any `.venv` command; and the API key is mine to run, never Claude Code's.
