@@ -1,0 +1,152 @@
+{
+  "input_sha256": "ca4f5d8c5b7fc47d9efaa917be2be1e0ae3e30eb504ea0801f76622c39b86e4d",
+  "deal": "noma_journeys",
+  "v2_version": 2,
+  "model": "claude-sonnet-5",
+  "findings": [
+    {
+      "kind": "conflicting_terms",
+      "commitment": "Assistant will support guest conversations in 12 languages from launch",
+      "promise_quotes": [
+        {
+          "source_id": "NJ-03",
+          "quote": "Aivuna will support guest conversations in 12 languages from the 1 February 2027 launch."
+        },
+        {
+          "source_id": "NJ-04",
+          "quote": "Aivuna will support guest conversations in 12 languages from the 1 February 2027 launch, including English, Mandarin Chinese, Japanese and Korean."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": {
+        "source_id": "NJ-07",
+        "quote": "The Assistant will respond to Guest enquiries in four languages: English, Mandarin Chinese, Japanese and Korean."
+      },
+      "note_quote": null,
+      "subject": "languages",
+      "promised_value": "12 languages",
+      "contract_value": "four languages",
+      "reason": "Aivuna repeatedly told the customer the Assistant would support 12 languages at launch, but the draft contract's language clause restricts it to only four languages, a direct conflict that must be resolved before signature."
+    },
+    {
+      "kind": "absolute_limit",
+      "commitment": "Assistant will answer guests' phone calls",
+      "promise_quotes": [
+        {
+          "source_id": "NJ-03",
+          "quote": "Aivuna's assistant will answer guests' phone calls and respond to chat and email from the 1 February 2027 launch."
+        }
+      ],
+      "catalogue_path": "CAP-003/SG",
+      "unlisted_value": "phone calls",
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The RFP response promises phone (voice) support, but the catalogue states voice is not offered and cannot be sold under any exception, so this promise cannot be fulfilled on the current platform."
+    },
+    {
+      "kind": "conflicting_terms",
+      "commitment": "Guest channel scope: phone calls plus chat and email vs chat/email only",
+      "promise_quotes": [
+        {
+          "source_id": "NJ-03",
+          "quote": "Aivuna's assistant will answer guests' phone calls and respond to chat and email from the 1 February 2027 launch."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": {
+        "source_id": "NJ-06",
+        "quote": "Provider will operate the Assistant on chat and email for the Customer's guests, as described in Annex A."
+      },
+      "note_quote": null,
+      "subject": "guests",
+      "promised_value": "phone calls",
+      "contract_value": "chat and email",
+      "reason": "The RFP promise includes phone calls as a guest channel, but the Statement of Work restricts the Assistant to chat and email only, so the contracted scope does not match what the customer was told."
+    },
+    {
+      "kind": "approval_required",
+      "commitment": "Dedicated Aivuna launch specialist for the first 30 days at no extra charge",
+      "promise_quotes": [
+        {
+          "source_id": "NJ-01",
+          "quote": "A dedicated Aivuna launch specialist will work with your team for the first 30 days after launch, at no extra charge."
+        },
+        {
+          "source_id": "NJ-03",
+          "quote": "A dedicated Aivuna launch specialist will work with Noma Journeys for the first 30 days after launch at no extra charge."
+        },
+        {
+          "source_id": "NJ-04",
+          "quote": "A dedicated Aivuna launch specialist will work with Noma Journeys for the first 30 days after launch at no extra charge."
+        }
+      ],
+      "catalogue_path": "CAP-008/SG",
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": {
+        "source_id": "NJ-05",
+        "quote": "No named exception approved for Noma Journeys"
+      },
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "A free dedicated launch specialist was promised, but this capability requires a named internal approval in the catalogue and the deal-desk note confirms no named approval has been obtained for Noma Journeys."
+    },
+    {
+      "kind": "contract_gap",
+      "commitment": "Dedicated Aivuna launch specialist for the first 30 days at no extra charge",
+      "promise_quotes": [
+        {
+          "source_id": "NJ-01",
+          "quote": "A dedicated Aivuna launch specialist will work with your team for the first 30 days after launch, at no extra charge."
+        },
+        {
+          "source_id": "NJ-03",
+          "quote": "A dedicated Aivuna launch specialist will work with Noma Journeys for the first 30 days after launch at no extra charge."
+        },
+        {
+          "source_id": "NJ-04",
+          "quote": "A dedicated Aivuna launch specialist will work with Noma Journeys for the first 30 days after launch at no extra charge."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [
+        "dedicated Aivuna launch specialist",
+        "first 30 days after launch",
+        "at no extra charge"
+      ],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The free 30-day dedicated launch specialist commitment made in the RFP and proposal does not appear anywhere in the draft SOW or contract, so the customer has no contractual right to it unless it is added."
+    }
+  ],
+  "cost_usd": 0.157574,
+  "origin": "model_call",
+  "usage": {
+    "input_tokens": 8402,
+    "output_tokens": 14077
+  }
+}

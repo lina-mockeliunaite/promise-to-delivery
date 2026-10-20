@@ -30,13 +30,13 @@ test("a stage's first document date", () => {
 test("what a new document changed: closed with its reason, still open on the same promise, nothing invented", () => {
   const reg = (states) => ({ commitments: [
     { name: "Coaching detection", issues: [
-      { id: 1, finding: "No approval recorded", state: states[0], reason: "Closed: the pricing note now records an approval.", resolved_by: { text: "Resolved by Pricing and services note, version 2 · 16 Oct 2026" } },
+      { id: 1, finding: "No approval recorded", state: states[0], reason: "Closed: the pricing note now records an approval.", resolved_by: { text: "Resolved by Pricing and services note, version 2 · checked 16 Oct 2026" } },
       { id: 2, finding: "Missing from contract", state: "Needs action" }] },
     { name: "Azure hosting", issues: [{ id: 3, finding: "Not offered", state: "Needs action" }] },
   ] });
   const ch = whatChanged(reg(["Needs action"]), reg(["Resolved"]));
   assert.deepEqual(ch.closed, [{ promise: "Coaching detection", finding: "No approval recorded",
-    why: "The pricing note now records an approval.", by: "Resolved by Pricing and services note, version 2 · 16 Oct 2026" }]);
+    why: "The pricing note now records an approval.", by: "Resolved by Pricing and services note, version 2 · checked 16 Oct 2026" }]);
   assert.deepEqual(ch.stillOpen, [{ promise: "Coaching detection", finding: "Missing from contract" }]);
   assert.deepEqual(ch.opened, []);
   assert.equal(ch.openPromises, 2);
@@ -355,7 +355,7 @@ test("the locked record builds the same view from the snapshot and leaves out wh
 });
 
 test("the screen says 'Closed by', never 'Resolved by', for what closed a finding", () => {
-  assert.equal(closedBy("Resolved by Pricing and services note, version 2 · 16 Oct 2026"), "Closed by Pricing and services note, version 2 · 16 Oct 2026");
+  assert.equal(closedBy("Resolved by Pricing and services note, version 2 · checked 16 Oct 2026"), "Closed by Pricing and services note, version 2 · checked 16 Oct 2026");
   assert.equal(closedBy("Closed in the documents"), "Closed in the documents");
   assert.equal(closedBy(null), "");
   const closed = { ...LIVE_C, issues: [{ id: 1, finding: "No approval recorded", state: "Resolved", resolved_by: { text: "Resolved by Pricing and services note, version 2" } }] };
@@ -391,18 +391,18 @@ test("the handover checklist has three items and takes its done state from the e
 });
 
 test("a closed row shows the full stored closing text, every distinct closing once, as 'Closed by'", () => {
-  assert.deepEqual(closedLines(["Resolved by Draft SOW, version 2 · 16 Oct 2026", "Resolved by Draft SOW, version 2 · 16 Oct 2026"]),
-    ["Closed by Draft SOW, version 2 · 16 Oct 2026"]);
-  assert.deepEqual(closedLines(["Resolved by Draft SOW, version 2; Pricing note, version 2 · 16 Oct 2026", "Resolved by Pricing note, version 2 · 17 Oct 2026", "", null]),
-    ["Closed by Draft SOW, version 2; Pricing note, version 2 · 16 Oct 2026", "Closed by Pricing note, version 2 · 17 Oct 2026"]);
+  assert.deepEqual(closedLines(["Resolved by Draft SOW, version 2 · checked 16 Oct 2026", "Resolved by Draft SOW, version 2 · checked 16 Oct 2026"]),
+    ["Closed by Draft SOW, version 2 · checked 16 Oct 2026"]);
+  assert.deepEqual(closedLines(["Resolved by Draft SOW, version 2; Pricing note, version 2 · checked 16 Oct 2026", "Resolved by Pricing note, version 2 · 17 Oct 2026", "", null]),
+    ["Closed by Draft SOW, version 2; Pricing note, version 2 · checked 16 Oct 2026", "Closed by Pricing note, version 2 · checked 17 Oct 2026"]);
   assert.deepEqual(closedLines(undefined), []);
 });
 
 test("the live and the locked view both carry the closing lines", () => {
-  const c = { ...LIVE_C, issues: [{ id: 1, finding: "No approval recorded", state: "Resolved", resolved_by: { text: "Resolved by Pricing note, version 2 · 16 Oct 2026" } }] };
-  assert.deepEqual(commitmentView(c, "closed", DOCS).closedLines, ["Closed by Pricing note, version 2 · 16 Oct 2026"]);
-  const f = frozenView({ item: { promise: "P", findings: [] }, status: "closed", closedFindings: [{ finding: "No approval recorded", resolved_by: "Resolved by Pricing note, version 2 · 16 Oct 2026" }] });
-  assert.deepEqual(f.closedLines, ["Closed by Pricing note, version 2 · 16 Oct 2026"]);
+  const c = { ...LIVE_C, issues: [{ id: 1, finding: "No approval recorded", state: "Resolved", resolved_by: { text: "Resolved by Pricing note, version 2 · checked 16 Oct 2026" } }] };
+  assert.deepEqual(commitmentView(c, "closed", DOCS).closedLines, ["Closed by Pricing note, version 2 · checked 16 Oct 2026"]);
+  const f = frozenView({ item: { promise: "P", findings: [] }, status: "closed", closedFindings: [{ finding: "No approval recorded", resolved_by: "Resolved by Pricing note, version 2 · checked 16 Oct 2026" }] });
+  assert.deepEqual(f.closedLines, ["Closed by Pricing note, version 2 · checked 16 Oct 2026"]);
 });
 
 test("What changed leads with the result, in the agreed words", () => {
@@ -462,4 +462,50 @@ test("the locked record shows the stored origin when the snapshot has one, else 
     "First found in the checked documents: RFP response, 28 Sep");
   assert.equal(frozenView({ item, status: "open" }).first, "First found in the checked documents: Proposal, 5 Oct"); // locked earlier
   assert.equal(frozenView({ item: { ...item, first_found: null }, status: "open" }).first, "First found in the checked documents: Proposal, 5 Oct");
+});
+
+test("the date on a closing line says it is the check date, on old stored strings too, once", () => {
+  assert.equal(closedBy("Resolved by Draft contract, version 2 · Draft SOW, version 1 unchanged · 20 Oct 2026"),
+    "Closed by Draft contract, version 2 · Draft SOW, version 1 unchanged · checked 20 Oct 2026");
+  assert.equal(closedBy("Resolved by Draft SOW, version 1; Draft contract, version 2 · 9 Oct 2026"), "Closed by Draft SOW, version 1; Draft contract, version 2 · checked 9 Oct 2026");
+  assert.equal(closedBy("Resolved by Pricing note, version 2 · 16 Oct 2026 · signed off by Daniel Koh"), "Closed by Pricing note, version 2 · checked 16 Oct 2026 · signed off by Daniel Koh");
+  assert.equal(closedBy(closedBy("Resolved by X, version 2 · 16 Oct 2026")), "Closed by X, version 2 · checked 16 Oct 2026");
+  assert.equal(closedBy("Closed in the documents"), "Closed in the documents");
+  assert.equal(closedBy(undefined), "");
+});
+
+test("a conflict and a gap on one promise show the contract wording first and say what was searched for", () => {
+  const c = { ...LIVE_C, contract: "Not included", issues: [
+    { id: 1, finding: "Contract says something different", state: "Needs action", reason: "", evidence: { contract_quote: { quote: "Provider will operate the Assistant on chat and email.", source: "Draft SOW" } } },
+    { id: 2, finding: "Missing from contract", state: "Needs action", reason: "", evidence: { missing_phrases: ["phone calls"] } },
+  ] };
+  const v = commitmentView(c, "open", DOCS);
+  assert.equal(v.contract.quote.quote, "Provider will operate the Assistant on chat and email.");
+  assert.equal(v.contract.text, ""); // no "No matching wording found" beside an actual contract quote
+  assert.deepEqual(v.contract.missing, ["phone calls"]);
+  assert.equal(v.contract.missingLabel, "No matching wording found for");
+  // a gap alone is unchanged: the general sentence and "Searched for:"
+  const g = commitmentView({ ...c, issues: [c.issues[1]] }, "open", DOCS);
+  assert.equal(g.contract.text, "No matching wording found in the draft contract or SOW");
+  assert.equal(g.contract.missingLabel, "Searched for:");
+  // a conflict alone has its quote and no missing line
+  assert.equal(commitmentView({ ...c, issues: [c.issues[0]] }, "open", DOCS).contract.missing, null);
+});
+
+test("a closed commitment shows the contract wording now found, labelled as a lookup, live and locked", () => {
+  const now = { target: "12 languages", quote: "The Assistant will respond to Guest enquiries in 12 languages, listed in Schedule 1.", document: "Draft contract" };
+  const live = commitmentView({ ...LIVE_C, contract: "No gap found", contract_now: now,
+    issues: [{ id: 1, finding: "Contract says something different", state: "Resolved", resolved_by: { text: "Resolved by Draft contract, version 2 · 20 Oct 2026" } }] }, "closed", DOCS);
+  assert.equal(live.contract.now.target, "12 languages");
+  assert.equal(live.contract.now.label, "Draft contract");
+  const item = { promise: "P", findings: [], quotes: [{ quote: "Aivuna will support guest conversations in 12 languages.", source: "RFP response", date: "2026-09-28" }],
+    contract: "No gap found", contract_now: now };
+  const locked = frozenView({ item, status: "closed", closedFindings: [{ finding: "Contract says something different", resolved_by: "Resolved by Draft contract, version 2 · Draft SOW, version 1 unchanged · 20 Oct 2026" }] });
+  assert.equal(locked.told.length, 1);
+  assert.equal(locked.contract.now.quote, now.quote);
+  assert.deepEqual(locked.closedLines, ["Closed by Draft contract, version 2 · Draft SOW, version 1 unchanged · checked 20 Oct 2026"]);
+  // a record locked earlier has no such data: the sections stay empty, nothing is invented
+  const old = frozenView({ item: { promise: "P", findings: [] }, status: "closed", closedFindings: [] });
+  assert.equal(old.told.length, 0);
+  assert.equal(old.contract.now, null);
 });

@@ -619,27 +619,75 @@ def told_and_contract(conn, did: int, c: dict, raw_presence: str) -> tuple:
 def resolved_by(conn, did: int, issue_id: int, labels: dict):
     """'Resolved by Draft SOW, version 2 · 9 Oct 2026 · signed off by Dana Lee' for a resolved finding: the documents its
     closing check looked at, and who signed off the fix that brought them in. None if it is not resolved by evidence."""
-    row = conn.execute("SELECT evidence_checked, checked_at, fix_id FROM closure_checks WHERE issue_id = ? ORDER BY id DESC LIMIT 1",
+    row = conn.execute("SELECT evidence_checked, checked_at, fix_id, review_id FROM closure_checks WHERE issue_id = ? ORDER BY id DESC LIMIT 1",
                        (issue_id,)).fetchone()
     if row is None:
         return None
     versions = [e.get("source_version_id") for e in json.loads(row[0] or "[]") if isinstance(e, dict)]
+    # 20 Oct: the closing check lists every document it looked at. The ones that are new since the review before it are what
+    # closed the gap; the rest were checked with them and did not change.
+    before = conn.execute("SELECT MAX(id) FROM reviews WHERE deal_id = ? AND id < ? AND status = 'complete'", (did, row[3])).fetchone()[0]
+    seen = {v for (v,) in conn.execute("SELECT source_version_id FROM review_sources WHERE review_id = ?", (before,))} if before else set()
     docs, signers = [], []
     for vid in dict.fromkeys(v for v in versions if v is not None):
         found = conn.execute("SELECT s.source_key, v.version_no FROM source_versions v JOIN sources s ON s.id = v.source_id"
                              " WHERE v.id = ? AND s.deal_id = ?", (vid, did)).fetchone()
         if found:
-            docs.append({"source_version_id": vid, "label": version_label(labels.get(found[0], found[0]), found[1])})
+            docs.append({"source_version_id": vid, "label": version_label(labels.get(found[0], found[0]), found[1]),
+                         "changed": vid not in seen})
         for (who,) in conn.execute("SELECT f.approved_by FROM fixes f JOIN fix_evidence e ON e.fix_id = f.id"
                                    " WHERE e.source_version_id = ? AND f.status = 'approved' ORDER BY f.id", (vid,)):
             if who not in signers:
                 signers.append(who)
     if not docs:
         return None
-    text = "Resolved by " + "; ".join(d["label"] for d in docs) + f" · {short_date(row[1][:10])}"
+    changed = [d for d in docs if d["changed"]] or docs  # nothing new since the review before: every document counts as what closed it
+    unchanged = [d for d in docs if d not in changed]
+    text = "Resolved by " + "; ".join(d["label"] for d in changed)
+    if unchanged:
+        text += " · " + "; ".join(d["label"] for d in unchanged) + " unchanged"
+    text += f" · {short_date(row[1][:10])}"
     if signers:
         text += " · signed off by " + ", ".join(signers)
-    return {"text": text, "documents": docs}
+    return {"text": text, "documents": [{k: v for k, v in d.items() if k != "changed"} for d in docs],
+            "changed": [d["label"] for d in changed], "unchanged": [d["label"] for d in unchanged]}
+
+
+_BOLD_LEAD = re.compile(r"^\s*(?:[-*]\s+)?\*\*[^*]+\*\*\s*")
+_SENTENCES = re.compile(r"(?<=[.!?])\s+")
+
+
+def matching_contract_wording(claim: dict, docs: list):
+    """The contract wording that now carries what a closed contract gap asked for (20 Oct): the first sentence, in a current contract
+    or SOW, that contains the claim's promised value (a closed conflict) or one of its searched phrases (a closed gap). A
+    lookup by wording, with the verifier's normalisation. It is shown as a lookup and never as the reason the gap closed.
+    Returns {"target", "quote", "document"} or None."""
+    import detect_v2
+    kind = claim.get("kind")
+    targets = [claim.get("promised_value")] if kind == "conflicting_terms" else list(claim.get("missing_phrases") or []) if kind == "contract_gap" else []
+    for target in [t for t in targets if t and t.strip()]:
+        for d in docs:
+            for line in d["text"].splitlines():
+                if not detect_v2._contains(line, target):
+                    continue
+                for sentence in _SENTENCES.split(_BOLD_LEAD.sub("", line).strip()):
+                    if detect_v2._contains(sentence, target) and sentence.strip():
+                        return {"target": target.strip(), "quote": sentence.strip(), "document": d["label"]}
+    return None
+
+
+def contract_now_for(conn, did: int, slug: str, commitment_id: int, labels: dict):
+    """matching_contract_wording for a commitment with a closed contract gap, from its resolved issues' stored claims."""
+    import ledger_v2
+    chain = [{"text": d["text"], "label": labels.get(d["source_id"], d["source_id"]), "key": d["source_id"], "type": d["doc_type"]}
+             for d in ledger_v2.current_docs(conn, did) if d["doc_type"] in ("draft_contract", "draft_sow")]
+    chain.sort(key=lambda d: (d["type"] != "draft_contract", d["key"]))  # the contract first, then the SOW
+    for crit, in conn.execute("SELECT i.closure_criteria FROM issues i JOIN issue_current_state s ON s.issue_id = i.id"
+                              " WHERE i.commitment_id = ? AND s.state = 'Resolved' ORDER BY i.id", (commitment_id,)):
+        found = matching_contract_wording(((json.loads(crit or "{}") or {}).get("claim") or {}), chain)
+        if found:
+            return found
+    return None
 
 
 def rejected_count(conn, did: int):
@@ -738,6 +786,7 @@ def overview(conn, slug: str) -> dict:
     searchable = _searchable_documents(conn, did, slug)
     for c in reg["commitments"]:
         c["first_found"] = first_found(c, searchable)
+        c["contract_now"] = contract_now_for(conn, did, slug, c["id"], labels) if any(i["state"] == "Resolved" for i in c["issues"]) else None
         open_n = 0
         noted_n = 0
         people, decisions = [], []

@@ -1,0 +1,151 @@
+{
+  "input_sha256": "e62e5bd70f24cadcb97dc894596be92df7663876692cf9b45c1e445055b4e371",
+  "deal": "noma_journeys",
+  "v2_version": 2,
+  "model": "claude-sonnet-5",
+  "findings": [
+    {
+      "kind": "approval_required",
+      "commitment": "A dedicated Aivuna launch specialist will work with Noma Journeys for the first 30 days after launch at no extra charge",
+      "promise_quotes": [
+        {
+          "source_id": "NJ-01",
+          "quote": "A dedicated Aivuna launch specialist will work with your team for the first 30 days after launch, at no extra charge."
+        },
+        {
+          "source_id": "NJ-03",
+          "quote": "A dedicated Aivuna launch specialist will work with Noma Journeys for the first 30 days after launch at no extra charge."
+        },
+        {
+          "source_id": "NJ-04",
+          "quote": "A dedicated Aivuna launch specialist will work with Noma Journeys for the first 30 days after launch at no extra charge."
+        }
+      ],
+      "catalogue_path": "CAP-008/SG",
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": {
+        "source_id": "NJ-05",
+        "quote": "No named exception approved for Noma Journeys"
+      },
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The dedicated launch specialist is only sellable with a named internal approval, but the deal desk note records no named approver for Noma Journeys, so this commitment is not yet authorised."
+    },
+    {
+      "kind": "contract_gap",
+      "commitment": "A dedicated Aivuna launch specialist will work with Noma Journeys for the first 30 days after launch at no extra charge",
+      "promise_quotes": [
+        {
+          "source_id": "NJ-01",
+          "quote": "A dedicated Aivuna launch specialist will work with your team for the first 30 days after launch, at no extra charge."
+        },
+        {
+          "source_id": "NJ-03",
+          "quote": "A dedicated Aivuna launch specialist will work with Noma Journeys for the first 30 days after launch at no extra charge."
+        },
+        {
+          "source_id": "NJ-04",
+          "quote": "A dedicated Aivuna launch specialist will work with Noma Journeys for the first 30 days after launch at no extra charge."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [
+        "launch specialist",
+        "first 30 days after launch",
+        "no extra charge"
+      ],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "Neither the draft contract nor the draft SOW mentions the launch specialist, the 30-day period, or the no-charge term, leaving this customer-facing commitment undocumented in the agreement."
+    },
+    {
+      "kind": "absolute_limit",
+      "commitment": "Aivuna's assistant will answer guests' phone calls and respond to chat and email from the 1 February 2027 launch",
+      "promise_quotes": [
+        {
+          "source_id": "NJ-03",
+          "quote": "Aivuna's assistant will answer guests' phone calls and respond to chat and email from the 1 February 2027 launch."
+        }
+      ],
+      "catalogue_path": "CAP-003/SG",
+      "unlisted_value": "phone calls",
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The catalogue states voice/phone support is not offered for the assistant, which supports only chat and email, so the promise to answer phone calls cannot be delivered."
+    },
+    {
+      "kind": "contract_gap",
+      "commitment": "Aivuna's assistant will answer guests' phone calls and respond to chat and email from the 1 February 2027 launch",
+      "promise_quotes": [
+        {
+          "source_id": "NJ-03",
+          "quote": "Aivuna's assistant will answer guests' phone calls and respond to chat and email from the 1 February 2027 launch."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [
+        "answer guests' phone calls"
+      ],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The phone-support promise made in the RFP response is absent from the draft contract and SOW, so an unfulfillable commitment remains unaddressed in the paperwork."
+    },
+    {
+      "kind": "conflicting_terms",
+      "commitment": "Aivuna will support guest conversations in 12 languages from the 1 February 2027 launch",
+      "promise_quotes": [
+        {
+          "source_id": "NJ-03",
+          "quote": "Aivuna will support guest conversations in 12 languages from the 1 February 2027 launch."
+        },
+        {
+          "source_id": "NJ-04",
+          "quote": "Aivuna will support guest conversations in 12 languages from the 1 February 2027 launch, including English, Mandarin Chinese, Japanese and Korean."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": {
+        "source_id": "NJ-07",
+        "quote": "The Assistant will respond to Guest enquiries in four languages: English, Mandarin Chinese, Japanese and Korean."
+      },
+      "note_quote": null,
+      "subject": "languages",
+      "promised_value": "12 languages",
+      "contract_value": "four languages",
+      "reason": "The RFP response and proposal promised support in 12 languages, but the draft contract's language clause commits to only four, directly conflicting with what the customer was told."
+    }
+  ],
+  "cost_usd": 0.145298,
+  "origin": "model_call",
+  "usage": {
+    "input_tokens": 8334,
+    "output_tokens": 12863
+  }
+}

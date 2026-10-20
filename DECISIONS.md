@@ -1086,3 +1086,5 @@ One outside review pass (a second assistant) was triaged before building.
 **Checked:** Python 730 tests OK, frontend 79 pass, `vite build` succeeds. New tests cover the resolver and guard (`tests/test_deal_catalogue.py`), the scenario and its update documents through the real verifier with hand-written findings and a scripted client (`tests/test_noma_journeys.py`; no model, and nothing there is an app outcome), the origin line and stage bar (`tests/test_first_found.py`), the landing cards and the vendor switch. Browser (headless Chrome, current build): landing with two cards, an Aivuna deal page with its drawer, a locked Aivuna record, and a locked record from before this change.
 
 **Not yet run live:** the Noma update steps (pricing note, revised contract) — first live rehearsal pending.
+
+**Run live 20 Oct 17:14: matched the design.** The pricing note closed the approval gap only; the live recheck of the revised contract closed the languages gap; the locked record showed 1 needing attention, 1 addressed by note, 1 closed by documents.

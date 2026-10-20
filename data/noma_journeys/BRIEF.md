@@ -60,3 +60,11 @@ All four finding types appear: required approval not found, missing contractual 
 **The prompt still names Elva.** The model identified Aivuna's promises correctly, and Elva appears nowhere in its output (0 mentions), so the run gives no sign that the prompt's "the vendor, Elva" misled it. That is one run on one deal: it supports "two vendors' catalogues, one pipeline; prompt still names the original vendor", and nothing broader.
 
 **What the app shows.** 3 commitments needing attention (languages; launch specialist with two gaps; phone calls with two gaps) and 5 open findings. The scripted tests in `tests/test_noma_journeys.py` (hand-written findings, no model) check that the update documents close exactly what they should. Applying the updates in the app (pricing note, then contract) is the demo, and is not part of this run.
+
+**Live rehearsal, 20 Oct 17:14 (matched the design).** Run through the app on a reset ledger, in the demo order:
+- The revised pricing note (18 Oct) closed **the approval gap only**; the launch specialist still needed attention, because the contract commitment is missing.
+- The live recheck of the revised contract (19 Oct) read the changed contract and closed **the languages gap** ("Closed by documents").
+- The phone commitment was recorded as **Addressed by note**, with the original mismatches still visible.
+- The locked record showed **1 needing attention** (the launch specialist), **1 addressed by note** (phone calls) and **1 closed by documents** (12 languages).
+The rehearsal's model cost was not reported and is not recorded here.
+

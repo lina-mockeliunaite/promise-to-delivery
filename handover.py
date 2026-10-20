@@ -266,6 +266,11 @@ def build_snapshot(conn, slug: str, completed_by: str) -> dict:
         "resolved_by_note": noted_items,
         "resolved": [{"promise": r["commitment"], "finding": r["finding"], "resolved_by": r["resolved_by"]}
                      for r in reg["resolved_findings"]],
+        # 20 Oct, additive: what a commitment with a closed gap was told and what the contract says now, so the locked record can show
+        # a closed commitment in full. Records locked earlier lack it and show those sections empty.
+        "closed_items": [{"promise": c["name"], "quotes": quotes(c), "first_found": c.get("first_found"), "contract": c["contract"],
+                          "contract_now": c.get("contract_now")}
+                         for c in reg["commitments"] if any(i["state"] == "Resolved" for i in c["issues"])],
     }
 
 

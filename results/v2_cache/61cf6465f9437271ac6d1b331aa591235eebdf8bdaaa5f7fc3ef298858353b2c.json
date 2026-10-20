@@ -1,0 +1,91 @@
+{
+  "input_sha256": "61cf6465f9437271ac6d1b331aa591235eebdf8bdaaa5f7fc3ef298858353b2c",
+  "deal": "noma_journeys",
+  "v2_version": 2,
+  "model": "claude-sonnet-5",
+  "findings": [
+    {
+      "kind": "absolute_limit",
+      "commitment": "Assistant will answer guests' phone calls (voice support)",
+      "promise_quotes": [
+        {
+          "source_id": "NJ-03",
+          "quote": "Aivuna's assistant will answer guests' phone calls and respond to chat and email from the 1 February 2027 launch."
+        }
+      ],
+      "catalogue_path": "CAP-003/SG",
+      "unlisted_value": "phone calls",
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "Aivuna's assistant only supports chat and email; voice/phone support is not offered in the catalogue and cannot be sold under any exception, so promising phone support oversells the product."
+    },
+    {
+      "kind": "contract_gap",
+      "commitment": "Assistant will answer guests' phone calls in addition to chat and email",
+      "promise_quotes": [
+        {
+          "source_id": "NJ-03",
+          "quote": "Aivuna's assistant will answer guests' phone calls and respond to chat and email from the 1 February 2027 launch."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [
+        "phone calls"
+      ],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The RFP response promises phone support but neither the draft SOW, its Annex A, nor the draft contract mention phone channels at all, leaving an unaddressed gap between what was promised and what will be delivered."
+    },
+    {
+      "kind": "contract_gap",
+      "commitment": "Dedicated Aivuna launch specialist working with Noma Journeys for the first 30 days after launch at no extra charge",
+      "promise_quotes": [
+        {
+          "source_id": "NJ-01",
+          "quote": "A dedicated Aivuna launch specialist will work with your team for the first 30 days after launch, at no extra charge."
+        },
+        {
+          "source_id": "NJ-03",
+          "quote": "A dedicated Aivuna launch specialist will work with Noma Journeys for the first 30 days after launch at no extra charge."
+        },
+        {
+          "source_id": "NJ-04",
+          "quote": "A dedicated Aivuna launch specialist will work with Noma Journeys for the first 30 days after launch at no extra charge."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [
+        "dedicated Aivuna launch specialist",
+        "first 30 days after launch",
+        "no extra charge"
+      ],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The dedicated launch specialist commitment, repeated across the discovery call, RFP response and proposal, is never written into the draft SOW, Annex A, or the draft contract, so the customer has no contractual right to it even though it was internally approved."
+    }
+  ],
+  "cost_usd": 0.087298,
+  "origin": "model_call",
+  "usage": {
+    "input_tokens": 7979,
+    "output_tokens": 7134
+  }
+}

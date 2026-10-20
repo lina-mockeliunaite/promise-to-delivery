@@ -57,8 +57,9 @@ function PrintDetail({ v }) {
       {v.extracted && <p className="dp-muted-line">Extracted as: {v.extracted}</p>}
       <p><strong>Customer was told:</strong>{" "}
         {v.told.length ? v.told.map((t) => `“${t.quote}” (${t.label}${t.date ? `, ${short(t.date)}` : ""})`).join(" ") : v.toldFallback}</p>
-      <p><strong>Contract says:</strong> {v.contract.text}{v.contract.quote ? ` “${v.contract.quote.quote}” (${v.contract.quote.label})` : ""}
-        {v.contract.missing ? ` Searched for: ${v.contract.missing.map((m) => `“${m}”`).join(", ")}` : ""}</p>
+      <p><strong>Contract says:</strong>{v.contract.text ? ` ${v.contract.text}` : ""}{v.contract.quote ? ` “${v.contract.quote.quote}” (${v.contract.quote.label})` : ""}
+        {v.contract.missing ? ` ${v.contract.missingLabel} ${v.contract.missing.map((m) => `“${m}”`).join(", ")}` : ""}
+        {v.contract.now ? ` Contract wording containing “${v.contract.now.target}”: “${v.contract.now.quote}” (${v.contract.now.label}), a lookup in the current documents.` : ""}</p>
       {v.found.map((f) => <p key={f.label}><strong>{f.label}</strong>{f.fact ? ` ${f.fact}` : ""}</p>)}
       {v.closed.length > 0 && <p><strong>Closed by the documents:</strong> {v.closed.map((c) => `${c.label}. ${c.by}`).join(" ")}</p>}
       {v.ai.length > 0 && <p><em>AI-written summary · quotes checked against the supplied documents:</em> {v.ai.join(" ")}</p>}
@@ -107,7 +108,7 @@ export default function FrozenRecord({ deal, onBack }) {
   const views = [
     ...open.map((item) => frozenView({ item, status: "open", closedFindings: closedFor(item.promise), documents, titles })),
     ...noted.map((item) => frozenView({ item, status: "noted", closedFindings: closedFor(item.promise), documents, titles })),
-    ...closedOnly.map((p) => frozenView({ item: { promise: p, findings: [] }, status: "closed", closedFindings: closedFor(p), documents, titles })),
+    ...closedOnly.map((p) => frozenView({ item: { promise: p, findings: [], ...(s.closed_items ?? []).find((x) => x.promise === p) }, status: "closed", closedFindings: closedFor(p), documents, titles })),
   ];
   const active = drawer ? views.find((v) => v.key === (drawer.key ?? drawer.fromKey)) : null;
   const printAll = () => { setRecord(true); setTimeout(() => window.print(), 80); };

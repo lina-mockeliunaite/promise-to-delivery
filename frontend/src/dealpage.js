@@ -456,7 +456,10 @@ export function splitQuote(text, quote) {
 const uniq = (xs) => [...new Set(xs.filter(Boolean))];
 
 // The stored closing text reads "Resolved by Draft SOW, version 2 · 16 Oct 2026"; the screen says "Closed by …" (display only).
-export const closedBy = (text) => String(text ?? "").replace(/^Resolved by /, "Closed by ");
+// The date on a closing line is the day the check ran, so it says so (20 Oct): "· 20 Oct 2026" reads "· checked 20 Oct 2026". Applied at
+// display, to stored strings too, so records locked earlier read the same way. Idempotent.
+export const closedBy = (text) => String(text ?? "").replace(/^Resolved by /, "Closed by ")
+  .replace(/ · (\d{1,2} [A-Z][a-z]{2} \d{4})/g, " · checked $1");
 
 // The muted "Closed by …" lines under a closed row (20 Oct): the full stored text of each distinct closing, so every closing
 // document shows. Texts are the stored ones ("Resolved by Draft SOW, version 2 · 16 Oct 2026"), shown as "Closed by …".
@@ -478,7 +481,7 @@ export function commitmentView(c, status, documents) {
     key: c.ref ?? null, title: rowTitle(c), extracted: extractedAs(c), status,
     first: firstPromised(c.statements, c.first_found), mismatch: mismatchParts(unresolved, c.contract), plain: mismatchLine(unresolved, c.contract),
     told: toldQuotesWithDocs(c.statements, documents),
-    contract: contractView(c.contract, side, documents),
+    contract: contractView(c.contract, side, documents, c.contract_now, missingPhrases(unresolved)),
     found: status === "closed" ? [] : unresolved.map((i) => ({ label: findingDetail(i, c.contract), fact: gapLine(i.finding, i.evidence, i.catalogue_path) })),
     closedLines: closedLines(closedIssues.map((i) => i.resolved_by?.text)),
     closed: closedIssues.map((i) => ({ label: FINDING_SHORT[i.finding] ?? i.finding, by: closedBy(i.resolved_by?.text) || (status === "closed" ? "Closed in the documents" : "") })),
@@ -496,11 +499,21 @@ function toldQuotesWithDocs(statements, documents) {
     .map((s) => ({ quote: s.quote, label: s.doc_type_label ?? s.source, date: s.date ?? "", doc: matchDoc(documents, [s.source_name, s.doc_type_label], s.date) }));
 }
 
-function contractView(term, side, documents) {
+// The phrases searched for and not found, from the open findings' verified evidence.
+export const missingPhrases = (issues) => [...new Set((issues ?? []).flatMap((i) => i.evidence?.missing_phrases ?? []))];
+
+// The contract side of a commitment. With a contract quote AND a missing-wording finding (a conflict and a gap on one promise), the
+// quote comes first and the missing line says what was searched for, so the two never read as a contradiction (20 Oct). `now` is the
+// contract wording found by lookup for a closed gap; it is labelled as a lookup, never as why the gap closed.
+function contractView(term, side, documents, now = null, searched = []) {
+  const quote = side.quote ? { quote: side.quote, label: side.source, doc: matchDoc(documents, [side.source], null) } : null;
+  const missing = side.missing ?? (quote && searched.length ? searched : null);
   return {
-    text: contractText(term),
-    quote: side.quote ? { quote: side.quote, label: side.source, doc: matchDoc(documents, [side.source], null) } : null,
-    missing: side.missing ?? null,
+    text: quote && missing ? "" : contractText(term),
+    quote,
+    missing,
+    missingLabel: quote && missing ? "No matching wording found for" : "Searched for:",
+    now: now?.quote ? { target: now.target, quote: now.quote, label: now.document, doc: matchDoc(documents, [now.document], null) } : null,
   };
 }
 
@@ -527,7 +540,7 @@ export function frozenView({ item, status, closedFindings = [], documents = [], 
     first: firstPromised(statements, item.first_found), mismatch: mismatchParts(issues, item.contract), plain: mismatchLine(issues, item.contract),
     told: quoted.length ? quoted.map((q) => ({ quote: q.quote, label: q.source, date: q.date ?? "", doc: matchDoc(documents, [q.source], q.date) })) : [],
     toldFallback: item.told ?? "",
-    contract: contractView(item.contract, side, documents),
+    contract: contractView(item.contract, side, documents, item.contract_now, missingPhrases(findings)),
     found: issues.map((i, n) => ({ label: findingDetail(i, item.contract), fact: gapLine(i.finding, i.evidence, i.catalogue_path) })),
     closedLines: closedLines(closedFindings.map((r) => r.resolved_by)),
     closed: closedFindings.map((r) => ({ label: FINDING_SHORT[r.finding] ?? r.finding, by: closedBy(r.resolved_by) })),

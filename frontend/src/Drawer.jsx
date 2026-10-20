@@ -127,7 +127,14 @@ export function CommitmentView({ v, titleId, readOnly, me = "", onOpenDoc, onSee
               <Source label={v.contract.quote.label} doc={v.contract.quote.doc} onOpen={() => onOpenDoc?.(v.contract.quote.doc, v.contract.quote.quote)} />
             </div>
           )}
-          {v.contract.missing && <p className="dr-muted">Searched for: {v.contract.missing.map((m) => `“${m}”`).join(", ")}</p>}
+          {v.contract.missing && <p className="dr-muted">{v.contract.missingLabel} {v.contract.missing.map((m) => `“${m}”`).join(", ")}</p>}
+          {v.contract.now && (
+            <div className="dr-block">
+              <span className="dr-muted">Contract wording containing “{v.contract.now.target}” (a lookup in the current documents):</span>
+              <blockquote className="dr-quote">{v.contract.now.quote}</blockquote>
+              <Source label={v.contract.now.label} doc={v.contract.now.doc} onOpen={() => onOpenDoc?.(v.contract.now.doc, v.contract.now.quote)} />
+            </div>
+          )}
         </section>
 
         <section className="dr-sec">
