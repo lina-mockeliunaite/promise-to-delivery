@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="web_standard" name="shell-type"/>
+<title>Alder Bank · Dealshape</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+    @layer base {
+      html, body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      }
+      body {
+        overscroll-behavior: none;
+      }
+    }
+    ::-webkit-scrollbar {
+      display: none;
+    }
+  </style>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          }
+        }
+      }
+    };
+  </script>
+</head>
+<body class="bg-gradient-to-br from-[#f8fafc] via-[#f9fbfe] to-[#f1f5f9] min-h-screen text-slate-900 antialiased selection:bg-indigo-100 selection:text-indigo-900 font-sans">
+<!-- TOP BAR (Minimal, flush, luminous Revolut / Stripe craft) -->
+<header class="fixed top-0 left-0 right-0 z-40 bg-white/80 backdrop-blur-md border-b border-slate-200/60 shadow-[0_1px_4px_rgba(0,0,0,0.02)]">
+<div class="h-14 max-w-[1400px] mx-auto px-6 lg:px-8 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<a class="group inline-flex items-center gap-1.5 text-xs font-medium text-slate-500 hover:text-slate-900 transition-colors" href="#">
+<span class="material-symbols-outlined text-[17px] text-slate-400 group-hover:text-slate-700 transition-colors">arrow_back</span>
+<span>All deals</span>
+</a>
+<div class="h-3.5 w-px bg-slate-200"></div>
+<div class="flex items-center gap-2">
+<div class="w-6 h-6 rounded-lg bg-indigo-600 flex items-center justify-center text-white shadow-sm shadow-indigo-500/20">
+<span class="material-symbols-outlined text-[14px]">diamond</span>
+</div>
+<span class="text-sm font-semibold tracking-tight text-slate-900">Dealshape</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<a class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium text-slate-600 bg-slate-100/90 hover:bg-slate-200/70 hover:text-slate-900 transition-all border border-slate-200/50" href="#">
+          Product catalogue
+        </a>
+<div class="h-3.5 w-px bg-slate-200"></div>
+<div class="flex items-center gap-1.5 text-xs text-slate-500">
+<span>Recording as</span>
+<span class="font-medium text-slate-800">Lina Mockeliunaite</span>
+<span class="text-slate-300">·</span>
+<a class="text-slate-500 hover:text-indigo-600 underline decoration-slate-300 underline-offset-2 transition-colors" href="#">change</a>
+</div>
+<div class="w-7 h-7 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-700 font-semibold text-xs">
+          LM
+        </div>
+</div>
+</div>
+</header>
+<!-- MAIN VIEWPORT -->
+<main class="w-full pt-20 pb-12">
+<div class="max-w-[1400px] mx-auto px-6 lg:px-8">
+<!-- Backdrop veil when drawer is open on mobile / dimmed state -->
+<div class="fixed inset-0 top-14 bg-slate-900/15 backdrop-blur-[2px] z-30 transition-opacity duration-300 hidden lg:block pointer-events-none opacity-40" id="drawer-veil"></div>
+<!-- 2-Column Responsive Layout -->
+<div class="grid grid-cols-12 gap-8 relative z-20">
+<!-- MAIN COLUMN (~65%) -->
+<div class="col-span-12 lg:col-span-8 flex flex-col gap-6">
+<!-- 1. Header Card (Alder Bank overview with clean 2-col property list) -->
+<div class="bg-white rounded-2xl p-7 border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-slate-100">
+<div>
+<span class="text-[11px] font-semibold uppercase tracking-wider text-indigo-600 mb-1 block">Enterprise Deal</span>
+<h1 class="text-3xl font-bold tracking-tight text-slate-950 font-sans">Alder Bank</h1>
+</div>
+<div class="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 border border-indigo-100/80 rounded-full self-start shadow-xs">
+<span class="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+<span class="text-xs font-semibold text-indigo-700">Contracting</span>
+</div>
+</div>
+<!-- Two-column property list with clean icons -->
+<div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-5">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+</div>
+<div>
+<span class="block text-[11px] font-medium text-slate-400">Target go-live</span>
+<span class="text-sm font-semibold text-slate-800">1 Feb 2027</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+<span class="material-symbols-outlined text-[18px]">update</span>
+</div>
+<div>
+<span class="block text-[11px] font-medium text-slate-400">Last checked</span>
+<span class="text-sm font-semibold text-slate-800">19 Oct 2026</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+<span class="material-symbols-outlined text-[18px]">description</span>
+</div>
+<div>
+<span class="block text-[11px] font-medium text-slate-400">Documents</span>
+<span class="text-sm font-semibold text-slate-800">8 indexed files</span>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 shrink-0">
+<span class="material-symbols-outlined text-[18px]">gavel</span>
+</div>
+<div>
+<span class="block text-[11px] font-medium text-slate-400">Jurisdiction</span>
+<span class="text-sm font-semibold text-slate-800">Australia (APRA)</span>
+</div>
+</div>
+</div>
+<!-- Quiet line -->
+<div class="mt-5 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-400">
+<span class="material-symbols-outlined text-[15px] text-amber-500">info</span>
+<span>Gaps first made at Proposal / RFP</span>
+</div>
+</div>
+<!-- 2. What We're Delivering Card -->
+<div class="bg-white rounded-2xl p-7 border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]">
+<div class="flex items-center justify-between pb-4 border-b border-slate-100">
+<div class="flex items-center gap-2.5">
+<div class="w-7 h-7 rounded-lg bg-indigo-50 border border-indigo-100/60 flex items-center justify-center text-indigo-600">
+<span class="material-symbols-outlined text-[17px]">task_alt</span>
+</div>
+<h2 class="text-base font-semibold text-slate-900 tracking-tight">What we're delivering</h2>
+</div>
+<span class="text-xs font-medium text-slate-400 bg-slate-50 px-2.5 py-1 rounded-md border border-slate-100">Draft SOW v0.9</span>
+</div>
+<p class="mt-4 text-sm leading-relaxed text-slate-600 bg-slate-50/70 p-4 rounded-xl border border-slate-100">
+              “Elva provides scam protection for Alder Bank's outbound instant payments, holding each payment until Elva returns a decision, from a 1 February 2027 launch. Go-live depends on Alder providing sandbox access to its payments platform by 1 December.”
+            </p>
+<div class="mt-5 space-y-2.5">
+<div class="flex items-center gap-3 text-sm text-slate-700">
+<span class="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shrink-0">
+<span class="material-symbols-outlined text-[13px]">check</span>
+</span>
+<span>Dedicated environment on AWS, Sydney region</span>
+</div>
+<div class="flex items-center gap-3 text-sm text-slate-700">
+<span class="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shrink-0">
+<span class="material-symbols-outlined text-[13px]">check</span>
+</span>
+<span>Real-time scoring for instant payments of AUD 1,000 or more; hourly batches below that</span>
+</div>
+<div class="flex items-center gap-3 text-sm text-slate-700">
+<span class="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shrink-0">
+<span class="material-symbols-outlined text-[13px]">check</span>
+</span>
+<span>Up to 200,000 payments a day at launch</span>
+</div>
+<div class="flex items-center gap-3 text-sm text-slate-700">
+<span class="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shrink-0">
+<span class="material-symbols-outlined text-[13px]">check</span>
+</span>
+<span>Case management workspace with full case audit history</span>
+</div>
+<div class="flex items-center gap-3 text-sm text-slate-700">
+<span class="w-5 h-5 rounded-full bg-emerald-50 border border-emerald-200/80 flex items-center justify-center text-emerald-600 shrink-0">
+<span class="material-symbols-outlined text-[13px]">check</span>
+</span>
+<span>Weekly project status meeting during implementation</span>
+</div>
+</div>
+<div class="mt-6 pt-4 border-t border-slate-100 flex items-center gap-2 text-xs text-slate-400">
+<span class="material-symbols-outlined text-[15px] text-slate-400">verified_user</span>
+<span>Confirmed by Tom Fraser (Account Executive) from draft SOW, 9 Oct</span>
+</div>
+</div>
+<!-- 3. Commitments Needing Attention Card (Cal.com / Stellate precision list) -->
+<div class="bg-white rounded-2xl p-7 border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]">
+<div class="flex items-center justify-between pb-4 border-b border-slate-100">
+<div class="flex items-center gap-2.5">
+<h2 class="text-base font-semibold text-slate-900 tracking-tight">Commitments needing attention</h2>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-[11px] font-semibold">
+                  3 need attention
+                </span>
+</div>
+<span class="text-xs text-slate-400 font-medium">Contract vs Customer Expectation</span>
+</div>
+<div class="divide-y divide-slate-100">
+<!-- Item 1 (Selected in Drawer) -->
+<div class="py-4 px-3 -mx-3 rounded-xl hover:bg-slate-50/80 transition-all cursor-pointer group flex items-center justify-between gap-4 bg-indigo-50/20" onclick="openDrawer()">
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex items-center gap-2.5">
+<span class="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                      Coaching-scam detection live at launch
+                    </span>
+<!-- Status Chip: Needs Attention -->
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/80 text-[11px] font-semibold shrink-0">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                      Needs attention
+                    </span>
+</div>
+<p class="text-xs text-slate-600 leading-normal">
+<span>Told </span><strong class="text-slate-900 font-medium">live at the 1 Feb 2027 launch</strong><span class="text-slate-400"> · contract has </span><strong class="text-slate-900 font-medium">no matching wording</strong><span class="text-slate-400"> · </span><strong class="text-slate-900 font-medium">no approval found</strong>
+</p>
+<span class="text-[11px] text-slate-400">First promised in the RFP response, 29 Sep</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-white shadow-xs border border-slate-200/80 flex items-center justify-center text-indigo-600 shrink-0 group-hover:bg-indigo-600 group-hover:text-white group-hover:border-indigo-600 transition-all">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="py-4 px-3 -mx-3 rounded-xl hover:bg-slate-50/80 transition-all cursor-pointer group flex items-center justify-between gap-4" onclick="openDrawer()">
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex items-center gap-2.5">
+<span class="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                      Hosting on Microsoft Azure
+                    </span>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/80 text-[11px] font-semibold shrink-0">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                      Needs attention
+                    </span>
+</div>
+<p class="text-xs text-slate-600 leading-normal">
+<span>Told </span><strong class="text-slate-900 font-medium">Microsoft Azure, Australia East</strong><span class="text-slate-400"> · contract says </span><strong class="text-slate-900 font-medium">AWS, Sydney region</strong><span class="text-slate-400"> · </span><strong class="text-slate-900 font-medium">not offered</strong>
+</p>
+<span class="text-[11px] text-slate-400">First promised in the RFP response, 29 Sep</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-white shadow-xs border border-slate-200/80 flex items-center justify-center text-slate-400 shrink-0 group-hover:text-slate-700 transition-all">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="py-4 px-3 -mx-3 rounded-xl hover:bg-slate-50/80 transition-all cursor-pointer group flex items-center justify-between gap-4" onclick="openDrawer()">
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex items-center gap-2.5">
+<span class="text-sm font-semibold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                      750,000 payments a day by the end of year one
+                    </span>
+<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200/80 text-[11px] font-semibold shrink-0">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                      Needs attention
+                    </span>
+</div>
+<p class="text-xs text-slate-600 leading-normal">
+<span>Told </span><strong class="text-slate-900 font-medium">750,000 a day by end of year one</strong><span class="text-slate-400"> · contract has </span><strong class="text-slate-900 font-medium">no matching wording</strong><span class="text-slate-400"> · </span><strong class="text-slate-900 font-medium">no approval found</strong>
+</p>
+<span class="text-[11px] text-slate-400">First promised in the proposal, 2 Oct</span>
+</div>
+<div class="w-8 h-8 rounded-full bg-white shadow-xs border border-slate-200/80 flex items-center justify-center text-slate-400 shrink-0 group-hover:text-slate-700 transition-all">
+<span class="material-symbols-outlined text-[18px]">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- 4. Handover Readiness Card -->
+<div class="bg-white rounded-2xl p-7 border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)]">
+<div class="flex items-center justify-between pb-4 border-b border-slate-100">
+<h2 class="text-base font-semibold text-slate-900 tracking-tight">Handover readiness</h2>
+<span class="inline-flex items-center px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-xs font-medium">Gate incomplete</span>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-5">
+<!-- Sales Note -->
+<div class="p-4 rounded-xl bg-slate-50/70 border border-slate-200/60 flex flex-col justify-between gap-3">
+<div>
+<span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Sales</span>
+<h3 class="text-sm font-semibold text-slate-900 mt-0.5">Deal owner's handoff note</h3>
+<p class="text-xs text-slate-400 mt-1">Not written yet</p>
+</div>
+<div>
+<button class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">
+<span class="material-symbols-outlined text-[15px]">edit_note</span>
+<span>Add note</span>
+</button>
+</div>
+</div>
+<!-- Delivery Note -->
+<div class="p-4 rounded-xl bg-slate-50/70 border border-slate-200/60 flex flex-col justify-between gap-3">
+<div>
+<span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Delivery</span>
+<h3 class="text-sm font-semibold text-slate-900 mt-0.5">Delivery acceptance note</h3>
+<p class="text-xs text-slate-400 mt-1">Not written yet</p>
+</div>
+<div>
+<button class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-700 transition-colors">
+<span class="material-symbols-outlined text-[15px]">edit_note</span>
+<span>Add note</span>
+</button>
+</div>
+</div>
+</div>
+<div class="mt-6 pt-5 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+<span class="text-xs text-slate-500">
+                To complete: upload the signed contract · add the Sales note · add the Delivery note
+              </span>
+<button class="px-4 py-2 rounded-xl bg-slate-100 text-slate-400 text-xs font-semibold cursor-not-allowed border border-slate-200/70 shrink-0" disabled="">
+                Complete handover
+              </button>
+</div>
+</div>
+</div>
+<!-- RIGHT SIDEBAR: Deal Journey (~35%) -->
+<div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+<div class="bg-white rounded-2xl p-6 border border-slate-100 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] sticky top-20">
+<div class="flex items-center justify-between pb-4 border-b border-slate-100">
+<div>
+<h3 class="text-base font-semibold text-slate-900 tracking-tight">Deal journey</h3>
+<span class="text-xs text-slate-400">8 documents indexed</span>
+</div>
+<button class="px-3 py-1 rounded-full text-xs font-medium bg-slate-50 border border-slate-200/70 text-slate-700 hover:bg-slate-100 transition-colors">
+                + Add
+              </button>
+</div>
+<!-- 7-Stage Vertical Timeline -->
+<div class="relative py-4 pl-3 flex flex-col gap-5">
+<!-- Continuous Line -->
+<div class="absolute left-[19px] top-6 bottom-6 w-px bg-slate-200"></div>
+<!-- 1. Discovery -->
+<div class="relative flex items-start gap-3.5">
+<div class="w-3.5 h-3.5 rounded-full bg-white border-2 border-slate-400 shrink-0 z-10 mt-1"></div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-slate-700">Discovery</span>
+<span class="text-[11px] text-slate-400">2 documents</span>
+</div>
+</div>
+<!-- 2. Evaluation -->
+<div class="relative flex items-start gap-3.5">
+<div class="w-3.5 h-3.5 rounded-full bg-white border-2 border-slate-400 shrink-0 z-10 mt-1"></div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-slate-700">Evaluation</span>
+<span class="text-[11px] text-slate-400">1 technical audit</span>
+</div>
+</div>
+<!-- 3. Proposal / RFP -->
+<div class="relative flex items-start gap-3.5">
+<div class="w-3.5 h-3.5 rounded-full bg-amber-500 border-2 border-white shadow-xs shrink-0 z-10 mt-1 ring-2 ring-amber-100"></div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="text-xs font-semibold text-slate-900">Proposal / RFP</span>
+<span class="px-1.5 py-0.2 rounded-full bg-amber-50 text-amber-700 text-[10px] font-semibold border border-amber-200">3 gaps started here</span>
+</div>
+<span class="text-[11px] text-slate-400">Submitted 29 Sep</span>
+</div>
+</div>
+<!-- 4. Shortlisted -->
+<div class="relative flex items-start gap-3.5">
+<div class="w-3.5 h-3.5 rounded-full bg-white border-2 border-slate-300 shrink-0 z-10 mt-1"></div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-slate-700">Shortlisted</span>
+<span class="text-[11px] text-slate-400">No documents</span>
+</div>
+</div>
+<!-- 5. Contracting (Current) -->
+<div class="relative -mx-2 p-2.5 rounded-xl bg-indigo-50/70 border border-indigo-100/80 flex items-start gap-3">
+<div class="w-3.5 h-3.5 rounded-full bg-indigo-600 border-2 border-white shadow-sm shrink-0 z-10 mt-0.5 ring-2 ring-indigo-200"></div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1.5">
+<span class="text-xs font-bold text-indigo-900">Contracting</span>
+<span class="px-1.5 py-0.2 rounded-full bg-indigo-600 text-white text-[10px] font-medium">Current stage</span>
+</div>
+<span class="text-[11px] font-medium text-indigo-700/80">Last point to fix gaps cheaply</span>
+</div>
+</div>
+<!-- 6. Signed -->
+<div class="relative flex items-start gap-3.5">
+<div class="w-3.5 h-3.5 rounded-full bg-white border-2 border-slate-200 shrink-0 z-10 mt-1"></div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-slate-400">Signed</span>
+<span class="text-[11px] text-slate-300">Not yet</span>
+</div>
+</div>
+<!-- 7. Handover -->
+<div class="relative flex items-start gap-3.5">
+<div class="w-3.5 h-3.5 rounded-full bg-white border-2 border-slate-200 shrink-0 z-10 mt-1"></div>
+<div class="flex flex-col">
+<span class="text-xs font-medium text-slate-400">Handover</span>
+<span class="text-[11px] text-slate-300">Not yet</span>
+</div>
+</div>
+</div>
+<div class="pt-4 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
+<a class="hover:text-indigo-600 transition-colors flex items-center gap-1 font-medium" href="#">
+<span>How closing works</span>
+<span class="material-symbols-outlined text-[13px]">north_east</span>
+</a>
+<span class="font-mono text-[11px] text-slate-400">Audit ready</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- 520px RIGHT DRAWER (Revolut / Stripe Luminous Craft) -->
+<aside aria-label="Commitment Details" class="fixed top-14 right-0 bottom-0 w-full sm:w-[520px] bg-white z-50 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.18)] flex flex-col justify-between border-l border-slate-200/80 transition-transform duration-300 ease-out" id="commitment-drawer" role="dialog">
+<!-- Drawer Header Bar -->
+<div class="px-6 py-5 border-b border-slate-100 flex items-start justify-between gap-4 bg-white/90 backdrop-blur-sm">
+<div class="flex flex-col gap-1 min-w-0">
+<div class="flex items-center gap-2 text-xs font-medium text-slate-400">
+<span>Commitment Discrepancy</span>
+<span>·</span>
+<span class="font-mono text-slate-500">REF: C-019</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight text-slate-950 font-sans mt-0.5">
+            Coaching-scam detection live at launch
+          </h2>
+<div class="pt-1.5 flex items-center gap-2">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-amber-50 text-amber-700 border border-amber-200 text-xs font-semibold">
+<span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+              Needs attention
+            </span>
+<span class="text-xs text-slate-400">Detected across 2 sources</span>
+</div>
+</div>
+<button aria-label="Close drawer" class="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors flex items-center justify-center shrink-0" onclick="closeDrawer()">
+<span class="material-symbols-outlined text-[18px]">close</span>
+</button>
+</div>
+<!-- Drawer Scrollable Content -->
+<div class="flex-1 overflow-y-auto px-6 py-6 space-y-6">
+<!-- 1. Customer Was Told -->
+<div class="flex flex-col gap-2">
+<span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Customer was told</span>
+<div class="p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-3">
+<blockquote class="text-sm font-normal text-slate-700 leading-relaxed italic border-l-2 border-indigo-500 pl-3">
+              “Through its connector to BioCatch, Elva will use behavioural signals… to flag customers who appear to be coached by a scammer, live from the 1 February 2027 launch.”
+            </blockquote>
+<div class="flex items-center justify-between pt-1 text-xs text-slate-500">
+<a class="inline-flex items-center gap-1 font-medium text-indigo-600 hover:text-indigo-700 hover:underline" href="#">
+<span class="material-symbols-outlined text-[15px]">attachment</span>
+<span>Source: RFP response, 29 Sep</span>
+</a>
+<span class="text-slate-400 font-mono text-[11px]">Page 14 · Sec 3.2</span>
+</div>
+</div>
+</div>
+<!-- 2. Contract Says -->
+<div class="flex flex-col gap-2">
+<span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Contract says</span>
+<div class="p-4 rounded-xl bg-slate-50 border border-slate-200/60 flex flex-col gap-2">
+<p class="text-sm font-medium text-slate-900">
+              No matching wording found in the draft contract or SOW.
+            </p>
+<div class="flex items-center gap-1.5 text-xs text-slate-400 pt-1">
+<span class="material-symbols-outlined text-[14px]">search</span>
+<span>Searched for: coaching, BioCatch, behavioural</span>
+</div>
+</div>
+</div>
+<!-- 3. What We Found -->
+<div class="flex flex-col gap-2">
+<span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">What we found</span>
+<div class="divide-y divide-slate-100 bg-white border border-slate-200/70 rounded-xl px-4 py-1">
+<div class="py-3 flex flex-col gap-0.5">
+<span class="text-sm font-semibold text-slate-900">No approval found</span>
+<p class="text-xs text-slate-500 leading-relaxed">
+                Needs a named approval; none in the pricing and services note.
+              </p>
+</div>
+<div class="py-3 flex flex-col gap-0.5">
+<span class="text-sm font-semibold text-slate-900">Not in the contract</span>
+<p class="text-xs text-slate-500 leading-relaxed">
+                A firm promise appears nowhere in the draft contract or SOW.
+              </p>
+</div>
+</div>
+<!-- Catalogue link & Status chip -->
+<div class="mt-1 flex items-center justify-between text-xs pt-1">
+<a class="text-slate-600 hover:text-indigo-600 font-medium inline-flex items-center gap-1" href="#">
+<span class="material-symbols-outlined text-[15px]">inventory_2</span>
+<span>Catalogue: CAP-027 · AU</span>
+</a>
+<span class="px-2 py-0.5 rounded-md bg-slate-100 text-slate-500 text-[11px] font-medium border border-slate-200/50">Commercial Scope</span>
+</div>
+<!-- AI summary banner -->
+<div class="p-3 rounded-xl bg-indigo-50/60 border border-indigo-100/70 flex items-center gap-2.5">
+<span class="material-symbols-outlined text-[17px] text-indigo-600 shrink-0">auto_awesome</span>
+<span class="text-xs text-indigo-900">
+              AI-written summary · quotes checked against the documents
+            </span>
+</div>
+</div>
+<!-- 4. Notes Section -->
+<div class="flex flex-col gap-2">
+<div class="flex items-center justify-between">
+<span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">Notes</span>
+<button class="text-xs font-semibold text-indigo-600 hover:text-indigo-700">+ New</button>
+</div>
+<div class="py-8 px-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/50 flex flex-col items-center justify-center text-center gap-1.5">
+<span class="material-symbols-outlined text-[20px] text-slate-400">chat_bubble_outline</span>
+<span class="text-xs font-medium text-slate-600">No notes yet</span>
+<span class="text-[11px] text-slate-400 max-w-xs">Context added here syncs to delivery and deal audit logs.</span>
+</div>
+</div>
+</div>
+<!-- Sticky Bottom Bar (Revolut / Stripe action buttons) -->
+<div class="px-6 py-4 bg-white border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0 shadow-[0_-4px_12px_rgba(0,0,0,0.02)]">
+<div class="flex items-center gap-1 text-xs text-slate-400">
+<span class="material-symbols-outlined text-[16px]">visibility</span>
+<span>Seen by: nobody yet · </span>
+<button class="font-medium text-slate-700 hover:text-indigo-600 underline underline-offset-2 transition-colors">
+            Mark as seen
+          </button>
+</div>
+<div class="flex items-center gap-2 w-full sm:w-auto justify-end">
+<button class="px-3.5 py-1.5 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium text-xs transition-colors">
+            Record a note
+          </button>
+<button class="px-4 py-1.5 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-xs shadow-sm shadow-indigo-500/25 transition-all">
+            Add updated document
+          </button>
+</div>
+</div>
+</aside>
+</main>
+<!-- FOOTER -->
+<footer class="w-full bg-white/60 border-t border-slate-200/60 py-6">
+<div class="max-w-[1400px] mx-auto px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
+<div class="flex items-center gap-2">
+<span class="font-semibold text-slate-800">Dealshape</span>
+<span>·</span>
+<span>Lists commitments where the customer's expectation, the contract, and scope don't line up.</span>
+</div>
+<div class="font-mono text-[11px] text-slate-400">
+        Confidential workspace
+      </div>
+</div>
+</footer>
+<script>
+    function openDrawer() {
+      const drawer = document.getElementById('commitment-drawer');
+      const veil = document.getElementById('drawer-veil');
+      if (drawer) {
+        drawer.classList.remove('translate-x-full');
+      }
+      if (veil) {
+        veil.classList.remove('hidden');
+      }
+    }
+
+    function closeDrawer() {
+      const drawer = document.getElementById('commitment-drawer');
+      const veil = document.getElementById('drawer-veil');
+      if (drawer) {
+        drawer.classList.add('translate-x-full');
+      }
+      if (veil) {
+        veil.classList.add('hidden');
+      }
+    }
+
+    document.addEventListener('keydown', function(event) {
+      if (event.key === 'Escape') {
+        closeDrawer();
+      }
+    });
+  </script>
+</body></html>
