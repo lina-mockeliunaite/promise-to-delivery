@@ -160,24 +160,57 @@ def issue_label(issue_type, subject):
     return ISSUE_LABELS.get((issue_type, subject)) or ISSUE_LABELS.get((issue_type, None)) or issue_type
 
 
+FULL_MONTHS = {m.lower(): n for n, m in enumerate(
+    "January February March April May June July August September October November December".split(), 1)}
+STATED_DATE = re.compile(r"^\W*Date\W*:\s*(?:(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})|(\d{4})-(\d{2})-(\d{2}))\s*$", re.I | re.M)
+
+
+def stated_date(text: str) -> str | None:
+    """The date a document states about itself ('Date: 16 October 2026') in its opening lines, as YYYY-MM-DD, else None."""
+    m = STATED_DATE.search("\n".join((text or "").splitlines()[:30]))
+    if not m:
+        return None
+    try:
+        if m.group(4):
+            y, mo, d = int(m.group(4)), int(m.group(5)), int(m.group(6))
+        else:
+            d, mo, y = int(m.group(1)), FULL_MONTHS[m.group(2).lower()], int(m.group(3))
+        return f"{y:04d}-{mo:02d}-{d:02d}" if 1 <= d <= 31 else None
+    except KeyError:
+        return None
+
+
+def version_date(version_no: int, doc_date: str, prev_doc_date: str | None, text: str, added_at: str | None) -> str:
+    """The date to show for one version (20 Oct). Version 1 keeps its recorded date. A later version shows its own: a date
+    someone set on it (differs from the version before it); else the date it states about itself; else the day it was added.
+    A new version inherits the previous version's recorded date, so that field alone would show the original's date."""
+    if version_no <= 1 or prev_doc_date is None:
+        return doc_date
+    if doc_date != prev_doc_date:
+        return doc_date
+    return stated_date(text) or (added_at or "")[:10] or doc_date
+
+
 def documents(conn, slug: str) -> list:
     did = ledger_fixes.deal_id(conn, slug)
     labels = document_labels(conn, did)
     out = []
     rows = conn.execute(
-        "SELECT s.source_key, v.id, v.version_no, v.doc_type, v.doc_date, v.included, v.adapter_name, v.original_filename"
-        " FROM sources s JOIN source_versions v ON v.source_id = s.id WHERE s.deal_id = ? AND v.version_no ="
+        "SELECT s.source_key, v.id, v.version_no, v.doc_type, v.doc_date, v.included, v.adapter_name, v.original_filename,"
+        " v.canonical_text, v.created_at, (SELECT p.doc_date FROM source_versions p WHERE p.source_id = s.id AND p.version_no < v.version_no"
+        " ORDER BY p.version_no DESC LIMIT 1) FROM sources s JOIN source_versions v ON v.source_id = s.id WHERE s.deal_id = ? AND v.version_no ="
         " (SELECT COALESCE(MAX(CASE WHEN included = 1 THEN version_no END), MAX(version_no)) FROM source_versions WHERE source_id = s.id) ORDER BY v.doc_date, s.source_key", (did,)).fetchall()
     notes = adapters.notes_for(conn, [r[1] for r in rows])
     import handover  # 16 Oct: where each document lives (a Drive link), set by a person; never generated
     links = handover.links(conn, did)
     import deal_stage  # 19 Oct: the stage each included document sits at, by the stage bar's own rule; read-only
     stage_of = deal_stage.place_documents(deal_stage._docs(conn, did))
-    for key, vid, version_no, doc_type, date, included, adapter_name, filename in rows:
+    for key, vid, version_no, doc_type, date, included, adapter_name, filename, canonical, added_at, prev_date in rows:
         out.append({
             "source_key": key, "name": labels[key], "source_version_id": vid, "version": version_no,
             "format": adapters.format_label(adapter_name, filename), "problems": notes.get(vid, []),
             "doc_type": doc_type, "doc_type_label": DOC_TYPE_LABELS.get(doc_type, doc_type), "date": date,
+            "version_date": version_date(version_no, date, prev_date, canonical, added_at),
             "included": bool(included), "link": links.get(key), "stage": stage_of.get(key),
             "role": ("Read for promises" if doc_type in config.EXTRACTABLE_DOC_TYPES
                      else "Approval evidence" if doc_type == "pricing_services_note" else "Reference only"),

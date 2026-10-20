@@ -183,6 +183,10 @@ body:has(.dp) { background: #f8fafc; }
 .dp-add-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 600; color: var(--ink); }
 .dp-add-grid select, .dp-add-grid input, .dp-add input:not([type]), .dp-add input[type="text"] { height: 34px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: inherit; font-size: 13px; }
 .dp-add-grid input[type="file"] { padding: 5px; height: auto; }
+/* A neutral notice (20 Oct): information the reader should see, not a commitment gap, so no amber. */
+.dp-notice { margin-top: 8px; display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; border-radius: 10px; background: var(--hair); color: var(--body); font-size: 13px; line-height: 1.45; }
+.dp-notice svg { color: var(--muted); margin-top: 2px; }
+.dp-notice p { margin: 0; }
 .dp-hintbox { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; border-radius: 10px; background: var(--hair); color: var(--body); font-size: 12px; line-height: 1.45; }
 .dp-hintbox svg { color: var(--accent); margin-top: 1px; flex: none; }
 .dp-hintbox p { margin: 0; }
@@ -346,7 +350,16 @@ body:has(.dp) { background: #f8fafc; }
 .dr-actions .dp-btn { flex: 1; white-space: nowrap; }
 .dr-drive { align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 500; color: var(--accent); text-decoration: none; }
 .dr-drive:hover { text-decoration: underline; }
-.dr-doc { margin: 0; white-space: pre-wrap; font-family: inherit; font-size: 14px; line-height: 1.65; color: var(--body); max-width: 62ch; }
+.dr-doc { font-size: 14px; line-height: 1.65; color: var(--body); max-width: 62ch; }
+.dr-doc p { margin: 0 0 12px; white-space: pre-line; }
+.dr-doc h3, .dr-doc h4, .dr-doc h5, .dr-doc h6 { margin: 18px 0 8px; color: var(--ink); font-weight: 600; line-height: 1.35; }
+.dr-doc h3 { font-size: 17px; } .dr-doc h4 { font-size: 15px; } .dr-doc h5, .dr-doc h6 { font-size: 14px; }
+.dr-doc > :first-child { margin-top: 0; }
+.dr-doc strong { color: var(--ink); font-weight: 600; }
+.dr-doc ul, .dr-doc ol { margin: 0 0 12px; padding-left: 22px; }
+.dr-doc li { margin: 2px 0; }
+.dr-doc hr { border: 0; border-top: 1px solid var(--line); margin: 16px 0; }
+.dr-doc code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 12.5px; background: var(--hair); padding: 1px 4px; border-radius: 4px; }
 .dr-doc mark { background: var(--mark); color: var(--ink); border-radius: 3px; padding: 1px 0; }
 
 /* Locked handover record: one centred column, print-friendly. Rows open the same drawer, read-only. */

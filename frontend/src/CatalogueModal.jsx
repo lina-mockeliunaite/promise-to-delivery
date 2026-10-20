@@ -7,8 +7,8 @@ import { fmtDate, fmtDateTime } from "./format.js";
 import { useName } from "./dealpage.js";
 import "./Catalogue.css";
 
-const STATUS_TONE = { generally_available: "ok", beta: "warn", roadmap: "muted" };
-const SELL_TONE = { standard: "ok", requires_named_approval: "warn", not_sellable: "bad" };
+// 20 Oct: green is reserved for "Closed by documents" and amber for commitments, so the catalogue's status and sale-type
+// chips are all neutral and told apart by their text.
 
 function AddForm({ data, onAdded, onCancel }) {
   const [name, setName] = useName();
@@ -160,8 +160,8 @@ export default function CatalogueModal({ focus, onClose, onChanged }) {
                       {c.rows.map((r) => (
                         <tr key={r.path} className={r.path === focus ? "is-focus" : ""}>
                           <td className="cat-where">{r.region}{r.variant ? ` · ${r.variant}` : ""}</td>
-                          <td><span className={`cat-pill tone-${STATUS_TONE[r.status] ?? "muted"}`}>{r.status_label}</span></td>
-                          <td><span className={`cat-pill tone-${SELL_TONE[r.sellable] ?? "muted"}`}>{r.sellable_label}</span></td>
+                          <td><span className={`cat-pill`}>{r.status_label}</span></td>
+                          <td><span className={`cat-pill`}>{r.sellable_label}</span></td>
                           <td className="cat-limits">{r.limits.length ? r.limits.join(" · ") : <span className="cat-faint">No limit</span>}</td>
                           <td className="cat-date">{r.roadmap_date ? `GA planned ${fmtDate(r.roadmap_date)}` : ""}</td>
                         </tr>

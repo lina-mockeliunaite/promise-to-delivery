@@ -255,6 +255,7 @@ def build_snapshot(conn, slug: str, completed_by: str) -> dict:
         "deal": reg["name"], "completed_by": completed_by, "stage": reg["stage"]["current_label"],
         "brief": reg["brief"], "notes": reg["handover"]["notes"], "scope_note": reg["scope_note"],
         "documents": [{"name": d["name"], "type": d["doc_type_label"], "version": d["version"], "date": d["date"],
+                       "version_date": d["version_date"],
                        "link": d.get("link")} for d in workspace.documents(conn, slug) if d["included"]],
         "open_items": open_items,
         "resolved_by_note": noted_items,

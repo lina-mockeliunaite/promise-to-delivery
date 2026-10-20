@@ -1,9 +1,10 @@
 // The right-hand drawer (20 Oct). A commitment, a document, the add-document form and the note form open here instead of
 // expanding the list in place, so the deal's shape stays in view. The same shell serves the locked record, read-only.
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
-import { STAGE_LABELS, STATUS_CHIP, plainName, recordedBy, short, splitQuote } from "./dealpage.js";
+import { STAGE_LABELS, STATUS_CHIP, plainName, recordedBy, short } from "./dealpage.js";
+import { renderDocument } from "./markdown.js";
 
 export const Icon = ({ d, size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2"
@@ -188,8 +189,35 @@ export function CommitmentView({ v, titleId, readOnly, me = "", onOpenDoc, onSee
   );
 }
 
-// A document: label, date and stage in the header, the stored readable text in a reading column, the quoted sentence in soft
-// amber when it was opened from a quote. Read-only.
+// The rendered tree as React elements. Only text nodes carry document content, and React escapes it: nothing is injected.
+function Nodes({ nodes, markRef }) {
+  return nodes.map((n, k) => {
+    if (n.t === "strong") return <strong key={k}><Nodes nodes={n.children} markRef={markRef} /></strong>;
+    if (n.t === "em") return <em key={k}><Nodes nodes={n.children} markRef={markRef} /></em>;
+    if (n.t === "code") return <code key={k}>{n.text}</code>;
+    if (n.t === "mark") {
+      const first = !markRef.taken && (markRef.taken = true);
+      return <mark key={k} ref={first ? markRef : undefined}><Nodes nodes={n.children} markRef={markRef} /></mark>;
+    }
+    return n.text;
+  });
+}
+
+function Block({ b, markRef }) {
+  if (b.t === "hr") return <hr />;
+  if (b.t === "ul" || b.t === "ol") {
+    const List = b.t;
+    return <List>{b.items.map((it, k) => <li key={k}><Nodes nodes={it} markRef={markRef} /></li>)}</List>;
+  }
+  if (b.t === "h") {
+    const H = `h${Math.min(b.level + 2, 6)}`; // the drawer's own title is the h2
+    return <H><Nodes nodes={b.children} markRef={markRef} /></H>;
+  }
+  return <p><Nodes nodes={b.children} markRef={markRef} /></p>;
+}
+
+// A document: label, date and stage in the header, the stored text rendered as formatted text in a reading column, the quoted
+// sentence in soft amber when it was opened from a quote and can be placed on the rendered text. Read-only.
 export function DocumentView({ deal, doc, quote, titleId, backLabel, onBack, onClose }) {
   const [state, setState] = useState({ loading: true });
   const mark = useRef(null);
@@ -199,22 +227,25 @@ export function DocumentView({ deal, doc, quote, titleId, backLabel, onBack, onC
     api.fetchDocumentText(deal, doc.source_version_id).then((r) => live && setState(r), (err) => live && setState({ error: err.message }));
     return () => { live = false; };
   }, [deal, doc.source_version_id]);
-  useEffect(() => { mark.current?.scrollIntoView({ block: "center" }); }, [state, quote]);
-  const split = !state.loading && !state.error && quote ? splitQuote(state.text, quote) : null;
+  const ready = !state.loading && !state.error;
+  const rendered = useMemo(() => (ready ? renderDocument(state.text, quote) : null), [ready, state.text, quote]);
+  useEffect(() => { mark.current?.scrollIntoView({ block: "center" }); }, [rendered]);
   const stage = STAGE_LABELS[doc.stage];
+  const markRef = mark;
+  markRef.taken = false;
   return (
     <>
       <DrawerHead id={titleId} title={doc.name} backLabel={backLabel} onBack={onBack} onClose={onClose}
-                  sub={[fmtDate(doc.date), stage, doc.version > 1 ? `v${doc.version}` : ""].filter(Boolean).join(" · ")} />
+                  sub={[fmtDate(doc.version_date || doc.date), stage, doc.version > 1 ? `v${doc.version}` : ""].filter(Boolean).join(" · ")} />
       <div className="dr-body">
         {doc.link && (
           <a className="dr-drive" href={doc.link} target="_blank" rel="noopener noreferrer" aria-label="Open in Drive" title="Opens where the document lives">
             <Icon d={ICON.link} size={14} /> Open in Drive
           </a>
         )}
-        {quote && !state.loading && !state.error && !split && <p className="dr-muted">The quoted sentence is not in this version of the document.</p>}
-        {state.error ? <p className="dp-error">{state.error}</p> : state.loading ? <p className="dr-muted">Loading…</p> : (
-          <pre className="dr-doc">{split ? <>{split.before}<mark ref={mark}>{split.match}</mark>{split.after}</> : state.text}</pre>
+        {quote && rendered && !rendered.found && <p className="dr-muted">The quoted sentence is not in this version of the document.</p>}
+        {state.error ? <p className="dp-error">{state.error}</p> : !ready ? <p className="dr-muted">Loading…</p> : (
+          <div className="dr-doc">{rendered.blocks.map((b, k) => <Block key={k} b={b} markRef={markRef} />)}</div>
         )}
       </div>
     </>

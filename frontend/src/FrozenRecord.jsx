@@ -36,6 +36,7 @@ function FrozenRow({ v, active, onOpen }) {
           <span className="dp-prow-title">{v.title}</span>
           {v.status !== "closed" && <MismatchSentence parts={v.mismatch} />}
           {v.first && <span className="dp-prow-first">{v.first}</span>}
+          {v.status === "closed" && v.closedLines.map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
         </span>
         <span className={`dp-chip dp-chip-${st.tone}`} title={st.title}>
           <span className={`dp-dot ${v.status === "noted" ? "dp-dot-grey" : v.status === "closed" ? "dp-dot-green" : ""}`} />
@@ -211,7 +212,7 @@ export default function FrozenRecord({ deal, onBack }) {
                     {d.link
                       ? <a className="dp-doc-name" href={d.link} target="_blank" rel="noopener noreferrer">{d.name}{d.version > 1 ? ` · v${d.version}` : ""} ↗</a>
                       : <span className="dp-doc-name fr-plain">{d.name}{d.version > 1 ? ` · v${d.version}` : ""}</span>}
-                    <span className="dp-mono">{shortDate(d.date)}</span>
+                    <span className="dp-mono">{shortDate(d.version_date || d.date)}</span>
                   </div>
                 </li>
               ))}

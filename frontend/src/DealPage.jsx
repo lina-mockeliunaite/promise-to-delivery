@@ -10,7 +10,7 @@ import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime, uploadKind, uploadMismatch } from "./format.js";
 import {
-  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, docLabel, groupByStage, hashFor, isSignedDoc,
+  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, docLabel, groupByStage, hashFor, isSignedDoc,
   mismatchParts, missingForHandover, handoverChecklist, plainName, readHash, recordedBy, rowTitle, firstPromised, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
@@ -94,6 +94,8 @@ function CommitRow({ c, status, active, onOpen }) {
           <span className="dp-prow-title">{rowTitle(c)}</span>
           {status !== "closed" && <MismatchSentence parts={mismatchParts(unresolved, c.contract)} />}
           {first && <span className="dp-prow-first">{first}</span>}
+          {status === "closed" && closedLines(c.issues.filter((i) => i.state === "Resolved").map((i) => i.resolved_by?.text))
+            .map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
           {status === "noted" && noteRes && <span className="dp-prow-note">{recordedBy(noteRes.by, noteRes.at, fmtDate)}</span>}
         </span>
         <span className={`dp-chip dp-chip-${st.tone}`} title={st.title}>
@@ -494,7 +496,7 @@ function DocumentList({ deal, stages, documents, name, setName, onChanged, onVie
           {docLabel(d.name, d.date)}{d.version > 1 ? ` · v${d.version}` : ""}
         </button>
         <span className="dp-doc-meta">
-          <span className="dp-mono">{fmtDate(d.date).replace(/ \d{4}$/, "")}</span>
+          <span className="dp-mono">{fmtDate(d.version_date || d.date).replace(/ \d{4}$/, "")}</span>
           <button type="button" className={`dp-icon-btn ${d.link ? "is-set" : ""}`}
                   onClick={() => { setLinking(linking === d.source_key ? null : d.source_key); setUrl(d.link ?? ""); }}
                   title={d.link ? "Change the Drive link" : "Save a Drive link"} aria-label={d.link ? "Change the Drive link" : "Save a Drive link"}>

@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  SIGNED_NOTE, attentionText, cleanReason, docLabel, extractedAs, findingDetail, firstDocDate, firstPromised, groupByStage, isSignedDoc, mismatchLine, plainName, mismatchParts, partsText, hashFor, readHash, matchDoc, closedBy, confirmedBy, headerScrolledPast, handoverChecklist, splitQuote, commitmentView, frozenView,
+  SIGNED_NOTE, attentionText, cleanReason, docLabel, extractedAs, findingDetail, firstDocDate, firstPromised, groupByStage, isSignedDoc, mismatchLine, plainName, mismatchParts, partsText, hashFor, readHash, matchDoc, closedBy, confirmedBy, headerScrolledPast, handoverChecklist, splitQuote, commitmentView, frozenView, closedLines,
   recordedBy, rowTitle, sourcesLine, suggestFix, verdictLine, whatChanged,
 } from "../src/dealpage.js";
 
@@ -388,4 +388,19 @@ test("the handover checklist has three items and takes its done state from the e
   assert.deepEqual(some.map((i) => i.done), [true, true, false]);
   assert.ok(handoverChecklist({ isSigned: true, notes: { sales: {}, delivery: {} } }).every((i) => i.done));
   assert.equal(none.filter((i) => !i.done).length, missingForHandover({ isSigned: false, notes: {} }).length);
+});
+
+test("a closed row shows the full stored closing text, every distinct closing once, as 'Closed by'", () => {
+  assert.deepEqual(closedLines(["Resolved by Draft SOW, version 2 · 16 Oct 2026", "Resolved by Draft SOW, version 2 · 16 Oct 2026"]),
+    ["Closed by Draft SOW, version 2 · 16 Oct 2026"]);
+  assert.deepEqual(closedLines(["Resolved by Draft SOW, version 2; Pricing note, version 2 · 16 Oct 2026", "Resolved by Pricing note, version 2 · 17 Oct 2026", "", null]),
+    ["Closed by Draft SOW, version 2; Pricing note, version 2 · 16 Oct 2026", "Closed by Pricing note, version 2 · 17 Oct 2026"]);
+  assert.deepEqual(closedLines(undefined), []);
+});
+
+test("the live and the locked view both carry the closing lines", () => {
+  const c = { ...LIVE_C, issues: [{ id: 1, finding: "No approval recorded", state: "Resolved", resolved_by: { text: "Resolved by Pricing note, version 2 · 16 Oct 2026" } }] };
+  assert.deepEqual(commitmentView(c, "closed", DOCS).closedLines, ["Closed by Pricing note, version 2 · 16 Oct 2026"]);
+  const f = frozenView({ item: { promise: "P", findings: [] }, status: "closed", closedFindings: [{ finding: "No approval recorded", resolved_by: "Resolved by Pricing note, version 2 · 16 Oct 2026" }] });
+  assert.deepEqual(f.closedLines, ["Closed by Pricing note, version 2 · 16 Oct 2026"]);
 });

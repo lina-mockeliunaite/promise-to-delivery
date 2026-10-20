@@ -30,7 +30,7 @@
 .cat-cap-head strong { color: var(--ink); font-weight: 600; }
 .cat-id { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; color: var(--muted); }
 .cat-int { font-size: 11px; color: var(--muted); }
-.cat-badge { font-size: 11px; padding: 1px 8px; border-radius: 999px; background: var(--warn-bg); color: var(--warn); }
+.cat-badge { font-size: 11px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--line); background: var(--soft); color: var(--muted); }
 .cat-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .cat-table td:nth-child(1) { width: 30%; }
 .cat-table td:nth-child(2) { width: 16%; }
@@ -42,22 +42,18 @@
 .cat-where { color: var(--ink); font-weight: 500; white-space: nowrap; width: 30%; }
 .cat-limits { color: var(--body); }
 .cat-date { color: var(--muted); white-space: nowrap; text-align: right; }
-.cat-pill { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 500; white-space: nowrap; }
-.cat-pill.tone-ok { background: var(--ok-bg); color: var(--ok); }
-.cat-pill.tone-warn { background: var(--warn-bg); color: var(--warn); }
-.cat-pill.tone-bad { background: var(--bad-bg); color: var(--bad); }
-.cat-pill.tone-muted { background: var(--line-2); color: var(--muted); }
+.cat-pill { display: inline-block; padding: 0 8px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--body); font-size: 11px; font-weight: 500; white-space: nowrap; }
 .cat-faint { color: var(--muted); }
 .cat-error { color: var(--bad); font-size: 12px; }
 .cat-add { display: flex; flex-direction: column; gap: 12px; padding: 14px; border: 1px solid var(--brand); border-radius: 10px; }
-.cat-add-warn { padding: 10px 12px; border-radius: 8px; background: var(--warn-bg); color: var(--warn); font-size: 12px; line-height: 1.5; }
+.cat-add-warn { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--soft); color: var(--body); font-size: 12px; line-height: 1.5; }
 .cat-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
 @media (max-width: 760px) { .cat-grid { grid-template-columns: 1fr; } }
 .cat-grid label, .cat-label { display: flex; flex-direction: column; gap: 4px; font-size: 11px; font-weight: 500; color: var(--muted); }
 .cat-wide { grid-column: span 2; }
 .cat-grid input, .cat-grid select, .cat-other { height: 30px; padding: 0 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: inherit; font-size: 12px; }
 .cat-other { width: 8rem; text-transform: uppercase; }
-.cat-added { padding: 10px 12px; border-radius: 8px; background: var(--ok-bg); color: var(--ok); font-size: 12px; }
+.cat-added { padding: 10px 12px; border-radius: 8px; border: 1px solid var(--line); background: var(--soft); color: var(--body); font-size: 12px; }
 
 /* The button that opens the catalogue from a finding */
 .cat-open { border: 0; background: none; padding: 0; font: inherit; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; color: var(--brand, #4f46e5); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; text-align: left; }

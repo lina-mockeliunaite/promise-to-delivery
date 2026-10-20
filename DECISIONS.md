@@ -999,3 +999,26 @@ One outside review pass (a second assistant) was triaged before building.
 **Why:** a failed check must not change what the deal is made of. Checking first removes the reported case completely; exclusion keeps the history honest in the rare remainder without touching the frozen checks.
 
 **Process slip:** Claude Code ran `git status` once (read-only); logged.
+
+## 2026-10-20, 14:01 — Five fixes from the review screenshots: colour discipline, readable documents, version dates, closing lines
+
+**What happened:** the review screenshots (`docs/screens/2026-10-20/review/`) showed six problems. Five are fixed. The sixth, seeding Harbour Bank as "Handover complete", was proposed and put on hold by Lina; it is not built and will be designed with the demo scenario decision.
+
+**Chose:**
+1. **The catalogue is neutral.** Status and sale-type chips are one grey outline style, told apart by their text. The "Added by" badge, the add-form warning and the "added" confirmation are neutral too. *Why:* green means "Closed by documents" and amber means a commitment needs attention; the catalogue is reference, not a verdict. The red error line stays, since it is an error.
+2. **The drawer shows a document as formatted text, not raw Markdown.** Headings, bold, italics, lists and paragraphs, read by a small in-house reader (`markdown.js`) that builds a tree and renders it as React elements. Nothing from a document is ever parsed as HTML: tags show as literal characters. The quote highlight is found in the stored text with `splitQuote`, then placed on the rendered text through each text node's offset; markers (`#`, `**`) are never highlighted. If the quote cannot be placed, the document shows with no highlight and the "not in this version" line, never a wrong highlight.
+3. **Each version shows its own date.** A new version inherits the previous version's recorded date, so the sidebar showed the original's. New read-side field `version_date`: version 1 keeps its recorded date; a later version shows a date someone set on it, else the date the document states about itself (`Date: 16 October 2026`, in its opening lines), else the day it was added. *Why the stated date first:* it is the document's own date and what the customer sees; the added-at time of a seeded demo version is the reset time. Shown in the sidebar, the drawer header and the locked record's document list.
+4. **A closed row says what closed it.** A muted line under the origin line: the full stored closing text shown as "Closed by …", one line per distinct closing, on the live row and the locked record's row. Display only: closure is still by re-verifying a stored claim.
+5. **The brief's re-confirmation warning is a neutral notice** (grey, info icon, body text), live and locked. *Why:* amber is the commitments colour. The old amber `dp-warn` stays for the one alert that still uses it, and the classic view's `.brief-stale` in `App.jsx` is unchanged.
+
+**Rejected:**
+- A Markdown library (a new dependency to audit) and converting to an HTML string (an injection path).
+- Changing the stored `doc_date` to fix the dates: statement dates, stage placement and document matching depend on it.
+
+**Snapshot format:** new snapshots store `version_date` on each document (`handover.build_snapshot`). This is additive: records locked earlier are untouched and still verify. The fingerprint is the SHA-256 of the exact stored text, recomputed on read, so a stored record is never rewritten. A document in an older snapshot with no `version_date` shows its recorded date, so an older record can still show a later version with the original's date; that is the saved record as it was.
+
+**Checked:** a handover locked on a scratch ledger with the code from before the `handover.py` change, then loaded with the current code: the fingerprint matches the value at lock time and an independent SHA-256 of the stored text; the stored text is unchanged by loading; the real app (headless Chrome, current build) renders the record. Python 684 tests OK, frontend 67 pass, `vite build` succeeds. Alder and Harbour on a fresh reset: documents, findings and registers unchanged; a date changes only on a newly added version.
+
+**Limitations:**
+- The locked-record snapshot format has no version number; additive fields are safe, but renaming or removing a field would need one first.
+- Item 6 (Harbour Bank seeded as "Handover complete") is not built.

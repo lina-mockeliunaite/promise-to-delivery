@@ -408,6 +408,10 @@ const uniq = (xs) => [...new Set(xs.filter(Boolean))];
 // The stored closing text reads "Resolved by Draft SOW, version 2 · 16 Oct 2026"; the screen says "Closed by …" (display only).
 export const closedBy = (text) => String(text ?? "").replace(/^Resolved by /, "Closed by ");
 
+// The muted "Closed by …" lines under a closed row (20 Oct): the full stored text of each distinct closing, so every closing
+// document shows. Texts are the stored ones ("Resolved by Draft SOW, version 2 · 16 Oct 2026"), shown as "Closed by …".
+export const closedLines = (texts) => [...new Set((texts ?? []).map((t) => closedBy(t).trim()).filter(Boolean))];
+
 // One commitment, as the drawer shows it. status: "open" | "noted" | "closed".
 export function commitmentView(c, status, documents) {
   const unresolved = c.issues.filter((i) => i.state !== "Resolved");
@@ -426,6 +430,7 @@ export function commitmentView(c, status, documents) {
     told: toldQuotesWithDocs(c.statements, documents),
     contract: contractView(c.contract, side, documents),
     found: status === "closed" ? [] : unresolved.map((i) => ({ label: findingDetail(i, c.contract), fact: gapLine(i.finding, i.evidence, i.catalogue_path) })),
+    closedLines: closedLines(closedIssues.map((i) => i.resolved_by?.text)),
     closed: closedIssues.map((i) => ({ label: FINDING_SHORT[i.finding] ?? i.finding, by: closedBy(i.resolved_by?.text) || (status === "closed" ? "Closed in the documents" : "") })),
     catalogue: status === "closed" ? [] : uniq(unresolved.map((i) => i.catalogue_path)),
     ai: status === "closed" ? [] : uniq(shown.map((i) => cleanReason(i.reason))),
@@ -474,6 +479,7 @@ export function frozenView({ item, status, closedFindings = [], documents = [], 
     toldFallback: item.told ?? "",
     contract: contractView(item.contract, side, documents),
     found: issues.map((i, n) => ({ label: findingDetail(i, item.contract), fact: gapLine(i.finding, i.evidence, i.catalogue_path) })),
+    closedLines: closedLines(closedFindings.map((r) => r.resolved_by)),
     closed: closedFindings.map((r) => ({ label: FINDING_SHORT[r.finding] ?? r.finding, by: closedBy(r.resolved_by) })),
     catalogue: uniq(issues.map((i) => i.catalogue_path)),
     ai: status === "closed" ? [] : uniq(findings.map((f) => cleanReason(f.why))),
