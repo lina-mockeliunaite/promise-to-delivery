@@ -509,3 +509,22 @@ test("a closed commitment shows the contract wording now found, labelled as a lo
   assert.equal(old.told.length, 0);
   assert.equal(old.contract.now, null);
 });
+
+test("a contract conflict is fixed in the document its contract-side quote comes from; a gap keeps the old rule (20 Oct)", () => {
+  const docs = [
+    { source_key: "NJ-05", name: "Pricing and services note", doc_type: "pricing_services_note" },
+    { source_key: "NJ-06", name: "Draft SOW", doc_type: "draft_sow" },
+    { source_key: "NJ-07", name: "Draft contract", doc_type: "draft_contract" },
+  ];
+  const conflict = (source) => ({ finding: "Contract says something different", evidence: { contract_quote: { quote: "q", source } } });
+  const contractFix = suggestFix([conflict("Draft contract")], docs);
+  assert.deepEqual([contractFix.source_key, contractFix.doc_type], ["NJ-07", "draft_contract"]);
+  assert.match(contractFix.hint, /The contract wording behind this conflict is in Draft contract\. Add the new version of Draft contract\./);
+  assert.equal(suggestFix([conflict("Draft SOW")], docs).source_key, "NJ-06"); // a conflict whose clause is in the SOW is fixed there
+  assert.equal(suggestFix([conflict("Draft contract"), { finding: "Missing from contract", evidence: {} }], docs).source_key, "NJ-07"); // the conflict's document wins
+  assert.equal(suggestFix([conflict("Some other file")], docs).source_key, "NJ-06"); // not found in the deal: the old rule (SOW first)
+  assert.equal(suggestFix([{ finding: "Contract says something different", evidence: {} }], docs).source_key, "NJ-06"); // no stored quote: the old rule
+  assert.equal(suggestFix([{ finding: "Missing from contract", evidence: {} }], docs).source_key, "NJ-06"); // a gap keeps the old rule
+  assert.equal(suggestFix([{ finding: "No approval recorded" }, conflict("Draft contract")], docs).source_key, "NJ-05"); // approval still first
+  assert.equal(suggestFix([{ finding: "Not offered" }, conflict("Draft contract")], docs).source_key, ""); // not offered still first
+});

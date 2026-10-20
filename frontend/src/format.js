@@ -87,18 +87,86 @@ const SIGNED_TYPES = ["signed_contract", "signed_sow"];
 const lowerFirst = (t) => (/^[A-Z][a-z]/.test(t) ? t[0].toLowerCase() + t.slice(1) : t);
 const withArticle = (t) => `${/^(RFP|[AEIOU])/.test(t) ? "an" : "a"} ${t}`;
 
-// A light, non-blocking question when the file and the chosen type clearly disagree: a signed document going in as a draft, a
-// draft going in as signed, or the file's name and its own heading agreeing on a different type. "" when nothing looks wrong.
-// target: { type, name } where name is set when the file is a new version of an existing document. labels: { type: "Label" }.
-export function uploadMismatch({ fileName, head, target, labels }) {
+// The types whose own heading is clear enough to question a filing: a draft contract, a draft SOW, a pricing note, a proposal or an
+// RFP response (20 Oct). A file's heading is its own statement of what it is, so it counts even when the file name is silent.
+const HEADING_TYPES = ["draft_contract", "draft_sow", "pricing_services_note", "proposal", "rfp_response"];
+
+// What a file says it is, or null. A signed document is recognised by its name or its heading. Otherwise the heading decides when it
+// names one of the types above; failing that, the name and the heading must agree. The name alone is not enough, and a Word or PDF
+// file has no readable heading here (the form reads the start of Markdown and text files only), so for those only a name-recognised
+// signed document is questioned.
+export function detectedType({ fileName, head }) {
   const byName = typeFromName(fileName);
   const byText = typeFromText(head);
-  const guess = byText && SIGNED_TYPES.includes(byText) ? byText : byName && SIGNED_TYPES.includes(byName) ? byName : byText && byText === byName ? byText : null;
+  if (byText && SIGNED_TYPES.includes(byText)) return byText;
+  if (byName && SIGNED_TYPES.includes(byName)) return byName;
+  if (byText && HEADING_TYPES.includes(byText)) return byText;
+  if (byText && byText === byName) return byText;
+  return null;
+}
+
+// A light, non-blocking question when the file and the chosen type clearly disagree. "" when nothing looks wrong.
+// target: { type, name } where name is set when the file is a new version of an existing document. labels: { type: "Label" }.
+export function uploadMismatch({ fileName, head, target, labels }) {
+  const guess = detectedType({ fileName, head });
   if (!guess || !target?.type || guess === target.type) return "";
   const label = (t) => lowerFirst(labels?.[t] ?? t);
   const asWhat = target.name ? `a new version of ${target.name}` : withArticle(label(target.type));
   return `This looks like ${withArticle(label(guess))}. Add it as ${asWhat} anyway?`;
 }
+
+const CONTRACT_TERMS = ["draft_contract", "draft_sow"];
+
+// What filing it that way would do, in words (20 Oct): the consequence is stated, not just the disagreement.
+function consequence(guess, target, asWhat, label) {
+  const filed = `Filed as ${asWhat}, it`;
+  if (target.name) return `${filed} replaces ${target.name}'s wording and can close gaps it shouldn't.`;
+  if (target.type === "pricing_services_note") return `${filed} would count as approval evidence, which it isn't.`;
+  if (SIGNED_TYPES.includes(target.type)) return `${filed} would mark the deal Signed, but it isn't signed.`;
+  if (SIGNED_TYPES.includes(guess)) return `${filed} will be checked like a draft, and it won't mark the deal Signed.`;
+  if (guess === "pricing_services_note") return `${filed} won't close the approval gap.`;
+  if (CONTRACT_TERMS.includes(guess) && CONTRACT_TERMS.includes(target.type)) return `${filed} is read as that type rather than as ${withArticle(label(guess))}.`;
+  if (CONTRACT_TERMS.includes(guess)) return `${filed} won't count as contract terms, so it won't close a contract gap.`;
+  return `${filed} is read as that type rather than as ${withArticle(label(guess))}.`;
+}
+
+// The wrong-file notice (20 Oct): what the file looks like, what filing it that way would do, the right action as the primary button
+// (a new version of the deal's own document of that type when there is exactly one, else that type), and a quiet way to go ahead anyway.
+// null when nothing looks wrong. documents: the deal's documents ({ source_key, name, doc_type }).
+export function mismatchNotice({ fileName, head, target, documents, labels }) {
+  const guess = detectedType({ fileName, head });
+  if (!guess || !target?.type || guess === target.type) return null;
+  const label = (t) => lowerFirst(labels?.[t] ?? t);
+  const asWhat = target.name ? `a new version of ${target.name}` : withArticle(label(target.type));
+  const same = (documents ?? []).filter((d) => d.doc_type === guess);
+  const use = same.length === 1
+    ? { source_key: same[0].source_key, doc_type: "", text: `Use “A new version of ${same[0].name}”` }
+    : { source_key: "", doc_type: guess, text: `Use “${labels?.[guess] ?? guess}” as the type` };
+  return {
+    guess,
+    question: `This looks like ${withArticle(label(guess))}.`,
+    consequence: consequence(guess, target, asWhat, label),
+    use,
+    anyway: target.name ? `Add as ${asWhat} anyway` : `Add as ${label(target.type)} anyway`,
+  };
+}
+
+// "+ Add" from the sidebar has no commitment to take a document from, so it suggests (never applies) the document the file looks like
+// a new version of: first by the file name starting with a document's source key ("NJ-07_…"), then by the heading's type when exactly one
+// document of that type is in the deal. A signed document is never suggested as a new version of a draft. null when nothing is clear.
+export function suggestVersionOf({ fileName, head, documents }) {
+  const name = String(fileName ?? "").toLowerCase();
+  const docs = documents ?? [];
+  const byKey = docs.find((d) => d.source_key && name.startsWith(d.source_key.toLowerCase()) && !/^[a-z0-9]/.test(name.slice(d.source_key.length, d.source_key.length + 1)));
+  if (byKey) return byKey;
+  const type = typeFromText(head);
+  if (!type || SIGNED_TYPES.includes(type)) return null;
+  const same = docs.filter((d) => d.doc_type === type);
+  return same.length === 1 ? same[0] : null;
+}
+
+// A new document needs a chosen type, or a chosen document to be a new version of: there is no silent default (20 Oct).
+export const addReady = ({ file, source_key, doc_type }) => Boolean(file && (source_key || doc_type));
 
 // Pre-selected type: the file name first, then what usually closes this kind of finding.
 export function guessType(name, findingType) {

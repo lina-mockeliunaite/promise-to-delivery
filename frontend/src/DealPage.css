@@ -438,3 +438,7 @@ main.home.home-deal { max-width: none; margin: 0; padding: 0; }
 .dp-tl-count { font-weight: 400; color: var(--muted); font-size: 12px; }
 .dr-mismatch { margin: 0 0 14px; }
 .dr-mismatch .dp-prow-line { font-size: 13px; }
+/* The wrong-file notice and the "+ Add" suggestion (20 Oct): what the file looks like, what filing it that way would do, the right action first */
+.dp-notice-box { display: flex; flex-direction: column; gap: 8px; }
+.dp-notice-box p { margin: 0; }
+.dp-notice-box .dp-row { align-items: center; flex-wrap: wrap; gap: 6px 14px; }

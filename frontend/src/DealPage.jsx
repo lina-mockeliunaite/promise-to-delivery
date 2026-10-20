@@ -9,7 +9,7 @@ import "@fontsource/inter/latin-500.css";
 import "@fontsource/inter/latin-600.css";
 import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
-import { fmtDate, fmtDateTime, uploadKind, uploadMismatch } from "./format.js";
+import { addReady, fmtDate, fmtDateTime, mismatchNotice, suggestVersionOf, uploadKind } from "./format.js";
 import {
   CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, coverageLine, docCount, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
   mismatchParts, missingForHandover, handoverChecklist, plainName, readHash, recordedBy, rowTitle, firstPromised, suggestFix, useName, whatChanged,
@@ -379,7 +379,9 @@ function ClosingHelp({ onClose }) {
 
 
 function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
-  const [form, setForm] = useState({ source_key: preset?.source_key ?? "", doc_type: preset?.doc_type ?? "draft_sow",
+  // No silent default type (20 Oct): a document opened from a commitment is pre-selected by what usually closes that gap; from the
+  // sidebar nothing is chosen until the person chooses, or accepts the suggestion made from the file.
+  const [form, setForm] = useState({ source_key: preset?.source_key ?? "", doc_type: preset?.doc_type ?? "",
                                      doc_date: new Date().toISOString().slice(0, 10), file: null });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
@@ -393,13 +395,16 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
   };
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const existingDoc = form.source_key ? documents.find((d) => d.source_key === form.source_key) : null;
-  const warning = form.file ? uploadMismatch({
-    fileName: form.file.name, head,
+  const labels = Object.fromEntries(docTypes.map((t) => [t.value, t.label]));
+  // What filing it this way would do, with the right action as the primary button and a quiet way to go ahead anyway.
+  const notice = form.file ? mismatchNotice({
+    fileName: form.file.name, head, documents, labels,
     target: { type: existingDoc?.doc_type ?? form.doc_type, name: existingDoc?.name },
-    labels: Object.fromEntries(docTypes.map((t) => [t.value, t.label])),
-  }) : "";
+  }) : null;
+  const suggestion = form.file && !form.source_key && !form.doc_type ? suggestVersionOf({ fileName: form.file.name, head, documents }) : null;
+  const ready = addReady({ file: form.file, source_key: form.source_key, doc_type: form.doc_type });
   const submit = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
     setBusy(true);
     setError(null);
     try {
@@ -433,6 +438,7 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
             <label>
               Type
               <select value={form.doc_type} onChange={set("doc_type")}>
+                <option value="" disabled>Choose a type…</option>
                 {docTypes.map((t) => <option key={t.value} value={t.value}>{t.label}</option>)}
               </select>
             </label>
@@ -462,12 +468,30 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
           </div>
         )}
       </div>
-      {warning && <p className="dp-warnbox" role="status">{warning}</p>}
+      {suggestion && (
+        <div className="dp-warnbox dp-notice-box" role="status">
+          <p>This looks like a new version of <strong>{suggestion.name}</strong>.</p>
+          <div className="dp-row">
+            <button type="button" className="dp-btn dp-btn-dark" onClick={() => setForm((f) => ({ ...f, source_key: suggestion.source_key }))}>Use “A new version of {suggestion.name}”</button>
+          </div>
+        </div>
+      )}
+      {notice && (
+        <div className="dp-warnbox dp-notice-box" role="status">
+          <p><strong>{notice.question}</strong> {notice.consequence}</p>
+          <div className="dp-row">
+            <button type="button" className="dp-btn dp-btn-dark"
+                    onClick={() => setForm((f) => ({ ...f, source_key: notice.use.source_key, doc_type: notice.use.doc_type || f.doc_type }))}>{notice.use.text}</button>
+            <button type="button" className="dp-link-btn" disabled={busy} onClick={() => submit(null)}>{notice.anyway}</button>
+          </div>
+        </div>
+      )}
+      {form.file && !ready && !suggestion && <p className="dp-faint dp-small">Choose a type, or a document this is a new version of.</p>}
       {!form.source_key && isSignedDoc(form.doc_type) && <p className="dp-faint dp-small">{SIGNED_NOTE}</p>}
       <div className="dp-actions">
         {error && <span className="dp-error" role="alert">{error}</span>}
         <button type="button" className="dp-btn dp-btn-ghost" onClick={onClose} disabled={busy}>Cancel</button>
-        <button type="submit" className="dp-btn dp-btn-dark" disabled={busy || !form.file}>{busy ? "Checking…" : <>{warning ? "Add anyway" : "Add and check"} <Icon d={I.arrow} size={14} /></>}</button>
+        <button type="submit" className="dp-btn dp-btn-dark" disabled={busy || !ready || !!notice}>{busy ? "Checking…" : <>Add and check <Icon d={I.arrow} size={14} /></>}</button>
       </div>
     </form>
   );

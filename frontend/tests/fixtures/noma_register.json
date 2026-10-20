@@ -1,0 +1,112 @@
+{
+ "_how": "Captured from the seeded Noma Journeys ledger (the saved run-1 reading, no model call): the deal's documents and each commitment's open findings with their verified evidence.",
+ "documents": [
+  {
+   "source_key": "NJ-01",
+   "name": "Call transcript of 14 Sep 2026",
+   "doc_type": "call_transcript"
+  },
+  {
+   "source_key": "NJ-02",
+   "name": "Call transcript of 21 Sep 2026",
+   "doc_type": "call_transcript"
+  },
+  {
+   "source_key": "NJ-03",
+   "name": "RFP response",
+   "doc_type": "rfp_response"
+  },
+  {
+   "source_key": "NJ-04",
+   "name": "Proposal",
+   "doc_type": "proposal"
+  },
+  {
+   "source_key": "NJ-05",
+   "name": "Pricing and services note",
+   "doc_type": "pricing_services_note"
+  },
+  {
+   "source_key": "NJ-06",
+   "name": "Draft SOW",
+   "doc_type": "draft_sow"
+  },
+  {
+   "source_key": "NJ-07",
+   "name": "Draft contract",
+   "doc_type": "draft_contract"
+  },
+  {
+   "source_key": "NJ-08",
+   "name": "Customer email",
+   "doc_type": "customer_email"
+  }
+ ],
+ "commitments": [
+  {
+   "name": "Support in 12 languages at launch",
+   "issues": [
+    {
+     "finding": "Contract says something different",
+     "state": "Needs action",
+     "evidence": {
+      "contract_quote": {
+       "quote": "The Assistant will respond to Guest enquiries in four languages: English, Mandarin Chinese, Japanese and Korean.",
+       "source": "Draft contract"
+      },
+      "missing_phrases": []
+     }
+    }
+   ]
+  },
+  {
+   "name": "Dedicated launch specialist for the first 30 days, at no extra charge",
+   "issues": [
+    {
+     "finding": "No approval recorded",
+     "state": "Needs action",
+     "evidence": {
+      "contract_quote": null,
+      "missing_phrases": []
+     }
+    },
+    {
+     "finding": "Missing from contract",
+     "state": "Needs action",
+     "evidence": {
+      "contract_quote": null,
+      "missing_phrases": [
+       "dedicated Aivuna launch specialist",
+       "first 30 days after launch",
+       "no extra charge"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "name": "AI answers customers' phone calls at launch",
+   "issues": [
+    {
+     "finding": "Not offered",
+     "state": "Needs action",
+     "evidence": {
+      "contract_quote": null,
+      "missing_phrases": []
+     }
+    },
+    {
+     "finding": "Contract says something different",
+     "state": "Needs action",
+     "evidence": {
+      "contract_quote": {
+       "quote": "Provider will operate the Assistant on chat and email for the Customer's guests, as described in Annex A.",
+       "source": "Draft SOW"
+      },
+      "missing_phrases": []
+     }
+    }
+   ]
+  }
+ ]
+}

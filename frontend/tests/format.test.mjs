@@ -123,3 +123,88 @@ test("no question when the file fits, when nothing is clear, or when only a weak
   assert.equal(uploadMismatch({ fileName: "a.md", head: "", target: null, labels: LABELS }), "");
   assert.match(uploadMismatch({ fileName: "rfp_signed_contract.md", head: "", target: { type: "rfp_response" }, labels: LABELS }), /^This looks like a signed contract\. Add it as an RFP response anyway\?$/);
 });
+
+// --- The wrong-file notice states the consequence and offers the right action (20 Oct) --------------------------------------------
+import { addReady, detectedType, mismatchNotice, suggestVersionOf } from "../src/format.js";
+
+const CONTRACT_HEAD = "# DRAFT Master Services Agreement — Noma Journeys\n\nDate: 19 October 2026\n";
+const PRICING_HEAD = "# INTERNAL — Pricing and services note: Noma Journeys\n\nDate: 18 October 2026\n";
+const DOCS = [
+  { source_key: "NJ-03", name: "RFP response", doc_type: "rfp_response" },
+  { source_key: "NJ-04", name: "Proposal", doc_type: "proposal" },
+  { source_key: "NJ-05", name: "Pricing and services note", doc_type: "pricing_services_note" },
+  { source_key: "NJ-06", name: "Draft SOW", doc_type: "draft_sow" },
+  { source_key: "NJ-07", name: "Draft contract", doc_type: "draft_contract" },
+  { source_key: "NJ-01", name: "Call transcript of 14 Sep 2026", doc_type: "call_transcript" },
+  { source_key: "NJ-02", name: "Call transcript of 21 Sep 2026", doc_type: "call_transcript" },
+];
+const L2 = { ...LABELS, call_transcript: "Call transcript", proposal: "Proposal" };
+
+test("a file's own heading is enough to question a filing, even when its name says nothing", () => {
+  assert.equal(detectedType({ fileName: "NJ-07_v2_languages_aligned.md", head: CONTRACT_HEAD }), "draft_contract");
+  assert.equal(detectedType({ fileName: "NJ-05_v2_named_exception.md", head: PRICING_HEAD }), "pricing_services_note");
+  assert.equal(detectedType({ fileName: "NJ-07_v2_languages_aligned.md", head: "" }), null); // no readable heading (Word, PDF…): the name alone is weak
+  assert.equal(detectedType({ fileName: "notes.md", head: "Some notes." }), null);
+  assert.equal(detectedType({ fileName: "AB-09_signed_contract.md", head: "" }), "signed_contract"); // signed: the name is enough
+  assert.equal(detectedType({ fileName: "pricing_v2.md", head: "# DRAFT Statement of Work" }), "draft_sow"); // the heading wins over the name
+});
+
+test("the plain question now also fires for a contract filed as the SOW (heading only)", () => {
+  assert.equal(uploadMismatch({ fileName: "NJ-07_v2_languages_aligned.md", head: CONTRACT_HEAD, target: { type: "draft_sow", name: "Draft SOW" }, labels: L2 }),
+    "This looks like a draft contract. Add it as a new version of Draft SOW anyway?");
+  assert.equal(uploadMismatch({ fileName: "NJ-07_v2_languages_aligned.md", head: CONTRACT_HEAD, target: { type: "draft_contract", name: "Draft contract" }, labels: L2 }), "");
+});
+
+test("a pricing note filed as a proposal: the consequence, the right action first, the quiet way to go ahead", () => {
+  const n = mismatchNotice({ fileName: "NJ-05_v2_named_exception.md", head: PRICING_HEAD, target: { type: "proposal" }, documents: DOCS, labels: L2 });
+  assert.equal(n.question, "This looks like a pricing and services note.");
+  assert.equal(n.consequence, "Filed as a proposal, it won't close the approval gap.");
+  assert.equal(n.use.text, "Use “A new version of Pricing and services note”");
+  assert.deepEqual([n.use.source_key, n.use.doc_type], ["NJ-05", ""]);
+  assert.equal(n.anyway, "Add as proposal anyway");
+});
+
+test("a contract filed as a new version of the SOW: it replaces the SOW's wording and can close gaps it shouldn't", () => {
+  const n = mismatchNotice({ fileName: "NJ-07_v2_languages_aligned.md", head: CONTRACT_HEAD, target: { type: "draft_sow", name: "Draft SOW" }, documents: DOCS, labels: L2 });
+  assert.equal(n.consequence, "Filed as a new version of Draft SOW, it replaces Draft SOW's wording and can close gaps it shouldn't.");
+  assert.equal(n.use.text, "Use “A new version of Draft contract”");
+  assert.equal(n.use.source_key, "NJ-07");
+  assert.equal(n.anyway, "Add as a new version of Draft SOW anyway");
+});
+
+test("when the deal has no single document of that type, the primary action sets the type instead", () => {
+  const none = mismatchNotice({ fileName: "x.md", head: PRICING_HEAD, target: { type: "proposal" }, documents: [{ source_key: "A", name: "Proposal", doc_type: "proposal" }], labels: L2 });
+  assert.equal(none.use.text, "Use “Pricing and services note” as the type");
+  assert.deepEqual([none.use.source_key, none.use.doc_type], ["", "pricing_services_note"]);
+  const two = mismatchNotice({ fileName: "x.md", head: "# Call transcript — Noma", target: { type: "proposal" }, documents: DOCS, labels: L2 });
+  assert.equal(two, null); // a call transcript heading is not one of the clear types, so no question
+});
+
+test("the consequences for signed paperwork and for a draft filed as a pricing note", () => {
+  const signed = mismatchNotice({ fileName: "AB-09_signed_contract.md", head: SIGNED_HEAD, target: { type: "draft_contract" }, documents: [], labels: LABELS });
+  assert.equal(signed.consequence, "Filed as a draft contract, it will be checked like a draft, and it won't mark the deal Signed.");
+  const asPricing = mismatchNotice({ fileName: "NJ-07.md", head: CONTRACT_HEAD, target: { type: "pricing_services_note" }, documents: [], labels: L2 });
+  assert.equal(asPricing.consequence, "Filed as a pricing and services note, it would count as approval evidence, which it isn't.");
+  const asSigned = mismatchNotice({ fileName: "NJ-07.md", head: CONTRACT_HEAD, target: { type: "signed_contract" }, documents: [], labels: LABELS });
+  assert.equal(asSigned.consequence, "Filed as a signed contract, it would mark the deal Signed, but it isn't signed.");
+  assert.equal(mismatchNotice({ fileName: "NJ-05.md", head: PRICING_HEAD, target: { type: "pricing_services_note" }, documents: DOCS, labels: L2 }), null);
+  assert.equal(mismatchNotice({ fileName: "a.md", head: "", target: null, documents: DOCS, labels: L2 }), null);
+});
+
+test("'+ Add' suggests, never applies: by the file name's source key, then by the heading's type", () => {
+  assert.equal(suggestVersionOf({ fileName: "NJ-05_v2_named_exception.md", head: "", documents: DOCS }).source_key, "NJ-05");
+  assert.equal(suggestVersionOf({ fileName: "nj-07_revised.md", head: "", documents: DOCS }).source_key, "NJ-07"); // case-blind
+  assert.equal(suggestVersionOf({ fileName: "NJ-070_x.md", head: "", documents: DOCS }), null); // a longer key is not a match
+  assert.equal(suggestVersionOf({ fileName: "revised.md", head: CONTRACT_HEAD, documents: DOCS }).source_key, "NJ-07");
+  assert.equal(suggestVersionOf({ fileName: "revised.md", head: "# Call transcript", documents: DOCS }), null); // not a clear type
+  assert.equal(suggestVersionOf({ fileName: "revised.md", head: SIGNED_HEAD, documents: DOCS }), null); // a signed document is not a new draft
+  assert.equal(suggestVersionOf({ fileName: "revised.md", head: CONTRACT_HEAD, documents: [DOCS[3], { ...DOCS[3], source_key: "X", name: "Other SOW" }] }), null);
+  assert.equal(suggestVersionOf({ fileName: "revised.md", head: "", documents: DOCS }), null);
+});
+
+test("there is no silent default type: a file needs a chosen type or a chosen document", () => {
+  assert.equal(addReady({ file: { name: "a.md" }, source_key: "", doc_type: "" }), false);
+  assert.equal(addReady({ file: { name: "a.md" }, source_key: "NJ-07", doc_type: "" }), true);
+  assert.equal(addReady({ file: { name: "a.md" }, source_key: "", doc_type: "proposal" }), true);
+  assert.equal(addReady({ file: null, source_key: "NJ-07", doc_type: "" }), false);
+});

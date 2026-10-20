@@ -91,6 +91,14 @@ export function suggestFix(open, documents) {
              hint: "A named approval in the pricing note can close the approval gap." +
                    (alsoContract ? " The contract gap needs a contract or SOW update; it stays open until then." : " Add the new version of the pricing note.") };
   }
+  // A contract conflict is fixed in the document its contract-side quote comes from (20 Oct): a revised contract is a new version of the
+  // contract, not of the SOW. The stored evidence names that document.
+  const conflict = open.find((i) => i.finding === "Contract says something different" && i.evidence?.contract_quote?.source);
+  const home = conflict ? documents.find((d) => d.name === conflict.evidence.contract_quote.source) : null;
+  if (home) {
+    return { source_key: home.source_key, doc_type: home.doc_type,
+             hint: `The contract wording behind this conflict is in ${home.name}. Add the new version of ${home.name}.` };
+  }
   if (kinds.includes("Missing from contract") || kinds.includes("Contract says something different")) {
     const d = byType("draft_sow") ?? byType("draft_contract");
     return { source_key: d?.source_key ?? "", doc_type: "draft_sow",
