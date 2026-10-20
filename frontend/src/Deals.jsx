@@ -159,7 +159,6 @@ export default function Deals({ deals, onOpen, onCreated }) {
             <thead>
               <tr>
                 <th scope="col">Deal</th>
-                <th scope="col">Stage</th>
                 <th scope="col">Need attention</th>
                 <th scope="col">Deal owner</th>
                 <th scope="col">Last updated</th>
@@ -172,11 +171,12 @@ export default function Deals({ deals, onOpen, onCreated }) {
                   <td>
                     <span className="dl-deal-cell">
                       <span className="dl-tile" aria-hidden="true">{initials(d.name)}</span>
-                      <span className="dl-deal-name">{d.name}</span>
-                      {d.kind === "user" && <span className="dl-tag">Uploaded</span>}
+                      <span className="dl-deal-text">
+                        <span className="dl-deal-name">{d.name}{d.kind === "user" && <span className="dl-tag">Uploaded</span>}</span>
+                        <StagePill deal={d} />
+                      </span>
                     </span>
                   </td>
-                  <td><StagePill deal={d} /></td>
                   <td><GapPill deal={d} /></td>
                   <td>
                     {d.owner ? (
@@ -201,7 +201,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
               ))}
               {shown.rows.length === 0 && (
                 <tr className="dl-empty">
-                  <td colSpan={6}>{query ? "No deals match that search." : "No deals here yet."}</td>
+                  <td colSpan={5}>{query ? "No deals match that search." : "No deals here yet."}</td>
                 </tr>
               )}
             </tbody>

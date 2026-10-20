@@ -1,13 +1,13 @@
-/* Product catalogue pop-up (16 Oct). Same warm tokens as the deal page. */
+/* Product catalogue pop-up (16 Oct; v3 tokens 20 Oct: the same palette as the deal page, no structural change). */
 .cat-overlay { position: fixed; inset: 0; z-index: 60; background: rgba(24, 24, 27, 0.45); display: flex; align-items: flex-start; justify-content: center; padding: 40px 20px; overflow-y: auto;
-  --ink: #18181b; --body: #3f3f46; --muted: #71717a; --line: #e5e5e9; --line-2: #f4f4f6; --card: #fff; --soft: #f9f9fa; --brand: #0f766e;
-  --ok-bg: #ecfdf5; --ok: #047857; --warn-bg: #fffbeb; --warn: #92400e; --bad-bg: #fef2f2; --bad: #b91c1c;
-  font-family: "Geist", "Instrument Sans", system-ui, sans-serif; font-size: 13px; }
+  --ink: #0f172a; --body: #475569; --muted: #64748b; --line: #e2e8f0; --line-2: #f1f5f9; --card: #fff; --soft: #f8fafc; --brand: #4f46e5;
+  --ok-bg: #ecfdf5; --ok: #047857; --warn-bg: #fffbeb; --warn: #b45309; --bad-bg: #fef2f2; --bad: #b91c1c;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif; font-size: 14px; }
 @media (prefers-color-scheme: dark) {
-  .cat-overlay { --ink: #f4f4f5; --body: #d4d4d8; --muted: #a1a1aa; --line: #2f2f35; --line-2: #26262b; --card: #1b1b1f; --soft: #222227; --brand: #5eead4;
-    --ok-bg: #0f2a20; --ok: #6ee7b7; --warn-bg: #2c2210; --warn: #fcd34d; --bad-bg: #2a1414; --bad: #fca5a5; }
+  .cat-overlay { --ink: #f1f5f9; --body: #cbd5e1; --muted: #94a3b8; --line: #26324a; --line-2: #1c2740; --card: #111a2e; --soft: #16213a; --brand: #a5b4fc;
+    --ok-bg: #0f2a20; --ok: #6ee7b7; --warn-bg: #2a2110; --warn: #fbbf24; --bad-bg: #2a1414; --bad: #fca5a5; }
 }
-.cat-modal { background: var(--card); color: var(--body); width: min(1040px, 100%); border-radius: 14px; box-shadow: 0 20px 60px rgba(0,0,0,0.18); padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 14px; }
+.cat-modal { background: var(--card); color: var(--body); width: min(1040px, 100%); border-radius: 14px; box-shadow: 0 1px 3px rgba(15,23,42,.05), 0 20px 60px rgba(15,23,42,.18); padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 14px; }
 .cat-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; padding-bottom: 12px; border-bottom: 1px solid var(--line-2); }
 .cat-head h2 { margin: 2px 0; font-size: 20px; font-weight: 600; letter-spacing: -0.02em; color: var(--ink); }
 .cat-eyebrow { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--brand); }
@@ -30,7 +30,7 @@
 .cat-cap-head strong { color: var(--ink); font-weight: 600; }
 .cat-id { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; color: var(--muted); }
 .cat-int { font-size: 11px; color: var(--muted); }
-.cat-badge { font-size: 10px; padding: 1px 8px; border-radius: 999px; background: var(--warn-bg); color: var(--warn); }
+.cat-badge { font-size: 11px; padding: 1px 8px; border-radius: 999px; background: var(--warn-bg); color: var(--warn); }
 .cat-table { width: 100%; border-collapse: collapse; table-layout: fixed; }
 .cat-table td:nth-child(1) { width: 30%; }
 .cat-table td:nth-child(2) { width: 16%; }
@@ -60,4 +60,4 @@
 .cat-added { padding: 10px 12px; border-radius: 8px; background: var(--ok-bg); color: var(--ok); font-size: 12px; }
 
 /* The button that opens the catalogue from a finding */
-.cat-open { border: 0; background: none; padding: 0; font: inherit; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 10px; color: var(--brand, #0f766e); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; text-align: left; }
+.cat-open { border: 0; background: none; padding: 0; font: inherit; font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 11px; color: var(--brand, #4f46e5); cursor: pointer; text-decoration: underline; text-underline-offset: 2px; text-align: left; }

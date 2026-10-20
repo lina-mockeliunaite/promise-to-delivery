@@ -282,6 +282,14 @@ def conflict_term(conn, did: int, criteria: dict):
     return None
 
 
+def commitment_ref(key: str) -> str:
+    """An opaque, stable reference for the address bar (#c=<ref>), derived from the internal commitment key. The key itself
+    never reaches a reader (tests/test_handoff.py): this is twelve hex characters of a one-way digest, the same after every
+    reset because the key is. Added 20 Oct for the drawer; read-only, in no hash and no stored record."""
+    import hashlib
+    return hashlib.sha256(f"ref|{key}".encode("utf-8")).hexdigest()[:12]
+
+
 def commitment_titles(slug: str) -> dict:
     """Owner-confirmed plain titles from the deal profile, keyed by the stable commitment key (19 Oct). Never generated;
     read at display time only, so they are not part of any hash. Deals without a profile have none."""
@@ -396,7 +404,7 @@ def register(conn, slug: str) -> dict:
                 elif auth == "no_approval_evidence":
                     auth = "not_assessed"
         commitments.append({
-            "id": cid, "name": display_name(cname, statements), "display_name": titles.get(key), "note": note, "status": shown_status, "language": language,
+            "id": cid, "name": display_name(cname, statements), "display_name": titles.get(key), "ref": commitment_ref(key), "note": note, "status": shown_status, "language": language,
             "check_note": CHECK_NOTE if shown_status != status else "",
             "authorisation": (V2_AUTH_LABELS if is_v2 else AUTH_LABELS).get(auth, AUTH_LABELS.get(auth, auth)),
             "authorisation_evidence": shown_auth or plain(auth_ev, names),

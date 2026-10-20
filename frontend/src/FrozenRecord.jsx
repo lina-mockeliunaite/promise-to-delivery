@@ -1,12 +1,15 @@
 // Frozen handover record (16 Oct; reordered 19 Oct). What Delivery inherited,
 // read from the snapshot saved when the handover was completed. Nothing here can change, and nothing is recomputed:
 // it shows the record as it stood, plus the record's SHA-256 fingerprint so anyone can check it was not edited.
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
 import {
-  STATUS_CHIP, cleanReason, countsLine, extractedAs, findingDetail, firstPromised, contractText, mismatchLine, plainName, recordedBy, sentence, verdictLine,
+  STATUS_CHIP, attentionText, frozenView, hashFor, plainName, readHash, recordedBy, short, verdictLine,
 } from "./dealpage.js";
+import { Drawer, CommitmentView, DocumentView, MismatchSentence, Icon, ICON } from "./Drawer.jsx";
+import BriefCard from "./BriefCard.jsx";
+import { IdentityLine, useScrolledPast } from "./Identity.jsx";
 import { NAME, TAGLINE } from "./brand.js";
 import "./DealPage.css";
 
@@ -16,38 +19,50 @@ const Lock = ({ size = 14 }) => (
 );
 
 const shortDate = (iso) => fmtDate(iso).replace(/ \d{4}$/, "");
-const toldIn = (pairs) => (pairs ?? []).map(([label, date]) => (date ? `${label} (${shortDate(date)})` : label)).join(" · ");
 const Check = () => (
   <svg width={12} height={12} viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2.5"
        strokeLinecap="round" strokeLinejoin="round" style={{ flex: "none" }}><path d="M20 6 9 17l-5-5" /></svg>
 );
 
-// One row per commitment, the same list and wording as the live deal page, read-only. Collapsed it is the title, what did
-// not line up, where it was first promised and its status at handover; open shows the detail.
-function FrozenRow({ status, title, original, mismatch, first, expanded, onToggle, children }) {
-  const st = STATUS_CHIP[status];
+// One row per commitment, the same list and wording as the live deal page, read-only. Click opens the drawer (no actions).
+// In print every commitment is written out inline instead, since the drawer is not printed.
+function FrozenRow({ v, active, onOpen }) {
+  const st = STATUS_CHIP[v.status];
   return (
-    <li className={`dp-prow is-${status} ${expanded ? "is-open" : ""}`}>
-      <div className="dp-prow-head" onClick={onToggle} role="button" tabIndex={0} aria-expanded={expanded}
-           onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onToggle())}>
-        <span className={`dp-chevron fr-noprint ${expanded ? "is-open" : ""}`} aria-hidden="true">›</span>
+    <li className={`dp-prow is-${v.status} ${active ? "is-active" : ""}`}>
+      <div className="dp-prow-head" onClick={onOpen} role="button" tabIndex={0} aria-haspopup="dialog" aria-expanded={active}
+           onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen())}>
         <span className="dp-prow-main">
-          <span className="dp-prow-title">{title}</span>
-          {mismatch && <span className="dp-prow-line">{mismatch}</span>}
-          {first && <span className="dp-prow-first">{first}</span>}
+          <span className="dp-prow-title">{v.title}</span>
+          {v.status !== "closed" && <MismatchSentence parts={v.mismatch} />}
+          {v.first && <span className="dp-prow-first">{v.first}</span>}
         </span>
         <span className={`dp-chip dp-chip-${st.tone}`} title={st.title}>
-          {status === "open" ? <span className="dp-dot" /> : <Check />}
+          <span className={`dp-dot ${v.status === "noted" ? "dp-dot-grey" : v.status === "closed" ? "dp-dot-green" : ""}`} />
           {st.label}
         </span>
+        <span className="dp-chevron fr-noprint" aria-hidden="true"><Icon d={ICON.chevron} size={16} /></span>
       </div>
-      {expanded && (
-        <div className="dp-prow-body">
-          {children}
-          {original && <span className="dp-fact-src">Extracted as: {original}</span>}
-        </div>
-      )}
+      <PrintDetail v={v} />
     </li>
+  );
+}
+
+// The commitment written out for print: the plain mismatch line, what the customer was told, the contract, what was found.
+function PrintDetail({ v }) {
+  return (
+    <div className="fr-print">
+      {v.plain && <p><strong>Mismatch:</strong> {v.plain}</p>}
+      {v.extracted && <p className="dp-muted-line">Extracted as: {v.extracted}</p>}
+      <p><strong>Customer was told:</strong>{" "}
+        {v.told.length ? v.told.map((t) => `“${t.quote}” (${t.label}${t.date ? `, ${short(t.date)}` : ""})`).join(" ") : v.toldFallback}</p>
+      <p><strong>Contract says:</strong> {v.contract.text}{v.contract.quote ? ` “${v.contract.quote.quote}” (${v.contract.quote.label})` : ""}
+        {v.contract.missing ? ` Searched for: ${v.contract.missing.map((m) => `“${m}”`).join(", ")}` : ""}</p>
+      {v.found.map((f) => <p key={f.label}><strong>{f.label}</strong>{f.fact ? ` ${f.fact}` : ""}</p>)}
+      {v.closed.length > 0 && <p><strong>Closed by the documents:</strong> {v.closed.map((c) => `${c.label}. ${c.by}`).join(" ")}</p>}
+      {v.ai.length > 0 && <p><em>AI-written summary · quotes checked against the documents:</em> {v.ai.join(" ")}</p>}
+      {v.notes.map((n) => <p key={`${n.by}|${n.text}`}><strong>{recordedBy(n.by, n.at, fmtDate)}:</strong> “{n.text}”</p>)}
+    </div>
   );
 }
 
@@ -56,9 +71,22 @@ export default function FrozenRecord({ deal, onBack }) {
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
   const [record, setRecord] = useState(false);
-  const [expanded, setExpanded] = useState(() => new Set());
-  const toggle = (k) => setExpanded((prev) => { const n = new Set(prev); n.has(k) ? n.delete(k) : n.add(k); return n; });
+  const [headRef, headerGone] = useScrolledPast();
+  const [documents, setDocuments] = useState([]);
+  const [drawer, setDrawer] = useState(null); // { type: "commitment", key } | { type: "doc", docKey, quote, fromKey }
   useEffect(() => { api.fetchHandover(deal).then(setHv, (err) => setError(err.message)); }, [deal]);
+  useEffect(() => { api.fetchDocuments(deal).then((r) => setDocuments(r.documents), () => setDocuments([])); }, [deal]);
+  useEffect(() => {
+    const { c } = readHash(window.location.hash);
+    if (c) setDrawer({ type: "commitment", key: c });
+    else window.history.replaceState(null, "", hashFor({ d: deal }));
+  }, [deal]);
+  const writeHash = (key) => window.history.replaceState(null, "", hashFor({ d: deal, c: key }));
+  useEffect(() => {
+    const onHash = () => { const { c } = readHash(window.location.hash); setDrawer((cur) => (c ? { type: "commitment", key: c } : cur?.type === "commitment" ? null : cur)); };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
 
   if (error) return <div className="dp"><p className="dp-error">{error}</p></div>;
   if (!hv) return <div className="dp"><p className="dp-faint">Loading…</p></div>;
@@ -75,15 +103,13 @@ export default function FrozenRecord({ deal, onBack }) {
   const closedFor = (promise) => resolved.filter((r) => r.promise === promise);
   const elsewhere = new Set([...open.map((x) => x.promise), ...noted.map((x) => x.promise)]);
   const closedOnly = [...new Set(resolved.map((r) => r.promise))].filter((p) => !elsewhere.has(p));
-  const keys = [...open.map((x) => x.promise), ...noted.map((x) => x.promise), ...closedOnly];
-  const allOpen = keys.length > 0 && expanded.size === keys.length;
-  const printAll = () => { setExpanded(new Set(keys)); setRecord(true); setTimeout(() => window.print(), 80); };
-  const alreadyClosed = (promise) => closedFor(promise).length > 0 && (
-    <div className="dp-decision is-done">
-      <span className="dp-kicker">Closed by the documents before handover</span>
-      {closedFor(promise).map((r) => <span key={r.finding}><strong>{r.finding}.</strong> {r.resolved_by}</span>)}
-    </div>
-  );
+  const views = [
+    ...open.map((item) => frozenView({ item, status: "open", closedFindings: closedFor(item.promise), documents, titles })),
+    ...noted.map((item) => frozenView({ item, status: "noted", closedFindings: closedFor(item.promise), documents, titles })),
+    ...closedOnly.map((p) => frozenView({ item: { promise: p, findings: [] }, status: "closed", closedFindings: closedFor(p), documents, titles })),
+  ];
+  const active = drawer ? views.find((v) => v.key === (drawer.key ?? drawer.fromKey)) : null;
+  const printAll = () => { setRecord(true); setTimeout(() => window.print(), 80); };
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(hv.fingerprint);
@@ -96,6 +122,9 @@ export default function FrozenRecord({ deal, onBack }) {
 
   return (
     <div className="dp fr">
+      <div className="fr-ident" aria-hidden={!headerGone}>
+        <IdentityLine name={s.deal} stage={`Stage: ${s.stage}`} goLive={s.brief?.go_live} show={headerGone} />
+      </div>
       <div className="dp-topbar">
         <span className="dp-wordmark">{NAME}</span>
         <span className="dp-row fr-noprint">
@@ -108,7 +137,7 @@ export default function FrozenRecord({ deal, onBack }) {
         <Lock size={14} /> <span>Handover complete · locked on <strong>{fmtDate(hv.completed_at)}</strong> by <strong>{plainName(hv.completed_by)}</strong></span>
       </div>
 
-      <section className="dp-card fr-head">
+      <section className="dp-card fr-head" ref={headRef}>
         <span className="fr-eyebrow">Handover record · for Delivery, Customer Success and Support</span>
         <h1>{s.deal}: what Delivery inherits</h1>
         <div className="fr-pills">
@@ -127,111 +156,24 @@ export default function FrozenRecord({ deal, onBack }) {
         </div>
       </section>
 
-      {s.brief && (
-        <section className="dp-card">
-          <div className="dp-sec-head">
-            <h2 className="dp-upper">What we're delivering</h2>
-          </div>
-          <blockquote className="dp-brief fr-quote">{s.brief.summary}</blockquote>
-          {s.brief.deliverables?.length > 0 && (
-            <ul className="fr-deliverables">
-              {s.brief.deliverables.map((d) => <li key={d}>{d}</li>)}
-            </ul>
-          )}
-          <p className="fr-confirmed">Confirmed by {plainName(s.brief.confirmed_by)}{s.brief.basis ? ` from ${s.brief.basis}` : ""}</p>
-          {s.brief.needs_reconfirmation && <div className="dp-warn">{s.brief.reconfirm_note}</div>}
-        </section>
-      )}
+      <BriefCard brief={s.brief} />
 
-      <section className="dp-card dp-promises">
+      <section className={`dp-card dp-promises ${counts.open ? "is-attention" : "is-clear"}`}>
         <div className="dp-sec-head">
-          <div className="dp-row">
+          <div className="dp-sec-title">
             <h2>Commitments at handover</h2>
-            {keys.length > 0 && (
-              <button type="button" className="dp-link-btn dp-brand fr-noprint"
-                      onClick={() => setExpanded(allOpen ? new Set() : new Set(keys))}>{allOpen ? "Collapse all" : "Expand all"}</button>
-            )}
+            <span className={`dp-chip ${counts.open ? "dp-chip-amber" : "dp-chip-grey"}`}>
+              <span className={`dp-dot ${counts.open ? "" : "dp-dot-grey"}`} />
+              {attentionText(counts.open, counts.noted)}
+            </span>
           </div>
-          <span className="dp-counts">{countsLine(counts)}</span>
         </div>
-        {keys.length === 0 && <p className="dp-faint">No commitment had a gap on the documents checked.</p>}
+        {views.length === 0 && <p className="dp-faint dp-pad">No commitment had a gap on the documents checked.</p>}
         <ul className="dp-plist">
-          {open.map((it) => {
-            const seen = [...new Map(it.findings.flatMap((f) => f.seen ?? []).map((x) => [x.by, x])).values()];
-            const t = titled(it.promise);
-            return (
-              <FrozenRow key={it.promise} status="open" title={t.title} original={t.original}
-                         mismatch={mismatchLine(it.findings, it.contract)}
-                         first={firstPromised((it.told_in ?? []).map(([label, date]) => ({ doc_type_label: label, date })))}
-                         expanded={expanded.has(it.promise)} onToggle={() => toggle(it.promise)}>
-                <div className="dp-three">
-                  <div className="dp-fact">
-                    <span className="dp-fact-label">Customer was told</span>
-                    <p>{it.told}</p>
-                    {it.told_in?.length > 0 && <span className="dp-fact-src">{toldIn(it.told_in)}</span>}
-                  </div>
-                  <div className="dp-fact">
-                    <span className="dp-fact-label">Contract says</span>
-                    <p>{contractText(it.contract)}</p>
-                    {it.contract_detail && <span className="dp-fact-src">{it.contract_detail}</span>}
-                  </div>
-                  <div className="dp-fact dp-fact-found">
-                    <span className="dp-fact-label">What we found</span>
-                    {it.findings.map((f) => <p key={f.finding} className="dp-finding"><strong>{sentence(findingDetail(f, it.contract))}</strong> {cleanReason(f.why)}</p>)}
-                    <span className="dp-fact-src">AI-written summary · the quotes behind it are checked against the documents</span>
-                  </div>
-                </div>
-                {alreadyClosed(it.promise)}
-                {[...new Map(it.findings.filter((f) => f.note).map((f) => [`${f.note.by}|${f.note.reason}`, f.note])).values()].map((n) => (
-                  <div key={`${n.by}|${n.reason}`} className={`dp-decision ${n.current ? "" : "is-stale"}`}>
-                    <span className="dp-kicker">{n.current ? "Note at handover · still needs attention" : "Note at handover · not re-confirmed after the documents changed"}</span>
-                    <span>“{n.reason}”</span>
-                    <span className="dp-faint dp-small">{recordedBy(n.by, n.at, fmtDate)}</span>
-                  </div>
-                ))}
-                <footer className="dp-gap-foot">
-                  <span className="dp-row">
-                    <span className="dp-faint">Seen by:</span>
-                    {seen.length ? seen.map((x) => <span key={x.by} className="fr-seen">✓ {plainName(x.by)}</span>) : <span className="dp-faint">nobody before handover</span>}
-                  </span>
-                  <span className="dp-faint dp-row"><Lock size={12} /> Locked</span>
-                </footer>
-              </FrozenRow>
-            );
-          })}
-          {noted.map((x) => {
-            const n = x.findings.find((f) => f.resolved_by_note)?.resolved_by_note;
-            const t = titled(x.promise);
-            return (
-              <FrozenRow key={x.promise} status="noted" title={t.title} original={t.original}
-                         mismatch={mismatchLine(x.findings, x.contract)}
-                         first={firstPromised((x.quotes ?? []).map((q) => ({ doc_type_label: q.source, date: q.date })))}
-                         expanded={expanded.has(x.promise)} onToggle={() => toggle(x.promise)}>
-                <div className="dp-three fr-two">
-                  <div className="dp-fact"><span className="dp-fact-label">Customer was told</span><p>{x.told}</p></div>
-                  <div className="dp-fact"><span className="dp-fact-label">Contract says</span><p>{contractText(x.contract)}</p></div>
-                </div>
-                {alreadyClosed(x.promise)}
-                {n && (
-                  <div className="dp-decision is-done is-note">
-                    <div className="fr-note-head">
-                      <span>{recordedBy(n.by, n.at, fmtDate)}</span>
-                      <span>Addressed by note · not in the documents</span>
-                    </div>
-                    <p className="fr-note-quote">“{n.reason}”</p>
-                  </div>
-                )}
-              </FrozenRow>
-            );
-          })}
-          {closedOnly.map((p) => {
-            const t = titled(p);
-            return (
-              <FrozenRow key={p} status="closed" title={t.title} original={t.original} expanded={expanded.has(p)} onToggle={() => toggle(p)}>
-                {alreadyClosed(p)}
-              </FrozenRow>
-            );
-          })}
+          {views.map((v) => (
+            <FrozenRow key={v.key} v={v} active={active?.key === v.key}
+                       onOpen={() => { setDrawer({ type: "commitment", key: v.key }); writeHash(v.key); }} />
+          ))}
         </ul>
       </section>
 
@@ -290,6 +232,20 @@ export default function FrozenRecord({ deal, onBack }) {
       </details>
 
       <footer className="dp-foot"><strong>{NAME}</strong> · {TAGLINE}<br />All companies, people and deals are fictional.</footer>
+
+      {drawer && (
+        <Drawer labelledBy="dr-title" flush onClose={() => { setDrawer(null); writeHash(null); }} focusKey={`${drawer.type}:${drawer.key ?? drawer.docKey ?? ""}`}>
+          {drawer.type === "commitment" && active && (
+            <CommitmentView v={active} titleId="dr-title" readOnly onClose={() => { setDrawer(null); writeHash(null); }}
+                            onOpenDoc={(doc, quote) => doc && setDrawer({ type: "doc", docKey: doc.source_key, quote, fromKey: active.key })} />
+          )}
+          {drawer.type === "doc" && documents.find((d) => d.source_key === drawer.docKey) && (
+            <DocumentView deal={deal} doc={documents.find((d) => d.source_key === drawer.docKey)} quote={drawer.quote} titleId="dr-title"
+                          backLabel="Back to commitment" onBack={() => setDrawer({ type: "commitment", key: drawer.fromKey })}
+                          onClose={() => { setDrawer(null); writeHash(null); }} />
+          )}
+        </Drawer>
+      )}
     </div>
   );
 }

@@ -167,6 +167,16 @@ export function missingForHandover({ isSigned, notes }) {
   return out;
 }
 
+// The three things a handover needs, in the order a person would do them, built from missingForHandover. done = not missing.
+export function handoverChecklist({ isSigned, notes }) {
+  const missing = new Set(missingForHandover({ isSigned, notes }));
+  return [
+    { key: "signed", label: "Signed contract · from the documents", done: !missing.has("upload the signed contract") },
+    { key: "sales", label: "Sales · deal owner's handoff note", done: !missing.has("add the Sales note") },
+    { key: "delivery", label: "Delivery · acceptance note", done: !missing.has("add the Delivery note") },
+  ];
+}
+
 // The one-line lead for "What changed": gaps closed, and what is still open on the promises touched.
 export function changeHeadline({ closed, opened, stillOpen }) {
   const parts = [];
@@ -246,15 +256,6 @@ export function firstPromised(statements) {
 export const rowTitle = (c) => c.display_name || c.name;
 export const extractedAs = (c) => (c.display_name && c.display_name !== c.name ? c.name : "");
 
-// "3 need attention · 1 addressed by note · 1 closed by documents": zero parts are left out.
-export function countsLine({ open = 0, noted = 0, closed = 0 }) {
-  const parts = [];
-  parts.push(open ? `${open} ${open === 1 ? "needs" : "need"} attention` : (noted || closed) ? "Nothing needs attention" : "");
-  if (noted) parts.push(`${noted} addressed by note`);
-  if (closed) parts.push(`${closed} closed by documents`);
-  return parts.filter(Boolean).join(" · ");
-}
-
 // The handover record's honest verdict. "No open gaps" is never said when anything was addressed by note.
 export function verdictLine({ open = 0, noted = 0, closed = 0 }) {
   if (!open) return noted ? `Handed over with no open gaps; ${noted} addressed by note${closed ? `, ${closed} closed by documents` : ""}.`
@@ -269,12 +270,6 @@ export function verdictLine({ open = 0, noted = 0, closed = 0 }) {
 export function attentionText(open, noted = 0) {
   if (open) return `${open} ${open === 1 ? "needs" : "need"} attention`;
   return noted ? `Nothing needs attention · ${noted} addressed by note` : "Nothing needs attention";
-}
-
-// "Gaps first made at Proposal / RFP": the stage itself is the header's pill, so this line adds only where gaps started.
-export function stageLine(stage) {
-  const where = (stage?.stages ?? []).filter((s) => s.gaps_started > 0).map((s) => s.label);
-  return where.length ? `Gaps first made at ${where.join(" and ")}` : "";
 }
 
 // Names are shown without the ", fictional" tag the demo data carries. Display only: nothing stored changes.
@@ -310,8 +305,20 @@ export function groupByStage(stages, documents) {
 }
 
 // Shown under a signed document: it marks the deal signed and nothing else.
+export const STAGE_LABELS = { discovery: "Discovery", evaluation: "Evaluation", proposal: "Proposal / RFP", shortlisted: "Shortlisted",
+  contracting: "Contracting", signed: "Signed", handover: "Handover" };
+
 export const SIGNED_NOTE = "Marks the deal signed. Its wording isn't checked; the checks used the drafts.";
 export const isSignedDoc = (docType) => docType === "signed_contract" || docType === "signed_sow";
+
+// "Tom Fraser (Account Executive, fictional)" and "draft SOW, 9 Oct" as the brief's footer shows them: name, role, initials, basis.
+export function confirmedBy(brief) {
+  const full = plainName(brief?.confirmed_by);
+  const m = /^(.*?)\s*\((.*)\)$/.exec(full);
+  const name = (m ? m[1] : full).trim();
+  const initials = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
+  return { name, role: m ? m[2].trim() : "", initials, basis: String(brief?.basis ?? "").trim() };
+}
 
 // A sidebar document name without a date that only repeats the date column: "Call transcript of 15 Sep 2026" with date
 // 2026-09-15 shows as "Call transcript". Display only; the stored name is untouched, and a different date is kept.
@@ -325,3 +332,151 @@ export function docLabel(name, iso) {
   const given = m[2].replace(/^(\d+ [A-Za-z]{3})[A-Za-z]* /, "$1 ");
   return given === full ? m[1] : label;
 }
+
+// --- The drawer (20 Oct) ----------------------------------------------------------------------------------------------
+// Everything here is built from stored data: verified finding labels, stored short terms, exact quotes. Never from AI text,
+// except `ai`, which carries the stored explanation separately so the screen can label it.
+
+const lower = (t) => (t ? t[0].toLowerCase() + t.slice(1) : t);
+
+// The sentence-style mismatch line as segments: [{ text, strong }]. It starts with the contract segment, then each other
+// open finding's short form, lower-case. Dark (strong) terms, muted connecting words. mismatchLine (plain text) is unchanged.
+export function mismatchParts(issues, contract = "") {
+  const list = issues ?? [];
+  const parts = [];
+  const push = (segment) => { if (parts.length) parts.push({ text: " · ", strong: false }); parts.push(...segment); };
+  const conflict = list.find((i) => i.finding === "Contract says something different");
+  const missing = list.find((i) => i.finding === "Missing from contract");
+  if (conflict) {
+    const term = shortTerm(conflict, contract);
+    push(term ? [{ text: "Contract says ", strong: false }, { text: term, strong: true }] : [{ text: "Contract differs", strong: true }]);
+  } else if (missing) {
+    push([{ text: "Contract has ", strong: false }, { text: "no matching wording", strong: true }]);
+  }
+  const seen = new Set();
+  for (const i of list) {
+    if (i === conflict || i === missing || seen.has(i.finding)) continue;
+    seen.add(i.finding);
+    push([{ text: lower(FINDING_SHORT[i.finding] ?? i.finding), strong: true }]);
+  }
+  if (parts.length && !conflict && !missing) parts[0] = { ...parts[0], text: parts[0].text[0].toUpperCase() + parts[0].text.slice(1) };
+  return parts;
+}
+export const partsText = (parts) => parts.map((p) => p.text).join("");
+
+// The address bar: #d=<deal>&c=<commitment key>. The locked record uses the promise name as the key.
+export const hashFor = ({ d, c } = {}) => {
+  const q = [d && `d=${encodeURIComponent(d)}`, c && `c=${encodeURIComponent(c)}`].filter(Boolean).join("&");
+  return q ? `#${q}` : "";
+};
+export function readHash(hash) {
+  const out = { d: null, c: null };
+  for (const part of String(hash ?? "").replace(/^#/, "").split("&")) {
+    const [k, ...rest] = part.split("=");
+    if (k === "d" || k === "c") {
+      try { out[k] = decodeURIComponent(rest.join("=")) || null; } catch { out[k] = null; }
+    }
+  }
+  return out;
+}
+
+// Which document a source points at: by label and date. Exactly one match makes it a link; none or several, plain text.
+// labels: the names the source may go by (document label, document type label). date: the source's date, if it has one.
+export function matchDoc(documents, labels, date) {
+  const names = (labels ?? []).filter(Boolean);
+  const hits = (documents ?? []).filter((d) => names.includes(d.name) || names.includes(d.doc_type_label))
+    .filter((d) => !date || d.date === date);
+  return hits.length === 1 ? hits[0] : null;
+}
+
+// The text split around a quoted sentence, so the quote can be highlighted. Spaces may differ; null when it is not there.
+export function splitQuote(text, quote) {
+  const q = String(quote ?? "").trim();
+  if (!q || !text) return null;
+  const at = text.indexOf(q);
+  if (at >= 0) return { before: text.slice(0, at), match: q, after: text.slice(at + q.length) };
+  const pattern = q.split(/\s+/).map((w) => w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")).join("\\s+");
+  const m = new RegExp(pattern).exec(text);
+  return m ? { before: text.slice(0, m.index), match: m[0], after: text.slice(m.index + m[0].length) } : null;
+}
+
+const uniq = (xs) => [...new Set(xs.filter(Boolean))];
+
+// The stored closing text reads "Resolved by Draft SOW, version 2 · 16 Oct 2026"; the screen says "Closed by …" (display only).
+export const closedBy = (text) => String(text ?? "").replace(/^Resolved by /, "Closed by ");
+
+// One commitment, as the drawer shows it. status: "open" | "noted" | "closed".
+export function commitmentView(c, status, documents) {
+  const unresolved = c.issues.filter((i) => i.state !== "Resolved");
+  const closedIssues = c.issues.filter((i) => i.state === "Resolved");
+  const shown = status === "closed" ? closedIssues : unresolved;
+  const noteRes = unresolved.find((i) => i.note_resolution)?.note_resolution ?? null;
+  const side = contractSide(unresolved, c.contract); // a closed commitment has no open contract finding: its short term stands alone
+  const notes = [];
+  if (noteRes) notes.push({ by: noteRes.by, at: noteRes.at, text: noteRes.reason, kind: status === "noted" ? "addressed" : "reopened" });
+  for (const d of new Map(unresolved.filter((i) => i.decision && i.decision.status !== "none").map((i) => [`${i.decision.by}|${i.decision.reason}`, i.decision])).values()) {
+    notes.push({ by: d.by, at: d.at, text: d.reason, kind: d.status === "reconfirm" ? "reconfirm" : "kept" });
+  }
+  return {
+    key: c.ref ?? null, title: rowTitle(c), extracted: extractedAs(c), status,
+    first: firstPromised(c.statements), mismatch: mismatchParts(unresolved, c.contract), plain: mismatchLine(unresolved, c.contract),
+    told: toldQuotesWithDocs(c.statements, documents),
+    contract: contractView(c.contract, side, documents),
+    found: status === "closed" ? [] : unresolved.map((i) => ({ label: findingDetail(i, c.contract), fact: gapLine(i.finding, i.evidence, i.catalogue_path) })),
+    closed: closedIssues.map((i) => ({ label: FINDING_SHORT[i.finding] ?? i.finding, by: closedBy(i.resolved_by?.text) || (status === "closed" ? "Closed in the documents" : "") })),
+    catalogue: status === "closed" ? [] : uniq(unresolved.map((i) => i.catalogue_path)),
+    ai: status === "closed" ? [] : uniq(shown.map((i) => cleanReason(i.reason))),
+    notes, seen: [...new Map(unresolved.flatMap((i) => i.seen || []).map((s) => [s.by, s])).values()],
+    issueIds: unresolved.map((i) => i.id),
+  };
+}
+
+function toldQuotesWithDocs(statements, documents) {
+  const seen = new Set();
+  return (statements ?? []).filter((s) => s.quote && !seen.has(s.quote) && seen.add(s.quote))
+    .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))
+    .map((s) => ({ quote: s.quote, label: s.doc_type_label ?? s.source, date: s.date ?? "", doc: matchDoc(documents, [s.source_name, s.doc_type_label], s.date) }));
+}
+
+function contractView(term, side, documents) {
+  return {
+    text: contractText(term),
+    quote: side.quote ? { quote: side.quote, label: side.source, doc: matchDoc(documents, [side.source], null) } : null,
+    missing: side.missing ?? null,
+  };
+}
+
+// A commitment in the locked record, as the same view. The snapshot holds less than the live register, so what it lacks is
+// left out, never invented. item: an open or addressed-by-note entry, or { promise } for one whose gaps all closed.
+export function frozenView({ item, status, closedFindings = [], documents = [], titles = {} }) {
+  const name = item.promise;
+  const findings = item.findings ?? [];
+  const quoted = (item.quotes ?? []).filter((q) => q.quote);
+  const statements = quoted.length ? quoted.map((q) => ({ doc_type_label: q.source, date: q.date, quote: q.quote }))
+    : (item.told_in ?? []).map(([label, date]) => ({ doc_type_label: label, date }));
+  const issues = findings.map((f) => ({ finding: f.finding, evidence: f.evidence, catalogue_path: f.catalogue_path }));
+  const side = contractSide(findings, item.contract);
+  const notes = [];
+  for (const n of new Map(findings.filter((f) => f.note).map((f) => [`${f.note.by}|${f.note.reason}`, f.note])).values()) {
+    notes.push({ by: n.by, at: n.at, text: n.reason, kind: n.current ? "kept" : "reconfirm" });
+  }
+  const addressed = findings.find((f) => f.resolved_by_note)?.resolved_by_note;
+  if (addressed) notes.push({ by: addressed.by, at: addressed.at, text: addressed.reason, kind: "addressed" });
+  const seenAll = findings.flatMap((f) => f.seen ?? []);
+  const title = titles[name] || name;
+  return {
+    key: name, title, extracted: titles[name] && titles[name] !== name ? name : "", status,
+    first: firstPromised(statements), mismatch: mismatchParts(issues, item.contract), plain: mismatchLine(issues, item.contract),
+    told: quoted.length ? quoted.map((q) => ({ quote: q.quote, label: q.source, date: q.date ?? "", doc: matchDoc(documents, [q.source], q.date) })) : [],
+    toldFallback: item.told ?? "",
+    contract: contractView(item.contract, side, documents),
+    found: issues.map((i, n) => ({ label: findingDetail(i, item.contract), fact: gapLine(i.finding, i.evidence, i.catalogue_path) })),
+    closed: closedFindings.map((r) => ({ label: FINDING_SHORT[r.finding] ?? r.finding, by: closedBy(r.resolved_by) })),
+    catalogue: uniq(issues.map((i) => i.catalogue_path)),
+    ai: status === "closed" ? [] : uniq(findings.map((f) => cleanReason(f.why))),
+    notes, seen: [...new Map(seenAll.map((s) => [s.by, s])).values()], issueIds: [],
+  };
+}
+
+// True while a header card has scrolled up out of view beneath the top bar (not while it is merely below the fold).
+export const headerScrolledPast = (isIntersecting, bottom, rootTop = 0) => !isIntersecting && bottom <= rootTop + 1;

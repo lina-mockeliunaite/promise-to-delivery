@@ -152,6 +152,26 @@ class TestTitlesSurviveReset(ResetCase):
             self.assertEqual(sorted(shown.values()), sorted(titles.values()))
             self.assertEqual(handover._display_names(conn, did, "alder_bank"), {n: t for n, t in shown.items()})
 
+    def test_every_register_commitment_carries_a_stable_opaque_ref_for_the_address_bar(self):
+        import json
+        import ledger
+        import re
+        import workspace
+        reset_demo.reset(self.db)
+        conn = ledger.connect(self.db)
+        self.addCleanup(conn.close)
+        reg = workspace.overview(conn, "alder_bank")
+        refs = {c["name"]: c["ref"] for c in reg["commitments"]}
+        self.assertEqual(len(refs), 3)
+        self.assertEqual(len(set(refs.values())), 3)
+        self.assertTrue(all(re.fullmatch(r"[0-9a-f]{12}", r) for r in refs.values()))
+        self.assertTrue(all("key" not in c for c in reg["commitments"]))  # the internal commitment key itself never reaches a reader
+        self.assertNotIn("v2-", json.dumps(reg))
+        reset_demo.reset(self.db)  # a second reset gives the same refs, so a shared link still opens the same commitment
+        conn2 = ledger.connect(self.db)
+        self.addCleanup(conn2.close)
+        self.assertEqual({c["name"]: c["ref"] for c in workspace.overview(conn2, "alder_bank")["commitments"]}, refs)
+
     def test_other_deals_have_no_titles(self):
         import ledger
         import workspace

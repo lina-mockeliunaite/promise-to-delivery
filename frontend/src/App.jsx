@@ -3,6 +3,7 @@ import * as api from "./api.js";
 import Handoff from "./Handoff.jsx";
 import Deals from "./Deals.jsx";
 import DealPage from "./DealPage.jsx";
+import { readHash } from "./dealpage.js";
 import { TYPE_EFFECT, alsoLine, checkLine, checkUpload, fmtDate, fmtDateTime, guessType, plural, typeFromName, uploadKind } from "./format.js";
 
 const OWNERS = ["Product", "Commercial", "Delivery", "Customer Success", "Support"];
@@ -1006,7 +1007,7 @@ function Workspace({ deal, onDealsChanged }) {
 
 export default function App() {
   const [deals, setDeals] = useState(null);
-  const [current, setCurrent] = useState(null);
+  const [current, setCurrent] = useState(() => readHash(window.location.hash).d); // #d=<deal>&c=<key>: a reload or a shared link reopens it
   const [classic, setClassic] = useState(false); // the detailed (pre-revamp) view, kept reachable during the revamp
   const [error, setError] = useState(null);
 
@@ -1019,6 +1020,7 @@ export default function App() {
     );
   }, []);
   useEffect(loadDeals, [loadDeals]);
+  useEffect(() => { if (deals && current && !deals.some((x) => x.deal === current)) setCurrent(null); }, [deals, current]);
 
   // 16 Oct: the deal list is the home screen (Stitch screen 1); a deal opens on its own page with a way back.
   if (deals && !current) {
@@ -1029,7 +1031,7 @@ export default function App() {
       </main>
     );
   }
-  const back = () => { setCurrent(null); setClassic(false); loadDeals(); };
+  const back = () => { setCurrent(null); setClassic(false); window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`); loadDeals(); };
   if (deals && current && !classic) {
     return (
       <main className="home home-deal">

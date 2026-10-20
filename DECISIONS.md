@@ -876,3 +876,33 @@ Full analysis: `docs/RESULTS_atlas_remit_v2_2026-10-10.md`. Committed before the
 **Brief re-confirmation:** a deal brief records the document version it was confirmed against; when a newer version arrives it shows "Confirmed against … version 1; version 2 has arrived since. The deal owner should reconfirm." Same idea as decision re-confirmation.
 **Tests:** `tests/test_one_truth.py` fails if any view disagrees about a promise's contract or approval position, before or after both Harbour Bank fixes; checks the exception is listed with its approver; checks the brief flags re-confirmation. 627 Python tests pass.
 **Noted for the card redesign:** the product check should say whether a limit is technical or commercial (an approved exception changes commercial terms; it does not prove capacity).
+
+## 2026-10-20, 11:55 — Drawer replaces in-place expansion; v3 look; indigo and amber rules; compact deal line; simpler Handover card
+
+**Chose:**
+- A commitment opens in a right-hand drawer (520 px, slides in over 200 ms, closes with ×, Esc or the backdrop). Documents open in the same drawer, with the quoted sentence highlighted. "Add updated document" and "Record a note" are forms inside the drawer. The locked record uses the same drawer read-only, and prints every commitment inline.
+- The address bar holds the deal and the open commitment (`#d=<deal>&c=<ref>`), so a reload or a shared link reopens it. The locked record uses the promise name instead, because the saved snapshot holds no references.
+- One read-only field was added to the register: `ref` on each commitment, twelve hex characters of a one-way digest of the stable commitment key (the key the plain titles already use). It is the same after every reset. The raw key is not exposed, because `tests/test_handoff.py` forbids internal keys on any screen or export. It changes no finding, hash or stored data.
+- The mismatch line is a sentence: it starts with the contract segment ("Contract has no matching wording", "Contract says AWS, Sydney region"), then the other open findings' short forms. Dark for the terms, muted for the connecting words. It is built only from verified finding labels and stored terms. The plain `mismatchLine` is unchanged and is what print uses.
+- Visual system v3: cool canvas, soft white cards without outlines, Inter, one indigo accent, hairline dividers, pill buttons. Green is used only for "Closed by documents". "Addressed by note" is an outlined grey chip. "Needs attention" is amber with a darker text colour so it passes contrast.
+- A source quote links to its document only when its label and date identify exactly one document; otherwise it is plain text.
+- "What we found" shows the finding label plus the code-verified fact (`gapLine`). The model's explanation sits under the label "AI-written summary · quotes checked against the documents" and is hidden when there is none.
+- The screen says "Closed by …" where the stored text says "Resolved by …" (display only).
+- The deal brief has its own card again (reverses the 19 Oct merge into the header): an indigo left rule, a "Deal brief" eyebrow, sizes matched to the commitments card, the deliverables as one full-width list, and "Confirmed by" with initials. One shared `BriefCard` serves the live page and the locked record. Why: it is the first answer of the 10-second test and read as header metadata.
+- The commitments card gets an amber left rule (neutral grey when nothing needs attention) and its count in an amber chip. Why: the rules form a two-colour system, indigo = what we deliver, amber = what needs attention, and no other card has a rule, so the colours keep their meaning.
+- "Gaps first made at …" is removed from the header; the sidebar's "N gaps started here" marker carries it.
+- A compact deal line (name · stage · go-live) appears in the top bar when the header card scrolls out of view, and the header card itself is not sticky. The locked record gets the same line in a fixed bar with no actions. It is not printed.
+- The Handover card says what is missing once: a three-item checklist built from `missingForHandover`, and a neutral "N of 3 ready" chip with indigo segments. No amber, no green, no role avatars. Why: it said "missing" four times, and green would present notes as proof.
+
+**Rejected:**
+- Keeping the in-place expansion (the 19 Oct layout). The list grew and the viewer lost the deal's shape while reading one commitment.
+- Using the numeric commitment `id` in the address. It changes when the demo ledger is rebuilt, so a shared link would break.
+- Exposing the raw commitment key. It would break the rule that no internal key reaches a reader (three existing tests enforce it).
+- A "Told …" segment in the mismatch line. The stored `told` is a short term ("BioCatch") that reads badly in a sentence, the mock's wording was invented, and the row's title already states the promise, so it only repeated it.
+- Showing the model's explanation as if it were the code's reason. For v2 deals the stored reason is the model's sentence, so it carries the AI label.
+- A sticky full header. It takes too much reading space with the drawer open.
+
+**Why:**
+- The deal's shape (list and journey) stays visible while one commitment is read, and documents open in context, which is what Delivery needs before kickoff.
+- Indigo separates the brand from the green status colour, which the deep green did not.
+- Nothing about detection, verification, closure, the freeze, the hash definitions, the snapshot format or any stored data changed.

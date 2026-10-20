@@ -2,8 +2,8 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  SIGNED_NOTE, attentionText, cleanReason, docLabel, countsLine, extractedAs, findingDetail, firstDocDate, firstPromised, groupByStage, isSignedDoc, mismatchLine, plainName,
-  recordedBy, rowTitle, sourcesLine, stageLine, suggestFix, verdictLine, whatChanged,
+  SIGNED_NOTE, attentionText, cleanReason, docLabel, extractedAs, findingDetail, firstDocDate, firstPromised, groupByStage, isSignedDoc, mismatchLine, plainName, mismatchParts, partsText, hashFor, readHash, matchDoc, closedBy, confirmedBy, headerScrolledPast, handoverChecklist, splitQuote, commitmentView, frozenView,
+  recordedBy, rowTitle, sourcesLine, suggestFix, verdictLine, whatChanged,
 } from "../src/dealpage.js";
 
 test("where the customer was told: newest first, each document once", () => {
@@ -155,11 +155,7 @@ test("a plain title replaces the extracted name, which is then shown as 'Extract
   assert.equal(extractedAs({ name: "Weekly meeting", display_name: null }), "");
 });
 
-test("one count in the heading, zero parts left out, and never 'no open gaps' beside a note", () => {
-  assert.equal(countsLine({ open: 3, noted: 1, closed: 1 }), "3 need attention · 1 addressed by note · 1 closed by documents");
-  assert.equal(countsLine({ open: 1 }), "1 needs attention");
-  assert.equal(countsLine({ open: 0, noted: 3 }), "Nothing needs attention · 3 addressed by note");
-  assert.equal(countsLine({}), "");
+test("the heading chip says 'N need attention', or 'Nothing needs attention' with what a note settled, never 'no open gaps'", () => {
   assert.equal(attentionText(2), "2 need attention");
   assert.equal(attentionText(0, 3), "Nothing needs attention · 3 addressed by note");
   assert.equal(attentionText(0), "Nothing needs attention");
@@ -171,14 +167,6 @@ test("the handover verdict is honest about notes", () => {
   assert.equal(verdictLine({ open: 0, noted: 3 }), "Handed over with no open gaps; 3 addressed by note.");
   assert.equal(verdictLine({ open: 0, noted: 0, closed: 1 }), "Handed over with no open gaps on the documents checked.");
   assert.doesNotMatch(verdictLine({ open: 0, noted: 2 }), /no open gaps on the documents/);
-});
-
-test("the stage line says only where the gaps were first made; the stage itself is the header's pill", () => {
-  const stage = { current: "contracting", current_label: "Contracting",
-    stages: [{ label: "Proposal / RFP", gaps_started: 3 }, { label: "Contracting", gaps_started: 0 }] };
-  assert.equal(stageLine(stage), "Gaps first made at Proposal / RFP");
-  assert.equal(stageLine({ ...stage, stages: [] }), "");
-  assert.equal(stageLine({ current: null }), "");
 });
 
 test("the handover button lists what is missing in words, and never asks for a name", () => {
@@ -246,4 +234,158 @@ test("a sidebar document name drops a date that only repeats the date column", (
   assert.equal(docLabel("Draft SOW", "2026-10-09"), "Draft SOW");
   assert.equal(docLabel("Pricing and services note", ""), "Pricing and services note");
   assert.equal(docLabel(null, "2026-10-09"), "");
+});
+
+// --- The drawer (20 Oct) ---------------------------------------------------------------------------------------------
+test("the sentence-style mismatch line starts with the contract segment, for Alder's three commitments", () => {
+  const texts = ALDER.map((c) => partsText(mismatchParts(c.issues, c.contract)));
+  assert.deepEqual(texts, [
+    "Contract has no matching wording · no approval found",
+    "Contract has no matching wording · no approval found",
+    "Contract says Amazon Web Services in the Sydney region · not offered",
+  ]);
+  const hosting = mismatchParts(ALDER[2].issues, ALDER[2].contract);
+  assert.deepEqual(hosting.filter((p) => p.strong).map((p) => p.text), ["Amazon Web Services in the Sydney region", "not offered"]);
+  assert.ok(hosting.filter((p) => !p.strong).every((p) => p.text === "Contract says " || p.text === " · "));
+});
+
+test("there is no 'Told' segment, and the plain mismatch line is untouched", () => {
+  for (const c of ALDER) assert.ok(!partsText(mismatchParts(c.issues, c.contract)).includes("Told"));
+  assert.equal(mismatchLine(ALDER[0].issues, ALDER[0].contract), "No approval found · Not in the contract");
+});
+
+test("a commitment with only a contract finding, and one with none", () => {
+  assert.equal(partsText(mismatchParts([{ finding: "Missing from contract" }])), "Contract has no matching wording");
+  assert.equal(partsText(mismatchParts([{ finding: "Contract says something different", evidence: { contract_value: "AWS, Sydney" } }])), "Contract says AWS, Sydney");
+  assert.equal(partsText(mismatchParts([{ finding: "Contract says something different" }], "Not included")), "Contract differs");
+  assert.equal(partsText(mismatchParts([{ finding: "No approval recorded" }])), "No approval found");
+  assert.equal(partsText(mismatchParts([{ finding: "Needs evidence" }, { finding: "Needs evidence" }])), "Needs evidence");
+  assert.deepEqual(mismatchParts([]), []);
+});
+
+test("the address bar carries the deal and the commitment key, and reads them back", () => {
+  assert.equal(hashFor({ d: "alder_bank", c: "6e5a9364550e" }), "#d=alder_bank&c=6e5a9364550e");
+  assert.deepEqual(readHash("#d=alder_bank&c=6e5a9364550e"), { d: "alder_bank", c: "6e5a9364550e" });
+  assert.deepEqual(readHash(hashFor({ d: "harbour_bank", c: "Hosting on Azure & more" })), { d: "harbour_bank", c: "Hosting on Azure & more" });
+  assert.deepEqual(readHash(""), { d: null, c: null });
+  assert.deepEqual(readHash("#d=alder_bank"), { d: "alder_bank", c: null });
+  assert.equal(hashFor({}), "");
+});
+
+test("a source becomes a link only when label and date identify exactly one document", () => {
+  const docs = [
+    { name: "RFP response", doc_type_label: "RFP response", date: "2026-09-29" },
+    { name: "Call transcript of 15 Sep 2026", doc_type_label: "Call transcript", date: "2026-09-15" },
+    { name: "Call transcript of 22 Sep 2026", doc_type_label: "Call transcript", date: "2026-09-22" },
+  ];
+  assert.equal(matchDoc(docs, ["RFP response", "RFP response"], "2026-09-29"), docs[0]);
+  assert.equal(matchDoc(docs, ["Call transcript of 15 Sep 2026", "Call transcript"], "2026-09-15"), docs[1]);
+  assert.equal(matchDoc(docs, ["Call transcript"], "2026-09-22"), docs[2]); // label alone is ambiguous, the date settles it
+  assert.equal(matchDoc(docs, ["Call transcript"], null), null); // two documents: plain text
+  assert.equal(matchDoc(docs, ["RFP response"], "2026-10-01"), null); // wrong date
+  assert.equal(matchDoc(docs, ["Proposal"], "2026-09-29"), null);
+  assert.equal(matchDoc(docs, ["RFP response"], null), docs[0]); // a contract quote has no date; one match is enough
+  assert.equal(matchDoc(undefined, ["x"], null), null);
+});
+
+test("the quoted sentence is found in the document, spaces aside, or not at all", () => {
+  const text = "Intro.\nThe parties agree that   Elva will host on AWS.\nEnd.";
+  assert.deepEqual(splitQuote(text, "Elva will host on AWS."), { before: "Intro.\nThe parties agree that   ", match: "Elva will host on AWS.", after: "\nEnd." });
+  assert.equal(splitQuote(text, "agree that Elva will host").match, "agree that   Elva will host");
+  assert.equal(splitQuote(text, "Elva will host on Azure"), null);
+  assert.equal(splitQuote("", "x"), null);
+  assert.equal(splitQuote(text, ""), null);
+});
+
+const LIVE_C = {
+  ref: "6e5a9364550e", name: ALDER[0].name, display_name: ALDER[0].display_name, contract: "Not included", told: "BioCatch",
+  statements: [{ source_name: "Proposal", doc_type_label: "Proposal", date: "2026-10-02", quote: "Elva will flag coached customers." },
+               { source_name: "RFP response", doc_type_label: "RFP response", date: "2026-09-29", quote: "Elva will flag coached customers." }],
+  issues: [
+    { id: 1, finding: "No approval recorded", state: "Needs action", reason: "Still holds on the current documents. Needs a named approval.", evidence: {}, seen: [{ by: "Tom Fraser", at: "2026-10-19T10:00:00Z" }] },
+    { id: 2, finding: "Missing from contract", state: "Needs action", reason: "", evidence: { missing_phrases: ["BioCatch"] } },
+  ],
+};
+const DOCS = [{ name: "Proposal", doc_type_label: "Proposal", date: "2026-10-02", source_key: "AB-04" }, { name: "RFP response", doc_type_label: "RFP response", date: "2026-09-29", source_key: "AB-03" }];
+
+test("the drawer's view of a live commitment uses stored data only, and hides the AI label when there is no AI text", () => {
+  const v = commitmentView(LIVE_C, "open", DOCS);
+  assert.equal(v.title, "Coaching-scam detection live at launch");
+  assert.equal(v.extracted, LIVE_C.name);
+  assert.equal(v.plain, "No approval found · Not in the contract");
+  assert.equal(partsText(v.mismatch), "Contract has no matching wording · no approval found");
+  assert.equal(v.first, "First promised in the RFP response, 29 Sep");
+  assert.equal(v.told.length, 1); // the same quote in two documents is listed once, newest source first
+  assert.equal(v.told[0].doc, DOCS[0]);
+  assert.equal(v.contract.text, "No matching wording found in the draft contract or SOW");
+  assert.deepEqual(v.contract.missing, ["BioCatch"]);
+  assert.equal(v.found[0].label, "No approval found in the supplied documents");
+  assert.equal(v.found[1].label, "Not in the draft contract or SOW");
+  assert.deepEqual(v.ai, ["Needs a named approval."]); // the empty reason of the second finding is dropped
+  assert.deepEqual(v.seen.map((s) => s.by), ["Tom Fraser"]);
+  assert.deepEqual(v.notes, []);
+  assert.deepEqual(commitmentView({ ...LIVE_C, issues: LIVE_C.issues.map((i) => ({ ...i, reason: "" })) }, "open", DOCS).ai, []);
+});
+
+test("notes in the drawer carry author and date, and a closed commitment shows what closed it", () => {
+  const noted = { ...LIVE_C, issues: [{ ...LIVE_C.issues[0], note_resolution: { by: "Priya Nair", at: "2026-10-19T09:00:00Z", reason: "Agreed on the call.", current: true } }] };
+  const n = commitmentView(noted, "noted", DOCS).notes;
+  assert.deepEqual(n, [{ by: "Priya Nair", at: "2026-10-19T09:00:00Z", text: "Agreed on the call.", kind: "addressed" }]);
+  const closed = { ...LIVE_C, issues: [{ id: 1, finding: "Missing from contract", state: "Resolved", resolved_by: { text: "Closed by Draft SOW, version 2" } }] };
+  const v = commitmentView(closed, "closed", DOCS);
+  assert.deepEqual(v.closed, [{ label: "Not in the contract", by: "Closed by Draft SOW, version 2" }]);
+  assert.deepEqual(v.found, []); // what closed it is shown once, under its own heading
+  assert.equal(v.contract.missing, null); // no "searched for" on a commitment whose contract gap is closed
+  assert.deepEqual(v.ai, []);
+});
+
+test("the locked record builds the same view from the snapshot and leaves out what an old snapshot lacks", () => {
+  const item = { promise: ALDER[2].name, told: "Microsoft Azure in the Australia East region", contract: "Amazon Web Services in the Sydney region",
+    told_in: [["RFP response", "2026-09-29"]], findings: [{ finding: "Not offered", why: "The catalogue has no Azure option.", seen: [], evidence: { unlisted_value: "Microsoft Azure" } },
+               { finding: "Contract says something different", why: "", seen: [], evidence: {} }] };
+  const v = frozenView({ item, status: "open", documents: DOCS, titles: { [ALDER[2].name]: "Hosting on Microsoft Azure" } });
+  assert.equal(v.title, "Hosting on Microsoft Azure");
+  assert.equal(v.extracted, ALDER[2].name);
+  assert.equal(v.first, "First promised in the RFP response, 29 Sep");
+  assert.deepEqual(v.told, []); // no quotes in this old snapshot: nothing is invented
+  assert.equal(v.toldFallback, "Microsoft Azure in the Australia East region");
+  assert.equal(partsText(v.mismatch), "Contract says Amazon Web Services in the Sydney region · not offered");
+  assert.deepEqual(v.ai, ["The catalogue has no Azure option."]);
+  assert.equal(v.found[0].label, "Not offered: no exception can fix this; only changing the promise can");
+});
+
+test("the screen says 'Closed by', never 'Resolved by', for what closed a finding", () => {
+  assert.equal(closedBy("Resolved by Pricing and services note, version 2 · 16 Oct 2026"), "Closed by Pricing and services note, version 2 · 16 Oct 2026");
+  assert.equal(closedBy("Closed in the documents"), "Closed in the documents");
+  assert.equal(closedBy(null), "");
+  const closed = { ...LIVE_C, issues: [{ id: 1, finding: "No approval recorded", state: "Resolved", resolved_by: { text: "Resolved by Pricing and services note, version 2" } }] };
+  assert.equal(commitmentView(closed, "closed", DOCS).closed[0].by, "Closed by Pricing and services note, version 2");
+  const snap = frozenView({ item: { promise: "x", findings: [] }, status: "closed", closedFindings: [{ finding: "No approval recorded", resolved_by: "Resolved by Pricing and services note, version 2" }] });
+  assert.equal(snap.closed[0].by, "Closed by Pricing and services note, version 2");
+});
+
+test("the brief's footer: name, role, initials and the document it was confirmed from", () => {
+  assert.deepEqual(confirmedBy({ confirmed_by: "Tom Fraser (Account Executive, fictional)", basis: "draft SOW, 9 Oct" }),
+    { name: "Tom Fraser", role: "Account Executive", initials: "TF", basis: "draft SOW, 9 Oct" });
+  assert.deepEqual(confirmedBy({ confirmed_by: "Deal owner (fictional)", basis: "" }), { name: "Deal owner", role: "", initials: "DO", basis: "" });
+  assert.deepEqual(confirmedBy({ confirmed_by: "Maya Tan", basis: "proposal, 2 Oct" }), { name: "Maya Tan", role: "", initials: "MT", basis: "proposal, 2 Oct" });
+  assert.deepEqual(confirmedBy({}), { name: "", role: "", initials: "?", basis: "" });
+});
+
+test("the identity line shows only once the header card has scrolled up under the top bar", () => {
+  assert.equal(headerScrolledPast(true, 300, 48), false); // still in view
+  assert.equal(headerScrolledPast(false, 40, 48), true); // scrolled up past the bar
+  assert.equal(headerScrolledPast(false, 48, 48), true); // exactly under the bar
+  assert.equal(headerScrolledPast(false, 900, 48), false); // below the fold, not scrolled past
+  assert.equal(headerScrolledPast(false, -200), true);
+});
+
+test("the handover checklist has three items and takes its done state from the existing missing rule", () => {
+  const none = handoverChecklist({ isSigned: false, notes: { sales: null, delivery: null } });
+  assert.deepEqual(none.map((i) => [i.label, i.done]), [
+    ["Signed contract · from the documents", false], ["Sales · deal owner's handoff note", false], ["Delivery · acceptance note", false]]);
+  const some = handoverChecklist({ isSigned: true, notes: { sales: { note: "x" }, delivery: null } });
+  assert.deepEqual(some.map((i) => i.done), [true, true, false]);
+  assert.ok(handoverChecklist({ isSigned: true, notes: { sales: {}, delivery: {} } }).every((i) => i.done));
+  assert.equal(none.filter((i) => !i.done).length, missingForHandover({ isSigned: false, notes: {} }).length);
 });
