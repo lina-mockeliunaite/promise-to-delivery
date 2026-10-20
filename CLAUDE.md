@@ -21,4 +21,4 @@
 ## v2 in the app (10 Oct)
 - The app runs v2 only (`ledger_v2.py`); the v1 rules pipeline stays for evaluation. `python reset_demo.py` rebuilds the app ledger from `config.V2_DEALS` with the saved v2 output (no model call).
 - Closure is by re-verifying a stored claim; never let model output close an issue directly.
-- `detect_v2.py` prompt and verifier logic are frozen at v2_version 2 (sealed run passed); changing them needs a new sealed check.
+- `detect_v2.py` may change (19 Oct: nothing is frozen). Any change to its prompt or verifier must raise v2_version; the published sealed results describe v2_version 2 only. Never re-run the sealed evaluation.

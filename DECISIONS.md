@@ -877,6 +877,76 @@ Full analysis: `docs/RESULTS_atlas_remit_v2_2026-10-10.md`. Committed before the
 **Tests:** `tests/test_one_truth.py` fails if any view disagrees about a promise's contract or approval position, before or after both Harbour Bank fixes; checks the exception is listed with its approver; checks the brief flags re-confirmation. 627 Python tests pass.
 **Noted for the card redesign:** the product check should say whether a limit is technical or commercial (an approved exception changes commercial terms; it does not prove capacity).
 
+## 2026-10-16 — Checkpoint 3 (Delivery lead): the workflow comes off the screen; Alder Bank becomes the demo deal
+
+**Checkpoint 3** was held with a Delivery lead (notes: project doc "Checkpoint 3 Notes — Delivery Lead"). This is the second reviewer, in a second role, after the COO on 15 Oct, to say "visibility, not workflow". **The unaided comprehension test did not happen** (I narrated the app first), so the session does not count as a comprehension result.
+
+**Chose:**
+- **The workflow comes off the screen:** no evidence forms, no sign-off, no "Must fix / Okay to proceed". Each item gets "Seen by [name], [date]", which never closes anything. The deal gets two notes: the Sales handoff note and the Delivery acceptance note.
+- **The engine and the recheck stay underneath.** A new document version still closes gaps on its own, with the reason. That is visibility that keeps itself up to date, not workflow.
+- **Documents can be clicked.** They open in an in-app viewer, and each document has a Drive link field. A real Drive connector is out of scope and is named as the next step.
+- **A deal list home page** shows only deals in handover (Contracting or later): deal, stage, open gaps, owner, last updated.
+- **Completing the handover locks the record:** read-only, with both notes and who accepted it.
+- **The product (capability) catalogue opens as a pop-up you can add to.** Adding a capability marks every deal "Review out of date" until it is checked again.
+- **Alder Bank becomes the demo deal:** instant payments with scam protection. It was renamed from "Bluegum Bank".
+- **The UI revamp starts in Google Stitch,** with the screen code pasted back one screen at a time.
+
+**Rejected:**
+- Keeping the fix workflow on screen (evidence forms, decision buttons). Two reviewers called it too complicated.
+- Copying documents from Drive. It would create multiple versions; a link field is used instead.
+- **Building all three new scenarios** chosen on 15 Oct (scam protection, buy now pay later, AI agents that pay). Dropped (reverses the 15 Oct choice of all three): only Alder was built; on 19 Oct I chose to keep Alder and simplify the UI instead of adding storylines.
+
+**Why:** the people who inherit the deal want to see what was promised, what the contract says and who has looked. They don't want to run a process in the tool.
+
+**Open question carried forward:** Sales prepares the handover, so the people who made a promise are the ones asked to surface the gaps in it. A linked Drive folder lowers the effort but doesn't change that incentive.
+
+## 2026-10-17 — The UI review acted on: evidence first; nothing that overstates trust; design frozen (reversed 19 Oct)
+
+One outside review pass (a second assistant) was triaged before building.
+
+**Chose:**
+- **Evidence first.** The customer's exact, code-checked words sit beside the contract's wording, or beside "No matching wording found" with the phrases searched for. Under them is one plain line per gap, built from verified facts only. The AI sentence sits behind its own label.
+- **"No matching wording found" instead of "Not included".** The check establishes that the wording is absent, not that the contract excludes the promise.
+- **The counting unit is fixed:** promises in the overview, gaps inside a promise and in "What changed". Rows no longer mix the two.
+- **"Resolved by note" stops looking like proof.** It gets a neutral style, and a new note defaults to "keep it open". Resolving by note is now the deliberate choice.
+- **The locked record states the brief's warning as history,** without asking for action, and the fingerprint is folded into "Record details".
+- **Quieter hierarchy:** a compact header, the stage bar on one line, "How reviews work" behind a link, and no home summary tiles.
+- **The Alder timeline is fixed.** The documents had been dated after the review; they now run 15 Sep to 14 Oct, with the exception and the new SOW on 16 Oct. Only the date lines changed. All six findings still verify on reset, with no model call.
+- **The design is frozen,** with no more review rounds. **Reversed on 19 Oct.**
+
+**Rejected:**
+- A new demo scenario. Alder is already one familiar mismatch.
+- Removing the stage bar. It carries where each gap started, so it became one line instead.
+
+**Deferred:** the catalogue table view and the add-capability screen restyle.
+
+**Why:** in a product whose value is trust in the evidence, any wording or styling that claims more than the code verified is a defect, not a style choice.
+
+## 2026-10-19 — Simpler deal page; stage only from documents; nothing frozen; renamed Dealshape
+
+**Chose:**
+- **Design, workflow and engine are no longer frozen.** Each change still needs the tests to pass, a regression check, and a DECISIONS entry when it reverses an earlier decision. **This reverses the 17 Oct design freeze and the pipeline freeze** (candidate freeze of 12 Oct, then moved to 10 Oct). Published Coral Pay and Atlas Remit results describe detection v2_version 2. Any change to `detect_v2.py`'s prompt or verifier must raise `v2_version`, and the README must then say the running version differs from the tested one.
+- **The deal page is simplified** (brief: `docs/BRIEF_2026-10-19_simplify.md`):
+  - plain owner-confirmed titles, with the extracted name kept visible;
+  - one mismatch line per commitment, built only from verified labels;
+  - "Add updated document" and "Record a note" as separate actions instead of "Resolve…";
+  - notes default to staying open;
+  - "Resolved by note" becomes "Addressed by note";
+  - no name gate before acting;
+  - an honest handover verdict that never says "no open gaps" while a note stands in for a document.
+- **The stage comes from the documents only.** A signed contract upload marks the deal Signed. The "record signature" button is removed. Notes survive signing, and the documents in the sidebar are grouped by stage.
+- **Coral Pay is released as development data.** Its sealed results, labels, documents and seal stay untouched, and the sealed evaluation is never re-run.
+- **Renamed Dealshape:** knowing "what the shape of that deal is". The name also leaves room to grow beyond financial services.
+- **Alder Bank stays the demo deal.**
+- **The Dealshape look comes from Stitch:** one compact header card, Inter bundled, aligned columns, compact dialogs.
+
+**Rejected:**
+- A "record signature" button. A person's click must never set the stage.
+- A non-financial-services demo scenario (a retail AI support assistant). Simplifying the UI mattered more than a new storyline.
+- Keeping the design frozen. Design and simplicity are what decide whether the demo can be followed.
+
+**Why:** two outside reviews and my own rehearsal agreed that a first-time viewer had to work too hard, and that "Resolve" made the tool feel like issue management.
+
 ## 2026-10-20, 11:55 — Drawer replaces in-place expansion; v3 look; indigo and amber rules; compact deal line; simpler Handover card
 
 **Chose:**
