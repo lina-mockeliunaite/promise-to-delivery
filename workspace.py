@@ -91,13 +91,15 @@ def short_date(iso, year: bool = True) -> str:
         return str(iso or "")
 
 
+# 20 Oct: the version of a source the screens show is its latest INCLUDED version, else its latest. A version set aside after a
+# failed check (add_check.py) is excluded and never shows; the version it would have replaced is still the one in the review.
 def document_labels(conn, did: int) -> dict:
     """{source_key: plain-language label} for one deal: the document type ('Pricing and services note'), never a file
     name or key. Two documents of one type in a deal are told apart by date ('Call transcript of 28 Sep 2026'), then
     by a number if the dates match. The version is added where it is known exactly (see version_label)."""
     rows = conn.execute(
         "SELECT s.source_key, v.doc_type, v.doc_date FROM sources s JOIN source_versions v ON v.source_id = s.id"
-        " WHERE s.deal_id = ? AND v.version_no = (SELECT MAX(version_no) FROM source_versions WHERE source_id = s.id)"
+        " WHERE s.deal_id = ? AND v.version_no = (SELECT COALESCE(MAX(CASE WHEN included = 1 THEN version_no END), MAX(version_no)) FROM source_versions WHERE source_id = s.id)"
         " ORDER BY s.id", (did,)).fetchall()
     base = {key: DOC_TYPE_LABELS.get(dt, dt) for key, dt, _ in rows}
     labels = {}
@@ -165,7 +167,7 @@ def documents(conn, slug: str) -> list:
     rows = conn.execute(
         "SELECT s.source_key, v.id, v.version_no, v.doc_type, v.doc_date, v.included, v.adapter_name, v.original_filename"
         " FROM sources s JOIN source_versions v ON v.source_id = s.id WHERE s.deal_id = ? AND v.version_no ="
-        " (SELECT MAX(version_no) FROM source_versions WHERE source_id = s.id) ORDER BY v.doc_date, s.source_key", (did,)).fetchall()
+        " (SELECT COALESCE(MAX(CASE WHEN included = 1 THEN version_no END), MAX(version_no)) FROM source_versions WHERE source_id = s.id) ORDER BY v.doc_date, s.source_key", (did,)).fetchall()
     notes = adapters.notes_for(conn, [r[1] for r in rows])
     import handover  # 16 Oct: where each document lives (a Drive link), set by a person; never generated
     links = handover.links(conn, did)

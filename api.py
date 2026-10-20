@@ -31,6 +31,7 @@ import adapters
 import catalogue_store
 import config
 import extraction_cache
+import add_check
 import finding_check
 import handoff
 import handover
@@ -296,6 +297,26 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
         adapted = extra.get("adapted")
         return {"source_version_id": vid, "format": adapted["format"] if adapted else adapters.format_label("", filename),
                 "problems": adapted["problems"] if adapted else []}
+
+    @app.post("/api/deals/{deal}/documents/add-and-check", dependencies=[Depends(write_guard)])
+    def ws_add_and_check(deal: str, body: dict = Body(...), conn=Depends(db)):
+        """One call for the add-document form (20 Oct): refuse before writing if the model is needed and unavailable; store
+        the version and review; if the review fails after storing, set the version aside (add_check.py)."""
+        workspace_deal(deal, conn)
+        filename, text, extra = read_upload(body)
+        try:
+            out = add_check.add_and_check(
+                conn, deal, filename=filename, text=text, source_key=body.get("source_key") or None, name=str(body.get("name") or ""),
+                doc_type=body.get("doc_type") or None, doc_date=body.get("doc_date") or None, client=model_client(), **extra)
+        except add_check.AddCheckError as exc:
+            raise HTTPException(status_code=exc.status, detail=str(exc)) from None
+        except ledger_fixes.FixError as exc:
+            raise bad_request(exc) from None
+        adapted = extra.get("adapted")
+        result = out["result"]
+        return {"source_version_id": out["version_id"], "format": adapted["format"] if adapted else adapters.format_label("", filename),
+                "problems": adapted["problems"] if adapted else [],
+                "review": {k: result[k] for k in ("run_kind", "inputs_changed", "model_calls", "cost_usd", "checks")}}
 
     @app.get("/api/deals/{deal}/documents/text")
     def ws_document_text(deal: str, version: int = Query(...), conn=Depends(db)):

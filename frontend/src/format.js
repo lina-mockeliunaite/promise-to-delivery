@@ -60,6 +60,8 @@ export const TYPE_EFFECT = {
 // The type a file name points to, or null. Only a hint: the person confirms the type.
 export function typeFromName(name) {
   const n = (name ?? "").toLowerCase();
+  if (/signed[\s_.-]*(sow|statement)/.test(n)) return "signed_sow";
+  if (/signed[\s_.-]*(contract|agreement|msa)/.test(n)) return "signed_contract";
   if (/pricing|exception|approval/.test(n)) return "pricing_services_note";
   if (/\bsow\b|sow[_-]|annex|statement.of.work/.test(n)) return "draft_sow";
   if (/contract|agreement|\bmsa\b/.test(n)) return "draft_contract";
@@ -69,6 +71,33 @@ export function typeFromName(name) {
   if (/email/.test(n)) return "customer_email";
   if (/questionnaire/.test(n)) return "security_questionnaire";
   return null;
+}
+
+// What the start of a text file says it is (its first heading or line, or a signature block), or null. Only a hint.
+export function typeFromText(head) {
+  const text = String(head ?? "");
+  const first = (text.split(/\r?\n/).find((l) => l.trim()) ?? "").replace(/^#+\s*/, "").toLowerCase();
+  const signedClue = /\bsigned (copy|version)\b|\(signed\)|\bexecuted (copy|version)\b/.test(first)
+    || (/^#{1,3}\s*signatures?\b/im.test(text) && /signed for and on behalf of/i.test(text));
+  if (signedClue) return /statement of work|\bsow\b/.test(first) ? "signed_sow" : "signed_contract";
+  return typeFromName(first);
+}
+
+const SIGNED_TYPES = ["signed_contract", "signed_sow"];
+const lowerFirst = (t) => (/^[A-Z][a-z]/.test(t) ? t[0].toLowerCase() + t.slice(1) : t);
+const withArticle = (t) => `${/^(RFP|[AEIOU])/.test(t) ? "an" : "a"} ${t}`;
+
+// A light, non-blocking question when the file and the chosen type clearly disagree: a signed document going in as a draft, a
+// draft going in as signed, or the file's name and its own heading agreeing on a different type. "" when nothing looks wrong.
+// target: { type, name } where name is set when the file is a new version of an existing document. labels: { type: "Label" }.
+export function uploadMismatch({ fileName, head, target, labels }) {
+  const byName = typeFromName(fileName);
+  const byText = typeFromText(head);
+  const guess = byText && SIGNED_TYPES.includes(byText) ? byText : byName && SIGNED_TYPES.includes(byName) ? byName : byText && byText === byName ? byText : null;
+  if (!guess || !target?.type || guess === target.type) return "";
+  const label = (t) => lowerFirst(labels?.[t] ?? t);
+  const asWhat = target.name ? `a new version of ${target.name}` : withArticle(label(target.type));
+  return `This looks like ${withArticle(label(guess))}. Add it as ${asWhat} anyway?`;
 }
 
 // Pre-selected type: the file name first, then what usually closes this kind of finding.

@@ -50,7 +50,7 @@ def _docs(conn, did: int) -> list:
     rows = conn.execute(
         "SELECT s.source_key, v.doc_type, v.doc_date, s.display_name FROM sources s JOIN source_versions v"
         " ON v.source_id = s.id WHERE s.deal_id = ? AND v.included = 1 AND v.version_no ="
-        " (SELECT MAX(version_no) FROM source_versions WHERE source_id = s.id) ORDER BY v.doc_date, s.source_key",
+        " (SELECT MAX(version_no) FROM source_versions WHERE source_id = s.id AND included = 1) ORDER BY v.doc_date, s.source_key",
         (did,)).fetchall()
     return [{"key": k, "type": t, "date": d or "", "file": f} for k, t, d, f in rows]
 

@@ -30,7 +30,10 @@ export function Drawer({ labelledBy, onClose, focusKey, flush = false, children 
     opener.current = document.activeElement;
     return () => { const el = opener.current; if (el && document.contains(el)) el.focus(); };
   }, []);
-  useEffect(() => { panel.current?.focus(); }, [focusKey]);
+  useEffect(() => {
+    panel.current?.focus();
+    panel.current?.querySelector(".dr-body")?.scrollTo?.(0, 0); // a new view always starts at its top, whatever the last one scrolled to
+  }, [focusKey]);
   useEffect(() => {
     const onKey = (e) => {
       if (e.key === "Escape") { e.stopPropagation(); onClose(); return; }

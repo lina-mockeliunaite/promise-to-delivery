@@ -80,3 +80,46 @@ test("Excel and PowerPoint upload as binary; old and macro formats are refused w
   assert.match(checkUpload("deck.ppt", 1000), /saved as \.pptx/);
   assert.match(checkUpload("notes.csv", 1000), /Excel \(\.xlsx\), PowerPoint \(\.pptx\)/);
 });
+
+// --- A wrong file in the add-document form (20 Oct) --------------------------------------------------------------------
+import { typeFromText, uploadMismatch } from "../src/format.js";
+
+const LABELS = { draft_sow: "Draft SOW", draft_contract: "Draft contract", signed_contract: "Signed contract", signed_sow: "Signed SOW",
+  pricing_services_note: "Pricing and services note", rfp_response: "RFP response", proposal: "Proposal" };
+const SIGNED_HEAD = "# Master Services Agreement — Alder Bank (signed copy)\n\nDate: 12 October 2026\n\n## Signatures\n\nSigned for and on behalf of Elva:\nName: Tom Fraser\n";
+
+test("signed files are recognised by name and by what the file says about itself", () => {
+  assert.equal(typeFromName("AB-09_signed_contract.md"), "signed_contract");
+  assert.equal(typeFromName("Signed SOW v2.pdf"), "signed_sow");
+  assert.equal(typeFromName("AB-07_draft_contract.md"), "draft_contract"); // unchanged
+  assert.equal(typeFromText(SIGNED_HEAD), "signed_contract");
+  assert.equal(typeFromText("# Statement of Work (signed copy)\n\nText."), "signed_sow");
+  assert.equal(typeFromText("# DRAFT Statement of Work\n\nText."), "draft_sow");
+  assert.equal(typeFromText(""), null);
+  assert.equal(typeFromText("Some notes."), null);
+});
+
+test("the wrong-file question: a signed contract offered as a new version of the Draft SOW", () => {
+  const q = uploadMismatch({ fileName: "AB-09_signed_contract.md", head: SIGNED_HEAD, target: { type: "draft_sow", name: "Draft SOW" }, labels: LABELS });
+  assert.equal(q, "This looks like a signed contract. Add it as a new version of Draft SOW anyway?");
+  // the file's name alone is enough, before its text has been read
+  assert.equal(uploadMismatch({ fileName: "signed_contract.pdf", head: "", target: { type: "draft_sow", name: "Draft SOW" }, labels: LABELS }), q);
+});
+
+test("the question names the type for a new document, and works the other way round", () => {
+  assert.equal(uploadMismatch({ fileName: "AB-09_signed_contract.md", head: SIGNED_HEAD, target: { type: "draft_contract" }, labels: LABELS }),
+    "This looks like a signed contract. Add it as a draft contract anyway?");
+  assert.equal(uploadMismatch({ fileName: "x.md", head: "# Signed SOW (signed copy)", target: { type: "pricing_services_note" }, labels: LABELS }),
+    "This looks like a signed SOW. Add it as a pricing and services note anyway?");
+  // a draft going in as a signed document: name and heading agree it is a draft contract
+  assert.equal(uploadMismatch({ fileName: "AB-07_draft_contract.md", head: "# DRAFT Master Services Agreement contract", target: { type: "signed_contract" }, labels: LABELS }),
+    "This looks like a draft contract. Add it as a signed contract anyway?");
+});
+
+test("no question when the file fits, when nothing is clear, or when only a weak hint disagrees", () => {
+  assert.equal(uploadMismatch({ fileName: "AB-09_signed_contract.md", head: SIGNED_HEAD, target: { type: "signed_contract" }, labels: LABELS }), "");
+  assert.equal(uploadMismatch({ fileName: "notes.md", head: "Some notes.", target: { type: "draft_sow", name: "Draft SOW" }, labels: LABELS }), "");
+  assert.equal(uploadMismatch({ fileName: "AB-06_draft_sow_v2.md", head: "", target: { type: "draft_contract" }, labels: LABELS }), ""); // one weak signal
+  assert.equal(uploadMismatch({ fileName: "a.md", head: "", target: null, labels: LABELS }), "");
+  assert.match(uploadMismatch({ fileName: "rfp_signed_contract.md", head: "", target: { type: "rfp_response" }, labels: LABELS }), /^This looks like a signed contract\. Add it as an RFP response anyway\?$/);
+});

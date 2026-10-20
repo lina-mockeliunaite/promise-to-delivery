@@ -906,3 +906,26 @@ Full analysis: `docs/RESULTS_atlas_remit_v2_2026-10-10.md`. Committed before the
 - The deal's shape (list and journey) stays visible while one commitment is read, and documents open in context, which is what Delivery needs before kickoff.
 - Indigo separates the brand from the green status colour, which the deep green did not.
 - Nothing about detection, verification, closure, the freeze, the hash definitions, the snapshot format or any stored data changed.
+
+## 2026-10-20, 12:26 — Add-and-check in one call; check before writing; set aside instead of rollback
+
+**What happened:** in the 20 Oct rehearsal, "Add and check" on Alder's coaching commitment failed with "This review needs the model…" (no API key in the server), yet the Draft SOW version went from v1 to v3 after three failed tries. The form made two calls: it stored and committed the new version, then asked for the review. The review failed, the version stayed. I reproduced it: v1 to v4 after three attempts, and the deal left "Review out of date".
+
+**Chose:**
+- One server call, `POST /api/deals/{deal}/documents/add-and-check`, does the whole thing (`add_check.py`). The form uses it. The two old routes stay for the classic view.
+- **Check before writing.** If the new or changed document needs the model and the server cannot call it, the call refuses with "Nothing was added." and writes nothing (the same rule the older fix flow in `finding_check.py` already had). This is the case the rehearsal hit: three tries leave the version at v1.
+- **Exclusion instead of rollback, for the rare late failure.** If the review fails after the version was stored (the model call itself erroring), the new version is excluded and the version it replaced is included again. The message is "The check didn't run. This version was set aside and isn't part of the review." It does not say "Nothing was added", because something was stored.
+- A set-aside version is in the stored history only: it never appears in "Documents checked", the sidebar, the stage timeline, the review's document hash, or the locked record's documents. To make that true, the screens now show a source's latest *included* version (else its latest) in `workspace.documents`, `workspace.document_labels` and `deal_stage._docs`. `ledger_v2.current_docs` already worked this way.
+- Accepted: after a set-aside, a version number is skipped (v1, then v3 on the next try).
+- A light, non-blocking question when the file and the chosen type clearly disagree, for example "This looks like a signed contract. Add it as a new version of Draft SOW anyway?" It reads the file's name and its own heading or signature block. The upload is never blocked; the button then reads "Add anyway".
+- The add form explains closing once: the gap-specific hint plus "A gap closes only if the new paperwork shows it no longer holds." The drawer scrolls to its top whenever its view changes, and its header is tighter, so the hint is never left under the header on a short window (checked at 800, 600 and 480 px tall).
+
+**Rejected:**
+- A transaction around add and review. The review code runs `executescript` before it works, and sqlite commits a pending transaction first, so the stored version cannot be held back inside it (tested in this Python, 3.12).
+- Editing `ledger_v2.py` to avoid that. The file is part of the config hash, so every existing review would go stale again, and it was frozen for a reason. It was left untouched.
+- Deleting the version on failure. Versions are immutable and never deleted by design (database triggers).
+- Blocking a wrong-looking file. The person may know better; a question is enough.
+
+**Why:** a failed check must not change what the deal is made of. Checking first removes the reported case completely; exclusion keeps the history honest in the rare remainder without touching the frozen checks.
+
+**Process slip:** Claude Code ran `git status` once (read-only); logged.

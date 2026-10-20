@@ -308,6 +308,9 @@ export function groupByStage(stages, documents) {
 export const STAGE_LABELS = { discovery: "Discovery", evaluation: "Evaluation", proposal: "Proposal / RFP", shortlisted: "Shortlisted",
   contracting: "Contracting", signed: "Signed", handover: "Handover" };
 
+// The one explanation the add-document form gives about closing (the gap-specific hint, when there is one, comes before it).
+export const GAP_CLOSES = "A gap closes only if the new paperwork shows it no longer holds.";
+
 export const SIGNED_NOTE = "Marks the deal signed. Its wording isn't checked; the checks used the drafts.";
 export const isSignedDoc = (docType) => docType === "signed_contract" || docType === "signed_sow";
 

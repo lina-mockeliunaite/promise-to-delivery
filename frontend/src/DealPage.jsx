@@ -8,9 +8,9 @@ import "@fontsource/inter/latin-500.css";
 import "@fontsource/inter/latin-600.css";
 import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
-import { fmtDate, fmtDateTime, uploadKind } from "./format.js";
+import { fmtDate, fmtDateTime, uploadKind, uploadMismatch } from "./format.js";
 import {
-  CLOSING_ONE_LINE, FINDING_SHORT, closedBy, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, docLabel, groupByStage, hashFor, isSignedDoc,
+  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, docLabel, groupByStage, hashFor, isSignedDoc,
   mismatchParts, missingForHandover, handoverChecklist, plainName, readHash, recordedBy, rowTitle, firstPromised, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
@@ -337,7 +337,7 @@ function AddPanel({ deal, c, titleId, documents, docTypes, onDone, onBack, onClo
                   backLabel={c ? "Back to commitment" : null} onBack={onBack} onClose={onClose} />
       <div className="dr-body dr-form">
         <AddDocument deal={deal} documents={documents} docTypes={docTypes} preset={c ? suggestFix(open, documents) : undefined}
-                     lead={CLOSING_ONE_LINE} onDone={onDone} onClose={c ? onBack : onClose} />
+                     onDone={onDone} onClose={c ? onBack : onClose} />
       </div>
     </>
   );
@@ -374,13 +374,26 @@ function ClosingHelp({ onClose }) {
 }
 
 
-function AddDocument({ deal, documents, docTypes, onDone, onClose, preset, lead }) {
+function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
   const [form, setForm] = useState({ source_key: preset?.source_key ?? "", doc_type: preset?.doc_type ?? "draft_sow",
                                      doc_date: new Date().toISOString().slice(0, 10), file: null });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
   const [over, setOver] = useState(false);
-  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: k === "file" ? e.target.files[0] ?? null : e.target.value }));
+  const [head, setHead] = useState(""); // the start of a text file, read when it is picked, to notice a wrong file
+  const pick = (file) => {
+    setForm((f) => ({ ...f, file }));
+    setHead("");
+    setError(null);
+    if (file && uploadKind(file.name) !== "binary" && file.slice) file.slice(0, 6000).text().then(setHead, () => setHead(""));
+  };
+  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const existingDoc = form.source_key ? documents.find((d) => d.source_key === form.source_key) : null;
+  const warning = form.file ? uploadMismatch({
+    fileName: form.file.name, head,
+    target: { type: existingDoc?.doc_type ?? form.doc_type, name: existingDoc?.name },
+    labels: Object.fromEntries(docTypes.map((t) => [t.value, t.label])),
+  }) : "";
   const submit = async (e) => {
     e.preventDefault();
     setBusy(true);
@@ -391,8 +404,7 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset, lead 
       const body = form.source_key
         ? { source_key: form.source_key, filename: form.file.name, ...content }
         : { name: form.file.name, filename: form.file.name, doc_type: form.doc_type, doc_date: form.doc_date, ...content };
-      await api.addDocument(deal, body);
-      const r = await api.reviewDeal(deal);
+      const r = await api.addDocumentAndCheck(deal, body); // refused before writing if the model is needed and unavailable
       const existing = documents.find((d) => d.source_key === form.source_key);
       onDone(r.review, existing ? `${existing.name}, new version` : form.file.name);
     } catch (err) {
@@ -403,14 +415,13 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset, lead 
   };
   return (
     <form className="dp-add" onSubmit={submit}>
-      <Hint>{[lead, preset?.hint]}</Hint>
-      <p className="dp-faint dp-small dp-note-line">The check runs again on all the deal's documents. A gap closes only if the new paperwork shows it no longer holds.</p>
+      <Hint>{[preset?.hint, GAP_CLOSES]}</Hint>
       <div className="dp-add-grid">
         <label>
           This is
           <select value={form.source_key} onChange={set("source_key")}>
             <option value="">A new document</option>
-            {documents.map((d) => <option key={d.source_key} value={d.source_key}>A new version of: {d.name} (v{d.version} → v{d.version + 1})</option>)}
+            {documents.map((d) => <option key={d.source_key} value={d.source_key}>A new version of: {d.name} (currently v{d.version})</option>)}
           </select>
         </label>
         {!form.source_key && (
@@ -432,26 +443,27 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset, lead 
         <span>Document upload</span>
         <label className={`dp-drop ${over ? "is-over" : ""}`}
                onDragOver={(e) => { e.preventDefault(); setOver(true); }} onDragLeave={() => setOver(false)}
-               onDrop={(e) => { e.preventDefault(); setOver(false); const f = e.dataTransfer.files[0]; if (f) setForm((x) => ({ ...x, file: f })); }}>
+               onDrop={(e) => { e.preventDefault(); setOver(false); const f = e.dataTransfer.files[0]; if (f) pick(f); }}>
           <span className="dp-drop-icon"><Icon d={I.upload} size={22} /></span>
           <span className="dp-drop-main">Drop file here or <u>browse files</u></span>
           <span className="dp-drop-sub">Markdown, text, PDF, Word, Excel or PowerPoint</span>
-          <input type="file" accept=".md,.txt,.pdf,.docx,.xlsx,.pptx" onChange={set("file")} />
+          <input type="file" accept=".md,.txt,.pdf,.docx,.xlsx,.pptx" onChange={(e) => pick(e.target.files[0] ?? null)} />
         </label>
         {form.file && (
           <div className="dp-file-chip">
             <Icon d={I.doc} size={16} />
             <span className="dp-file-name">{form.file.name}</span>
             <span className="dp-file-size">{fmtSize(form.file.size)}</span>
-            <button type="button" className="dp-x" aria-label="Remove attached file" onClick={() => setForm((x) => ({ ...x, file: null }))}><Icon d={I.close} size={14} /></button>
+            <button type="button" className="dp-x" aria-label="Remove attached file" onClick={() => pick(null)}><Icon d={I.close} size={14} /></button>
           </div>
         )}
       </div>
+      {warning && <p className="dp-warnbox" role="status">{warning}</p>}
       {!form.source_key && isSignedDoc(form.doc_type) && <p className="dp-faint dp-small">{SIGNED_NOTE}</p>}
       <div className="dp-actions">
         {error && <span className="dp-error" role="alert">{error}</span>}
         <button type="button" className="dp-btn dp-btn-ghost" onClick={onClose} disabled={busy}>Cancel</button>
-        <button type="submit" className="dp-btn dp-btn-dark" disabled={busy || !form.file}>{busy ? "Checking…" : <>Add and check <Icon d={I.arrow} size={14} /></>}</button>
+        <button type="submit" className="dp-btn dp-btn-dark" disabled={busy || !form.file}>{busy ? "Checking…" : <>{warning ? "Add anyway" : "Add and check"} <Icon d={I.arrow} size={14} /></>}</button>
       </div>
     </form>
   );

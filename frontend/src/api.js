@@ -27,6 +27,8 @@ export const fetchDeals = () => getJson("/api/workspace/deals");
 export const createDeal = (name) => postJson("/api/user-deals", { name });
 export const fetchDocuments = (deal) => getJson(`${d(deal)}/documents`);
 export const addDocument = (deal, body) => postJson(`${d(deal)}/documents`, body);
+// One call: refuses before writing if the model is needed and unavailable; stores the version and runs the check; sets the version aside if the check fails after storing.
+export const addDocumentAndCheck = (deal, body) => postJson(`${d(deal)}/documents/add-and-check`, body);
 export const setIncluded = (deal, source_key, included) => postJson(`${d(deal)}/documents/include`, { source_key, included });
 export const fetchRegister = (deal) => getJson(`${d(deal)}/register`);
 export const reviewDeal = (deal, fix_id) => postJson(`${d(deal)}/review`, fix_id ? { fix_id } : {});
