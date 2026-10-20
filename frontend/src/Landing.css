@@ -5,6 +5,7 @@
 .land-intro h1 { margin: 6px 0 0; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; color: var(--ink); font-weight: 700; }
 .land-desc { margin: 0; font-size: 16px; line-height: 1.55; color: var(--body); max-width: 34rem; }
 .land-aud { margin: 0; font-size: 13px; color: var(--muted); }
+.land-quiet { margin: 0; font-size: 13px; color: var(--muted); }
 .land-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-top: 8px; }
 .land-primary { padding: 10px 18px; font-size: 14px; }
 .land-example { display: flex; flex-direction: column; gap: 6px; padding: 20px 24px; }

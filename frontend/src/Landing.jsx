@@ -12,7 +12,7 @@ import "@fontsource/inter/latin-700.css";
 import "./DealPage.css";
 import "./Landing.css";
 
-export default function Landing({ hasSample, onSample, onList }) {
+export default function Landing({ hasSample, unavailable = false, onSample, onList }) {
   const [mismatch, setMismatch] = useState(null);
   useEffect(() => {
     if (!hasSample) return undefined;
@@ -32,6 +32,7 @@ export default function Landing({ hasSample, onSample, onList }) {
             {hasSample && <button type="button" className="dp-btn dp-btn-dark land-primary" onClick={onSample}>Open a sample deal</button>}
             <button type="button" className="dp-link-btn dp-brand" onClick={onList}>See all deal reviews</button>
           </div>
+          {unavailable && <p className="land-quiet" role="status">The sample deal can't be loaded right now. Check that the server is running.</p>}
         </section>
         {mismatch && (
           <aside className="dp-card land-example" aria-label="An example from the sample deal">

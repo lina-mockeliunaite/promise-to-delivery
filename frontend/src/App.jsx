@@ -1027,9 +1027,11 @@ export default function App() {
   useEffect(() => { if (deals && current && !deals.some((x) => x.deal === current)) setCurrent(null); }, [deals, current]);
 
   // 20 Oct: the first visit shows the landing page; leaving it (either way) is remembered in this browser.
-  if (deals && !current && landing) {
+  // It does not wait for the deal list: if the server cannot be reached it still shows, with one quiet line instead of the error box.
+  if (!current && landing) {
     const leave = (deal) => { markLandingSeen(); setLanding(false); if (deal) setCurrent(deal); };
-    return <Landing hasSample={deals.some((x) => x.deal === SAMPLE_DEAL)} onSample={() => leave(SAMPLE_DEAL)} onList={() => leave(null)} />;
+    return <Landing hasSample={!!deals?.some((x) => x.deal === SAMPLE_DEAL)} unavailable={!deals && !!error}
+                    onSample={() => leave(SAMPLE_DEAL)} onList={() => leave(null)} />;
   }
   // 16 Oct: the deal list is the home screen (Stitch screen 1); a deal opens on its own page with a way back.
   if (deals && !current) {
@@ -1051,9 +1053,11 @@ export default function App() {
   return (
     <main>
       <header className="top">
-        <button type="button" className="dl-back" onClick={() => setClassic(false)}>
-          ← Back to the deal page
-        </button>
+        {current && (
+          <button type="button" className="dl-back" onClick={() => setClassic(false)}>
+            ← Back to the deal page
+          </button>
+        )}
         <p className="eyebrow">Dealshape</p>
         <h1>{TAGLINE}</h1>
       </header>
