@@ -19,6 +19,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import config
+import deal_catalogue
 import ledger
 import ledger_import
 import ledger_v2
@@ -27,6 +28,22 @@ import workspace
 
 class ResetError(Exception):
     pass
+
+
+def build(db_path) -> dict:
+    """ledger_v2.build, with each deal checked against its own vendor's catalogue (20 Oct). ledger_v2.build passes no
+    catalogue, and ledger_v2.py is inside the config hash, so the loop lives here and uses the same two calls."""
+    conn = ledger.open_ledger(db_path)
+    try:
+        out = {}
+        for slug in config.V2_DEALS:
+            ledger_v2.import_deal(conn, slug)
+            conn.commit()
+            path = deal_catalogue.path_for(slug)
+            out[slug] = ledger_v2.review(conn, slug, None, None, str(path) if path else None)
+        return out
+    finally:
+        conn.close()
 
 
 def reset(db_path=None, now=None) -> dict:
@@ -40,7 +57,7 @@ def reset(db_path=None, now=None) -> dict:
     fresh.unlink(missing_ok=True)  # leftover from an earlier crash: our own temporary file
 
     try:
-        built = ledger_v2.build(fresh)
+        built = build(fresh)
         conn = ledger.connect(fresh)
         try:
             deals = [{"deal": d["deal"], "open_issues": d["open_issues"], "freshness": d["freshness"]["state"]}

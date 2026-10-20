@@ -23,6 +23,7 @@ from pathlib import Path
 import agent
 import config
 import ledger_fixes
+import deal_catalogue
 import recheck
 import scenarios
 import terms
@@ -42,7 +43,7 @@ def smoke(client, deals=SMOKE_DEALS, workdir=None) -> dict:
         try:
             out = {}
             for slug in deals:
-                recheck.recheck(conn, slug, None, None)  # current hash definition, no model call
+                deal_catalogue.recheck(conn, slug, None, None)  # current hash definition, no model call
                 review_id = ledger_fixes.freshness(conn, ledger_fixes.deal_id(conn, slug))["review_id"]
                 items = agent.escalated_items(conn, review_id)
                 run = agent.run_agent(client, items, catalogue, vocab, agent.review_notes(conn, review_id))

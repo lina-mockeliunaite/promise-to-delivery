@@ -17,6 +17,7 @@ import hashlib
 import json
 from pathlib import Path
 
+import deal_catalogue
 import deal_stage
 import ledger_fixes
 
@@ -355,6 +356,7 @@ def deal_rows(conn, rows: list) -> list:
                     "stage": current, "stage_label": stage["current_label"],
                     "owner": profile.get("owner") or (sales["by"] if sales else None),
                     "scope": profile.get("scope") or None,  # 20 Oct: owner-confirmed, never generated
+                    "vendor": deal_catalogue.vendor_of(row["deal"]), "vendor_name": deal_catalogue.vendor_name(row["deal"]),
                     "last_updated": last_updated(conn, did),
                     "in_handover": done is not None or (current is not None and deal_stage.STAGE_INDEX[current] >= HANDOVER_FROM),
                     "handover_complete": done is not None})

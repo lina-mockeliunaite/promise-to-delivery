@@ -79,7 +79,9 @@ After the Coral Pay result, detection was rebuilt: one model call proposes each 
 - **The results describe detection v2 as tested** (`v2_version` 2, 10 Oct). Any later change to the detection prompt or verifier raises the version, and those results would then no longer describe the running version.
 - **Wording, not legal meaning.** "No matching wording found" means exactly that. It is not a legal reading of the contract.
 - **A recheck does not re-read unchanged documents** when extraction settings change. Each review records which settings every document was read under.
-- **Adding a capability to the catalogue marks every deal "Review out of date"** until it is checked again. That is safe, but noisy on many deals.
+- **Adding a capability to a catalogue marks every deal checked against it "Review out of date"** until it is checked again. That is safe, but noisy on many deals. Only Elva's catalogue can be added to in the app; Aivuna's is a published file.
+- **The verifier matches words, not meaning.** A finding is shown only if its quotes are word for word in the documents and its claim passes plain text checks: a promised value must appear in the promise, a "not offered" value must appear nowhere in that region's catalogue entry, a missing phrase (at most six words) must appear nowhere in the contract. So a real concern that the model words loosely is refused (Alder's one refused finding added "with no exceptions" to the promise), a paraphrased contract clause can read as missing, and a catalogue that lists an unavailable option explicitly would stop a "not offered" finding about it. For that reason Aivuna's catalogue states that voice is not offered in its top-level unlisted rule, not as a listed entry. The count of refused findings is shown on the deal page.
+- **The detection prompt still names the original vendor.** It says "the vendor, Elva", and was not changed for the Aivuna deal, because changing it would raise `v2_version` and invalidate every saved reading. Two vendors' catalogues run through one pipeline; what the Aivuna runs showed is recorded in `data/noma_journeys/BRIEF.md`.
 - **Signed paperwork.** A signed contract marks the deal Signed; its wording is not compared with the drafts.
 - **Formats.** PDF text layer only (no OCR); Excel by stored values only; PowerPoint slide text only.
 - **Synthetic data.** Every deal is fictional and was written for this build.
@@ -117,6 +119,6 @@ The demo opens on the deals list with no API key. Reading a new or changed contr
 
 ## Credits and honesty
 
-All companies, people, products and deal terms are fictional. TRM Labs, Chainalysis, BioCatch, Microsoft Azure and Amazon Web Services are real names, used in the fictional catalogue and deals for realism only. No partnership is claimed.
+All companies, people, products and deal terms are fictional. TRM Labs, Chainalysis, BioCatch, Zendesk, Freshdesk, Microsoft Azure and Amazon Web Services are real product or company names, used in the fictional catalogues and deals for realism only. No partnership is claimed. Aivuna and Noma Journeys are fictional and unrelated to any real business of a similar name.
 
 Built with Claude Code as build partner. Claude drafted the fictional documents, fixtures and briefs from my direction, and the screen designs started in Google Stitch. The product decisions, labels and evaluation design are mine.

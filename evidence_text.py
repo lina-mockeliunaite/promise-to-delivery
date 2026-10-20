@@ -8,6 +8,7 @@ file it reads besides the ledger is data/catalogue.json, the same capability cat
 """
 
 import json
+from pathlib import Path
 
 import config
 import rules
@@ -21,13 +22,16 @@ CATALOGUE_PATH = config.DATA_DIR / "catalogue.json"
 _cache = {}
 
 
-def load_catalogue():
-    """The capability catalogue, re-read when the file changes; None if it cannot be read (callers then say less)."""
+def load_catalogue(path=None):
+    """A capability catalogue file (default: Elva's), re-read when the file changes; None if it cannot be read (callers then
+    say less). Cached per file, so one vendor's catalogue is never served for another's (20 Oct)."""
+    path = Path(path) if path else CATALOGUE_PATH
     try:
-        stamp = CATALOGUE_PATH.stat().st_mtime_ns
-        if _cache.get("stamp") != stamp:
-            _cache.update(stamp=stamp, data=json.loads(CATALOGUE_PATH.read_text(encoding="utf-8")))
-        return _cache["data"]
+        stamp = path.stat().st_mtime_ns
+        hit = _cache.get(str(path))
+        if hit is None or hit[0] != stamp:
+            hit = _cache[str(path)] = (stamp, json.loads(path.read_text(encoding="utf-8")))
+        return hit[1]
     except (OSError, ValueError):
         return None
 
@@ -127,7 +131,7 @@ def pricing_note_cell(row: str) -> str:
     return text[:1].lower() + text[1:] if text[1:2].islower() else text
 
 
-def approval_text(authorisation, language, refs, terms_json) -> str:
+def approval_text(authorisation, language, refs, terms_json, catalogue_path=None) -> str:
     """The approval evidence for a commitment, in plain sentences. Empty if the rules have not assessed it."""
     refs = refs or {}
     if authorisation == "not_assessed":
@@ -135,7 +139,7 @@ def approval_text(authorisation, language, refs, terms_json) -> str:
     if authorisation is None:
         return f"Approval isn't assessed for a {language} promise."
     ts = representative_terms(terms_json)
-    catalogue = load_catalogue()
+    catalogue = load_catalogue(catalogue_path)
     paths = refs.get("catalogue") or []
     notes = [s for s in refs.get("source_versions", []) if s.get("role") == "approval_evidence"]
     searched = any(s.get("role") == "approval_evidence_searched" for s in refs.get("source_versions", []))

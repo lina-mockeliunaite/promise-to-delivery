@@ -789,7 +789,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
         </aside>
       </div>
 
-      {catFocus !== null && <CatalogueModal focus={catFocus} onClose={() => setCatFocus(null)} onChanged={load} />}
+      {catFocus !== null && <CatalogueModal focus={catFocus} deal={deal} onClose={() => setCatFocus(null)} onChanged={load} />}
       {help && <ClosingHelp onClose={() => setHelp(false)} />}
       {askName && (
         <NamePrompt initial={askName.initial} onClose={() => setAskName(null)}

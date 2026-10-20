@@ -1,0 +1,20 @@
+{
+  "owner": "Liam Hart",
+  "scope": "AI support assistant for guest bookings, changes and refunds",
+  "catalogue": "aivuna",
+  "summary": "Aivuna provides an AI customer-support assistant for Noma Journeys' guests, answering questions about bookings, changes and refunds by chat and email, from a 1 February 2027 launch. Go-live depends on Noma providing access to its booking system by 1 December.",
+  "deliverables": [
+    "AI assistant answering guest questions on chat and email",
+    "Booking system connector, so the assistant reads each guest's booking",
+    "Handover of conversations the assistant cannot resolve to Noma's human agents",
+    "Implementation and configuration, 45 person-days; two training sessions",
+    "Weekly project status meeting during implementation"
+  ],
+  "go_live": "2027-02-01",
+  "confirmed_by": "Liam Hart (Account Executive, fictional)",
+  "basis": "draft SOW, 12 Oct",
+  "confirmed_against": {
+    "source": "NJ-06",
+    "version": 1
+  }
+}

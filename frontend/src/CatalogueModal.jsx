@@ -78,7 +78,10 @@ function AddForm({ data, onAdded, onCancel }) {
   );
 }
 
-export default function CatalogueModal({ focus, onClose, onChanged }) {
+// deal: opened inside a deal, so that deal's own vendor catalogue. vendors: the home screen's switch, [{ id, name }] (preselected to
+// `vendor`, the vendor of the deal last opened). With neither, Elva's, as before.
+export default function CatalogueModal({ focus, deal, vendor: initialVendor, vendors, onClose, onChanged }) {
+  const [vendor, setVendor] = useState(initialVendor);
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [query, setQuery] = useState("");
@@ -88,8 +91,8 @@ export default function CatalogueModal({ focus, onClose, onChanged }) {
   const focusRef = useRef(null);
   const focusId = (focus ?? "").split("/")[0];
 
-  const load = () => api.fetchCatalogue().then(setData, (err) => setError(err.message));
-  useEffect(() => { load(); }, []);
+  const load = () => api.fetchCatalogue(deal ? { deal } : { vendor }).then(setData, (err) => setError(err.message));
+  useEffect(() => { setData(null); setError(null); setRegion("all"); setAdding(false); setAdded(null); load(); }, [vendor]);
   useEffect(() => {
     const onKey = (e) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -110,7 +113,7 @@ export default function CatalogueModal({ focus, onClose, onChanged }) {
       <div className="cat-modal" onClick={(e) => e.stopPropagation()}>
         <header className="cat-head">
           <div>
-            <span className="cat-eyebrow">What Elva can sell · the authority every check uses</span>
+            <span className="cat-eyebrow">What {data?.vendor_name ?? "the vendor"} can sell · the authority every check uses</span>
             <h2>Product catalogue</h2>
             {data && (
               <span className="cat-sub">
@@ -120,7 +123,7 @@ export default function CatalogueModal({ focus, onClose, onChanged }) {
             )}
           </div>
           <div className="cat-row">
-            {!adding && <button type="button" className="cat-btn cat-btn-dark" onClick={() => { setAdding(true); setAdded(null); }}>+ Add a capability</button>}
+            {data?.can_add && !adding && <button type="button" className="cat-btn cat-btn-dark" onClick={() => { setAdding(true); setAdded(null); }}>+ Add a capability</button>}
             <button type="button" className="cat-btn" onClick={onClose} aria-label="Close">Close</button>
           </div>
         </header>
@@ -134,7 +137,15 @@ export default function CatalogueModal({ focus, onClose, onChanged }) {
             )}
             {added && (
               <div className="cat-added" role="status">
-                Added {added.id} {added.name}. Deals now show "Review out of date" until they are checked again.
+                Added {added.id} {added.name}. {data.vendor_name} deals now show "Review out of date" until they are checked again.
+              </div>
+            )}
+            {vendors?.length > 1 && !deal && (
+              <div className="cat-chips" role="tablist" aria-label="Vendor">
+                {vendors.map((v) => (
+                  <button key={v.id} type="button" role="tab" aria-selected={data.vendor === v.id} className={`cat-chip ${data.vendor === v.id ? "is-on" : ""}`}
+                          onClick={() => setVendor(v.id)}>{v.name}</button>
+                ))}
               </div>
             )}
             <p className="cat-rule">{data.unlisted_rule}</p>

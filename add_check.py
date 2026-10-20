@@ -22,6 +22,7 @@ import extraction_cache
 import finding_check
 import ledger_fixes
 import ledger_import
+import deal_catalogue
 import ledger_v2
 import recheck
 
@@ -39,7 +40,7 @@ class AddCheckError(Exception):
 def _needs_model(conn, slug, did, source_key, doc_type, text, adapted) -> bool:
     if ledger_v2.is_v2(conn, did):
         canonical = adapted["canonical_text"] if adapted else ledger_import.markdown_adapter(text.encode("utf-8"))["canonical_text"]
-        return ledger_v2.needs_model(conn, slug, source_key, doc_type, canonical)
+        return deal_catalogue.needs_model(conn, slug, source_key, doc_type, canonical)
     if doc_type in config.EXTRACTABLE_DOC_TYPES:
         fields = extraction_cache.key_fields(finding_check._canonical_sha(text, adapted), doc_type)
         return extraction_cache.lookup(conn, fields) is None
@@ -77,7 +78,7 @@ def add_and_check(conn, slug: str, *, filename: str, text: str = "", raw=None, a
         version_id = ledger_fixes.add_source(conn, slug, (name or filename or "").strip(), text, filename, doc_type,
                                              doc_date or "", raw=raw, adapted=adapted)
     try:
-        result = recheck.recheck(conn, slug, None, client)
+        result = deal_catalogue.recheck(conn, slug, None, client)
     except Exception:
         conn.rollback()
         conn.execute("UPDATE source_versions SET included = 0 WHERE id = ?", (version_id,))

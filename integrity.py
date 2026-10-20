@@ -70,6 +70,16 @@ def catalogue_bytes(conn=None) -> bytes:
     return catalogue_store.effective_bytes(conn)
 
 
+def deal_catalogue_bytes(conn, did: int) -> bytes:
+    """The catalogue this deal is compared against (20 Oct): its own vendor's. An Elva deal (every existing deal, and every
+    deal made in the app) still goes through catalogue_bytes above, exactly as before."""
+    import deal_catalogue
+    slug = deal_catalogue.slug_of(conn, did)
+    if slug and deal_catalogue.vendor_of(slug) != deal_catalogue.catalogue_store.DEFAULT_VENDOR:
+        return deal_catalogue.bytes_for(conn, slug)
+    return catalogue_bytes(conn)
+
+
 def canonical_catalogue(raw: bytes) -> bytes:
     try:
         return json.dumps(json.loads(raw.decode("utf-8")), sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
@@ -109,7 +119,9 @@ def compare(conn, did: int, source_set, evidence, definition: int, stored_config
         reasons.append(DOCUMENTS)
     if ledger_fixes.decision_evidence_sha256(conn, did) != evidence:
         reasons.append(EVIDENCE)
-    reasons += config_reasons(definition, stored_config, catalogue_bytes(conn) if raw is None else raw)
+    if raw is None:
+        raw = deal_catalogue_bytes(conn, did)
+    reasons += config_reasons(definition, stored_config, raw)
     return {"current": not reasons, "reasons": reasons}
 
 

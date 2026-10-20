@@ -29,6 +29,7 @@ from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 import adapters
 import catalogue_store
+import deal_catalogue
 import config
 import extraction_cache
 import add_check
@@ -344,7 +345,7 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
         workspace_deal(deal, conn)
         fix_id = body.get("fix_id")
         try:
-            result = recheck.recheck(conn, deal, int(fix_id) if fix_id is not None else None, model_client())
+            result = deal_catalogue.recheck(conn, deal, int(fix_id) if fix_id is not None else None, model_client())
         except extraction_cache.ExtractionFailed:
             raise HTTPException(status_code=409, detail=(
                 "This review needs the model to read new or changed documents. Restart the server with the API key "
@@ -465,14 +466,24 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
         return {"ok": True}
 
     # --- Product catalogue (16 Oct): the published catalogue plus capabilities added in the app ----------------------
+    # 20 Oct: one catalogue per vendor. ?deal= opens the catalogue that deal is checked against; ?vendor= opens a vendor's directly
+    # (the home screen's switch); neither means Elva's, as before.
+    def catalogue_vendor(conn, deal, vendor):
+        if deal:
+            return deal_catalogue.vendor_of(workspace_deal(deal, conn))
+        try:
+            return catalogue_store.check_vendor(vendor)
+        except catalogue_store.CatalogueError:
+            raise HTTPException(status_code=404, detail=NOT_FOUND) from None
+
     @app.get("/api/catalogue")
-    def cat_view(conn=Depends(db)):
-        return catalogue_store.view(conn)
+    def cat_view(deal: str | None = Query(default=None), vendor: str | None = Query(default=None), conn=Depends(db)):
+        return catalogue_store.view(conn, catalogue_vendor(conn, deal, vendor))
 
     @app.post("/api/catalogue/capabilities", dependencies=[Depends(write_guard)])
     def cat_add(body: dict = Body(...), conn=Depends(db)):
         try:
-            return {"capability": catalogue_store.add_capability(conn, body)}
+            return {"capability": catalogue_store.add_capability(conn, body, body.get("vendor"))}
         except catalogue_store.CatalogueError as exc:
             raise HTTPException(status_code=exc.status, detail=str(exc)) from None
 

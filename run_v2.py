@@ -23,12 +23,15 @@ import sealed_run
 DEV_DEALS = ["harbour_bank", "practice_cases", "hard_cases", "coral_pay"]
 # Demo deals (16 Oct): written after v2 was frozen, with no labels. One run each, compared by hand with the deal's
 # BRIEF.md ("Intended findings"); the saved output becomes the deal's seed in config.V2_SEED_FILES. Not an evaluation.
-DEMO_DEALS = ["alder_bank"]
+DEMO_DEALS = ["alder_bank", "noma_journeys"]  # noma_journeys (20 Oct): Aivuna's catalogue, the same pipeline
 SEALED_V2 = "atlas_remit"
 
 
-def _catalogue() -> dict:
-    return json.loads((config.DATA_DIR / "catalogue.json").read_text(encoding="utf-8"))
+def _catalogue(deal: str = None) -> dict:
+    """The catalogue a deal is checked against: its vendor's published file (Elva's for every deal but a non-Elva demo)."""
+    import deal_catalogue
+    path = deal_catalogue.path_for(deal) if deal else None
+    return json.loads((path or config.DATA_DIR / "catalogue.json").read_text(encoding="utf-8"))
 
 
 def run_deal(client, deal: str, catalogue: dict) -> dict:
@@ -103,7 +106,7 @@ def demo(client, deal: str) -> dict:
         raise sealed_run.Refused(f"{deal} is not a demo deal")
     docs = detect_v2.deal_documents(deal)
     return {"kind": "v2_demo", "v2_version": detect_v2.V2_VERSION, "model": config.EXTRACTION_MODEL,
-            "deals": [{"deal": deal, **detect_v2.review(client, docs, _catalogue())}]}
+            "deals": [{"deal": deal, **detect_v2.review(client, docs, _catalogue(deal))}]}
 
 
 def render_demo(out: dict) -> str:

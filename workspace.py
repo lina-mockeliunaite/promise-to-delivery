@@ -9,6 +9,7 @@ import re
 
 import adapters
 import config
+import deal_catalogue
 import evidence_text
 import ledger_fixes
 
@@ -372,7 +373,8 @@ def register(conn, slug: str) -> dict:
             if arow_terms and json.loads(arow_terms).get("v2"):  # v2: the verifier's own one-line statements
                 auth_plain, pres_plain = arow_ev or "", arow_detail or ""
             else:
-                auth_plain = evidence_text.approval_text(arow_auth, arow_lang, refs_a, json.loads(arow_terms) if arow_terms else None)
+                auth_plain = evidence_text.approval_text(arow_auth, arow_lang, refs_a, json.loads(arow_terms) if arow_terms else None,
+                                                       deal_catalogue.path_for(slug))
                 pres_plain = presence_sentence(conn, {"presence": arow_pres, "presence_detail": arow_detail, "refs": refs_a,
                                                       "review_id": arow_review, "commitment_id": cid})
             if k == 0:
@@ -661,7 +663,7 @@ def overview(conn, slug: str) -> dict:
     did = ledger_fixes.deal_id(conn, slug)
     labels = document_labels(conn, did)
     import catalogue_store  # 17 Oct: the catalogue the checks use, to show a limit's number beside the gap
-    cat = catalogue_store.effective(conn)
+    cat = deal_catalogue.load(conn, slug)  # this deal's vendor catalogue
     fresh = reg["freshness"]
     can_decide, _ = integrity.is_current(conn, did)
     if fresh["state"] == "Up to date" and not can_decide:

@@ -55,6 +55,10 @@ export const resolveByNote = (deal, body) => postJson(`${d(deal)}/resolve-note`,
 export const completeHandover = (deal, body) => postJson(`${d(deal)}/handover/complete`, body);
 export const fetchHandover = (deal) => getJson(`${d(deal)}/handover`);
 // Product catalogue (16 Oct): the published catalogue plus capabilities added in the app.
-export const fetchCatalogue = () => getJson("/api/catalogue");
+// 20 Oct: one catalogue per vendor. { deal } opens the catalogue that deal is checked against, { vendor } a vendor's directly.
+export const fetchCatalogue = ({ deal, vendor } = {}) => {
+  const q = deal ? `?deal=${encodeURIComponent(deal)}` : vendor ? `?vendor=${encodeURIComponent(vendor)}` : "";
+  return getJson(`/api/catalogue${q}`);
+};
 export const addCapability = (body) => postJson("/api/catalogue/capabilities", body);
 export const fetchDocumentText = (deal, versionId) => getJson(`${d(deal)}/documents/text?version=${encodeURIComponent(versionId)}`);

@@ -2,7 +2,7 @@
 // Visibility only. Every number comes from /api/workspace/deals; there are no invented metrics, statuses or actions.
 import { useMemo, useState } from "react";
 import * as api from "./api.js";
-import { FILTERS, SORTS, counts, initials, page, relativeTime, visibleDeals } from "./deals.js";
+import { FILTERS, SORTS, counts, initials, lastVendor, page, relativeTime, rememberVendor, vendorsOf, visibleDeals } from "./deals.js";
 import { commitmentsNeedText, dealsText, plainName } from "./dealpage.js";
 import CatalogueModal from "./CatalogueModal.jsx";
 import { DESCRIPTION, FICTIONAL, NAME, TAGLINE } from "./brand.js";
@@ -100,6 +100,8 @@ export default function Deals({ deals, onOpen, onCreated }) {
   const [pageNo, setPageNo] = useState(1);
   const [catalogue, setCatalogue] = useState(false);
 
+  const vendors = useMemo(() => vendorsOf(deals), [deals]);
+  const open = (d) => { if (d.vendor) rememberVendor(d.vendor); onOpen(d.deal); }; // the catalogue switch opens on the vendor of the deal opened last
   const n = useMemo(() => counts(deals), [deals]);
   const rows = useMemo(() => visibleDeals(deals, { filter, query, sort }), [deals, filter, query, sort]);
   const shown = page(rows, pageNo);
@@ -122,7 +124,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
           <NewDeal onCreated={onCreated} />
         </div>
       </section>
-      {catalogue && <CatalogueModal onClose={() => setCatalogue(false)} onChanged={onCreated ? () => onCreated(null) : undefined} />}
+      {catalogue && <CatalogueModal vendors={vendors} vendor={lastVendor(vendors)} onClose={() => setCatalogue(false)} onChanged={onCreated ? () => onCreated(null) : undefined} />}
 
       <section className="dl-bar-row">
         <div className="dl-tabs" role="tablist" aria-label="Filter deals">
@@ -164,7 +166,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
             </thead>
             <tbody>
               {shown.rows.map((d) => (
-                <tr key={d.deal} className={d.handover_complete ? "is-frozen" : ""} onClick={() => onOpen(d.deal)}>
+                <tr key={d.deal} className={d.handover_complete ? "is-frozen" : ""} onClick={() => open(d)}>
                   <td>
                     <span className="dl-deal-cell">
                       <span className="dl-tile" aria-hidden="true">{initials(d.name)}</span>
@@ -191,7 +193,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
                   </td>
                   <td className="dl-right">
                     <button type="button" className={`dl-open ${d.handover_complete ? "is-muted" : ""}`}
-                            onClick={(e) => { e.stopPropagation(); onOpen(d.deal); }}>
+                            onClick={(e) => { e.stopPropagation(); open(d); }}>
                       {d.handover_complete ? "Open record" : "Open deal"} <Icon d={ICONS.arrow} size={14} />
                     </button>
                   </td>

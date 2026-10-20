@@ -30,6 +30,14 @@ CREATE TRIGGER IF NOT EXISTS catalogue_additions_append_only_d BEFORE DELETE ON 
 BEGIN SELECT RAISE(ABORT, 'catalogue additions are never deleted'); END;
 """
 
+# 20 Oct: one catalogue per vendor. Elva's is the published file plus the capabilities people add in the app, exactly as before.
+# Any other vendor's is its published file only: it cannot be added to here, and an Elva addition never touches it.
+DEFAULT_VENDOR = "elva"
+VENDORS = {
+    "elva": {"name": "Elva", "file": "catalogue.json"},
+    "aivuna": {"name": "Aivuna", "file": "catalogue_aivuna.json"},
+}
+
 STATUSES = {"generally_available": "Generally available", "beta": "Beta", "roadmap": "Roadmap"}
 SELLABLE = {"standard": "Standard", "requires_named_approval": "Needs a named approval", "not_sellable": "Not sellable"}
 REGION = re.compile(r"^[A-Z]{2}$")
@@ -43,12 +51,19 @@ class CatalogueError(Exception):
         self.status = status
 
 
-def published_path() -> Path:
-    return config.DATA_DIR / "catalogue.json"
+def check_vendor(vendor) -> str:
+    vendor = vendor or DEFAULT_VENDOR
+    if vendor not in VENDORS:
+        raise CatalogueError(f"Unknown vendor {vendor!r}.", 404)
+    return vendor
 
 
-def published_bytes() -> bytes:
-    return published_path().read_bytes()
+def published_path(vendor=None) -> Path:
+    return config.DATA_DIR / VENDORS[check_vendor(vendor)]["file"]
+
+
+def published_bytes(vendor=None) -> bytes:
+    return published_path(vendor).read_bytes()
 
 
 def _has(conn) -> bool:
@@ -69,10 +84,11 @@ def additions(conn) -> list:
         "SELECT capability_json, added_by, created_at FROM catalogue_additions ORDER BY id")]
 
 
-def effective_bytes(conn=None) -> bytes:
-    """The catalogue the checks use: the published file, plus additions if there are any."""
-    raw = published_bytes()
-    extra = additions(conn)
+def effective_bytes(conn=None, vendor=None) -> bytes:
+    """The catalogue the checks use: the published file, plus additions if there are any (Elva's only)."""
+    vendor = check_vendor(vendor)
+    raw = published_bytes(vendor)
+    extra = additions(conn) if vendor == DEFAULT_VENDOR else []
     if not extra:
         return raw  # byte for byte: hashes and cache keys unchanged
     cat = json.loads(raw.decode("utf-8"))
@@ -80,8 +96,8 @@ def effective_bytes(conn=None) -> bytes:
     return json.dumps(cat, indent=2, ensure_ascii=False).encode("utf-8")
 
 
-def effective(conn=None) -> dict:
-    return json.loads(effective_bytes(conn).decode("utf-8"))
+def effective(conn=None, vendor=None) -> dict:
+    return json.loads(effective_bytes(conn, vendor).decode("utf-8"))
 
 
 def _next_id(cat: dict) -> str:
@@ -89,8 +105,10 @@ def _next_id(cat: dict) -> str:
     return f"CAP-{(max(nums) + 1 if nums else 1):03d}"
 
 
-def add_capability(conn, body: dict) -> dict:
-    """Validate and append one new capability. Returns it as the catalogue view shows it."""
+def add_capability(conn, body: dict, vendor=None) -> dict:
+    """Validate and append one new capability. Returns it as the catalogue view shows it. Elva's catalogue only."""
+    if check_vendor(vendor) != DEFAULT_VENDOR:
+        raise CatalogueError(f"{VENDORS[vendor]['name']}'s catalogue is a published file; capabilities cannot be added to it here.", 409)
     ensure_schema(conn)
     body = body or {}
     name = (body.get("name") or "").strip() if isinstance(body.get("name"), str) else ""
@@ -162,9 +180,10 @@ def _leaves(node: dict, path: list):
                 yield from _leaves(child, path + [name])
 
 
-def view(conn=None) -> dict:
-    cat = effective(conn)
-    added = {a["entry"]["id"]: a for a in additions(conn)}
+def view(conn=None, vendor=None) -> dict:
+    vendor = check_vendor(vendor)
+    cat = effective(conn, vendor)
+    added = {a["entry"]["id"]: a for a in additions(conn)} if vendor == DEFAULT_VENDOR else {}
     caps, regions = [], set()
     for c in cat["capabilities"]:
         rows = []
@@ -182,7 +201,8 @@ def view(conn=None) -> dict:
         a = added.get(c["id"])
         caps.append({"id": c["id"], "name": c["name"], "integrations": c.get("prebuilt_integrations") or [], "rows": rows,
                      "added": {"by": a["added_by"], "at": a["added_at"]} if a else None})
-    return {"as_of": cat.get("as_of"), "coverage": cat.get("coverage"), "unlisted_rule": cat.get("unlisted_rule"),
+    return {"vendor": vendor, "vendor_name": VENDORS[vendor]["name"], "can_add": vendor == DEFAULT_VENDOR,
+            "as_of": cat.get("as_of"), "coverage": cat.get("coverage"), "unlisted_rule": cat.get("unlisted_rule"),
             "regions": sorted(regions), "capabilities": caps, "additions": len(added),
             "statuses": [{"value": k, "label": v} for k, v in STATUSES.items()],
             "sellable": [{"value": k, "label": v} for k, v in SELLABLE.items()]}

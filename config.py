@@ -98,6 +98,7 @@ ALLOWED_DEALS = [
     "coral_pay",  # sealed test deal for v1; run once 10 Oct 06:12 UTC, released as development data since
     "atlas_remit",  # sealed test deal for v2; run once 10 Oct 08:44 UTC, released as development data since
     "alder_bank",  # demo deal, 16 Oct: written after v2 was frozen, no labels; not an evaluation set
+    "noma_journeys",  # demo deal, 20 Oct: Aivuna's catalogue, same pipeline; no labels; not an evaluation set
 ]
 
 

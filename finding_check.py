@@ -19,6 +19,7 @@ import config
 import extraction_cache
 import ledger_fixes
 import ledger_import
+import deal_catalogue
 import recheck
 import workspace
 
@@ -82,7 +83,7 @@ def check(conn, slug: str, issue_id, *, confirmed_doc_type, filename: str, text:
     v2 = ledger_v2.is_v2(conn, did)
     if v2 and client is None:
         canonical = adapted["canonical_text"] if adapted else ledger_import.markdown_adapter(text.encode("utf-8"))["canonical_text"]
-        if ledger_v2.needs_model(conn, slug, str(source_key) if source_key else None, confirmed_doc_type, canonical):
+        if deal_catalogue.needs_model(conn, slug, str(source_key) if source_key else None, confirmed_doc_type, canonical):
             raise CheckError(NEEDS_KEY, 409)
     elif confirmed_doc_type in config.EXTRACTABLE_DOC_TYPES and client is None:
         fields = extraction_cache.key_fields(_canonical_sha(text, adapted), confirmed_doc_type)
@@ -115,7 +116,7 @@ def check(conn, slug: str, issue_id, *, confirmed_doc_type, filename: str, text:
         raise
 
     try:
-        result = recheck.recheck(conn, slug, fix_id, client)
+        result = deal_catalogue.recheck(conn, slug, fix_id, client)
     except extraction_cache.ExtractionFailed:
         raise CheckError("The document was saved, but the check could not run because the model is not available. "
                          "Restart the server with the API key set, then choose Review deal.", 409) from None

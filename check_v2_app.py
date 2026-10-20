@@ -21,7 +21,9 @@ import config
 import finding_check
 import ledger
 import ledger_v2
+import deal_catalogue
 import recheck
+import reset_demo
 import workspace
 
 SCEN = config.ROOT / "data" / "scenarios"
@@ -42,7 +44,7 @@ def run(client, db_path) -> list:
     def check(name, ok, detail=""):
         results.append((name, bool(ok), detail))
 
-    built = ledger_v2.build(db_path, client=None)
+    built = reset_demo.build(db_path)
     conn = ledger.connect(db_path)
     try:
         hb = built["harbour_bank"]
@@ -70,7 +72,7 @@ def run(client, db_path) -> list:
         new = sorted(k for k, v in after.items() if v[0] != "Resolved" and k not in before)
         check("3 newly raised findings (judge by eye; none expected)", True, f"{new or 'none'}")
 
-        r = recheck.recheck(conn, "harbour_bank", None, client)
+        r = deal_catalogue.recheck(conn, "harbour_bank", None, client)
         check("4 unchanged rerun: no model call, nothing changes", r["model_calls"] == 0 and _issues(conn) == after,
               f"calls {r['model_calls']}")
     finally:

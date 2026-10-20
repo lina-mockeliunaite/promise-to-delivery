@@ -20,6 +20,7 @@ import ledger
 import ledger_consolidate
 import ledger_fixes
 import ledger_import
+import deal_catalogue
 import recheck
 
 
@@ -93,7 +94,7 @@ def run_scenario(scenario: dict, client, workdir: Path) -> dict:
             fix_id = ledger_fixes.create_fix(conn, slug, f["route"], f["owner"], f["rationale"],
                                              _issue_ids(conn, slug, f["issues"]), [(evidence_version, "whole document", None)])
             ledger_fixes.approve_fix(conn, fix_id, f["approved_by"])
-            rechecks.append(recheck.recheck(conn, slug, fix_id, client))
+            rechecks.append(deal_catalogue.recheck(conn, slug, fix_id, client))
         states = recheck.status_by_name(conn, slug)
         problems = compare_expected(states, scenario["expect"])
         return {"id": scenario["id"], "name": scenario["name"], "passed": not problems, "problems": problems,
@@ -109,7 +110,7 @@ def control_unchanged_rerun(workdir: Path) -> dict:
         out = {}
         for slug in config.LEDGER_DEALS:
             before = recheck.status_by_name(conn, slug)
-            result = recheck.recheck(conn, slug, None, client=None)
+            result = deal_catalogue.recheck(conn, slug, None, None)
             after = recheck.status_by_name(conn, slug)
             out[slug] = {"model_calls": result["model_calls"], "unchanged": before == after, "checks": result["checks"]}
         return {"passed": all(v["model_calls"] == 0 and v["unchanged"] for v in out.values()), "deals": out}

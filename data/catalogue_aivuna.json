@@ -1,0 +1,244 @@
+{
+  "vendor": "Aivuna",
+  "as_of": "2026-10-01",
+  "coverage": "complete",
+  "unlisted_rule": "A region, channel, language or integration absent from this catalogue is not offered. Voice (phone) support is not offered: the assistant supports chat and email only. It cannot be sold under a named exception; only changing or withdrawing the promise resolves it.",
+  "schema_version": 2,
+  "schema_note": "Same shape as the other published catalogues: capability -> region -> (channel) with status, sellability, limits and roadmap_date at the leaf. CAP-003 lists the channels the assistant supports (chat and email); a channel not listed there is not offered. CAP-002 lists the supported languages in supported_languages. CAP-008 is included in no standard package and needs a named internal approval for each deal. Zendesk and Freshdesk are named as illustrative helpdesk integrations only; the connectors and their statuses are fictional and no partnership is implied.",
+  "capabilities": [
+    {
+      "id": "CAP-001",
+      "name": "AI customer-support assistant",
+      "regions": {
+        "SG": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        },
+        "AU": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        }
+      }
+    },
+    {
+      "id": "CAP-002",
+      "name": "Multilingual support",
+      "regions": {
+        "SG": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {
+            "supported_languages": [
+              "English",
+              "Mandarin Chinese",
+              "Cantonese",
+              "Japanese",
+              "Korean",
+              "Thai",
+              "Vietnamese",
+              "Bahasa Indonesia",
+              "Malay",
+              "Hindi",
+              "Tagalog",
+              "French"
+            ]
+          },
+          "roadmap_date": null
+        },
+        "AU": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {
+            "supported_languages": [
+              "English",
+              "Mandarin Chinese",
+              "Cantonese",
+              "Japanese",
+              "Korean",
+              "Thai",
+              "Vietnamese",
+              "Bahasa Indonesia",
+              "Malay",
+              "Hindi",
+              "Tagalog",
+              "French"
+            ]
+          },
+          "roadmap_date": null
+        }
+      }
+    },
+    {
+      "id": "CAP-003",
+      "name": "Support channels",
+      "regions": {
+        "SG": {
+          "modes": {
+            "chat": {
+              "status": "generally_available",
+              "sellable": "standard",
+              "limits": {},
+              "roadmap_date": null
+            },
+            "email": {
+              "status": "generally_available",
+              "sellable": "standard",
+              "limits": {},
+              "roadmap_date": null
+            }
+          }
+        },
+        "AU": {
+          "modes": {
+            "chat": {
+              "status": "generally_available",
+              "sellable": "standard",
+              "limits": {},
+              "roadmap_date": null
+            },
+            "email": {
+              "status": "generally_available",
+              "sellable": "standard",
+              "limits": {},
+              "roadmap_date": null
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "CAP-004",
+      "name": "Helpdesk integrations",
+      "prebuilt_integrations": [
+        "Zendesk",
+        "Freshdesk"
+      ],
+      "regions": {
+        "SG": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        },
+        "AU": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        }
+      }
+    },
+    {
+      "id": "CAP-005",
+      "name": "Booking system connector",
+      "regions": {
+        "SG": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        },
+        "AU": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        }
+      }
+    },
+    {
+      "id": "CAP-006",
+      "name": "Refund and change request handling",
+      "regions": {
+        "SG": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        },
+        "AU": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        }
+      }
+    },
+    {
+      "id": "CAP-007",
+      "name": "Human agent handoff",
+      "regions": {
+        "SG": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        },
+        "AU": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        }
+      }
+    },
+    {
+      "id": "CAP-008",
+      "name": "Dedicated launch specialist",
+      "regions": {
+        "SG": {
+          "status": "generally_available",
+          "sellable": "requires_named_approval",
+          "limits": {},
+          "roadmap_date": null
+        },
+        "AU": {
+          "status": "generally_available",
+          "sellable": "requires_named_approval",
+          "limits": {},
+          "roadmap_date": null
+        }
+      }
+    },
+    {
+      "id": "CAP-009",
+      "name": "Conversation analytics",
+      "regions": {
+        "SG": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        },
+        "AU": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        }
+      }
+    },
+    {
+      "id": "CAP-010",
+      "name": "Knowledge base sync",
+      "regions": {
+        "SG": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        },
+        "AU": {
+          "status": "generally_available",
+          "sellable": "standard",
+          "limits": {},
+          "roadmap_date": null
+        }
+      }
+    }
+  ]
+}
