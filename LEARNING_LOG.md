@@ -169,3 +169,18 @@
 ## 2026-10-06 — Checkpoint 1 (real reviewer), integrity inspection and Part B
 
 Today’s checkpoint showed me how much the UI was getting in the way of understanding the product. I struggled with selecting the right evidence myself, and the recheck didn’t make it obvious what had closed and what was still open. I understand why we chose deal-wide re-confirmation: a new pricing note could affect other commitments, so we can’t assume their earlier decisions still apply. In the next demo I’ll let the reviewer find the issues without helping, then show the evidence upload and check result together beside the issue.
+
+## 2026-10-07 to 2026-10-20 — Sealed results, the move to visibility, and building the UI with AI
+
+*Drafted by Claude on 20 Oct from the build record, at Lina's request; Lina to edit any line that isn't true for her.*
+
+**The sealed run taught me the most.** My rules found 1 of the 3 planted issues on Coral Pay. A single model call over all the documents found all three. The rules had been tuned on my development wording and did not generalise. So I rebuilt detection: now the model proposes each gap with exact quotes, and code rejects anything it can't verify. On the second sealed deal, Atlas Remit, that found 8 of 8 issues with no false flags. What the pipeline adds is not better detection. It's evidence-bound findings, a recheck, and a record you can trust.
+
+**Reviewers.** The COO and the Delivery lead both said "visibility, not workflow", so I took the workflow off the screen. Twice, though, I explained the app before the reviewer had tried it alone. That means I still don't know whether a first-time viewer understands it unaided. Praise for a mockup is not a test of it.
+
+**Today, building the UI with AI:**
+- Design tools fill gaps with plausible detail. Some of it was false: approvals, compliance claims, money figures. In a product about evidence, I have to strip out everything the data can't back up.
+- "What the code verified" and "what the model wrote" can look alike in the data, so the label matters.
+- One user action should either succeed completely or leave nothing behind. A failed check had been saving document versions. The fix was to check before writing, and to set a version aside rather than delete it.
+- Tests protect earlier rules: a test that no internal key ever reaches the screen stopped a later change.
+- **Practical:** each Terminal window starts at home, an environment variable lives only in the window where it was set, and a server left running from a closed window keeps serving old code.
