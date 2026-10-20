@@ -1,0 +1,131 @@
+{
+  "input_sha256": "8a6362c62dd24ec50b6c4619ff64da52962abcf4e15a599e9a51c1c39f1c3d0d",
+  "deal": "alder_bank",
+  "v2_version": 2,
+  "model": "claude-sonnet-5",
+  "findings": [
+    {
+      "kind": "absolute_limit",
+      "commitment": "Elva promises to host Alder's dedicated environment on Microsoft Azure in the Australia East region.",
+      "promise_quotes": [
+        {
+          "source_id": "AB-03",
+          "quote": "Elva will host Alder's dedicated environment on Microsoft Azure in the Australia East region."
+        }
+      ],
+      "catalogue_path": "CAP-019/AU",
+      "unlisted_value": "Microsoft Azure",
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "Regional cloud deployment in Australia only supports AWS or GCP, so hosting on Microsoft Azure cannot be delivered or sold under any exception."
+    },
+    {
+      "kind": "conflicting_terms",
+      "commitment": "Elva promises to host Alder's dedicated environment on Microsoft Azure, but the SOW commits to AWS.",
+      "promise_quotes": [
+        {
+          "source_id": "AB-03",
+          "quote": "Elva will host Alder's dedicated environment on Microsoft Azure in the Australia East region."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": {
+        "source_id": "AB-06",
+        "quote": "Provider will host the Customer's dedicated environment on Amazon Web Services in the Sydney region."
+      },
+      "note_quote": null,
+      "subject": "environment",
+      "promised_value": "Microsoft Azure in the Australia East region",
+      "contract_value": "Amazon Web Services in the Sydney region",
+      "reason": "The RFP response commits to Azure hosting while the SOW commits to AWS hosting for the same dedicated environment; these are incompatible and will confuse delivery and the customer."
+    },
+    {
+      "kind": "over_limit",
+      "commitment": "Elva promises real-time scoring will handle 750,000 payments per day by the end of the first year.",
+      "promise_quotes": [
+        {
+          "source_id": "AB-04",
+          "quote": "Real-time scoring will handle up to 750,000 payments per day by the end of the first year."
+        }
+      ],
+      "catalogue_path": "CAP-003/AU",
+      "unlisted_value": null,
+      "limit_name": "max_transactions_per_day",
+      "promised_quantity": 750000,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": {
+        "source_id": "AB-05",
+        "quote": "No approval for 750,000/day"
+      },
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "Real-time transaction monitoring in Australia is capped at 500,000 transactions per day, but Elva has promised 750,000 per day with no approved exception recorded."
+    },
+    {
+      "kind": "contract_gap",
+      "commitment": "Elva promises real-time scoring will scale to 750,000 payments per day by the end of the first year.",
+      "promise_quotes": [
+        {
+          "source_id": "AB-04",
+          "quote": "Real-time scoring will handle up to 750,000 payments per day by the end of the first year."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [
+        "750,000 payments per day",
+        "end of the first year"
+      ],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The SOW only commits to 200,000 payments per day at launch and says nothing about scaling to 750,000 within the first year, leaving this capacity promise unenforceable and undelivered in the contract."
+    },
+    {
+      "kind": "conflicting_terms",
+      "commitment": "Elva promises all outbound instant payments will be scored in real time before release, but the SOW only scores payments of AUD 1,000 or more in real time.",
+      "promise_quotes": [
+        {
+          "source_id": "AB-04",
+          "quote": "All outbound instant payments will be scored in real time before they are released, from the 1 February 2027 launch."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": {
+        "source_id": "AB-06",
+        "quote": "Outbound instant payments of AUD 1,000 or more are scored in real time before the payment is released."
+      },
+      "note_quote": null,
+      "subject": "outbound instant payments",
+      "promised_value": "All outbound instant payments scored in real time before release",
+      "contract_value": "Only outbound instant payments of AUD 1,000 or more are scored in real time; payments below AUD 1,000 are scored in batches hourly after release",
+      "reason": "The proposal promises every outbound instant payment is screened before release, but the SOW's Annex A only screens payments at or above AUD 1,000 in real time and screens smaller payments after the fact, directly undercutting the 'stop it before it leaves' promise the customer bought."
+    }
+  ],
+  "cost_usd": 0.092654,
+  "origin": "model_call",
+  "usage": {
+    "input_tokens": 9587,
+    "output_tokens": 7348
+  }
+}
