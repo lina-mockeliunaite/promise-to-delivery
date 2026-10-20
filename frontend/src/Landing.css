@@ -1,0 +1,12 @@
+/* Landing page (20 Oct). Reuses the deal page's tokens through .dp; only the layout is new. */
+.land { min-height: 100vh; display: flex; flex-direction: column; }
+.land-inner { flex: 1; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 48px; align-items: center; max-width: 1040px; width: 100%; margin: 0 auto; padding: 64px 24px; }
+.land-intro { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
+.land-intro h1 { margin: 6px 0 0; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; color: var(--ink); font-weight: 700; }
+.land-desc { margin: 0; font-size: 16px; line-height: 1.55; color: var(--body); max-width: 34rem; }
+.land-aud { margin: 0; font-size: 13px; color: var(--muted); }
+.land-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-top: 8px; }
+.land-primary { padding: 10px 18px; font-size: 14px; }
+.land-example { display: flex; flex-direction: column; gap: 6px; padding: 20px 24px; }
+.land-example .dp-prow-title { font-size: 16px; }
+@media (max-width: 820px) { .land-inner { grid-template-columns: 1fr; gap: 28px; padding: 36px 16px; } .land-intro h1 { font-size: 28px; } }

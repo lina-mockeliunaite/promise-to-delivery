@@ -10,14 +10,14 @@ import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime, uploadKind, uploadMismatch } from "./format.js";
 import {
-  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, docLabel, groupByStage, hashFor, isSignedDoc,
+  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, coverageLine, docCount, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
   mismatchParts, missingForHandover, handoverChecklist, plainName, readHash, recordedBy, rowTitle, firstPromised, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
 import BriefCard from "./BriefCard.jsx";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
 import { Drawer, DrawerHead, CommitmentView, DocumentView, MismatchSentence, Icon as DIcon, ICON } from "./Drawer.jsx";
-import { NAME, TAGLINE } from "./brand.js";
+import { FICTIONAL, NAME, TAGLINE } from "./brand.js";
 import CatalogueModal from "./CatalogueModal.jsx";
 import "./DealPage.css";
 
@@ -181,9 +181,7 @@ function ChangePanel({ change, titleOf, onClose }) {
       <div className="dp-change-body">
         <div className="dp-change-head">
           <h2><Icon d={I.sync} size={18} /> After adding {change.doc}</h2>
-          <p className="dp-change-model"><span className="dp-dot dp-dot-green" />
-            {change.modelCalls ? "The model read the new document; code checked every finding again." : "No model call was needed: code checked every finding again."}
-          </p>
+          <p className="dp-change-result">{changeResult(change)}</p>
         </div>
         <div className="dp-change-rows">
           {closed.map((x) => (
@@ -228,6 +226,9 @@ function ChangePanel({ change, titleOf, onClose }) {
             <button type="button" className="dp-link-btn dp-done" onClick={onClose}>Done</button>
           </span>
         </div>
+        <p className="dp-change-model">
+          {change.modelCalls ? "The model read the new document; code checked every finding again." : "No model call was needed: code checked every finding again."}
+        </p>
       </div>
     </section>
   );
@@ -298,7 +299,7 @@ function NoteForm({ deal, c, titleId, name, setName, canDecide, freshnessLabel, 
           </label>
         </div>
         <label className="dp-field">
-          <span>What was agreed, and who will act on it</span>
+          <span>Note or recorded agreement</span>
           <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={5} maxLength={2000} autoFocus />
         </label>
         <div className="dp-author">
@@ -474,6 +475,9 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
 
 function DocumentList({ deal, stages, documents, name, setName, onChanged, onView, onAdd, onHelp, activeDoc }) {
   const [draft, setDraft] = useState("");
+  const [toggled, setToggled] = useState({}); // stage key -> true/false once the person clicks it; until then only the current stage is open
+  const open0 = journeyOpen(stages);
+  const isOpen = (key) => toggled[key] ?? open0.has(key);
   const [linking, setLinking] = useState(null);
   const [url, setUrl] = useState("");
   const [error, setError] = useState(null);
@@ -529,17 +533,17 @@ function DocumentList({ deal, stages, documents, name, setName, onChanged, onVie
           <li key={s.key} className={`dp-tl is-${s.state} ${s.gaps_started > 0 ? "has-gaps" : ""}`}>
             <span className="dp-tl-dot" aria-hidden="true" />
             <div className="dp-tl-body">
-              <span className="dp-tl-name">
-                {s.label}
+              <button type="button" className="dp-tl-name dp-tl-toggle" aria-expanded={isOpen(s.key)} disabled={s.docs.length === 0}
+                      onClick={() => setToggled((t) => ({ ...t, [s.key]: !isOpen(s.key) }))}>
+                <span>{s.label}<span className="dp-tl-count"> · {docCount(s.docs.length)}</span></span>
                 <span className="dp-tl-right">
                   {s.gaps_started > 0 && <span className="dp-stage-gaps">{s.gaps_started} {s.gaps_started === 1 ? "gap" : "gaps"} started here</span>}
                   {s.state === "current" && <span className="dp-tl-tag">Current stage</span>}
                   {s.state === "todo" && <span className="dp-tl-tag">Not yet</span>}
                 </span>
-              </span>
+              </button>
               {s.key === "contracting" && s.note && <span className="dp-tl-note">{s.note}</span>}
-              {s.docs.length > 0 && <ul className="dp-docs">{s.docs.map(doc)}</ul>}
-              {s.docs.length === 0 && s.state === "done" && <span className="dp-tl-empty">No documents</span>}
+              {s.docs.length > 0 && isOpen(s.key) && <ul className="dp-docs">{s.docs.map(doc)}</ul>}
             </div>
           </li>
         ))}
@@ -715,6 +719,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
                 <AttentionChip open={openRows.length} noted={(reg.noted_rows || []).length} />
               </div>
             </div>
+            {coverageLine(reg.check_coverage?.rejected) && <p className="dp-coverage">{coverageLine(reg.check_coverage.rejected)}</p>}
             {promiseRows.length === 0 && <p className="dp-faint dp-pad">No commitments with gaps on the current documents.</p>}
             <ul className="dp-plist">
               {promiseRows.map(({ c, status }) => (
@@ -763,7 +768,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
                   </span>
                 ) : (
                   <button type="button" className="dp-btn dp-btn-dark" disabled={missing.length > 0} onClick={() => setCompleting(true)}>
-                    <Icon d={I.check} /> Complete handover
+                    <Icon d={I.check} /> Lock handover record
                   </button>
                 )}
               </div>
@@ -771,8 +776,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
           </section>
 
           <footer className="dp-foot">
-            <strong>{NAME}</strong> · {TAGLINE}<br />
-            Lists commitments where the customer's expectation, the contract and what we can sell don't line up. Checked against the documents listed and the product catalogue. All companies, people and deals are fictional.
+            Lists commitments where the customer's expectation, the contract and what we can sell don't line up. Checked against the documents listed and the product catalogue. {FICTIONAL}
             {onClassic && SHOW_DETAILED && <> · <button type="button" className="dp-link-btn" onClick={onClassic}>Open the detailed view</button></>}
           </footer>
         </div>

@@ -1,14 +1,18 @@
 # Dealshape
 
-**See the deal as it was actually promised.**
+**Catch deal surprises before you sign.**
 
-When a deal is signed, Delivery inherits the contract. But the customer remembers the proposal, the RFP answers and the calls. Dealshape reads a deal's paper trail and shows the shape of the deal: what we're delivering, which commitments need attention and why, what people have agreed about them, and which documents were checked.
+Dealshape compares what the customer was promised with the contract and your product catalogue. It shows which commitments are missing, different or unsupported, with the source evidence. For B2B Sales and Delivery teams.
+
+The customer remembers the proposal, the RFP answers and the calls; the contract says what it says. Dealshape reads a deal's paper trail before signing and again at handover, and shows what we're delivering, which commitments need attention and why, what people have noted about them, and which documents were checked. When the handover is complete it locks that record for Delivery, Customer Success and Support.
 
 It flags two kinds of mismatch:
 - **promises stronger than the company authorised;**
 - **promises that never made it into the contract.**
 
-It is a **visibility tool, not a workflow tool.** It has no tasks, assignees, approvals or risk scores.
+It also says what it could not check: if the model proposed findings that failed verification against the documents, the count is shown.
+
+**Design principle:** visibility, not workflow. It has no tasks, assignees, approvals or risk scores.
 
 *Demonstrated on fictional deals with a complete capability catalogue.* It is a local prototype, built in October 2026 to learn how to design, build and evaluate an AI system end to end.
 

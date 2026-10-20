@@ -189,6 +189,47 @@ export function changeHeadline({ closed, opened, stillOpen }) {
   return `${parts.join(" · ")}.${tail}`;
 }
 
+// "What changed" leads with the result (20 Oct): what was found, then what is still open on the commitment. Built from the
+// finding labels only. A closed gap is never worded as "resolved"; the check found wording or an approval.
+const CLOSED_PHRASE = {
+  "No approval recorded": "Approval found",
+  "Missing from contract": "Contract wording found",
+  "Contract says something different": "Contract wording now matches the promise",
+};
+const OPEN_NOUN = {
+  "No approval recorded": "the approval gap",
+  "Missing from contract": "the contract gap",
+  "Contract says something different": "the contract difference",
+  "Not offered": "the not-offered gap",
+};
+export function changeResult({ closed = [], opened = [], stillOpen = [] }) {
+  const done = [...new Set(closed.map((x) => CLOSED_PHRASE[x.finding] ?? `${FINDING_SHORT[x.finding] ?? x.finding}: closed`))];
+  const nouns = [...new Set(stillOpen.map((x) => OPEN_NOUN[x.finding] ?? `the ${(FINDING_SHORT[x.finding] ?? x.finding).toLowerCase()} gap`))];
+  const promises = new Set(stillOpen.map((x) => x.promise)).size;
+  const parts = [...done];
+  if (nouns.length) {
+    const list = nouns.length > 1 ? `${nouns.slice(0, -1).join(", ")} and ${nouns[nouns.length - 1]}` : nouns[0];
+    parts.push(promises > 1 ? `${list} ${nouns.length > 1 ? "are" : "is"} still open on ${promises} commitments`
+      : `${list} on this commitment ${nouns.length > 1 ? "are" : "is"} still open`);
+  }
+  if (opened.length) parts.push(`${opened.length} new ${opened.length === 1 ? "gap" : "gaps"} found`);
+  if (!parts.length) return "Nothing closed and nothing new: the document did not change any gap.";
+  return `${parts.join(" · ")}${done.length && !nouns.length && !opened.length ? "" : "."}`;
+}
+
+// The one muted line under "Commitments" when proposed findings failed verification (20 Oct). Neutral: not a status, and it
+// changes no count or verdict. Nothing when there were none, or when the record does not hold the count.
+export function coverageLine(n) {
+  const k = Number(n);
+  if (!Number.isInteger(k) || k <= 0) return "";
+  return `${k} proposed ${k === 1 ? "finding" : "findings"} couldn't be verified against the documents and ${k === 1 ? "isn't" : "aren't"} shown.`;
+}
+
+// The sidebar journey (20 Oct): only the current stage starts expanded; a click toggles any stage. Counts stay visible on every
+// stage, so "which documents were checked" is answerable at a glance.
+export const journeyOpen = (stages) => new Set((stages ?? []).filter((s) => s.state === "current").map((s) => s.key));
+export const docCount = (n) => `${n} ${n === 1 ? "document" : "documents"}`;
+
 // The closing reason the check wrote when a gap closed ("the pricing note now records an approval..."), as a sentence.
 export function closingLine(reason) {
   const why = (reason ?? "").replace(/^Closed:\s*/, "").trim();
@@ -243,13 +284,12 @@ export function findingDetail(issue, contract = "") {
   return FINDING_DETAIL[issue.finding] ?? issue.finding;
 }
 
-// "First promised in the RFP response, 29 Sep": the earliest statement's source label and date.
+// "First found in the checked documents: RFP response, 29 Sep": the earliest statement's source label and date.
 export function firstPromised(statements) {
   const dated = (statements ?? []).filter((s) => s.doc_type_label);
   if (!dated.length) return "";
   const first = [...dated].sort((a, b) => (a.date || "9999").localeCompare(b.date || "9999"))[0];
-  const label = /^[A-Z][a-z]/.test(first.doc_type_label) ? first.doc_type_label[0].toLowerCase() + first.doc_type_label.slice(1) : first.doc_type_label;
-  return `First promised in the ${label}${first.date ? `, ${short(first.date)}` : ""}`;
+  return `First found in the checked documents: ${first.doc_type_label}${first.date ? `, ${short(first.date)}` : ""}`;
 }
 
 // The title shown for a commitment: the owner-confirmed plain title if there is one, otherwise the extracted name.
@@ -270,6 +310,13 @@ export function verdictLine({ open = 0, noted = 0, closed = 0 }) {
 export function attentionText(open, noted = 0) {
   if (open) return `${open} ${open === 1 ? "needs" : "need"} attention`;
   return noted ? `Nothing needs attention · ${noted} addressed by note` : "Nothing needs attention";
+}
+
+// The home list counts what it counts (20 Oct): tabs count deals, the column counts commitments.
+export const dealsText = (n) => `${n} ${n === 1 ? "deal" : "deals"}`;
+export function commitmentsNeedText(open, noted = 0) {
+  if (open) return `${open} ${open === 1 ? "commitment needs" : "commitments need"} attention`;
+  return attentionText(0, noted);
 }
 
 // Names are shown without the ", fictional" tag the demo data carries. Display only: nothing stored changes.

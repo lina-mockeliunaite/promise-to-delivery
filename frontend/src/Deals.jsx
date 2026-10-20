@@ -3,9 +3,9 @@
 import { useMemo, useState } from "react";
 import * as api from "./api.js";
 import { FILTERS, SORTS, counts, initials, page, relativeTime, visibleDeals } from "./deals.js";
-import { attentionText, plainName } from "./dealpage.js";
+import { commitmentsNeedText, dealsText, plainName } from "./dealpage.js";
 import CatalogueModal from "./CatalogueModal.jsx";
-import { NAME, TAGLINE } from "./brand.js";
+import { DESCRIPTION, FICTIONAL, NAME, TAGLINE } from "./brand.js";
 import "./Deals.css";
 
 const Icon = ({ d, size = 16 }) => (
@@ -44,16 +44,16 @@ function GapPill({ deal }) {
   if (deal.open_gaps === 0) {
     return (
       <span className="dl-gap dl-gap-none">
-        <Icon d={ICONS.check} size={12} /> {attentionText(0, noted)}
+        <Icon d={ICONS.check} size={12} /> {commitmentsNeedText(0, noted)}
       </span>
     );
   }
   if (deal.handover_complete) {
-    return <span className="dl-gap dl-gap-frozen">{deal.open_gaps} at handover{noted > 0 && <span className="dl-gap-sub">{noted} addressed by note</span>}</span>;
+    return <span className="dl-gap dl-gap-frozen">{deal.open_gaps} {deal.open_gaps === 1 ? "commitment" : "commitments"} at handover{noted > 0 && <span className="dl-gap-sub">{noted} addressed by note</span>}</span>;
   }
   return (
     <span className="dl-gap">
-      <span className="dl-dot" /> {attentionText(deal.open_gaps)}
+      <span className="dl-dot" /> {commitmentsNeedText(deal.open_gaps)}
       {noted > 0 && <span className="dl-gap-sub">{noted} addressed by note</span>}
     </span>
   );
@@ -110,15 +110,12 @@ export default function Deals({ deals, onOpen, onCreated }) {
       <header className="dl-brand"><strong>{NAME}</strong><span>{TAGLINE}</span></header>
       <section className="dl-head">
         <div>
-          <span className="dl-eyebrow">Sales to delivery handover</span>
+          <span className="dl-eyebrow">Before signing and at handover</span>
           <div className="dl-title-row">
-            <h1>Deals in handover</h1>
-            <span className="dl-count">{n.handover} {n.handover === 1 ? "deal" : "deals"}</span>
+            <h1>Deal reviews</h1>
+            <span className="dl-count">{dealsText(n.handover)}</span>
           </div>
-          <p className="dl-sub">
-            What Delivery is inheriting: commitments where the customer's expectation, the contract and what we can sell
-            don't line up, where they were first made, and the record frozen at handover.
-          </p>
+          <p className="dl-sub">{DESCRIPTION}</p>
         </div>
         <div className="dl-actions">
           <button type="button" className="dl-btn" onClick={() => setCatalogue(true)}><Icon d={ICONS.box} size={16} /> Product catalogue</button>
@@ -134,7 +131,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
                     className={`dl-tab ${filter === f.key ? "is-active" : ""}`}
                     onClick={() => { setFilter(f.key); setPageNo(1); }}>
               {f.label}
-              <span className={`dl-tab-n ${f.key === "open" ? "tone-amber" : ""}`}>{n[f.key]}</span>
+              <span className={`dl-tab-n ${f.key === "open" ? "tone-amber" : ""}`}>{dealsText(n[f.key])}</span>
             </button>
           ))}
         </div>
@@ -159,7 +156,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
             <thead>
               <tr>
                 <th scope="col">Deal</th>
-                <th scope="col">Need attention</th>
+                <th scope="col">Commitments needing attention</th>
                 <th scope="col">Deal owner</th>
                 <th scope="col">Last updated</th>
                 <th scope="col" className="dl-right"><span className="dl-sr">Action</span></th>
@@ -173,6 +170,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
                       <span className="dl-tile" aria-hidden="true">{initials(d.name)}</span>
                       <span className="dl-deal-text">
                         <span className="dl-deal-name">{d.name}{d.kind === "user" && <span className="dl-tag">Uploaded</span>}</span>
+                        {d.scope && <span className="dl-scope-line">{d.scope}</span>}
                         <StagePill deal={d} />
                       </span>
                     </span>
@@ -209,7 +207,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
         </div>
         <footer className="dl-foot">
           <span>
-            Showing <strong>{shown.rows.length}</strong> of <strong>{rows.length}</strong> {rows.length === 1 ? "deal" : "deals"} · Sorted by {sortLabel}
+            Showing <strong>{shown.rows.length}</strong> of <strong>{dealsText(rows.length)}</strong> · Sorted by {sortLabel}
           </span>
           <span className="dl-scope"><Icon d={ICONS.info} size={14} /> Lists commitments where the customer's expectation, the contract and what we can sell don't line up.</span>
           {shown.pages > 1 && (
@@ -221,7 +219,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
           )}
         </footer>
       </section>
-      <footer className="dl-pagefoot"><strong>{NAME}</strong> · {TAGLINE}</footer>
+      <footer className="dl-pagefoot">{FICTIONAL}</footer>
     </div>
   );
 }

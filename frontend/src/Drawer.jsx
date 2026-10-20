@@ -106,6 +106,7 @@ export function CommitmentView({ v, titleId, readOnly, me = "", onOpenDoc, onSee
     <>
       <DrawerHead id={titleId} title={v.title} chip={v.status} onClose={onClose} />
       <div className="dr-body">
+        {v.status !== "closed" && v.mismatch.length > 0 && <p className="dr-mismatch"><MismatchSentence parts={v.mismatch} /></p>}
         <section className="dr-sec">
           <h3 className="dr-label">Customer was told</h3>
           {v.told.map((t) => (
@@ -150,7 +151,7 @@ export function CommitmentView({ v, titleId, readOnly, me = "", onOpenDoc, onSee
           )}
           {v.ai.length > 0 && (
             <div className="dr-ai">
-              <span className="dr-ailabel">AI-written summary · quotes checked against the documents</span>
+              <span className="dr-ailabel">AI-written summary · quotes checked against the supplied documents</span>
               {v.ai.map((t) => <p key={t}>{t}</p>)}
             </div>
           )}

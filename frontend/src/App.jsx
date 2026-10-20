@@ -3,6 +3,9 @@ import * as api from "./api.js";
 import Handoff from "./Handoff.jsx";
 import Deals from "./Deals.jsx";
 import DealPage from "./DealPage.jsx";
+import Landing from "./Landing.jsx";
+import { SAMPLE_DEAL, landingSeen, markLandingSeen } from "./landing.js";
+import { TAGLINE } from "./brand.js";
 import { readHash } from "./dealpage.js";
 import { TYPE_EFFECT, alsoLine, checkLine, checkUpload, fmtDate, fmtDateTime, guessType, plural, typeFromName, uploadKind } from "./format.js";
 
@@ -1008,6 +1011,7 @@ function Workspace({ deal, onDealsChanged }) {
 export default function App() {
   const [deals, setDeals] = useState(null);
   const [current, setCurrent] = useState(() => readHash(window.location.hash).d); // #d=<deal>&c=<key>: a reload or a shared link reopens it
+  const [landing, setLanding] = useState(() => !readHash(window.location.hash).d && !landingSeen()); // first visit only
   const [classic, setClassic] = useState(false); // the detailed (pre-revamp) view, kept reachable during the revamp
   const [error, setError] = useState(null);
 
@@ -1022,6 +1026,11 @@ export default function App() {
   useEffect(loadDeals, [loadDeals]);
   useEffect(() => { if (deals && current && !deals.some((x) => x.deal === current)) setCurrent(null); }, [deals, current]);
 
+  // 20 Oct: the first visit shows the landing page; leaving it (either way) is remembered in this browser.
+  if (deals && !current && landing) {
+    const leave = (deal) => { markLandingSeen(); setLanding(false); if (deal) setCurrent(deal); };
+    return <Landing hasSample={deals.some((x) => x.deal === SAMPLE_DEAL)} onSample={() => leave(SAMPLE_DEAL)} onList={() => leave(null)} />;
+  }
   // 16 Oct: the deal list is the home screen (Stitch screen 1); a deal opens on its own page with a way back.
   if (deals && !current) {
     return (
@@ -1046,7 +1055,7 @@ export default function App() {
           ← Back to the deal page
         </button>
         <p className="eyebrow">Dealshape</p>
-        <h1>See the deal as it was actually promised.</h1>
+        <h1>{TAGLINE}</h1>
       </header>
       {error && <Notice kind="error">{error}</Notice>}
       {deals && current && <Workspace key={current} deal={current} onDealsChanged={loadDeals} />}

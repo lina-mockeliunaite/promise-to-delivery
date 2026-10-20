@@ -640,6 +640,16 @@ def resolved_by(conn, did: int, issue_id: int, labels: dict):
     return {"text": text, "documents": docs}
 
 
+def rejected_count(conn, did: int):
+    """How many findings the model proposed in the deal's latest v2 review that the code then rejected (20 Oct). Read-only:
+    it counts the stored rejected records and changes no finding, count or verdict. None when the deal has no v2 review."""
+    if not conn.execute("SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'v2_detections'").fetchone():
+        return None
+    row = conn.execute("SELECT d.rejected_json FROM v2_detections d JOIN reviews r ON r.id = d.review_id WHERE r.deal_id = ?"
+                       " ORDER BY d.review_id DESC LIMIT 1", (did,)).fetchone()
+    return len(json.loads(row[0])) if row else None
+
+
 def overview(conn, slug: str) -> dict:
     """register() plus what the redesigned overview and finding blocks show. Reads only. Human records (decisions,
     accountable people, the deal note) are shown beside findings; none of them is used to compute a finding's state."""
@@ -659,6 +669,7 @@ def overview(conn, slug: str) -> dict:
     else:
         reg["freshness_label"] = fresh["state"]
     reg["can_decide"] = bool(can_decide)
+    reg["check_coverage"] = {"rejected": rejected_count(conn, did)}
     reg["deal_note"] = workspace_records.deal_note(conn, did)
     docs = [d for d in documents(conn, slug) if d["included"]]
     reg["versions_line"] = " · ".join(f"{d['name']} v{d['version']}" for d in docs)

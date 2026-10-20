@@ -1022,3 +1022,36 @@ One outside review pass (a second assistant) was triaged before building.
 **Limitations:**
 - The locked-record snapshot format has no version number; additive fields are safe, but renaming or removing a field would need one first.
 - Item 6 (Harbour Bank seeded as "Handover complete") is not built.
+
+## 2026-10-20, 14:28 — Positioning: pre-signature review leads; the handover record stays an important output
+
+**Reverses the 5 Oct positioning,** where the handover record was the pitch and pre-signature review was the upgrade. The outside review (20 Oct) recommended leading with catching deal surprises before signing and tightening the trust language.
+
+**Chose:**
+1. **Pre-signature positioning and one tagline.** "Catch deal surprises before you sign." appears once, in the top bar (home, deal page, locked record). The description and the audience line ("For B2B Sales and Delivery teams.") are used on the landing page and home only. Footers keep the scope line and "All companies, people and deals are fictional." The README leads the same way and keeps "visibility, not workflow" as a design principle in the body.
+2. **A small landing page** on the first visit: wordmark, tagline, description, audience line, "Open a sample deal" (Alder Bank), a quiet "See all deal reviews" link, and one concrete mismatch read from Alder's stored register (the commitment with a "Not offered" finding, using the same title and mismatch helpers as the deal rows; nothing hand-written). Repeat visits go to the home list, remembered per browser in `localStorage` (try/catch; if storage fails the landing shows). If the sample deal is not in the ledger the sample button and example are hidden.
+3. **Home is "Deal reviews"** ("Before signing and at handover"). An optional, owner-confirmed `scope` in `data/profiles/<deal>.json` shows one line under the deal name (Alder only; absent means nothing shows; never generated). Counts say what they count: tabs count deals ("4 deals"), the column counts commitments ("3 commitments need attention").
+4. **Wording:** "First found in the checked documents: RFP response, 29 Sep"; "Note or recorded agreement"; "Lock handover record"; "AI-written summary · quotes checked against the supplied documents".
+5. **The drawer leads with the mismatch line** under the title and chip (not for closed commitments); the section order below is unchanged.
+6. **What changed leads with the result** ("Approval found · the contract gap on this commitment is still open."). Closed gaps are worded "Approval found", "Contract wording found", "Contract wording now matches the promise", never "resolved". The "No model call was needed…" sentence moves to a small muted footer line.
+7. **Locked record: open items first.** Banner, heading and verdict, Commitments at handover, What we're delivering (with its re-confirmation notice, so a lock never makes a stale brief look current), handover notes, record details.
+8. **Shorter sidebar.** Each stage shows its name, document count and any "N gaps started here" marker; only the current stage is expanded, a click expands any other in place. "Which documents were checked" stays answerable from the total plus the per-stage counts.
+9. **Check coverage: an honest review shows what it could not check.** One muted, neutral line under the Commitments heading: "N proposed findings couldn't be verified against the documents and aren't shown." (singular for 1; nothing when 0). It is not a status and changes no count or verdict. It reads the stored rejected-finding records of the latest v2 review (`workspace.rejected_count`, one new read-only field, `check_coverage`).
+
+**Rejected:**
+- A "Log in" button: there are no accounts, and uploading belongs to "+ New deal".
+- Collapsing the documents entirely: it would fail the 10-second test (which documents were checked).
+- Fewer card rules: indigo brief and amber commitments are a two-colour system.
+- Changing `attentionText`: the deal page's heading chip already says "Commitments", so the longer wording is only for the home column (`commitmentsNeedText`).
+
+**Snapshot format.** New snapshots store `check_coverage: {rejected: N}` (additive, like `version_date`). Records locked earlier are untouched; they have no count and show no line. The snapshot still has no format number, so nothing needed a bump; the limitation in the 20 Oct 14:01 entry stands (additive fields are safe, renaming or removing one would need a version first).
+
+**Not changed:** status colours and meanings, the two card rules, drawer behaviour, notes vs documents, detection, verification, closure, hashes, sealed sets, the `?detailed` view, and every stored finding.
+
+**Checked:**
+- Python 689 tests OK, frontend 74 pass, `vite build` succeeds. New tests: `tests/test_positioning.py` (scope line only for the seeded deal that has one; coverage count 1 for Alder and 0 for Harbour; count changes no finding or verdict; new snapshots hold it), `frontend/tests/landing.test.mjs`, and additions to `dealpage.test.mjs` and `deals.test.mjs` (What changed wording, coverage line, journey default, count wording).
+- Regression on Alder Bank and Harbour Bank, fresh reset: the overview (commitments, issues, statuses, counts), the deal-list rows and the documents are identical between the code before this pass and the code after it, apart from the intended new fields (`scope`, `check_coverage`). Alder: 3 commitments needing attention, 1 proposed finding not shown. Harbour: 3 needing attention, 0 not shown.
+- Browser (headless Chrome, current build): landing, home, Alder deal page, a commitment drawer and a locked Alder record render with the new copy, order and coverage line.
+- A record locked before this change (fingerprint `9bdc5ea5a1fa…6478`): the fingerprint still verifies, the stored text is unchanged by loading, it renders in the new order, and it shows no coverage line.
+
+**Demo note:** Alder's one rejected finding (real-time scoring of all payments) was a real concern the model embellished ('with no exceptions'); the verifier refused it; not re-run to avoid cherry-picking.

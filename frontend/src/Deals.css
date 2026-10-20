@@ -87,6 +87,7 @@ body:has(.dl) { background: #f8fafc; }
 .dl-table tbody tr { cursor: pointer; }
 .dl-table tbody tr:hover { background: var(--dl-soft); }
 .dl-deal-cell { display: inline-flex; align-items: center; gap: 12px; }
+.dl-scope-line { font-size: 12px; font-weight: 400; color: var(--dl-muted); }
 .dl-deal-text { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 3px; }
 .dl-tile { width: 34px; height: 34px; flex: none; border-radius: 10px; background: var(--dl-surface); color: var(--dl-brand); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; }
 .dl-deal-name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--dl-text); }

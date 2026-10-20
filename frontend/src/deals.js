@@ -3,15 +3,15 @@
 // Every figure on the home screen is computed here from /api/workspace/deals: nothing is invented or estimated.
 
 export const FILTERS = [
-  { key: "handover", label: "All in handover", test: (d) => d.in_handover },
-  { key: "open", label: "Need attention", test: (d) => d.in_handover && !d.handover_complete && d.open_gaps > 0 },
+  { key: "handover", label: "In handover", test: (d) => d.in_handover },
+  { key: "open", label: "Deals needing attention", test: (d) => d.in_handover && !d.handover_complete && d.open_gaps > 0 },
   { key: "complete", label: "Handover complete", test: (d) => d.handover_complete },
   { key: "earlier", label: "Earlier stages", test: (d) => !d.in_handover },
 ];
 
 export const SORTS = [
   { key: "updated", label: "Last updated" },
-  { key: "gaps", label: "Need attention" },
+  { key: "gaps", label: "Most commitments needing attention" },
   { key: "name", label: "Deal name" },
 ];
 

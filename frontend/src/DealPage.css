@@ -233,7 +233,6 @@ body:has(.dp) { background: #f8fafc; }
 .dp-change-body { display: flex; flex-direction: column; gap: 12px; padding: 14px 20px 12px; }
 .dp-change-head h2 { display: flex; align-items: center; gap: 8px; font-size: 16px; font-weight: 600; letter-spacing: -0.01em; }
 .dp-change-head h2 svg { color: var(--accent); }
-.dp-change-model { display: flex; align-items: center; gap: 8px; margin: 2px 0 0 26px; font-size: 12px; color: var(--muted); }
 .dp-change-rows { display: flex; flex-direction: column; gap: 8px; }
 .dp-change-row { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 12px; }
 .dp-change-row.is-closed { background: var(--soft); }
@@ -427,3 +426,14 @@ main.home.home-deal { max-width: none; margin: 0; padding: 0; }
 
 /* A light, non-blocking question when the file and the chosen document type clearly disagree */
 .dp-warnbox { margin: 0; padding: 10px 12px; border-radius: 10px; background: var(--tint); color: var(--ink); font-size: 13px; line-height: 1.45; }
+
+/* Positioning pass (20 Oct) */
+.dp-change-result { margin: 4px 0 0 26px; font-size: 14px; font-weight: 600; color: var(--ink); }
+.dp-change-model { margin: 8px 0 0; font-size: 12px; color: var(--muted); }
+.dp-coverage { margin: 0; padding: 0 20px 8px; font-size: 12px; color: var(--muted); }
+.dp-tl-toggle { border: 0; background: none; padding: 0; font: inherit; text-align: left; cursor: pointer; width: 100%; }
+.dp-tl-toggle:disabled { cursor: default; }
+.dp-tl-toggle[aria-expanded="false"]:not(:disabled)::after { content: "+"; color: var(--muted); font-weight: 400; margin-left: 4px; }
+.dp-tl-count { font-weight: 400; color: var(--muted); font-size: 12px; }
+.dr-mismatch { margin: 0 0 14px; }
+.dr-mismatch .dp-prow-line { font-size: 13px; }

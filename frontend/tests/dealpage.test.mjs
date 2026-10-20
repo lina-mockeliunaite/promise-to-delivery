@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  SIGNED_NOTE, attentionText, cleanReason, docLabel, extractedAs, findingDetail, firstDocDate, firstPromised, groupByStage, isSignedDoc, mismatchLine, plainName, mismatchParts, partsText, hashFor, readHash, matchDoc, closedBy, confirmedBy, headerScrolledPast, handoverChecklist, splitQuote, commitmentView, frozenView, closedLines,
+  SIGNED_NOTE, attentionText, cleanReason, docLabel, extractedAs, findingDetail, firstDocDate, firstPromised, groupByStage, isSignedDoc, mismatchLine, plainName, mismatchParts, partsText, hashFor, readHash, matchDoc, closedBy, confirmedBy, headerScrolledPast, handoverChecklist, splitQuote, commitmentView, frozenView, closedLines, changeResult, coverageLine, journeyOpen, docCount, dealsText, commitmentsNeedText,
   recordedBy, rowTitle, sourcesLine, suggestFix, verdictLine, whatChanged,
 } from "../src/dealpage.js";
 
@@ -143,8 +143,8 @@ test("the long wording of a finding", () => {
 
 test("first promised is the earliest statement's source and date", () => {
   assert.deepEqual(ALDER.map((c) => firstPromised(c.statements)), [
-    "First promised in the RFP response, 29 Sep", "First promised in the proposal, 2 Oct", "First promised in the RFP response, 29 Sep"]);
-  assert.equal(firstPromised([{ doc_type_label: "Draft SOW", date: "" }]), "First promised in the draft SOW");
+    "First found in the checked documents: RFP response, 29 Sep", "First found in the checked documents: Proposal, 2 Oct", "First found in the checked documents: RFP response, 29 Sep"]);
+  assert.equal(firstPromised([{ doc_type_label: "Draft SOW", date: "" }]), "First found in the checked documents: Draft SOW");
   assert.equal(firstPromised([]), "");
 });
 
@@ -314,7 +314,7 @@ test("the drawer's view of a live commitment uses stored data only, and hides th
   assert.equal(v.extracted, LIVE_C.name);
   assert.equal(v.plain, "No approval found · Not in the contract");
   assert.equal(partsText(v.mismatch), "Contract has no matching wording · no approval found");
-  assert.equal(v.first, "First promised in the RFP response, 29 Sep");
+  assert.equal(v.first, "First found in the checked documents: RFP response, 29 Sep");
   assert.equal(v.told.length, 1); // the same quote in two documents is listed once, newest source first
   assert.equal(v.told[0].doc, DOCS[0]);
   assert.equal(v.contract.text, "No matching wording found in the draft contract or SOW");
@@ -346,7 +346,7 @@ test("the locked record builds the same view from the snapshot and leaves out wh
   const v = frozenView({ item, status: "open", documents: DOCS, titles: { [ALDER[2].name]: "Hosting on Microsoft Azure" } });
   assert.equal(v.title, "Hosting on Microsoft Azure");
   assert.equal(v.extracted, ALDER[2].name);
-  assert.equal(v.first, "First promised in the RFP response, 29 Sep");
+  assert.equal(v.first, "First found in the checked documents: RFP response, 29 Sep");
   assert.deepEqual(v.told, []); // no quotes in this old snapshot: nothing is invented
   assert.equal(v.toldFallback, "Microsoft Azure in the Australia East region");
   assert.equal(partsText(v.mismatch), "Contract says Amazon Web Services in the Sydney region · not offered");
@@ -403,4 +403,44 @@ test("the live and the locked view both carry the closing lines", () => {
   assert.deepEqual(commitmentView(c, "closed", DOCS).closedLines, ["Closed by Pricing note, version 2 · 16 Oct 2026"]);
   const f = frozenView({ item: { promise: "P", findings: [] }, status: "closed", closedFindings: [{ finding: "No approval recorded", resolved_by: "Resolved by Pricing note, version 2 · 16 Oct 2026" }] });
   assert.deepEqual(f.closedLines, ["Closed by Pricing note, version 2 · 16 Oct 2026"]);
+});
+
+test("What changed leads with the result, in the agreed words", () => {
+  const f = (finding, promise = "A") => ({ finding, promise });
+  assert.equal(changeResult({ closed: [f("No approval recorded")], opened: [], stillOpen: [f("Missing from contract")] }),
+    "Approval found · the contract gap on this commitment is still open.");
+  assert.equal(changeResult({ closed: [f("Missing from contract")], opened: [], stillOpen: [] }), "Contract wording found");
+  assert.equal(changeResult({ closed: [f("Contract says something different")], opened: [], stillOpen: [f("No approval recorded")] }),
+    "Contract wording now matches the promise · the approval gap on this commitment is still open.");
+  assert.equal(changeResult({ closed: [f("No approval recorded")], opened: [], stillOpen: [f("Missing from contract"), f("Contract says something different")] }),
+    "Approval found · the contract gap and the contract difference on this commitment are still open.");
+  assert.equal(changeResult({ closed: [f("No approval recorded", "A")], opened: [], stillOpen: [f("Not offered", "A"), f("Missing from contract", "B")] }),
+    "Approval found · the not-offered gap and the contract gap are still open on 2 commitments.");
+  assert.equal(changeResult({ closed: [], opened: [f("Not offered")], stillOpen: [] }), "1 new gap found.");
+  assert.equal(changeResult({ closed: [], opened: [], stillOpen: [] }), "Nothing closed and nothing new: the document did not change any gap.");
+  assert.ok(!/resolved|covers it/i.test(changeResult({ closed: [f("Missing from contract")], opened: [], stillOpen: [] })));
+});
+
+test("the coverage line is one neutral sentence, and absent when nothing failed or the record has no count", () => {
+  assert.equal(coverageLine(1), "1 proposed finding couldn't be verified against the documents and isn't shown.");
+  assert.equal(coverageLine(3), "3 proposed findings couldn't be verified against the documents and aren't shown.");
+  for (const none of [0, null, undefined, "x", -1, 1.5]) assert.equal(coverageLine(none), "");
+});
+
+test("the journey opens only the current stage, and every stage keeps its count", () => {
+  const stages = [{ key: "discovery", state: "done" }, { key: "contracting", state: "current" }, { key: "signed", state: "todo" }];
+  assert.deepEqual([...journeyOpen(stages)], ["contracting"]);
+  assert.deepEqual([...journeyOpen([{ key: "a", state: "none" }])], []);
+  assert.deepEqual([...journeyOpen(undefined)], []);
+  assert.equal(docCount(0), "0 documents");
+  assert.equal(docCount(1), "1 document");
+  assert.equal(docCount(3), "3 documents");
+});
+
+test("the home list counts deals in the tabs and commitments in the column", () => {
+  assert.equal(dealsText(1), "1 deal");
+  assert.equal(dealsText(4), "4 deals");
+  assert.equal(commitmentsNeedText(3), "3 commitments need attention");
+  assert.equal(commitmentsNeedText(1), "1 commitment needs attention");
+  assert.equal(commitmentsNeedText(0, 2), "Nothing needs attention · 2 addressed by note");
 });

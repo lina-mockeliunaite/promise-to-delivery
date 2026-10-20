@@ -254,6 +254,8 @@ def build_snapshot(conn, slug: str, completed_by: str) -> dict:
     return {
         "deal": reg["name"], "completed_by": completed_by, "stage": reg["stage"]["current_label"],
         "brief": reg["brief"], "notes": reg["handover"]["notes"], "scope_note": reg["scope_note"],
+        # 20 Oct, additive: how many proposed findings failed verification and were not shown. Older snapshots lack it.
+        "check_coverage": {"rejected": reg["check_coverage"]["rejected"]},
         "documents": [{"name": d["name"], "type": d["doc_type_label"], "version": d["version"], "date": d["date"],
                        "version_date": d["version_date"],
                        "link": d.get("link")} for d in workspace.documents(conn, slug) if d["included"]],
@@ -352,6 +354,7 @@ def deal_rows(conn, rows: list) -> list:
         out.append({**row, "open_gaps": open_gaps, "addressed_by_note": addressed,
                     "stage": current, "stage_label": stage["current_label"],
                     "owner": profile.get("owner") or (sales["by"] if sales else None),
+                    "scope": profile.get("scope") or None,  # 20 Oct: owner-confirmed, never generated
                     "last_updated": last_updated(conn, did),
                     "in_handover": done is not None or (current is not None and deal_stage.STAGE_INDEX[current] >= HANDOVER_FROM),
                     "handover_complete": done is not None})

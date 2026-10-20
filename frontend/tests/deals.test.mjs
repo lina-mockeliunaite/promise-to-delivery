@@ -44,9 +44,9 @@ test("times read as people say them", () => {
   assert.equal(relativeTime(null, now), "Not yet");
 });
 
-test("the filter and sort say 'need attention', not 'open gaps'", () => {
-  assert.equal(FILTERS.find((f) => f.key === "open").label, "Need attention");
-  assert.equal(SORTS.find((x) => x.key === "gaps").label, "Need attention");
+test("the filter and sort say what they count, not 'open gaps'", () => {
+  assert.equal(FILTERS.find((f) => f.key === "open").label, "Deals needing attention");
+  assert.equal(SORTS.find((x) => x.key === "gaps").label, "Most commitments needing attention");
 });
 
 test("initials", () => {

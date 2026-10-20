@@ -5,12 +5,12 @@ import { useEffect, useMemo, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
 import {
-  STATUS_CHIP, attentionText, frozenView, hashFor, plainName, readHash, recordedBy, short, verdictLine,
+  STATUS_CHIP, attentionText, coverageLine, frozenView, hashFor, plainName, readHash, recordedBy, short, verdictLine,
 } from "./dealpage.js";
 import { Drawer, CommitmentView, DocumentView, MismatchSentence, Icon, ICON } from "./Drawer.jsx";
 import BriefCard from "./BriefCard.jsx";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
-import { NAME, TAGLINE } from "./brand.js";
+import { FICTIONAL, NAME, TAGLINE } from "./brand.js";
 import "./DealPage.css";
 
 const Lock = ({ size = 14 }) => (
@@ -61,7 +61,7 @@ function PrintDetail({ v }) {
         {v.contract.missing ? ` Searched for: ${v.contract.missing.map((m) => `“${m}”`).join(", ")}` : ""}</p>
       {v.found.map((f) => <p key={f.label}><strong>{f.label}</strong>{f.fact ? ` ${f.fact}` : ""}</p>)}
       {v.closed.length > 0 && <p><strong>Closed by the documents:</strong> {v.closed.map((c) => `${c.label}. ${c.by}`).join(" ")}</p>}
-      {v.ai.length > 0 && <p><em>AI-written summary · quotes checked against the documents:</em> {v.ai.join(" ")}</p>}
+      {v.ai.length > 0 && <p><em>AI-written summary · quotes checked against the supplied documents:</em> {v.ai.join(" ")}</p>}
       {v.notes.map((n) => <p key={`${n.by}|${n.text}`}><strong>{recordedBy(n.by, n.at, fmtDate)}:</strong> “{n.text}”</p>)}
     </div>
   );
@@ -127,7 +127,7 @@ export default function FrozenRecord({ deal, onBack }) {
         <IdentityLine name={s.deal} stage={`Stage: ${s.stage}`} goLive={s.brief?.go_live} show={headerGone} />
       </div>
       <div className="dp-topbar">
-        <span className="dp-wordmark">{NAME}</span>
+        <span className="dp-brandline"><span className="dp-wordmark">{NAME}</span><span className="dp-tagline">{TAGLINE}</span></span>
         <span className="dp-row fr-noprint">
           <button type="button" className="dp-back" onClick={onBack}>← All deals</button>
           <button type="button" className="dp-btn" onClick={printAll}>Print or save as PDF</button>
@@ -157,8 +157,6 @@ export default function FrozenRecord({ deal, onBack }) {
         </div>
       </section>
 
-      <BriefCard brief={s.brief} />
-
       <section className={`dp-card dp-promises ${counts.open ? "is-attention" : "is-clear"}`}>
         <div className="dp-sec-head">
           <div className="dp-sec-title">
@@ -169,6 +167,7 @@ export default function FrozenRecord({ deal, onBack }) {
             </span>
           </div>
         </div>
+        {coverageLine(s.check_coverage?.rejected) && <p className="dp-coverage">{coverageLine(s.check_coverage.rejected)}</p>}
         {views.length === 0 && <p className="dp-faint dp-pad">No commitment had a gap on the documents checked.</p>}
         <ul className="dp-plist">
           {views.map((v) => (
@@ -177,6 +176,8 @@ export default function FrozenRecord({ deal, onBack }) {
           ))}
         </ul>
       </section>
+
+      <BriefCard brief={s.brief} />
 
       <section className="dp-card">
         <div className="dp-sec-head"><h2>Handover notes</h2><span className="dp-chip dp-chip-grey"><Lock size={11} /> Locked</span></div>
@@ -232,7 +233,7 @@ export default function FrozenRecord({ deal, onBack }) {
         </div>
       </details>
 
-      <footer className="dp-foot"><strong>{NAME}</strong> · {TAGLINE}<br />All companies, people and deals are fictional.</footer>
+      <footer className="dp-foot">Lists commitments where the customer's expectation, the contract and what we can sell don't line up. {FICTIONAL}</footer>
 
       {drawer && (
         <Drawer labelledBy="dr-title" flush onClose={() => { setDrawer(null); writeHash(null); }} focusKey={`${drawer.type}:${drawer.key ?? drawer.docKey ?? ""}`}>
