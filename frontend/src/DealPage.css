@@ -393,8 +393,24 @@ body:has(.dp) { background: #f8fafc; }
   body:has(.fr) { background: #fff; }
   .dp.fr { background: #fff; padding: 0; max-width: none; }
   .fr .dp-card, .fr .fr-bar { box-shadow: none; break-inside: avoid; }
-  .fr .dp-prow-head { padding: 8px 0; }
-  .fr .fr-print { display: block; padding: 0 0 10px; font-size: 12px; color: #1e293b; }
+  /* The commitments card is long: let it start on page 1 and break between rows, not move whole to page 2 (21 Oct). */
+  .fr .dp-promises { break-inside: auto; }
+  .fr .dp-sec-head { break-after: avoid; }
+  .fr .dp-prow { break-inside: avoid; }
+  /* Hashes print in full, wrapping if needed; on screen they are short, with the full value on hover. */
+  .fr .fr-h-short { display: none; }
+  .fr .fr-h-full { display: inline; word-break: break-all; }
+  .fr .fr-hash { white-space: normal; max-width: 100%; }
+  /* Keep the footer line on the last page with the record, not alone on a page of its own. */
+  .fr .fr-record-body { gap: 8px; padding-bottom: 8px; }
+  .fr .dp-foot { padding: 0; font-size: 10.5px; line-height: 1.4; }
+  /* The record details card may break between documents; one document and the fingerprint stay whole. */
+  .fr .fr-record { break-inside: auto; }
+  .fr .fr-doc-hash .fr-hash { font-size: 11.5px; padding: 1px 8px; }
+  .fr .dp-docs { margin-top: 2px; gap: 0; }
+  .fr .dp-docs li, .fr .fr-record-body > div:last-child { break-inside: avoid; }
+  .fr .dp-prow-head { padding: 8px 20px; }
+  .fr .fr-print { display: block; padding: 0 20px 10px; font-size: 12px; color: #1e293b; }
   .fr .fr-print p { margin: 2px 0; }
   .fr-record > summary { display: none; }
   .fr .fr-appendix { display: block; }
@@ -402,6 +418,7 @@ body:has(.dp) { background: #f8fafc; }
 }
 
 /* Locked record: document hashes, the optional full-text appendix (print only), and the hash check in the document view (21 Oct) */
+.fr-h-full { display: none; }
 .fr-doc-hash { gap: 10px; flex-wrap: wrap; }
 .fr-doc-hash .fr-hash { padding: 2px 8px; font-size: 12px; }
 .dp-doc-name.dp-link-btn { padding: 0; text-align: left; }

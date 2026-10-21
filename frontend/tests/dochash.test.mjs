@@ -63,3 +63,18 @@ test("'Gap closed' names what was found and where, per kind, with the rest as se
   assert.equal(gapClosed("No approval recorded", "").headline, "Gap closed in the documents");
   assert.ok(!/closed by|resolved by/i.test(gapClosed("No approval recorded", text).headline));
 });
+
+test("print writes the record fingerprint and every document hash in full; the screen keeps the short form with the full value on hover", async () => {
+  const fs = await import("node:fs");
+  const jsx = fs.readFileSync(new URL("../src/FrozenRecord.jsx", import.meta.url), "utf8");
+  const css = fs.readFileSync(new URL("../src/DealPage.css", import.meta.url), "utf8");
+  assert.match(jsx, /title=\{hv\.fingerprint\}><span className="fr-h-short">[^<]*<\/span><span className="fr-h-full">\{hv\.fingerprint\}<\/span>/);
+  assert.match(jsx, /title=\{d\.sha256\}>SHA-256 <span className="fr-h-short">\{shortHash\(d\.sha256\)\}<\/span><span className="fr-h-full">\{d\.sha256\}<\/span>/);
+  const at = css.indexOf("@media print {\n  .fr-noprint");
+  const print = css.slice(at, css.indexOf("\n}\n", at));
+  assert.match(css, /\n\.fr-h-full \{ display: none; \}/); // full value hidden on screen (a plain rule, outside the print block)
+  assert.match(print, /\.fr-h-short \{ display: none; \}/); // short form hidden in print
+  assert.match(print, /\.fr-h-full \{ display: inline;/);
+  assert.match(print, /\.fr \.dp-prow-head \{ padding: 8px 20px; \}/); // rows keep their side padding in print: nothing under the card's edge bar
+  assert.match(print, /\.fr \.dp-promises \{ break-inside: auto; \}/);
+});

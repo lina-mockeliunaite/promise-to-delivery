@@ -245,7 +245,7 @@ export default function FrozenRecord({ deal, onBack }) {
                     </div>
                     {stored && (
                       <div className="dp-doc-row fr-doc-hash">
-                        <code className="fr-hash" title={d.sha256}>SHA-256 {shortHash(d.sha256)}</code>
+                        <code className="fr-hash" title={d.sha256}>SHA-256 <span className="fr-h-short">{shortHash(d.sha256)}</span><span className="fr-h-full">{d.sha256}</span></code>
                         {d.link && <a className="fr-noprint" href={d.link} target="_blank" rel="noopener noreferrer">Open in Drive ↗</a>}
                       </div>
                     )}
@@ -257,7 +257,7 @@ export default function FrozenRecord({ deal, onBack }) {
           {hv.fingerprint && (
             <div>
               <span className="dp-side-title"><Lock /> Record fingerprint</span>
-              <code className="fr-hash" title={hv.fingerprint}>{hv.fingerprint.slice(0, 12)}…{hv.fingerprint.slice(-4)}</code>
+              <code className="fr-hash" title={hv.fingerprint}><span className="fr-h-short">{hv.fingerprint.slice(0, 12)}…{hv.fingerprint.slice(-4)}</span><span className="fr-h-full">{hv.fingerprint}</span></code>
               <span className="dp-faint dp-small">
                 SHA-256 of the saved record. If anyone edited the record, this would change. It shows the record is unchanged;
                 it is not a signature.
@@ -267,6 +267,8 @@ export default function FrozenRecord({ deal, onBack }) {
           )}
         </div>
       </details>
+
+      <footer className="dp-foot">Lists commitments where the customer's expectation, the contract and what we can sell don't line up. {FICTIONAL}</footer>
 
       {appendix.length > 0 && (
         <div className="fr-appendix" data-testid="appendix">
@@ -279,8 +281,6 @@ export default function FrozenRecord({ deal, onBack }) {
           ))}
         </div>
       )}
-
-      <footer className="dp-foot">Lists commitments where the customer's expectation, the contract and what we can sell don't line up. {FICTIONAL}</footer>
 
       {drawer && (
         <Drawer labelledBy="dr-title" flush onClose={() => { setDrawer(null); writeHash(null); }} focusKey={`${drawer.type}:${drawer.key ?? drawer.docKey ?? ""}`}>
