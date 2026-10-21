@@ -47,7 +47,7 @@ One commitment can carry several gaps, and they close independently. An approval
 3. **Verify (code).** Every quote and citation is checked mechanically. A finding that fails a check is kept on record and never shown. On screen, **"What we found" shows only what code verified.** The model's own explanation is labelled "AI-written summary".
 4. **Recheck (code).** Add an updated document, such as a named exception or an aligned SOW, and the check runs again. A gap closes only when the new paperwork shows it no longer holds, and the screen says which document closed it. A failed check stores nothing.
 5. **Notes are a person's word, not proof.** A note can keep a commitment open with context, or mark it "Addressed by note". Either way it looks different from "Closed by documents", stays in the record, and reopens if the documents change.
-6. **Hand over.** Sales and Delivery each write a note, the signed contract is uploaded, and completing the handover locks a read-only record. The record states honestly what is still open.
+6. **Hand over.** Sales and Delivery each write a note, the signed contract is uploaded, and completing the handover locks a read-only record. The record states honestly what is still open. Each document in it is stored with its version and the SHA-256 of the text Dealshape read, and opens as that exact text, read-only; the browser re-hashes the text and warns visibly on a mismatch. The record can be printed with the full text of every document as an optional appendix. The record's fingerprint covers the stored hashes.
 
 ## Where the AI comes in, and where it doesn't
 
@@ -96,6 +96,7 @@ After the Coral Pay result, detection was rebuilt: one model call proposes each 
 - **The verifier matches words, not meaning.** A finding is shown only if its quotes are word for word in the documents and its claim passes plain text checks: a promised value must appear in the promise, a "not offered" value must appear nowhere in that region's catalogue entry, a missing phrase (at most six words) must appear nowhere in the contract. So a real concern that the model words loosely is refused (Alder's one refused finding added "with no exceptions" to the promise), a paraphrased contract clause can read as missing, and a catalogue that lists an unavailable option explicitly would stop a "not offered" finding about it. For that reason Aivuna's catalogue states that voice is not offered in its top-level unlisted rule, not as a listed entry. The count of refused findings is shown on the deal page.
 - **The detection prompt still names the original vendor.** It says "the vendor, Elva", and was not changed for the Aivuna deal, because changing it would raise `v2_version` and invalidate every saved reading. Two vendors' catalogues run through one pipeline; what the Aivuna runs showed is recorded in `data/noma_journeys/BRIEF.md`.
 - **Signed paperwork is checked against the fixes, in a limited way.** A signed contract or signed SOW marks the deal Signed. Code (no model) then checks every gap that a draft contract or SOW closed: the exact sentence that closed it, matched with the verifier's normalisation, must be in the signed document. Found: the row says "Confirmed in the signed contract (Signed contract, 20 Oct)". Not found: the commitment shows as Needs attention again with the reason "The fix in Draft contract, version 2 was not found in the signed contract", and the earlier closure stays visible. A closure with no sentence to look for shows "Not confirmed against the signed contract". Approval closures (the pricing note) are not affected. The check is computed when a page is read; the ledger still records the closure. **Two limits, both erring toward attention:** a gap closed in an SOW is confirmed only if the signed document repeats the wording, and a signed contract that incorporates the revised SOW by reference, without repeating it, would wrongly reopen it. Also not done: a signed contract that newly contains wording for an open gap does not close it. The signed paperwork is never read by the model.
+- **The document hashes cover the text as read, not the original file.** The hash is of the extracted text as stored (Windows line endings are stored as plain ones), so a change to a file's layout, images or signature that leaves the text unchanged is not detected. The browser check confirms that the text shown matches the stored hash, and it trusts the server. Tamper evidence comes from the record fingerprint kept outside the system, for example on the printed record. Records locked before 21 Oct 2026 show no hashes.
 - **Formats.** PDF text layer only (no OCR); Excel by stored values only; PowerPoint slide text only.
 - **Synthetic data.** Every deal is fictional and was written for this build.
 - **Not in this build:** live Drive or CRM connectors (documents carry a Drive link field), user accounts, post-signature tracking, legal advice.
@@ -103,7 +104,7 @@ After the Coral Pay result, detection was rebuilt: one model call proposes each 
 ## How it was tested
 
 - **Sealed evaluation.** Two deals were written and sealed before the code that tested them, and each configuration ran once. The labels, documents and seals are never edited, and nothing was tuned on them.
-- **Automated tests:** 677 Python tests and 57 front-end tests. They include regression checks on extraction, five resolution scenarios, "a failed check stores nothing", and "no internal key reaches any screen".
+- **Automated tests:** 776 Python tests and 114 front-end tests. They include regression checks on extraction, five resolution scenarios, "a failed check stores nothing", and "no internal key reaches any screen".
 - **Reviewers:** a Head of Growth (6 Oct), a COO (15 Oct) and a Delivery lead (16 Oct), plus one outside UI review. Two reviewers in different roles asked for visibility, not workflow, and the product was rebuilt around that. **Not yet done: an unaided test** with someone who has never seen the product.
 
 ## Run it locally
@@ -118,7 +119,7 @@ python -m uvicorn api:app --host 127.0.0.1 --port 8000
 cd frontend && npm run dev     # open http://127.0.0.1:5173
 ```
 
-The demo opens on the deals list with no API key. Reading a new or changed contract or customer document needs `ANTHROPIC_API_KEY` in the server's terminal. The browser never sees it.
+The demo opens on the deals list with no API key. Both demo scripts (`docs/DEMO_SCRIPT_2026-10-20_alder.md` and `docs/DEMO_SCRIPT_2026-10-20_noma.md`) run end to end with no key, from cached readings, when each file is filed exactly as the script says ("A new version of …"). Filing a revision as "A new document" gives it today's date, so it needs the model and therefore a key. Reading any other new or changed contract or customer document also needs `ANTHROPIC_API_KEY` in the server's terminal. The browser never sees it.
 
 ## Where to look
 
