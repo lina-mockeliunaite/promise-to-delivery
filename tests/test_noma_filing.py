@@ -84,5 +84,57 @@ class TestTheWrongFilingFromTheRehearsal(Replay):
         self.assertEqual(self.states()[("Dedicated launch", "No approval recorded")], "Needs action")
 
 
+class TestTheRefusalNamesTheLikelyCause(unittest.TestCase):
+    """21 Oct: the mistaken filing from the rehearsal. The pricing note, filed as a new document, needs no model, so it goes in silently and
+    sits beside the original, dated today. The revised contract is then refused (its reading was made without that duplicate). The refusal
+    now says why, and nothing is added."""
+
+    def run_flow(self, mistaken_steps):
+        import os
+        import api
+        import test_cached_guard as g
+        from fastapi.testclient import TestClient
+        with tempfile.TemporaryDirectory() as tmp:
+            cache = Path(tmp) / "cache"
+            g.flow("noma_journeys", g.noma_steps()[:2], g.clean(g.NOMA), True, cache, tmp)  # the designed flow fills the scratch cache
+            with mock.patch.dict(os.environ, {}, clear=False), mock.patch.object(config, "V2_CACHE_DIR", cache):
+                os.environ.pop("ANTHROPIC_API_KEY", None)
+                db = g.scratch_ledger(tmp, "mistaken.sqlite")
+                client = TestClient(api.create_app(dist_dir=Path(tmp) / "no-dist", ledger_path=db), base_url="http://127.0.0.1")
+                out = []
+                for payload in mistaken_steps:
+                    before = ledger.connect(db).execute("SELECT COUNT(*) FROM source_versions").fetchone()[0]
+                    r = client.post("/api/deals/noma_journeys/documents/add-and-check", json=payload, headers=g.H)
+                    after = ledger.connect(db).execute("SELECT COUNT(*) FROM source_versions").fetchone()[0]
+                    out.append((r.status_code, r.json().get("detail", ""), after - before))
+                return out
+
+    def test_the_pricing_note_as_a_new_document_then_the_contract_as_a_new_version(self):
+        mistaken = [
+            {"name": "NJ-05_v2_named_exception.md", "filename": "NJ-05_v2_named_exception.md", "doc_type": "pricing_services_note",
+             "doc_date": "2026-10-21", "text": PRICING_V2},
+            {"source_key": "NJ-07", "filename": "NJ-07_v2_languages_aligned.md", "text": CONTRACT_V2}]
+        pricing, contract = self.run_flow(mistaken)
+        self.assertEqual((pricing[0], pricing[2]), (200, 1))  # no model needed, so it goes in, beside the original
+        self.assertEqual((contract[0], contract[2]), (409, 0))  # refused, nothing added
+        self.assertIn("Nothing was added.", contract[1])
+        self.assertIn("was added earlier as a new document, dated the day it was added, next to Pricing and services note", contract[1])
+        self.assertIn("A new version of: Pricing and services note", contract[1])
+
+    def test_the_contract_itself_as_a_new_document_says_it_would_sit_next_to_the_draft_contract(self):
+        mistaken = [{"name": "NJ-07_v2_languages_aligned.md", "filename": "NJ-07_v2_languages_aligned.md", "doc_type": "draft_contract",
+                     "doc_date": "2026-10-21", "text": CONTRACT_V2}]
+        (contract,) = self.run_flow(mistaken)
+        self.assertEqual((contract[0], contract[2]), (409, 0))
+        self.assertIn("This file would be added as a new document dated today, next to Draft contract.", contract[1])
+        self.assertIn("choose “A new version of: Draft contract”", contract[1])
+
+    def test_the_designed_flow_gets_no_hint_because_it_is_not_refused(self):
+        designed = [{"source_key": "NJ-05", "filename": "NJ-05_v2_named_exception.md", "text": PRICING_V2},
+                    {"source_key": "NJ-07", "filename": "NJ-07_v2_languages_aligned.md", "text": CONTRACT_V2}]
+        results = self.run_flow(designed)
+        self.assertEqual([r[0] for r in results], [200, 200])
+
+
 if __name__ == "__main__":
     unittest.main()

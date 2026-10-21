@@ -17,6 +17,8 @@ transaction first, so a stored version cannot be held back inside it. Changing t
 part of the config hash (every review would go stale). So ledger_v2.py is left untouched.
 """
 
+import re
+
 import config
 import extraction_cache
 import finding_check
@@ -35,6 +37,38 @@ class AddCheckError(Exception):
     def __init__(self, message: str, status: int = 409):
         super().__init__(message)
         self.status = status
+
+
+def _latest(conn, did: int) -> list:
+    """[(source_key, display name, doc_type)] for the latest included version of each source, as the review sees them."""
+    return conn.execute(
+        "SELECT s.source_key, s.display_name, v.doc_type FROM sources s JOIN source_versions v ON v.source_id = s.id"
+        " WHERE s.deal_id = ? AND v.included = 1 AND v.version_no = (SELECT MAX(version_no) FROM source_versions"
+        " WHERE source_id = s.id AND included = 1) ORDER BY s.id", (did,)).fetchall()
+
+
+def refusal_hint(conn, slug: str, did: int, source_key, doc_type: str) -> str:
+    """One sentence added to the "needs the model" refusal (21 Oct) when the likely cause is a filing slip. A document added as "A new
+    document" is dated the day it is added and sits beside the original, so the review's input differs from the one a stored reading was
+    made for, and the model is needed where a correct filing would not need it. Two cases: this file itself would be a new document next
+    to one of its own type; or an earlier "new document" already sits beside an original of its type. "" when neither."""
+    import workspace
+    labels = workspace.document_labels(conn, did)
+    docs = _latest(conn, did)
+    same = [(k, labels.get(k, n)) for k, n, t in docs if t == doc_type]
+    if not source_key and len(same) == 1:
+        return (f"This file would be added as a new document dated today, next to {same[0][1]}. If it revises {same[0][1]}, choose "
+                f"“A new version of: {same[0][1]}” instead, and the stored reading may apply.")
+    by_type = {}
+    for k, n, t in docs:
+        by_type.setdefault(t, []).append((k, labels.get(k, n)))
+    for t, items in by_type.items():
+        added = [name for k, name in items if re.fullmatch(r"D-\d+", k)]  # added with "A new document" (the form generates these keys)
+        original = [name for k, name in items if not re.fullmatch(r"D-\d+", k)]
+        if added and original and t in config.REFERENCE_ONLY_DOC_TYPES + config.EXTRACTABLE_DOC_TYPES:
+            return (f"{added[0]} was added earlier as a new document, dated the day it was added, next to {original[0]}. A new version of "
+                    f"{original[0]} would replace it instead. Reset the demo and add it as “A new version of: {original[0]}”.")
+    return ""
 
 
 def _needs_model(conn, slug, did, source_key, doc_type, text, adapted, doc_date=None) -> bool:
@@ -66,7 +100,8 @@ def add_and_check(conn, slug: str, *, filename: str, text: str = "", raw=None, a
 
     # 1. Check before writing: no key and the model is needed means nothing is stored.
     if client is None and _needs_model(conn, slug, did, str(source_key) if source_key else None, doc_type, text, adapted, doc_date):
-        raise AddCheckError(NO_KEY)
+        hint = refusal_hint(conn, slug, did, str(source_key) if source_key else None, doc_type)
+        raise AddCheckError(f"{NO_KEY} {hint}".strip())
 
     # 2. Store, remembering which versions were in the review so a set-aside can restore them.
     was_included = [r[0] for r in conn.execute("SELECT id FROM source_versions WHERE source_id = ? AND included = 1",

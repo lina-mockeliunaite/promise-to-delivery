@@ -9,7 +9,7 @@ import "@fontsource/inter/latin-500.css";
 import "@fontsource/inter/latin-600.css";
 import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
-import { addReady, fmtDate, fmtDateTime, mismatchNotice, suggestVersionOf, uploadKind } from "./format.js";
+import { addReady, fmtDate, fmtDateTime, mismatchNotice, newDocumentNotice, uploadKind } from "./format.js";
 import {
   CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, coverageLine, docCount, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
   mismatchParts, missingForHandover, handoverChecklist, plainName, readHash, recordedBy, rowTitle, firstPromised, suggestFix, useName, whatChanged,
@@ -404,7 +404,9 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
     fileName: form.file.name, head, documents, labels,
     target: { type: existingDoc?.doc_type ?? form.doc_type, name: existingDoc?.name },
   }) : null;
-  const suggestion = form.file && !form.source_key && !form.doc_type ? suggestVersionOf({ fileName: form.file.name, head, documents }) : null;
+  // A revision filed as "A new document" would sit beside the original, dated today: say so before anything is added (21 Oct).
+  const revision = form.file && !form.source_key && !notice
+    ? newDocumentNotice({ fileName: form.file.name, head, documents, docType: form.doc_type, today: fmtDate(form.doc_date) }) : null;
   const ready = addReady({ file: form.file, source_key: form.source_key, doc_type: form.doc_type });
   const submit = async (e) => {
     e?.preventDefault();
@@ -471,11 +473,12 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
           </div>
         )}
       </div>
-      {suggestion && (
+      {revision && (
         <div className="dp-warnbox dp-notice-box" role="status">
-          <p>This looks like a new version of <strong>{suggestion.name}</strong>.</p>
+          <p><strong>{revision.question}</strong> {revision.consequence}</p>
           <div className="dp-row">
-            <button type="button" className="dp-btn dp-btn-dark" onClick={() => setForm((f) => ({ ...f, source_key: suggestion.source_key }))}>Use “A new version of {suggestion.name}”</button>
+            <button type="button" className="dp-btn dp-btn-dark" onClick={() => setForm((f) => ({ ...f, source_key: revision.use.source_key }))}>{revision.use.text}</button>
+            {revision.anyway && <button type="button" className="dp-link-btn" disabled={busy} onClick={() => submit(null)}>{revision.anyway}</button>}
           </div>
         </div>
       )}
@@ -489,12 +492,12 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
           </div>
         </div>
       )}
-      {form.file && !ready && !suggestion && <p className="dp-faint dp-small">Choose a type, or a document this is a new version of.</p>}
+      {form.file && !ready && !revision && <p className="dp-faint dp-small">Choose a type, or a document this is a new version of.</p>}
       {!form.source_key && isSignedDoc(form.doc_type) && <p className="dp-faint dp-small">{SIGNED_NOTE}</p>}
       <div className="dp-actions">
         {error && <span className="dp-error" role="alert">{error}</span>}
         <button type="button" className="dp-btn dp-btn-ghost" onClick={onClose} disabled={busy}>Cancel</button>
-        <button type="submit" className="dp-btn dp-btn-dark" disabled={busy || !ready || !!notice}>{busy ? "Checking…" : <>Add and check <Icon d={I.arrow} size={14} /></>}</button>
+        <button type="submit" className="dp-btn dp-btn-dark" disabled={busy || !ready || !!notice || !!revision}>{busy ? "Checking…" : <>Add and check <Icon d={I.arrow} size={14} /></>}</button>
       </div>
     </form>
   );

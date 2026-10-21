@@ -55,3 +55,16 @@ test("'+ Add' from the sidebar: nothing is chosen, the files suggest their own d
     assert.equal(addReady({ file, source_key: key, doc_type: "" }), true); // accepting the suggestion
   }
 });
+
+import { newDocumentNotice } from "../src/format.js";
+
+test("the mistaken path from the 21 Oct rehearsal: the pricing note filed as a new document is questioned before anything is added", () => {
+  const n = newDocumentNotice({ fileName: FILES.pricing.name, head: FILES.pricing.head, documents: REG.documents, docType: "pricing_services_note", today: "21 Oct 2026" });
+  assert.ok(n, "the warning must appear");
+  assert.equal(n.use.text, "Use “A new version of Pricing and services note”"); // the right action first
+  assert.match(n.consequence, /dated 21 Oct 2026 and sit beside Pricing and services note, not replace it/);
+  assert.equal(n.anyway, "Add as a new document anyway");
+  // the same for the contract, if it were filed as a new document
+  const c = newDocumentNotice({ fileName: FILES.contract.name, head: FILES.contract.head, documents: REG.documents, docType: "draft_contract", today: "21 Oct 2026" });
+  assert.equal(c.use.source_key, "NJ-07");
+});

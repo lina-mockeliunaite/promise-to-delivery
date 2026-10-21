@@ -114,8 +114,8 @@ def flow(deal, steps, findings, key_set, cache_dir, tmp):
             else:
                 r = client.post(f"/api/deals/{deal}/handover/complete", json=payload, headers=H)
             out.append((kind, r.status_code, r.text[:160] if r.status_code != 200 else "", fake.calls))
-        snap = client.get(f"/api/deals/{deal}/handover").json()["snapshot"]
-        counts = (len(snap["open_items"]), len(snap["resolved_by_note"]), len(snap["closed_items"]))
+        snap = client.get(f"/api/deals/{deal}/handover").json()["snapshot"]  # None until the handover is locked
+        counts = (len(snap["open_items"]), len(snap["resolved_by_note"]), len(snap["closed_items"])) if snap else None
         return out, fake.calls, counts, snap
 
 

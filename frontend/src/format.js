@@ -165,6 +165,24 @@ export function suggestVersionOf({ fileName, head, documents }) {
   return same.length === 1 ? same[0] : null;
 }
 
+// The "this is a revision, not a new document" notice (21 Oct). A file that looks like a new version of a document already in the deal
+// (its name starts with that document's source key, or its heading names that document's type) filed as "A new document" would be dated
+// the day it is added and sit beside the original, so the check would read both. That is a different input from the one a stored reading
+// was made for, so it can also mean a model call that a correct filing would not need. This says so before anything is added, with the
+// right action first and a quiet way to go ahead. null when the file does not look like a revision of anything in the deal.
+// docType: the type chosen for the new document, "" when none; today: the date text it would be stored with.
+export function newDocumentNotice({ fileName, head, documents, docType, today }) {
+  const doc = suggestVersionOf({ fileName, head, documents });
+  if (!doc) return null;
+  return {
+    name: doc.name,
+    question: `This looks like a new version of ${doc.name}.`,
+    consequence: `Added as a new document, it would be dated ${today} and sit beside ${doc.name}, not replace it, so the check would read both.`,
+    use: { source_key: doc.source_key, text: `Use “A new version of ${doc.name}”` },
+    anyway: docType ? "Add as a new document anyway" : "",
+  };
+}
+
 // A new document needs a chosen type, or a chosen document to be a new version of: there is no silent default (20 Oct).
 export const addReady = ({ file, source_key, doc_type }) => Boolean(file && (source_key || doc_type));
 

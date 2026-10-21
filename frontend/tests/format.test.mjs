@@ -208,3 +208,26 @@ test("there is no silent default type: a file needs a chosen type or a chosen do
   assert.equal(addReady({ file: { name: "a.md" }, source_key: "", doc_type: "proposal" }), true);
   assert.equal(addReady({ file: null, source_key: "NJ-07", doc_type: "" }), false);
 });
+
+// --- A revision filed as "A new document" (21 Oct) ---------------------------------------------------------------------------------
+import { newDocumentNotice } from "../src/format.js";
+
+test("a revision filed as a new document is questioned before anything is added: dated today, beside the original", () => {
+  const n = newDocumentNotice({ fileName: "NJ-05_v2_named_exception.md", head: PRICING_HEAD, documents: DOCS, docType: "pricing_services_note", today: "21 Oct 2026" });
+  assert.equal(n.question, "This looks like a new version of Pricing and services note.");
+  assert.equal(n.consequence, "Added as a new document, it would be dated 21 Oct 2026 and sit beside Pricing and services note, not replace it, so the check would read both.");
+  assert.deepEqual([n.use.source_key, n.use.text], ["NJ-05", "Use “A new version of Pricing and services note”"]);
+  assert.equal(n.anyway, "Add as a new document anyway");
+});
+
+test("with no type chosen yet there is no way to go ahead as a new document, only the right action", () => {
+  const n = newDocumentNotice({ fileName: "NJ-07_v2_languages_aligned.md", head: CONTRACT_HEAD, documents: DOCS, docType: "", today: "21 Oct 2026" });
+  assert.equal(n.use.text, "Use “A new version of Draft contract”");
+  assert.equal(n.anyway, "");
+});
+
+test("no notice for a file that does not look like a revision of anything in the deal", () => {
+  assert.equal(newDocumentNotice({ fileName: "notes.md", head: "Some notes.", documents: DOCS, docType: "proposal", today: "21 Oct 2026" }), null);
+  assert.equal(newDocumentNotice({ fileName: "AB-09_signed_contract.md", head: SIGNED_HEAD, documents: DOCS, docType: "signed_contract", today: "21 Oct 2026" }), null);
+  assert.equal(newDocumentNotice({ fileName: "x.md", head: CONTRACT_HEAD, documents: [], docType: "draft_contract", today: "21 Oct 2026" }), null);
+});
