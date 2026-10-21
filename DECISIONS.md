@@ -1190,3 +1190,6 @@ One outside review pass (a second assistant) was triaged before building.
 - The badge beside "Deal reviews" is gone. This reverses the badge part of the 09:43 entry ("Home header: cross-functional line, eyebrow removed"); the line under the heading and the removed eyebrow stay as decided there.
 - **Why:** it repeated the tab counts directly below it ("5 deals" above "In handover 5 deals"). The total is still readable from the tabs and from "Showing … of … deals" under the list.
 - **Checked:** Python 776 tests OK, frontend 118 pass (the test that pinned the badge to the whole list now checks that no badge is present). After screenshot: docs/screens/2026-10-21/brand_block/after_home_desktop_no_badge.png.
+
+## 2026-10-21, 14:01 — Locked-record drawer sits at the top of the window
+- The drawer and its backdrop were pushed 12px down by the record's spacing rule (`.fr > * + *`); they now reset that margin and sit at 0, flush with the window as intended. **Checked:** Python 776 tests OK, frontend 118 pass; measured in the browser on the Noma record (drawer and backdrop top 0, was 12); screenshot docs/screens/2026-10-21/brand_block/after_locked_drawer_fixed.png.

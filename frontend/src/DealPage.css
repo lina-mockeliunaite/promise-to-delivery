@@ -371,6 +371,7 @@ body:has(.dp) { background: #f8fafc; }
 .dp.fr { max-width: 880px; margin: 0 auto; padding: 0 16px 32px; background: transparent; min-height: 0; }
 .fr .dp-topbar { position: static; display: flex; justify-content: space-between; align-items: center; height: auto; margin: 0; padding: 16px 0 12px; background: none; border: 0; backdrop-filter: none; }
 .fr > * + * { margin-top: 12px; }
+.fr > .dr, .fr > .dr-backdrop { margin-top: 0; } /* fixed layers: the spacing rule above must not push them down */
 .fr .dp-back { margin-left: 0; }
 .fr-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 10px 14px; border-radius: 12px; background: var(--hair); color: var(--body); font-size: 13px; }
 .fr-bar svg { color: var(--muted); }
