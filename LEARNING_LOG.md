@@ -196,3 +196,20 @@ Today’s checkpoint showed me how much the UI was getting in the way of underst
 - **I misfiled two documents in my own demo,** and one false closure followed. I had clicked straight through a warning. So warnings now state the consequence and put the right action first, and the form pre-selects the document the evidence actually came from.
 - **Rules versus enforcement.** "No git" written as an instruction was broken three times. A deny rule in the settings enforces it, the same principle as the product itself: don't rely on someone's word.
 - **Practical:** a 502 means the front end is up but the server isn't; I need the right folder before any `.venv` command; and the API key is mine to run, never Claude Code's.
+
+## 2026-10-21 — Demo reliability, a handover record you can check, and keeping the promise specific
+
+*Drafted by Claude at close on 21 Oct from the session record, at Lina's request. Lina to edit any line that isn't true for her.*
+
+- **The offline refusal was not a date bug.** Each cached reading is keyed partly on the document's date. A revision filed as "A new document" gets today's date, so its key changes and the app needs the model. Filed as "A new version of …", it keeps the original date and hits the cache. Now the app questions that filing before adding anything, and both demos run with no API key.
+- **Draft fixes are checked against the signed contract.** A gap closed by a draft is confirmed or reopened by whether the signed paperwork still contains the fixing sentence. The check forgives formatting (curly quotes, number words) but not wording, because a reworded clause can change what it commits to. It errs toward attention.
+- **One definition of an open gap.** Several counts each had their own SQL and had to be patched one by one. Now every count goes through one function, and a test stops new ones bypassing it.
+- **What my document hashes prove, and what they don't.** The hash covers the text Dealshape read, not the original file, so a changed logo or signature image isn't caught. The browser check trusts the server; tamper evidence comes from the record's fingerprint kept outside the system, for example on the printed record.
+- **"Locked" means the contents, not the wording.** The stored record and its fingerprint never change. The sentences around them are built from those stored facts and can improve, so old records show the new wording.
+- **Keep the promise specific.** I nearly swapped "Catch deal surprises before you sign" for "One deal. Every team aligned." The new line described an outcome every collaboration tool claims, and it would have reversed an outside reviewer's recommendation one day later with no new evidence. I kept the tagline and let the description line carry the cross-functional message.
+- **A quiet bug in plain sight.** The count beside "Deal reviews" showed only deals in handover. In the demo both numbers were 5, so nothing looked wrong.
+- **Practical:**
+  - `git add -A` stages whatever is in the folder, including files Claude Code is still writing. Read `git status` first and name the files.
+  - `--ff-only` makes git refuse a merge rather than quietly combine branches.
+  - "No module named pytest" and "Missing script: test" are errors about how the tests were started, not failed tests.
+  - The last line of a test run decides it: `OK` or `fail 0`. The noise above is tests breaking things on purpose.
