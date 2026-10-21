@@ -1,7 +1,7 @@
 // Frozen handover record (16 Oct; reordered 19 Oct). What Delivery inherited,
 // read from the snapshot saved when the handover was completed. Nothing here can change, and nothing is recomputed:
 // it shows the record as it stood, plus the record's SHA-256 fingerprint so anyone can check it was not edited.
-import Logo from "./Logo.jsx";
+import { BrandBlock } from "./Logo.jsx";
 import { useEffect, useMemo, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
@@ -12,7 +12,7 @@ import { Drawer, CommitmentView, DocumentView, MismatchSentence, Icon, ICON } fr
 import BriefCard from "./BriefCard.jsx";
 import { appendixEntries, hasStoredText, shortHash } from "./docHash.js";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
-import { FICTIONAL, TAGLINE } from "./brand.js";
+import { FICTIONAL } from "./brand.js";
 import "./DealPage.css";
 
 const Lock = ({ size = 14 }) => (
@@ -144,7 +144,7 @@ export default function FrozenRecord({ deal, onBack }) {
         <IdentityLine name={s.deal} stage={`Stage: ${s.stage}`} goLive={s.brief?.go_live} show={headerGone} />
       </div>
       <div className="dp-topbar">
-        <span className="dp-brandline"><Logo /><span className="dp-tagline">{TAGLINE}</span></span>
+        <BrandBlock className="dp-brandline" />
         <span className="dp-row fr-noprint">
           <button type="button" className="dp-back" onClick={onBack}>← All deals</button>
           {s.documents.some(hasStoredText) && (

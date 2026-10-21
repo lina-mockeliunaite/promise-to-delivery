@@ -65,7 +65,7 @@ test("Aivuna's card shows the commitment the product does not offer, read from i
   assert.match(partsText(m.parts), /not offered/i);
 });
 
-test("the home header carries the shared-view line, not the old eyebrow, and the deal count is the whole list", async () => {
+test("the home header carries the shared-view line, not the old eyebrow, and no count badge", async () => {
   const { HOME_LINE } = await import("../src/brand.js");
   const fs = await import("node:fs");
   assert.equal(HOME_LINE, "A shared view of what’s promised, agreed and deliverable.");
@@ -73,7 +73,32 @@ test("the home header carries the shared-view line, not the old eyebrow, and the
   const css = fs.readFileSync(new URL("../src/Deals.css", import.meta.url), "utf8");
   assert.ok(!jsx.includes("Before signing and at handover") && !css.includes("dl-eyebrow"));
   assert.ok(jsx.includes("{HOME_LINE}") && !jsx.includes("{DESCRIPTION}"));
-  assert.ok(jsx.includes("dealsText(deals.length)"));
+  assert.ok(!jsx.includes("dl-count") && !css.includes(".dl-count")); // no deal-count badge beside the heading (21 Oct); the tabs carry the counts
   const landing = fs.readFileSync(new URL("../src/Landing.jsx", import.meta.url), "utf8");
   assert.ok(landing.includes("{DESCRIPTION}"));
+});
+
+test("#welcome shows the landing page even after it has been seen; a normal visit after it has been seen goes to the deals list", async () => {
+  const { isWelcome, showLanding, markLandingSeen, landingSeen, WELCOME_HASH } = await import("../src/landing.js");
+  const store = new Map();
+  const storage = { getItem: (k) => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, v) };
+  assert.equal(landingSeen(storage), false);
+  assert.equal(showLanding("", landingSeen(storage), null), true); // first visit
+  markLandingSeen(storage);
+  assert.equal(landingSeen(storage), true);
+  assert.equal(showLanding("", landingSeen(storage), null), false); // normal visit after it was seen: the deals list
+  assert.equal(showLanding("#d=alder_bank", landingSeen(storage), "alder_bank"), false); // a shared deal link still opens the deal
+  assert.equal(WELCOME_HASH, "#welcome");
+  assert.equal(isWelcome("#welcome"), true);
+  assert.equal(showLanding("#welcome", landingSeen(storage), null), true); // whatever is stored
+  assert.equal(isWelcome(""), false);
+  assert.equal(isWelcome("#d=welcome"), false);
+});
+
+test("the deals-list footer carries a muted About Dealshape link, and leaving #welcome clears the hash", async () => {
+  const fs = await import("node:fs");
+  const deals = fs.readFileSync(new URL("../src/Deals.jsx", import.meta.url), "utf8");
+  const app = fs.readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
+  assert.ok(deals.includes('className="dl-about"') && deals.includes("About Dealshape"));
+  assert.ok(app.includes("onAbout={about}") && app.includes("if (isWelcome(window.location.hash)) clearHash();"));
 });

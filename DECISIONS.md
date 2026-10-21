@@ -1173,3 +1173,19 @@ One outside review pass (a second assistant) was triaged before building.
 - **Limit:** a commitment too tall for the space left on a page starts on the next one, so page 1 of Noma still ends with some white space.
 - **Checked:** Python 776 tests OK, frontend 116 pass. Noma printed to PDF with and without the full-text box; every page of the plain print and the first, third and last pages of the appendix print were looked at by eye, and the full fingerprint and hashes were checked in the printed text. PDFs in docs/screens/2026-10-21/print_fix/. The Alder flow passes, but its pages were not looked at.
 - **Correction to 09:27:** the print PDFs checked then were made with screen media, not print media, so that check could not show these bugs. They were found by printing a locked record from a fresh GitHub clone. The PDFs here are made with print media active.
+
+## 2026-10-21, 13:37 — The landing page on demand: #welcome and "About Dealshape"
+- Opening `/#welcome` always shows the landing page, whatever this browser has stored; a link in the deals-list footer, "About Dealshape", opens the same page. Leaving it works as before (remembered as seen) and clears the hash, so a refresh goes to the deals list. First-visit behaviour and shared deal links (`#d=…`) are unchanged.
+- Both demo scripts now open `http://127.0.0.1:5173/#welcome` instead of asking for storage to be cleared or a private window. Limit: `#welcome` is per tab load; the choice is not stored.
+- **Checked:** Python 776 tests OK, frontend 118 pass. In a real browser on a fresh profile: first visit shows the landing page; after leaving, a normal visit and a refresh go to the deals list; `#welcome` shows it again and leaving clears the hash; the footer link opens it.
+
+## 2026-10-21, 13:46 — Brand block: tagline on its own line under the logo
+- In every top bar (home, deal page, locked record) the tagline now sits on its own line 5px below the logo, 12.5px, indented to the left edge of the wordmark's text ("D" of "Dealshape", 27px at the 21px logo) rather than the mark. One `BrandBlock` component replaces three copies of logo-plus-tagline. TAGLINE is unchanged.
+- **Colour:** the page's existing muted token (`--dl-muted` on the home list, `--muted` on deal pages): #64748b light, #94a3b8 dark. Contrast: 4.55:1 on the #f8fafc canvas (home, locked record), 4.76:1 on the white deal-page bar, 7.3:1 on the dark canvas, 6.8:1 on the dark bar.
+- **Limits:** the deal-page bar is a fixed 48px and the block is 41px, so it is snug. At 390px the home layout is as before except that the tagline is now indented 27px to line up with the wordmark. The existing rules still hide the tagline below 900px and the whole block below 700px on deal pages and the locked record.
+- **Checked:** Python 776 tests OK, frontend 118 pass (no test pinned the old layout). Before and after screenshots of home and a deal page at desktop and 390px, plus the locked record, in docs/screens/2026-10-21/brand_block/. The locked-record bar was captured from the Noma flow.
+
+## 2026-10-21, 13:48 — Home header: deal-count badge removed
+- The badge beside "Deal reviews" is gone. This reverses the badge part of the 09:43 entry ("Home header: cross-functional line, eyebrow removed"); the line under the heading and the removed eyebrow stay as decided there.
+- **Why:** it repeated the tab counts directly below it ("5 deals" above "In handover 5 deals"). The total is still readable from the tabs and from "Showing … of … deals" under the list.
+- **Checked:** Python 776 tests OK, frontend 118 pass (the test that pinned the badge to the whole list now checks that no badge is present). After screenshot: docs/screens/2026-10-21/brand_block/after_home_desktop_no_badge.png.

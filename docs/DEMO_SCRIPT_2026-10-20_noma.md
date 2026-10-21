@@ -19,7 +19,7 @@
    .venv/bin/python reset_demo.py
    .venv/bin/python -m uvicorn api:app --host 127.0.0.1 --port 8000
    ```
-3. **Window 2:** `cd frontend && npm run dev`. Then open http://127.0.0.1:5173. To see the landing page again, clear this site's storage (or use a private window).
+3. **Window 2:** `cd frontend && npm run dev`. Then open http://127.0.0.1:5173/#welcome, which always shows the landing page.
 4. **Files ready:** keep a Finder window open on `data/scenarios/`, showing `NJ-05_v2_named_exception.md`, `NJ-07_v2_languages_aligned.md` and `NJ-09_signed_contract.md`.
 5. **Your name** is set in the app ("Recording as …").
 6. **Close every other tab.** Turn off notifications.
@@ -60,7 +60,7 @@ The model read the eight starting documents once, against Aivuna's ten-capabilit
 | The form says "This looks like a new version of …" | You chose "A new document" for a revised file. It would be dated today and sit beside the original. Click the primary button **Use "A new version of …"**. The quiet "Add as a new document anyway" is the only way past it |
 | "This review needs the model…" and the message names a document "added earlier as a new document" | An earlier step was filed as a new document, not a new version. Reset the demo and add it as **A new version of: …** |
 | Wrong file picked | The app warns you ("This looks like a…"). Cancel, then pick the right one |
-| The landing page doesn't show | It shows once per browser. Clear this site's storage, or use a private window |
+| The landing page doesn't show | Open http://127.0.0.1:5173/#welcome (a normal visit shows it once per browser) |
 
 ## Likely questions (short answers)
 

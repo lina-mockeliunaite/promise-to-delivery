@@ -11,6 +11,12 @@ export const SAMPLES = [
 ];
 export const availableSamples = (deals) => SAMPLES.filter((s) => (deals ?? []).some((d) => d.deal === s.deal));
 
+// 21 Oct: #welcome always shows the landing page, whatever this browser has stored (a link for demos and for "About Dealshape").
+// A normal visit is unchanged: the landing page shows on the first visit only.
+export const WELCOME_HASH = "#welcome";
+export const isWelcome = (hash) => String(hash ?? "").replace(/^#/, "").split("&").includes("welcome");
+export const showLanding = (hash, seen, deal) => isWelcome(hash) || (!deal && !seen);
+
 export function landingSeen(storage = globalThis.localStorage) {
   try { return storage.getItem(SEEN_KEY) === "1"; } catch { return false; }
 }

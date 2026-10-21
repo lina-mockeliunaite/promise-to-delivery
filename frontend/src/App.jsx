@@ -4,7 +4,7 @@ import Handoff from "./Handoff.jsx";
 import Deals from "./Deals.jsx";
 import DealPage from "./DealPage.jsx";
 import Landing from "./Landing.jsx";
-import { landingSeen, markLandingSeen } from "./landing.js";
+import { WELCOME_HASH, isWelcome, landingSeen, markLandingSeen, showLanding } from "./landing.js";
 import { TAGLINE } from "./brand.js";
 import { readHash } from "./dealpage.js";
 import { TYPE_EFFECT, alsoLine, checkLine, checkUpload, fmtDate, fmtDateTime, guessType, plural, typeFromName, uploadKind } from "./format.js";
@@ -1010,8 +1010,8 @@ function Workspace({ deal, onDealsChanged }) {
 
 export default function App() {
   const [deals, setDeals] = useState(null);
-  const [current, setCurrent] = useState(() => readHash(window.location.hash).d); // #d=<deal>&c=<key>: a reload or a shared link reopens it
-  const [landing, setLanding] = useState(() => !readHash(window.location.hash).d && !landingSeen()); // first visit only
+  const [current, setCurrent] = useState(() => (isWelcome(window.location.hash) ? null : readHash(window.location.hash).d)); // #d=<deal>&c=<key>: a reload or a shared link reopens it
+  const [landing, setLanding] = useState(() => showLanding(window.location.hash, landingSeen(), readHash(window.location.hash).d)); // first visit, or #welcome
   const [classic, setClassic] = useState(false); // the detailed (pre-revamp) view, kept reachable during the revamp
   const [error, setError] = useState(null);
 
@@ -1025,11 +1025,19 @@ export default function App() {
   }, []);
   useEffect(loadDeals, [loadDeals]);
   useEffect(() => { if (deals && current && !deals.some((x) => x.deal === current)) setCurrent(null); }, [deals, current]);
+  // 21 Oct: #welcome typed into an open tab shows the landing page too.
+  useEffect(() => {
+    const onHash = () => { if (isWelcome(window.location.hash)) { setCurrent(null); setClassic(false); setLanding(true); } };
+    window.addEventListener("hashchange", onHash);
+    return () => window.removeEventListener("hashchange", onHash);
+  }, []);
+  const clearHash = () => window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
+  const about = () => { window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${WELCOME_HASH}`); setLanding(true); };
 
   // 20 Oct: the first visit shows the landing page; leaving it (either way) is remembered in this browser.
   // It does not wait for the deal list: if the server cannot be reached it still shows, with one quiet line instead of the error box.
   if (!current && landing) {
-    const leave = (deal) => { markLandingSeen(); setLanding(false); if (deal) setCurrent(deal); };
+    const leave = (deal) => { markLandingSeen(); if (isWelcome(window.location.hash)) clearHash(); setLanding(false); if (deal) setCurrent(deal); };
     return <Landing deals={deals} unavailable={!deals && !!error} onOpen={(d) => leave(d)} onList={() => leave(null)} />;
   }
   // 16 Oct: the deal list is the home screen (Stitch screen 1); a deal opens on its own page with a way back.
@@ -1037,7 +1045,7 @@ export default function App() {
     return (
       <main className="home">
         {error && <Notice kind="error">{error}</Notice>}
-        <Deals deals={deals} onOpen={setCurrent} onCreated={(d) => { setCurrent(d); loadDeals(); }} />
+        <Deals deals={deals} onOpen={setCurrent} onAbout={about} onCreated={(d) => { setCurrent(d); loadDeals(); }} />
       </main>
     );
   }

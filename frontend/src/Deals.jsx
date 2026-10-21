@@ -1,12 +1,12 @@
 // Home screen: deals in handover (16 Oct; design from Google Stitch, screen 1, adapted to real data).
 // Visibility only. Every number comes from /api/workspace/deals; there are no invented metrics, statuses or actions.
-import Logo from "./Logo.jsx";
+import { BrandBlock } from "./Logo.jsx";
 import { useMemo, useState } from "react";
 import * as api from "./api.js";
 import { FILTERS, SORTS, counts, initials, lastVendor, page, relativeTime, rememberVendor, vendorsOf, visibleDeals } from "./deals.js";
 import { commitmentsNeedText, dealsText, plainName } from "./dealpage.js";
 import CatalogueModal from "./CatalogueModal.jsx";
-import { FICTIONAL, HOME_LINE, TAGLINE } from "./brand.js";
+import { FICTIONAL, HOME_LINE } from "./brand.js";
 import "./Deals.css";
 
 const Icon = ({ d, size = 16 }) => (
@@ -94,7 +94,7 @@ function NewDeal({ onCreated }) {
   );
 }
 
-export default function Deals({ deals, onOpen, onCreated }) {
+export default function Deals({ deals, onOpen, onCreated, onAbout }) {
   const [filter, setFilter] = useState("handover");
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("updated");
@@ -110,12 +110,11 @@ export default function Deals({ deals, onOpen, onCreated }) {
 
   return (
     <div className="dl">
-      <header className="dl-brand"><Logo /><span className="dl-tagline">{TAGLINE}</span></header>
+      <header className="dl-brand"><BrandBlock /></header>
       <section className="dl-head">
         <div>
           <div className="dl-title-row">
             <h1>Deal reviews</h1>
-            <span className="dl-count">{dealsText(deals.length)}</span>
           </div>
           <p className="dl-sub">{HOME_LINE}</p>
         </div>
@@ -221,7 +220,7 @@ export default function Deals({ deals, onOpen, onCreated }) {
           )}
         </footer>
       </section>
-      <footer className="dl-pagefoot">{FICTIONAL}</footer>
+      <footer className="dl-pagefoot">{FICTIONAL}{onAbout && <> <button type="button" className="dl-about" onClick={onAbout}>About Dealshape</button></>}</footer>
     </div>
   );
 }

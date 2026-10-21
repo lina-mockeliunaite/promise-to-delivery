@@ -19,7 +19,7 @@
    .venv/bin/python reset_demo.py
    .venv/bin/python -m uvicorn api:app --host 127.0.0.1 --port 8000
    ```
-3. **Window 2:** `cd frontend && npm run dev`. Then open http://127.0.0.1:5173.
+3. **Window 2:** `cd frontend && npm run dev`. Then open http://127.0.0.1:5173/#welcome, which always shows the landing page.
 4. **Files ready:** keep a Finder window open on `data/scenarios/`, showing `AB-05_v2_named_exception.md`, `AB-06_v2_coaching_added.md` and `AB-09_signed_contract.md`.
 5. **Your name** is set in the app ("Recording as …").
 6. **Close every other tab.** Turn off notifications.
