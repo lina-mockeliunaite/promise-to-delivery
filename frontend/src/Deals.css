@@ -37,16 +37,16 @@ body:has(.dl) { background: #f8fafc; }
 .dl-right { text-align: right; }
 
 /* Brand line */
-.dl-brand { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--dl-muted); }
+.dl-brand { display: flex; align-items: center; gap: 4px 14px; flex-wrap: wrap; padding-bottom: 20px; }
+.dl-tagline { font-size: 14px; line-height: 1.4; color: var(--dl-muted); }
 .dl-brand strong { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--dl-text); }
 
 /* Header */
-.dl-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; padding: 4px 0 14px; border-bottom: 1px solid var(--dl-hair); }
-.dl-eyebrow { font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; color: var(--dl-accent); }
-.dl-title-row { display: flex; align-items: baseline; gap: 10px; margin-top: 4px; }
+.dl-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 20px; flex-wrap: wrap; padding: 8px 0 24px; border-bottom: 1px solid var(--dl-hair); }
+.dl-title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .dl-title-row h1 { margin: 0; font-size: 30px; line-height: 1.2; letter-spacing: -0.02em; font-weight: 600; color: var(--dl-text); }
 .dl-count { font-size: 12px; font-weight: 500; color: var(--dl-muted); background: var(--dl-hair); padding: 1px 10px; border-radius: 999px; }
-.dl-sub { margin: 6px 0 0; color: var(--dl-muted); max-width: 46rem; line-height: 1.5; }
+.dl-sub { margin: 8px 0 0; font-size: 15px; color: var(--dl-muted); max-width: 46rem; line-height: 1.5; }
 
 /* Buttons */
 .dl-actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }

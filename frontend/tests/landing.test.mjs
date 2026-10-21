@@ -64,3 +64,16 @@ test("Aivuna's card shows the commitment the product does not offer, read from i
   assert.equal(m.title, "AI answers customers' phone calls at launch");
   assert.match(partsText(m.parts), /not offered/i);
 });
+
+test("the home header carries the shared-view line, not the old eyebrow, and the deal count is the whole list", async () => {
+  const { HOME_LINE } = await import("../src/brand.js");
+  const fs = await import("node:fs");
+  assert.equal(HOME_LINE, "A shared view of what’s promised, agreed and deliverable.");
+  const jsx = fs.readFileSync(new URL("../src/Deals.jsx", import.meta.url), "utf8");
+  const css = fs.readFileSync(new URL("../src/Deals.css", import.meta.url), "utf8");
+  assert.ok(!jsx.includes("Before signing and at handover") && !css.includes("dl-eyebrow"));
+  assert.ok(jsx.includes("{HOME_LINE}") && !jsx.includes("{DESCRIPTION}"));
+  assert.ok(jsx.includes("dealsText(deals.length)"));
+  const landing = fs.readFileSync(new URL("../src/Landing.jsx", import.meta.url), "utf8");
+  assert.ok(landing.includes("{DESCRIPTION}"));
+});

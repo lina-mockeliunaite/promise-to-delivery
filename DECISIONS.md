@@ -1153,3 +1153,10 @@ One outside review pass (a second assistant) was triaged before building.
 - **Document hashes.** Each document in a new record stores its version id and the SHA-256 of the text as stored (CRLF is stored as LF). Old records stay plain: no best-effort matching.
 - **What the browser check is.** The re-hash on opening a document is a viewing check that trusts the server. It is not tamper-proofing; that comes from the record fingerprint kept outside the system.
 - **Checked:** Python 776 tests OK, frontend 114 pass. Four-deal regression: 0 differences, ignoring read-time fields. Noma and Alder ran clean on a fresh reset with no key. Noma print with full text checked by eye (page breaks, hashes, curly quotes and é, checkbox hidden, 'Gap closed' wording).
+
+## 2026-10-21, 09:43 — Home header: cross-functional line, eyebrow removed
+- The home page drops the eyebrow "Before signing and at handover" and shows `HOME_LINE` ("A shared view of what’s promised, agreed and deliverable.") under "Deal reviews", with a neutral badge for the total number of deals. This partly reverses the 20 Oct entry that added the eyebrow.
+- The tagline and the README positioning are unchanged. The landing page keeps the full description.
+- **Why:** to communicate cross-functional value while keeping a specific, credible promise (the tagline in the top bar).
+- **Badge fix:** the count beside 'Deal reviews' showed n.handover (deals in handover only); it now shows the total number of deals. Both are 5 in the demo ledger.
+- **Checked:** Python 776 tests OK, frontend 115 pass; screenshots before and after at desktop and 390px in docs/screens/2026-10-21/home_header/.

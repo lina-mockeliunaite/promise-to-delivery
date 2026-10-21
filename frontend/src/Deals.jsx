@@ -6,7 +6,7 @@ import * as api from "./api.js";
 import { FILTERS, SORTS, counts, initials, lastVendor, page, relativeTime, rememberVendor, vendorsOf, visibleDeals } from "./deals.js";
 import { commitmentsNeedText, dealsText, plainName } from "./dealpage.js";
 import CatalogueModal from "./CatalogueModal.jsx";
-import { DESCRIPTION, FICTIONAL, TAGLINE } from "./brand.js";
+import { FICTIONAL, HOME_LINE, TAGLINE } from "./brand.js";
 import "./Deals.css";
 
 const Icon = ({ d, size = 16 }) => (
@@ -110,15 +110,14 @@ export default function Deals({ deals, onOpen, onCreated }) {
 
   return (
     <div className="dl">
-      <header className="dl-brand"><Logo /><span>{TAGLINE}</span></header>
+      <header className="dl-brand"><Logo /><span className="dl-tagline">{TAGLINE}</span></header>
       <section className="dl-head">
         <div>
-          <span className="dl-eyebrow">Before signing and at handover</span>
           <div className="dl-title-row">
             <h1>Deal reviews</h1>
-            <span className="dl-count">{dealsText(n.handover)}</span>
+            <span className="dl-count">{dealsText(deals.length)}</span>
           </div>
-          <p className="dl-sub">{DESCRIPTION}</p>
+          <p className="dl-sub">{HOME_LINE}</p>
         </div>
         <div className="dl-actions">
           <button type="button" className="dl-btn" onClick={() => setCatalogue(true)}><Icon d={ICONS.box} size={16} /> Product catalogue</button>
