@@ -508,6 +508,21 @@ export const signedConfirmations = (checks) => [...new Set((checks ?? []).filter
 // The lines under a commitment that is open again: why, and what closed it before.
 export const reopenedLines = (issues) => reopenedBySigned(issues).flatMap((i) => [i.signed_check.reason, earlierLine(i.signed_check)]).filter(Boolean);
 
+// No sentence is shown twice between "Contract says" and "What we found" (21 Oct). A finding's body is dropped, sentence by sentence, when it
+// is the same sentence the contract side already says (case, quotes and punctuation aside); the finding then shows with its title only.
+// Nothing is reworded: only exact or near-exact repeats go. Partial overlaps (a body that quotes the contract term inside a longer
+// sentence) stay as they are.
+const sentenceKey = (s) => String(s ?? "").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+const sentencesOf = (t) => String(t ?? "").split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
+export function contractSaid(c) {
+  const searched = c.missing?.length ? `${c.missingLabel} ${c.missing.map((m) => `“${m}”`).join(", ")}` : "";
+  return [c.text, searched, c.quote?.quote, c.now?.quote].filter(Boolean).flatMap(sentencesOf);
+}
+export function withoutRepeats(found, contract) {
+  const said = new Set(contractSaid(contract).map(sentenceKey));
+  return found.map((f) => ({ ...f, fact: sentencesOf(f.fact).filter((s) => !said.has(sentenceKey(s))).join(" ") }));
+}
+
 // One commitment, as the drawer shows it. status: "open" | "noted" | "closed".
 export function commitmentView(c, status, documents) {
   const unresolved = c.issues.filter((i) => i.state !== "Resolved");
@@ -515,6 +530,7 @@ export function commitmentView(c, status, documents) {
   const shown = status === "closed" ? closedIssues : unresolved;
   const noteRes = unresolved.find((i) => i.note_resolution)?.note_resolution ?? null;
   const side = contractSide(unresolved, c.contract); // a closed commitment has no open contract finding: its short term stands alone
+  const contract = contractView(c.contract, side, documents, c.contract_now, missingPhrases(unresolved));
   const notes = [];
   if (noteRes) notes.push({ by: noteRes.by, at: noteRes.at, text: noteRes.reason, kind: status === "noted" ? "addressed" : "reopened" });
   for (const d of new Map(unresolved.filter((i) => i.decision && i.decision.status !== "none").map((i) => [`${i.decision.by}|${i.decision.reason}`, i.decision])).values()) {
@@ -524,9 +540,9 @@ export function commitmentView(c, status, documents) {
     key: c.ref ?? null, title: rowTitle(c), extracted: extractedAs(c), status,
     first: firstPromised(c.statements, c.first_found), mismatch: mismatchParts(unresolved, c.contract), plain: mismatchLine(unresolved, c.contract),
     told: toldQuotesWithDocs(c.statements, documents),
-    contract: contractView(c.contract, side, documents, c.contract_now, missingPhrases(unresolved)),
-    found: status === "closed" ? [] : unresolved.map((i) => ({ label: findingDetail(i, c.contract),
-      fact: i.signed_check?.status === "not_found" ? i.signed_check.reason : gapLine(i.finding, i.evidence, i.catalogue_path) })),
+    contract,
+    found: status === "closed" ? [] : withoutRepeats(unresolved.map((i) => ({ label: findingDetail(i, c.contract),
+      fact: i.signed_check?.status === "not_found" ? i.signed_check.reason : gapLine(i.finding, i.evidence, i.catalogue_path) })), contract),
     earlier: reopenedBySigned(unresolved).map((i) => earlierLine(i.signed_check)).filter(Boolean),
     signedLines: signedConfirmations(closedIssues.map((i) => i.signed_check)),
     reopenedLines: reopenedLines(unresolved),
@@ -582,15 +598,16 @@ export function frozenView({ item, status, closedFindings = [], documents = [], 
   const addressed = findings.find((f) => f.resolved_by_note)?.resolved_by_note;
   if (addressed) notes.push({ by: addressed.by, at: addressed.at, text: addressed.reason, kind: "addressed" });
   const seenAll = findings.flatMap((f) => f.seen ?? []);
+  const contract = contractView(item.contract, side, documents, item.contract_now, missingPhrases(findings));
   const title = titles[name] || name;
   return {
     key: name, title, extracted: titles[name] && titles[name] !== name ? name : "", status,
     first: firstPromised(statements, item.first_found), mismatch: mismatchParts(issues, item.contract), plain: mismatchLine(issues, item.contract),
     told: quoted.length ? quoted.map((q) => ({ quote: q.quote, label: q.source, date: q.date ?? "", doc: matchDoc(documents, [q.source], q.date) })) : [],
     toldFallback: item.told ?? "",
-    contract: contractView(item.contract, side, documents, item.contract_now, missingPhrases(findings)),
-    found: issues.map((i, n) => ({ label: findingDetail(i, item.contract),
-      fact: i.signed_check?.status === "not_found" ? i.signed_check.reason : gapLine(i.finding, i.evidence, i.catalogue_path) })),
+    contract,
+    found: withoutRepeats(issues.map((i, n) => ({ label: findingDetail(i, item.contract),
+      fact: i.signed_check?.status === "not_found" ? i.signed_check.reason : gapLine(i.finding, i.evidence, i.catalogue_path) })), contract),
     earlier: reopenedBySigned(issues).map((i) => earlierLine(i.signed_check)).filter(Boolean),
     signedLines: signedConfirmations(item.signed),
     reopenedLines: reopenedLines(issues),

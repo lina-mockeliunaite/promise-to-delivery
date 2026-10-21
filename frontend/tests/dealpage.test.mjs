@@ -577,3 +577,42 @@ test("a closed commitment carries the confirmation, live and in the locked recor
   assert.deepEqual(open.ai, []);
   assert.equal(open.reopenedLines.length, 2);
 });
+
+// 21 Oct: no sentence is shown twice between "Contract says" and "What we found", for every finding kind, live and locked.
+test("no sentence appears in both 'Contract says' and the finding card, for every finding kind", async () => {
+  const { contractSaid } = await import("../src/dealpage.js");
+  const key = (s) => String(s).replace(/[‘’]/g, "'").replace(/[“”]/g, '"').toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
+  const split = (t) => String(t ?? "").split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
+  const E = {
+    notOffered: { finding: "Not offered", evidence: { unlisted_value: "phone calls" }, catalogue_path: "CAP-003/SG" },
+    notOfferedBare: { finding: "Not offered", evidence: null, catalogue_path: null },
+    noApproval: { finding: "No approval recorded", evidence: null, catalogue_path: null },
+    noApprovalLimit: { finding: "No approval recorded", evidence: { limit_name: "payments", promised_quantity: 750000, limit_value: 200000 }, catalogue_path: "CAP-1/AU" },
+    missing: { finding: "Missing from contract", evidence: { missing_phrases: ["BioCatch", "coached by a scammer"] }, catalogue_path: null },
+    missingNoPhrases: { finding: "Missing from contract", evidence: null, catalogue_path: null },
+    differs: { finding: "Contract says something different",
+      evidence: { promised_value: "phone calls", contract_value: "chat and email", contract_quote: { quote: "Provider will operate the Assistant on chat and email.", source: "Draft SOW" } }, catalogue_path: null },
+    differsBare: { finding: "Contract says something different", evidence: null, catalogue_path: null },
+  };
+  const combos = Object.entries(E).map(([n, e]) => [n, [e], n.startsWith("missing") || n === "notOffered" ? "Not included" : "chat and email"])
+    .concat([["missing+noApproval", [E.missing, E.noApproval], "Not included"], ["all", [E.notOffered, E.differs, E.missing, E.noApproval], "chat and email"]]);
+  for (const [name, issues, term] of combos) {
+    const live = commitmentView({ name: "X", ref: "x", contract: term, statements: [], issues: issues.map((e, i) => ({ id: i, state: "Needs action", reason: "r", ...e })) }, "open", []);
+    const locked = frozenView({ item: { promise: "X", contract: term, findings: issues.map((e) => ({ ...e, why: "r", seen: [] })) }, status: "open", documents: [], titles: {} });
+    for (const [where, v] of [["live", live], ["locked", locked]]) {
+      const said = new Set(contractSaid(v.contract).map(key));
+      for (const f of v.found) for (const s of split(f.fact)) assert.ok(!said.has(key(s)), `${name} (${where}): "${s}" is said in both`);
+      assert.deepEqual(v.found.map((f) => f.label).length, issues.length, `${name} (${where}): every finding keeps its title`);
+    }
+  }
+});
+
+test("the 'Not in the draft contract or SOW' card keeps its title and drops its repeated body, and nothing else changes", () => {
+  const issues = [{ id: 1, state: "Needs action", finding: "Missing from contract", evidence: { missing_phrases: ["BioCatch"] }, reason: "r" }];
+  const v = commitmentView({ name: "X", contract: "Not included", statements: [], issues }, "open", []);
+  assert.equal(v.contract.text, "No matching wording found in the draft contract or SOW");
+  assert.deepEqual(v.found, [{ label: "Not in the draft contract or SOW", fact: "" }]);
+  // a partial overlap is left alone: the body quotes the term inside a longer sentence
+  const d = commitmentView({ name: "X", contract: "chat and email", statements: [], issues: [{ id: 2, state: "Needs action", finding: "Contract says something different", evidence: { promised_value: "phone calls", contract_value: "chat and email" }, reason: "r" }] }, "open", []);
+  assert.equal(d.found[0].fact, 'Told "phone calls"; the contract says "chat and email".');
+});
