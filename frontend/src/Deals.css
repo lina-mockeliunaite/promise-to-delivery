@@ -77,6 +77,18 @@ body:has(.dl) { background: #f8fafc; }
 .dl-search input:focus, .dl-sort select:focus { outline: 2px solid var(--dl-accent); outline-offset: 0; }
 .dl-sort { display: inline-flex; align-items: center; gap: 6px; height: 34px; background: var(--dl-card); border-radius: 999px; padding: 0 8px 0 14px; color: var(--dl-muted); font-size: 13px; box-shadow: var(--dl-shadow); }
 .dl-sort select { border: 0; background: transparent; color: var(--dl-text); font: inherit; font-size: 13px; font-weight: 500; padding: 4px; }
+/* Narrow screens (21 Oct): the tabs are one scrollable row, and search and sort take their own full-width row beneath. */
+@media (max-width: 639px) {
+  .dl-tabs { display: flex; flex-wrap: nowrap; max-width: 100%; overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+  .dl-tabs::-webkit-scrollbar { display: none; }
+  .dl-tab { flex: none; white-space: nowrap; }
+  .dl-tab:focus-visible { outline: 2px solid var(--dl-accent); outline-offset: -2px; }
+  .dl-tools { flex: 1 1 100%; min-width: 0; justify-content: stretch; }
+  .dl-search { flex: 1; min-width: 0; max-width: none; }
+  .dl-sort { flex: 0 1 11rem; min-width: 0; }
+  .dl-sort span { flex: none; }
+  .dl-sort select { flex: 1; min-width: 0; width: 100%; text-overflow: ellipsis; }
+}
 
 /* One list card: hairline rows, quiet uppercase column labels */
 .dl-table-card { background: var(--dl-card); border-radius: 14px; box-shadow: var(--dl-shadow); overflow: hidden; }

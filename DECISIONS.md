@@ -1160,3 +1160,8 @@ One outside review pass (a second assistant) was triaged before building.
 - **Why:** to communicate cross-functional value while keeping a specific, credible promise (the tagline in the top bar).
 - **Badge fix:** the count beside 'Deal reviews' showed n.handover (deals in handover only); it now shows the total number of deals. Both are 5 in the demo ledger.
 - **Checked:** Python 776 tests OK, frontend 115 pass; screenshots before and after at desktop and 390px in docs/screens/2026-10-21/home_header/.
+
+## 2026-10-21, 09:51 — Deals list toolbar at narrow widths
+- Below 640px the filter tabs are one horizontally scrollable row (no wrap, pill shape kept, scrollbar hidden, focus outline drawn inside the pill), and search and sort sit on their own full-width row beneath, search taking the remaining width and sort capped at 11rem. Before, the tabs wrapped into a large rounded blob and the search box collapsed to its icon.
+- CSS only (`Deals.css`, inside one `max-width: 639px` block): desktop rules, copy, colour and behaviour are unchanged. Limit: a long sort option is cut with an ellipsis in the narrow select.
+- **Checked:** Python 776 tests OK, frontend 115 pass; screenshots before and after at desktop and 390px in docs/screens/2026-10-21/toolbar_390/. Not checked by hand: scrolling the tabs by touch.
