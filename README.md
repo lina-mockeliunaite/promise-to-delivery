@@ -6,9 +6,11 @@ Dealshape compares customer promises, contractual wording and the vendor's produ
 
 The customer remembers the proposal, the RFP answers and the calls; the contract says what it says. Dealshape reads a deal's paper trail before signing and again at handover, and shows what we're delivering, which commitments need attention and why, what people have noted about them, and which documents were checked. When the handover is complete it locks that record for Delivery, Customer Success and Support.
 
-It flags two kinds of mismatch:
-- **promises stronger than the company authorised;**
-- **promises that never made it into the contract.**
+It flags four kinds of mismatch:
+- **no approval found:** the catalogue needs a named approval (or the quantity is over a limit), and none is recorded;
+- **not offered:** what was promised isn't in the vendor's catalogue at all;
+- **not in the draft contract or SOW:** a firm promise has no matching wording in the contract;
+- **contract says something different:** the contract covers the same thing on different terms.
 
 It also says what it could not check: if the model proposed findings that failed verification against the documents, the count is shown.
 
