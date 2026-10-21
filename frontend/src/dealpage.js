@@ -136,11 +136,10 @@ export function gapLine(finding, ev = {}, path = null) {
       }
       return "The catalogue needs a named approval for this, and the pricing note records none.";
     case "Missing from contract":
-      return "No matching wording found in the draft contract or SOW.";
+      return ""; // title only (21 Oct): "Contract says" carries "No matching wording found …" and the searched-for phrases
     case "Contract says something different":
-      return ev.promised_value && ev.contract_value
-        ? `Told "${ev.promised_value}"; the contract says "${ev.contract_value}".`
-        : "The contract covers this on different terms.";
+      // The told side only (21 Oct): the title and "Contract says" already show the contract's term.
+      return ev.promised_value ? `Told "${ev.promised_value}".` : "The contract covers this on different terms.";
     default:
       return "";
   }

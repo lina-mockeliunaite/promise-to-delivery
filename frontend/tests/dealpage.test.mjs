@@ -63,8 +63,10 @@ test("evidence lines use only verified facts and say what the check can establis
   assert.match(gapLine("Not offered", { unlisted_value: "Microsoft Azure" }, "CAP-019/AU"), /no Microsoft Azure option .* in AU\. No exception/);
   assert.equal(gapLine("No approval recorded", { limit_name: "max_transactions_per_day", promised_quantity: 750000, limit_value: 500000 }),
                "750,000 is above the catalogue limit of 500,000; a named approval is needed and the pricing note records none.");
-  assert.equal(gapLine("Missing from contract", {}), "No matching wording found in the draft contract or SOW.");
-  assert.equal(gapLine("Contract says something different", { promised_value: "Azure", contract_value: "AWS" }), 'Told "Azure"; the contract says "AWS".');
+  assert.equal(gapLine("Missing from contract", {}), ""); // title only: "Contract says" carries the "No matching wording found …" line (21 Oct)
+  assert.equal(gapLine("Missing from contract", { missing_phrases: ["BioCatch"] }), "");
+  assert.equal(gapLine("Contract says something different", { promised_value: "Azure", contract_value: "AWS" }), 'Told "Azure".'); // the told side only (21 Oct)
+  assert.equal(gapLine("Contract says something different", {}), "The contract covers this on different terms.");
 });
 
 test("the contract side prefers verified contract wording, then the searched phrases, then the short term", () => {
@@ -607,12 +609,26 @@ test("no sentence appears in both 'Contract says' and the finding card, for ever
   }
 });
 
-test("the 'Not in the draft contract or SOW' card keeps its title and drops its repeated body, and nothing else changes", () => {
+test("'Not in the draft contract or SOW' is a title only, always; 'Contract says something different' shows the told side only", () => {
   const issues = [{ id: 1, state: "Needs action", finding: "Missing from contract", evidence: { missing_phrases: ["BioCatch"] }, reason: "r" }];
   const v = commitmentView({ name: "X", contract: "Not included", statements: [], issues }, "open", []);
   assert.equal(v.contract.text, "No matching wording found in the draft contract or SOW");
   assert.deepEqual(v.found, [{ label: "Not in the draft contract or SOW", fact: "" }]);
-  // a partial overlap is left alone: the body quotes the term inside a longer sentence
+  // always: whatever evidence the finding carries, and with or without searched phrases, live and locked
+  for (const evidence of [null, {}, { missing_phrases: ["a", "b"] }]) {
+    const live = commitmentView({ name: "X", contract: "Not included", statements: [], issues: [{ id: 1, state: "Needs action", finding: "Missing from contract", evidence, reason: "r" }] }, "open", []);
+    const locked = frozenView({ item: { promise: "X", contract: "Not included", findings: [{ finding: "Missing from contract", evidence, why: "r", seen: [] }] }, status: "open", documents: [], titles: {} });
+    assert.deepEqual(live.found, [{ label: "Not in the draft contract or SOW", fact: "" }]);
+    assert.deepEqual(locked.found, [{ label: "Not in the draft contract or SOW", fact: "" }]);
+  }
+  // reopened by the signed check, the reason is new information and stays
+  const reopened = commitmentView({ name: "X", contract: "Not included", statements: [], issues: [{ id: 3, state: "Needs action", finding: "Missing from contract", evidence: null, reason: "r",
+    signed_check: { status: "not_found", reason: "The fix in Draft SOW, version 2 was not found in the signed contract.", earlier: "" } }] }, "open", []);
+  assert.equal(reopened.found[0].fact, "The fix in Draft SOW, version 2 was not found in the signed contract.");
+  // a conflict shows what the customer was told, and not the contract side again
   const d = commitmentView({ name: "X", contract: "chat and email", statements: [], issues: [{ id: 2, state: "Needs action", finding: "Contract says something different", evidence: { promised_value: "phone calls", contract_value: "chat and email" }, reason: "r" }] }, "open", []);
-  assert.equal(d.found[0].fact, 'Told "phone calls"; the contract says "chat and email".');
+  assert.equal(d.found[0].fact, 'Told "phone calls".');
+  const dl = frozenView({ item: { promise: "X", contract: "chat and email", findings: [{ finding: "Contract says something different", evidence: { promised_value: "phone calls", contract_value: "chat and email" }, why: "r", seen: [] }] }, status: "open", documents: [], titles: {} });
+  assert.equal(dl.found[0].fact, 'Told "phone calls".');
+  assert.ok(!/the contract says/.test(d.found[0].fact + dl.found[0].fact));
 });
