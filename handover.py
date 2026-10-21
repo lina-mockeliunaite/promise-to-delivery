@@ -174,7 +174,9 @@ def resolve_by_note(conn, slug: str, issue_id, resolved_by, reason) -> dict:
     if row is None:
         raise HandoverError("That item is not in this deal.", 404)
     if row[0] == "Resolved":
-        raise HandoverError("This gap is already closed by the documents.", 409)
+        import signed_check  # 21 Oct: a gap closed by a draft that the signed paperwork lacks is open again, and can be addressed by a note
+        if issue_id not in signed_check.reopened(conn, did, slug):
+            raise HandoverError("This gap is already closed by the documents.", 409)
     _insert(conn, "INSERT INTO note_resolutions (deal_id, issue_id, resolved_by, reason, source_set_sha256) VALUES (?, ?, ?, ?, ?)",
             (did, issue_id, who, why, ledger_fixes.source_set_sha256(conn, did)))
     return note_resolution(conn, did, issue_id)
@@ -225,6 +227,10 @@ def build_snapshot(conn, slug: str, completed_by: str) -> dict:
     open_items = []
     # 17 Oct: each promise also carries its exact, code-verified quotes and each gap's verified evidence, so the frozen
     # record can show the comparison itself. Records saved before this simply lack these fields.
+    def signed(i):  # 21 Oct, additive: the signed-paperwork check of a gap, in the few fields a screen needs; older snapshots lack it
+        sc = i.get("signed_check")
+        return {k: sc[k] for k in ("status", "text", "reason", "earlier") if k in sc} if sc else None
+
     def quotes(c):
         return [{"quote": s["quote"], "source": s["doc_type_label"], "date": s.get("date") or ""}
                 for s in c.get("statements", []) if s.get("quote")]
@@ -232,7 +238,7 @@ def build_snapshot(conn, slug: str, completed_by: str) -> dict:
                     "quotes": quotes(by_id[cid]),
                     "first_found": by_id[cid].get("first_found"),  # 20 Oct, additive: older snapshots lack it
                     "findings": [{"finding": i["finding"], "resolved_by_note": i.get("note_resolution"),
-                                  "evidence": i.get("evidence"), "catalogue_path": i.get("catalogue_path")}
+                                  "evidence": i.get("evidence"), "catalogue_path": i.get("catalogue_path"), "signed_check": signed(i)}
                                  for i in by_id[cid]["issues"] if i["state"] != "Resolved"]}
                    for cid in reg.get("noted_rows", [])]
     for cid in reg["open_rows"]:
@@ -246,7 +252,7 @@ def build_snapshot(conn, slug: str, completed_by: str) -> dict:
                               key=lambda t: t[1], reverse=True),
             "quotes": quotes(c),
             "first_found": c.get("first_found"),  # 20 Oct, additive: where the exact sentence was first found; older snapshots lack it
-            "findings": [{"finding": i["finding"], "why": i["reason"], "seen": i.get("seen", []),
+            "findings": [{"finding": i["finding"], "why": i["reason"], "seen": i.get("seen", []), "signed_check": signed(i),
                           "evidence": i.get("evidence"), "catalogue_path": i.get("catalogue_path"),
                           # a note recorded on the gap (Okay to proceed): who, why, and whether it was still current
                           "note": ({"by": i["decision"].get("by"), "reason": i["decision"].get("reason"),
@@ -269,7 +275,8 @@ def build_snapshot(conn, slug: str, completed_by: str) -> dict:
         # 20 Oct, additive: what a commitment with a closed gap was told and what the contract says now, so the locked record can show
         # a closed commitment in full. Records locked earlier lack it and show those sections empty.
         "closed_items": [{"promise": c["name"], "quotes": quotes(c), "first_found": c.get("first_found"), "contract": c["contract"],
-                          "contract_now": c.get("contract_now")}
+                          "contract_now": c.get("contract_now"),
+                          "signed": [signed(i) for i in c["issues"] if (i.get("signed_check") or {}).get("status") in ("confirmed", "not_confirmed")]}
                          for c in reg["commitments"] if any(i["state"] == "Resolved" for i in c["issues"])],
     }
 
@@ -352,9 +359,8 @@ def deal_rows(conn, rows: list) -> list:
         current = stage["current"]
         # Counted per promise, like the stage bar's "gaps started here", so the list and the deal page agree.
         noted = note_resolved_ids(conn, did)
-        live = conn.execute(
-            "SELECT s.issue_id, c.id FROM issue_current_state s JOIN commitments c ON c.id = s.commitment_id"
-            " WHERE c.deal_id = ? AND s.state <> 'Resolved'", (did,)).fetchall()
+        import open_gaps  # 21 Oct: the one shared reading of "open", including closed gaps the signed paperwork lacks
+        live = [(iid, cid) for iid, cid, _type, _subject, _crit in open_gaps.rows(conn, did, row["deal"])]
         needing = {cid for iid, cid in live if iid not in noted}
         open_gaps = len(needing)
         # 19 Oct: promises whose every open gap is settled by a current note, as the deal page's "Addressed by note" rows

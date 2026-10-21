@@ -145,6 +145,7 @@ export function CommitmentView({ v, titleId, readOnly, me = "", onOpenDoc, onSee
               {f.fact && <span>{f.fact}</span>}
             </div>
           ))}
+          {v.earlier?.map((l) => <p key={l} className="dr-muted">{l}</p>)}
           {v.catalogue.map((p) => (
             <button key={p} type="button" className="cat-open" onClick={() => onCatalogue?.(p)} title="Open the product catalogue at this entry">
               Catalogue: {p.split("/").slice(0, 2).join(" · ")}{p.split("/").length > 2 ? ` · ${p.split("/").slice(2).join(" ").replace(/_/g, " ")}` : ""}
@@ -154,6 +155,7 @@ export function CommitmentView({ v, titleId, readOnly, me = "", onOpenDoc, onSee
             <div className="dr-closed">
               {v.status !== "closed" && <span className="dr-label">Already closed by the documents</span>}
               {v.closed.map((c) => <p key={c.label}><strong>{c.label}.</strong> {c.by}</p>)}
+              {v.signedLines?.map((l) => <p key={l} className="dr-muted">{l}</p>)}
             </div>
           )}
           {v.ai.length > 0 && (

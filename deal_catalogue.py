@@ -60,8 +60,37 @@ def recheck(conn, slug: str, fix_id=None, client=None):
     return rc.recheck(conn, slug, fix_id, client, str(p) if p else None)
 
 
-def needs_model(conn, slug: str, source_key, doc_type: str, canonical_text: str) -> bool:
-    """ledger_v2.needs_model against the deal's own catalogue."""
+def cache_key(conn, slug: str, source_key, doc_type: str, canonical_text: str, doc_date=None) -> str:
+    """The reading-cache key the review will use for this deal if this document is added (a new version of `source_key`, or a new
+    document when it is None). Built from the document list the review will see: current_docs with the incoming document in place,
+    with the date and source id the review will store (ledger_fixes.version_doc_date, next_source_key), through the one key function
+    (ledger_v2.input_sha256). See needs_model."""
+    import config
+    import integrity
+    import ledger_fixes
     import ledger_v2
+    did = ledger_fixes.deal_id(conn, slug)
+    if source_key:
+        incoming_key, incoming_date = source_key, ledger_fixes.version_doc_date(conn, did, source_key, doc_date) or ""
+    else:
+        incoming_key, incoming_date = ledger_fixes.next_source_key(conn, did), doc_date or ""
+    docs = [d for d in ledger_v2.current_docs(conn, did) if d["source_id"] != incoming_key]
+    docs.append({"source_id": incoming_key, "doc_type": doc_type, "date": incoming_date, "text": canonical_text, "version_id": None})
     p = path_for(slug)
-    return ledger_v2.needs_model(conn, slug, source_key, doc_type, canonical_text, str(p) if p else None)
+    raw = Path(p).read_bytes() if p else integrity.catalogue_bytes(conn)
+    return ledger_v2.input_sha256(docs, raw, config.EXTRACTION_MODEL)
+
+
+def needs_model(conn, slug: str, source_key, doc_type: str, canonical_text: str, doc_date=None) -> bool:
+    """True if adding this document (a new version of `source_key`, or a new document when it is None) would need a model call that no
+    cache answers, against the deal's own catalogue.
+
+    21 Oct: the guard now asks the question the review will ask. ledger_v2.needs_model (inside the config hash, so not edited) built the
+    incoming document with an empty date and the placeholder source id "new", so it computed a different cache key from the review's
+    and refused cached readings when no key was set. This builds the same document list the review will see (current_docs with the
+    incoming version in place), with the date and source id the review will store (ledger_fixes.version_doc_date and next_source_key),
+    and uses the same key function, ledger_v2.input_sha256, and cache path. tests/test_cached_guard.py checks the two keys agree."""
+    import ledger_v2
+    if doc_type in ledger_v2.NO_MODEL:
+        return False
+    return not ledger_v2._cache_path(cache_key(conn, slug, source_key, doc_type, canonical_text, doc_date)).is_file()

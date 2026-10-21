@@ -37,10 +37,10 @@ class AddCheckError(Exception):
         self.status = status
 
 
-def _needs_model(conn, slug, did, source_key, doc_type, text, adapted) -> bool:
+def _needs_model(conn, slug, did, source_key, doc_type, text, adapted, doc_date=None) -> bool:
     if ledger_v2.is_v2(conn, did):
         canonical = adapted["canonical_text"] if adapted else ledger_import.markdown_adapter(text.encode("utf-8"))["canonical_text"]
-        return deal_catalogue.needs_model(conn, slug, source_key, doc_type, canonical)
+        return deal_catalogue.needs_model(conn, slug, source_key, doc_type, canonical, doc_date or None)
     if doc_type in config.EXTRACTABLE_DOC_TYPES:
         fields = extraction_cache.key_fields(finding_check._canonical_sha(text, adapted), doc_type)
         return extraction_cache.lookup(conn, fields) is None
@@ -65,7 +65,7 @@ def add_and_check(conn, slug: str, *, filename: str, text: str = "", raw=None, a
         raise ledger_fixes.FixError(f"unknown document type {doc_type!r}")
 
     # 1. Check before writing: no key and the model is needed means nothing is stored.
-    if client is None and _needs_model(conn, slug, did, str(source_key) if source_key else None, doc_type, text, adapted):
+    if client is None and _needs_model(conn, slug, did, str(source_key) if source_key else None, doc_type, text, adapted, doc_date):
         raise AddCheckError(NO_KEY)
 
     # 2. Store, remembering which versions were in the review so a set-aside can restore them.

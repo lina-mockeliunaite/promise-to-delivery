@@ -83,7 +83,7 @@ def check(conn, slug: str, issue_id, *, confirmed_doc_type, filename: str, text:
     v2 = ledger_v2.is_v2(conn, did)
     if v2 and client is None:
         canonical = adapted["canonical_text"] if adapted else ledger_import.markdown_adapter(text.encode("utf-8"))["canonical_text"]
-        if deal_catalogue.needs_model(conn, slug, str(source_key) if source_key else None, confirmed_doc_type, canonical):
+        if deal_catalogue.needs_model(conn, slug, str(source_key) if source_key else None, confirmed_doc_type, canonical, doc_date or None):
             raise CheckError(NEEDS_KEY, 409)
     elif confirmed_doc_type in config.EXTRACTABLE_DOC_TYPES and client is None:
         fields = extraction_cache.key_fields(_canonical_sha(text, adapted), confirmed_doc_type)

@@ -360,9 +360,8 @@ def decision_summary(conn, slug: str) -> dict:
     if not ok:
         return {"current": False, "message": message, "items": []}
     items = []
-    for iid, itype, subject in conn.execute(
-            "SELECT i.id, i.issue_type, i.subject_key FROM issues i JOIN commitments c ON c.id = i.commitment_id"
-            " JOIN issue_current_state v ON v.issue_id = i.id WHERE c.deal_id = ? AND v.state <> 'Resolved' ORDER BY i.id", (did,)):
+    import open_gaps  # 21 Oct: the one shared reading of "open", including closed gaps the signed paperwork lacks
+    for iid, _cid, itype, subject, _crit in open_gaps.rows(conn, did, slug):
         items.append({"issue_id": iid, "accepted_risk": accepted_risk_status(conn, slug, iid), "impact": impact_status(conn, slug, iid),
                       "accountability": accountability_status(conn, iid)})
     return {"current": True, "message": "", "items": items}

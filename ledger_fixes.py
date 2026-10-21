@@ -50,6 +50,23 @@ def create_user_deal(conn, display_name: str, commit: bool = True) -> str:
     return slug
 
 
+def next_source_key(conn, did: int) -> str:
+    """The key the next new source of a deal gets. One rule, used by add_source and by the add-and-check guard, so the guard's cache
+    key and the real review's can never disagree about the document's source id (21 Oct)."""
+    n = conn.execute("SELECT COUNT(*) FROM sources WHERE deal_id = ?", (did,)).fetchone()[0]
+    return f"D-{n + 1:02d}"
+
+
+def version_doc_date(conn, did: int, source_key: str, doc_date=None):
+    """The date a new version of a source is stored with: the one given, else the previous version's (a revised SOW keeps its date
+    unless the user says otherwise). One rule, used by add_source_version and by the add-and-check guard (21 Oct)."""
+    if doc_date:
+        return doc_date
+    row = conn.execute("SELECT v.doc_date FROM source_versions v JOIN sources s ON s.id = v.source_id WHERE s.deal_id = ?"
+                       " AND s.source_key = ? ORDER BY v.version_no DESC LIMIT 1", (did, source_key)).fetchone()
+    return row[0] if row else None
+
+
 def add_source(conn, slug: str, display_name: str, text: str, filename: str, doc_type: str, doc_date: str,
                commit: bool = True, raw: bytes | None = None, adapted: dict | None = None) -> int:
     """A new source with its first version. Returns the version id.
@@ -63,8 +80,7 @@ def add_source(conn, slug: str, display_name: str, text: str, filename: str, doc
         raise FixError("a document date is needed as YYYY-MM-DD")
     if adapted is None and (not text or not text.strip()):
         raise FixError("the document is empty")
-    n = conn.execute("SELECT COUNT(*) FROM sources WHERE deal_id = ?", (did,)).fetchone()[0]
-    key = f"D-{n + 1:02d}"
+    key = next_source_key(conn, did)
     if adapted is None:
         raw = text.encode("utf-8")
         adapted = ledger_import.markdown_adapter(raw)
@@ -152,7 +168,7 @@ def add_source_version(conn, slug: str, source_key: str, text: str, filename: st
             " adapter_version, doc_type, doc_date, original_filename, canonical_text, location_map, included)"
             " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)",
             (source_id, prev[0] + 1, ledger_import.sha256_hex(raw), ledger_import.sha256_hex(adapted["canonical_text"]),
-             adapted["adapter_name"], adapted["adapter_version"], doc_type, doc_date or prev[2], filename,
+             adapted["adapter_name"], adapted["adapter_version"], doc_type, version_doc_date(conn, did, source_key, doc_date), filename,
              adapted["canonical_text"], adapted["location_map"]),
         ).lastrowid
         adapters.save_notes(conn, version_id, adapted.get("problems") or [])

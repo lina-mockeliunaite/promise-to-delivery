@@ -11,7 +11,7 @@ import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
 import { addReady, fmtDate, fmtDateTime, mismatchNotice, suggestVersionOf, uploadKind } from "./format.js";
 import {
-  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, coverageLine, docCount, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
+  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, coverageLine, docCount, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
   mismatchParts, missingForHandover, handoverChecklist, plainName, readHash, recordedBy, rowTitle, firstPromised, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
@@ -97,6 +97,9 @@ function CommitRow({ c, status, active, onOpen }) {
           {first && <span className="dp-prow-first">{first}</span>}
           {status === "closed" && closedLines(c.issues.filter((i) => i.state === "Resolved").map((i) => i.resolved_by?.text))
             .map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
+          {status === "closed" && signedConfirmations(c.issues.filter((i) => i.state === "Resolved").map((i) => i.signed_check))
+            .map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
+          {status !== "closed" && reopenedLines(c.issues).map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
           {status === "noted" && noteRes && <span className="dp-prow-note">{recordedBy(noteRes.by, noteRes.at, fmtDate)}</span>}
         </span>
         <span className={`dp-chip dp-chip-${st.tone}`} title={st.title}>

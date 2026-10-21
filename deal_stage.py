@@ -77,15 +77,14 @@ def load_profile(slug: str) -> dict:
     return {}
 
 
-def _gap_sources(conn, did: int) -> dict:
+def _gap_sources(conn, did: int, slug: str = None) -> dict:
     """{commitment id: the source keys its open issues' stored claims quote it from (v2 only)} for each promise with an open gap.
     Counted per promise, not per finding, so the bar matches the promises listed below it."""
     import handover  # 16 Oct: a gap resolved by a current note is not counted as open anywhere
     noted = handover.note_resolved_ids(conn, did)
     by_promise = {}
-    for iid, cid, criteria_json in conn.execute(
-            "SELECT i.id, i.commitment_id, i.closure_criteria FROM issues i JOIN issue_current_state s ON s.issue_id = i.id"
-            " JOIN commitments c ON c.id = i.commitment_id WHERE c.deal_id = ? AND s.state <> 'Resolved'", (did,)):
+    import open_gaps  # 21 Oct: the one shared reading of "open", including closed gaps the signed paperwork lacks
+    for iid, cid, _type, _subject, criteria_json in open_gaps.rows(conn, did, slug):
         if iid in noted:
             continue
         claim = (json.loads(criteria_json or "{}") or {}).get("claim") or {}
@@ -117,7 +116,7 @@ def deal_stage(conn, slug: str) -> dict:
     import workspace
     origin = workspace.origin_keys(conn, did, slug)
     started = {}
-    for cid, keys in _gap_sources(conn, did).items():
+    for cid, keys in _gap_sources(conn, did, slug).items():
         known = [k for k in keys if k in order]
         first = origin.get(cid) if origin.get(cid) in order else (min(known, key=order.get) if known else None)
         if first is not None:

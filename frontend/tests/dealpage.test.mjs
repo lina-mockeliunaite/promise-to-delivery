@@ -528,3 +528,51 @@ test("a contract conflict is fixed in the document its contract-side quote comes
   assert.equal(suggestFix([{ finding: "No approval recorded" }, conflict("Draft contract")], docs).source_key, "NJ-05"); // approval still first
   assert.equal(suggestFix([{ finding: "Not offered" }, conflict("Draft contract")], docs).source_key, ""); // not offered still first
 });
+
+// --- The signed-paperwork check on the screens (21 Oct) ----------------------------------------------------------------------------
+import { earlierLine, reopenedBySigned, reopenedLines, signedConfirmations } from "../src/dealpage.js";
+
+const CONFIRMED = { status: "confirmed", text: "Confirmed in the signed contract (Signed contract, 20 Oct)" };
+const NOT_FOUND = { status: "not_found", reason: "The fix in Draft contract, version 2 was not found in the signed contract.",
+  earlier: "Resolved by Draft contract, version 2 · Draft SOW, version 1 unchanged · 20 Oct 2026" };
+const NOT_CONFIRMED = { status: "not_confirmed", text: "Not confirmed against the signed contract" };
+
+test("signed lines: confirmed and not-confirmed under a closed commitment, once each", () => {
+  assert.deepEqual(signedConfirmations([CONFIRMED, CONFIRMED, null, undefined]), [CONFIRMED.text]);
+  assert.deepEqual(signedConfirmations([NOT_CONFIRMED]), ["Not confirmed against the signed contract"]);
+  assert.deepEqual(signedConfirmations([NOT_FOUND]), []); // a reopened gap is not a closed commitment's line
+  assert.deepEqual(signedConfirmations(undefined), []);
+});
+
+test("a reopened gap says why and keeps the earlier closure visible", () => {
+  assert.equal(earlierLine(NOT_FOUND), "Earlier closed by Draft contract, version 2 · Draft SOW, version 1 unchanged · checked 20 Oct 2026");
+  assert.deepEqual(reopenedLines([{ signed_check: NOT_FOUND }, { signed_check: CONFIRMED }, {}]),
+    [NOT_FOUND.reason, "Earlier closed by Draft contract, version 2 · Draft SOW, version 1 unchanged · checked 20 Oct 2026"]);
+  assert.equal(reopenedBySigned([{ signed_check: NOT_FOUND }, { signed_check: CONFIRMED }]).length, 1);
+  assert.equal(earlierLine(null), "");
+});
+
+test("the drawer's view of a reopened commitment: the reason in 'What we found', the earlier closure, and no AI line for it", () => {
+  const c = { ...LIVE_C, contract: "four languages", issues: [
+    { id: 1, finding: "Contract says something different", state: "Needs action", reason: NOT_FOUND.reason, signed_check: NOT_FOUND,
+      evidence: { contract_quote: { quote: "The Assistant will respond in four languages.", source: "Draft contract" } } },
+  ] };
+  const v = commitmentView(c, "open", DOCS);
+  assert.equal(v.found[0].fact, NOT_FOUND.reason);
+  assert.deepEqual(v.earlier, ["Earlier closed by Draft contract, version 2 · Draft SOW, version 1 unchanged · checked 20 Oct 2026"]);
+  assert.deepEqual(v.ai, []); // the deterministic reason is not an AI-written summary
+  assert.deepEqual(v.reopenedLines, [NOT_FOUND.reason, v.earlier[0]]);
+});
+
+test("a closed commitment carries the confirmation, live and in the locked record; an older record has none", () => {
+  const live = commitmentView({ ...LIVE_C, contract: "No gap found", issues: [{ id: 1, finding: "Contract says something different", state: "Resolved",
+    resolved_by: { text: "Resolved by Draft contract, version 2 · 20 Oct 2026" }, signed_check: CONFIRMED }] }, "closed", DOCS);
+  assert.deepEqual(live.signedLines, [CONFIRMED.text]);
+  const locked = frozenView({ item: { promise: "P", findings: [], quotes: [], signed: [CONFIRMED, NOT_CONFIRMED] }, status: "closed", closedFindings: [] });
+  assert.deepEqual(locked.signedLines, [CONFIRMED.text, NOT_CONFIRMED.text]);
+  assert.deepEqual(frozenView({ item: { promise: "P", findings: [] }, status: "closed", closedFindings: [] }).signedLines, []);
+  const open = frozenView({ item: { promise: "P", findings: [{ finding: "Contract says something different", signed_check: NOT_FOUND, why: NOT_FOUND.reason }] }, status: "open" });
+  assert.equal(open.found[0].fact, NOT_FOUND.reason);
+  assert.deepEqual(open.ai, []);
+  assert.equal(open.reopenedLines.length, 2);
+});

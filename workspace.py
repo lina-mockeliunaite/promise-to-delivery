@@ -11,6 +11,7 @@ import adapters
 import config
 import deal_catalogue
 import evidence_text
+import open_gaps
 import ledger_fixes
 
 ISSUE_LABELS = {
@@ -340,6 +341,8 @@ def register(conn, slug: str) -> dict:
     name = conn.execute("SELECT display_name FROM deals WHERE id = ?", (did,)).fetchone()[0]
     fresh = ledger_fixes.freshness(conn, did)
     names = document_labels(conn, did)
+    import signed_check
+    signed = signed_check.evaluate(conn, did, slug)  # 21 Oct: closed gaps checked against the signed paperwork ({} when there is none)
     commitments, sort_keys = [], {}
     rows = conn.execute(
         "SELECT c.id, c.commitment_key, c.note, s.status, a.id, a.review_id, a.name, a.language, a.authorisation,"
@@ -401,11 +404,15 @@ def register(conn, slug: str) -> dict:
             check = conn.execute("SELECT reason, unmet, evidence_checked, check_kind FROM closure_checks WHERE issue_id = ?"
                                  " ORDER BY id DESC LIMIT 1", (iid,)).fetchone()
             step = NEXT_STEP["approval_absolute"] if itype == "approval" and absolute else NEXT_STEP.get(itype, "")
+            sc = signed.get(iid)
+            if sc and sc["status"] == "not_found":  # the fix is not in the signed paperwork: Needs attention again (the ledger still records the closure)
+                step = NEXT_STEP.get(itype, "")
+            state = open_gaps.effective_state(state, sc)
             issues.append({
-                "id": iid, "type": itype, "label": issue_label(itype, subject), "state": state,
+                "id": iid, "type": itype, "label": issue_label(itype, subject), "state": state, "signed_check": sc,
                 "owner": owner, "note": plain(inote, names), "next_step": step if state != "Resolved" else "",
                 "absolute_limit": bool(absolute), "raised_by": raised_by,
-                "reason": explain(check[0]) if check else "",
+                "reason": (sc["reason"] if sc and sc["status"] == "not_found" else explain(check[0]) if check else ""),
                 "unmet": [plain(u, names) for u in json.loads(check[1])] if check and check[1] else [],
                 "evidence_versions": [e.get("source_version_id") for e in json.loads(check[2])] if check else [],
                 "last_check": check[3] if check else None,
@@ -479,8 +486,8 @@ def deal_list(conn) -> list:
         if kind == "development" and slug not in config.UI_DEALS:
             continue
         did = ledger_fixes.deal_id(conn, slug)
-        open_n = conn.execute("SELECT COUNT(*) FROM issue_current_state s JOIN commitments c ON c.id = s.commitment_id"
-                              " WHERE c.deal_id = ? AND s.state <> 'Resolved'", (did,)).fetchone()[0]
+        import open_gaps
+        open_n = open_gaps.count(conn, did, slug)  # the one shared count: includes closed gaps the signed paperwork lacks
         out.append({"deal": slug, "name": deal_title(slug, name), "kind": kind,
                     "freshness": ledger_fixes.freshness(conn, did), "open_issues": open_n})
     return out
@@ -593,13 +600,9 @@ def told_and_contract(conn, did: int, c: dict, raw_presence: str) -> tuple:
             return told, terms["contract"]
         # An open "Missing from contract" finding wins over the latest model reading: the overview must never say
         # "No gap found" beside a gap that is still open (15 Oct; closure follows the stored claim, not model variance).
-        open_gap = conn.execute(
-            "SELECT 1 FROM issues i JOIN issue_current_state s ON s.issue_id = i.id WHERE i.commitment_id = ?"
-            " AND i.issue_type = 'contract_gap' AND s.state <> 'Resolved' LIMIT 1", (c["id"],)).fetchone()
+        open_gap = any(r[1] == c["id"] and r[2] == "contract_gap" for r in open_gaps.rows(conn, did))  # the shared open-gap reading
         return told, "Not included" if open_gap or raw_presence == "absent" else "No gap found"
-    for criteria_json, cid in conn.execute(
-            "SELECT i.closure_criteria, i.commitment_id FROM issues i JOIN issue_current_state s ON s.issue_id = i.id"
-            " WHERE i.commitment_id = ? AND i.issue_type = 'conflicting_terms' AND s.state <> 'Resolved'", (c["id"],)):
+    for _iid, cid, _type, _subject, criteria_json in [r for r in open_gaps.rows(conn, did) if r[1] == c["id"] and r[2] == "conflicting_terms"]:
         criteria = json.loads(criteria_json)
         theirs = conflict_term(conn, did, criteria)
         ours = _own_term(conn, cid, criteria.get("differing_term"))
@@ -826,6 +829,9 @@ def overview(conn, slug: str) -> dict:
                              "Needs re-confirmation" if i["decision"]["status"] == "reconfirm" else "Awaiting decision")
         c["open_count"] = open_n
         c["told"], c["contract"] = told_and_contract(conn, did, c, raw_presence.get(c["id"]))
+        back = next((i for i in c["issues"] if (i.get("signed_check") or {}).get("status") == "not_found"), None)
+        if back:  # shown as open again because the signed paperwork lacks the fix: the contract side is what it was before the closure
+            c["contract"] = "Not included" if back["type"] == "contract_gap" else (back["evidence"].get("contract_value") or c["contract"])
         c["findings"] = list(dict.fromkeys(i["finding"] for i in c["issues"] if i["state"] != "Resolved"))
         named = sorted({p for p, st in people if st == "current"})
         c["accountable"] = ", ".join(named) if named else None

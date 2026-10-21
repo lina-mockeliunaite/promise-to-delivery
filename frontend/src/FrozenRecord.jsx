@@ -38,6 +38,8 @@ function FrozenRow({ v, active, onOpen }) {
           {v.status !== "closed" && <MismatchSentence parts={v.mismatch} />}
           {v.first && <span className="dp-prow-first">{v.first}</span>}
           {v.status === "closed" && v.closedLines.map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
+          {v.status === "closed" && v.signedLines.map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
+          {v.status !== "closed" && v.reopenedLines.map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
         </span>
         <span className={`dp-chip dp-chip-${st.tone}`} title={st.title}>
           <span className={`dp-dot ${v.status === "noted" ? "dp-dot-grey" : v.status === "closed" ? "dp-dot-green" : ""}`} />
@@ -62,7 +64,8 @@ function PrintDetail({ v }) {
         {v.contract.missing ? ` ${v.contract.missingLabel} ${v.contract.missing.map((m) => `“${m}”`).join(", ")}` : ""}
         {v.contract.now ? ` Contract wording containing “${v.contract.now.target}”: “${v.contract.now.quote}” (${v.contract.now.label}), a lookup in the current documents.` : ""}</p>
       {v.found.map((f) => <p key={f.label}><strong>{f.label}</strong>{f.fact ? ` ${f.fact}` : ""}</p>)}
-      {v.closed.length > 0 && <p><strong>Closed by the documents:</strong> {v.closed.map((c) => `${c.label}. ${c.by}`).join(" ")}</p>}
+      {v.closed.length > 0 && <p><strong>Closed by the documents:</strong> {v.closed.map((c) => `${c.label}. ${c.by}`).join(" ")}{v.signedLines?.length ? ` ${v.signedLines.join(" ")}` : ""}</p>}
+      {v.reopenedLines?.length > 0 && <p><strong>Signed paperwork:</strong> {v.reopenedLines.join(" ")}</p>}
       {v.ai.length > 0 && <p><em>AI-written summary · quotes checked against the supplied documents:</em> {v.ai.join(" ")}</p>}
       {v.notes.map((n) => <p key={`${n.by}|${n.text}`}><strong>{recordedBy(n.by, n.at, fmtDate)}:</strong> “{n.text}”</p>)}
     </div>

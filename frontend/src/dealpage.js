@@ -473,6 +473,17 @@ export const closedBy = (text) => String(text ?? "").replace(/^Resolved by /, "C
 // document shows. Texts are the stored ones ("Resolved by Draft SOW, version 2 · 16 Oct 2026"), shown as "Closed by …".
 export const closedLines = (texts) => [...new Set((texts ?? []).map((t) => closedBy(t).trim()).filter(Boolean))];
 
+// Signed-paperwork check (21 Oct, signed_check.py): a gap closed by a draft is checked against the signed contract or SOW. Three outcomes
+// per closed gap: confirmed ("Confirmed in the signed contract (Signed contract, 20 Oct)"), not found (the commitment is Needs attention
+// again, with the reason and the earlier closure kept visible), and not confirmed (neutral: there was no wording to look for).
+const lowerFirst = (t) => (/^[A-Z][a-z]/.test(t) ? t[0].toLowerCase() + t.slice(1) : t);
+export const reopenedBySigned = (issues) => (issues ?? []).filter((i) => i.signed_check?.status === "not_found");
+export const earlierLine = (sc) => (sc?.earlier ? `Earlier ${lowerFirst(closedBy(sc.earlier))}` : "");
+// The lines under a closed commitment: what the signed paperwork says about its fixes.
+export const signedConfirmations = (checks) => [...new Set((checks ?? []).filter((c) => c && (c.status === "confirmed" || c.status === "not_confirmed")).map((c) => c.text))];
+// The lines under a commitment that is open again: why, and what closed it before.
+export const reopenedLines = (issues) => reopenedBySigned(issues).flatMap((i) => [i.signed_check.reason, earlierLine(i.signed_check)]).filter(Boolean);
+
 // One commitment, as the drawer shows it. status: "open" | "noted" | "closed".
 export function commitmentView(c, status, documents) {
   const unresolved = c.issues.filter((i) => i.state !== "Resolved");
@@ -490,11 +501,15 @@ export function commitmentView(c, status, documents) {
     first: firstPromised(c.statements, c.first_found), mismatch: mismatchParts(unresolved, c.contract), plain: mismatchLine(unresolved, c.contract),
     told: toldQuotesWithDocs(c.statements, documents),
     contract: contractView(c.contract, side, documents, c.contract_now, missingPhrases(unresolved)),
-    found: status === "closed" ? [] : unresolved.map((i) => ({ label: findingDetail(i, c.contract), fact: gapLine(i.finding, i.evidence, i.catalogue_path) })),
+    found: status === "closed" ? [] : unresolved.map((i) => ({ label: findingDetail(i, c.contract),
+      fact: i.signed_check?.status === "not_found" ? i.signed_check.reason : gapLine(i.finding, i.evidence, i.catalogue_path) })),
+    earlier: reopenedBySigned(unresolved).map((i) => earlierLine(i.signed_check)).filter(Boolean),
+    signedLines: signedConfirmations(closedIssues.map((i) => i.signed_check)),
+    reopenedLines: reopenedLines(unresolved),
     closedLines: closedLines(closedIssues.map((i) => i.resolved_by?.text)),
     closed: closedIssues.map((i) => ({ label: FINDING_SHORT[i.finding] ?? i.finding, by: closedBy(i.resolved_by?.text) || (status === "closed" ? "Closed in the documents" : "") })),
     catalogue: status === "closed" ? [] : uniq(unresolved.map((i) => i.catalogue_path)),
-    ai: status === "closed" ? [] : uniq(shown.map((i) => cleanReason(i.reason))),
+    ai: status === "closed" ? [] : uniq(shown.filter((i) => i.signed_check?.status !== "not_found").map((i) => cleanReason(i.reason))),
     notes, seen: [...new Map(unresolved.flatMap((i) => i.seen || []).map((s) => [s.by, s])).values()],
     issueIds: unresolved.map((i) => i.id),
   };
@@ -533,7 +548,7 @@ export function frozenView({ item, status, closedFindings = [], documents = [], 
   const quoted = (item.quotes ?? []).filter((q) => q.quote);
   const statements = quoted.length ? quoted.map((q) => ({ doc_type_label: q.source, date: q.date, quote: q.quote }))
     : (item.told_in ?? []).map(([label, date]) => ({ doc_type_label: label, date }));
-  const issues = findings.map((f) => ({ finding: f.finding, evidence: f.evidence, catalogue_path: f.catalogue_path }));
+  const issues = findings.map((f) => ({ finding: f.finding, evidence: f.evidence, catalogue_path: f.catalogue_path, signed_check: f.signed_check }));
   const side = contractSide(findings, item.contract);
   const notes = [];
   for (const n of new Map(findings.filter((f) => f.note).map((f) => [`${f.note.by}|${f.note.reason}`, f.note])).values()) {
@@ -549,11 +564,15 @@ export function frozenView({ item, status, closedFindings = [], documents = [], 
     told: quoted.length ? quoted.map((q) => ({ quote: q.quote, label: q.source, date: q.date ?? "", doc: matchDoc(documents, [q.source], q.date) })) : [],
     toldFallback: item.told ?? "",
     contract: contractView(item.contract, side, documents, item.contract_now, missingPhrases(findings)),
-    found: issues.map((i, n) => ({ label: findingDetail(i, item.contract), fact: gapLine(i.finding, i.evidence, i.catalogue_path) })),
+    found: issues.map((i, n) => ({ label: findingDetail(i, item.contract),
+      fact: i.signed_check?.status === "not_found" ? i.signed_check.reason : gapLine(i.finding, i.evidence, i.catalogue_path) })),
+    earlier: reopenedBySigned(issues).map((i) => earlierLine(i.signed_check)).filter(Boolean),
+    signedLines: signedConfirmations(item.signed),
+    reopenedLines: reopenedLines(issues),
     closedLines: closedLines(closedFindings.map((r) => r.resolved_by)),
     closed: closedFindings.map((r) => ({ label: FINDING_SHORT[r.finding] ?? r.finding, by: closedBy(r.resolved_by) })),
     catalogue: uniq(issues.map((i) => i.catalogue_path)),
-    ai: status === "closed" ? [] : uniq(findings.map((f) => cleanReason(f.why))),
+    ai: status === "closed" ? [] : uniq(findings.filter((f) => f.signed_check?.status !== "not_found").map((f) => cleanReason(f.why))),
     notes, seen: [...new Map(seenAll.map((s) => [s.by, s])).values()], issueIds: [],
   };
 }
