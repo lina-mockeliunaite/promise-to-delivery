@@ -20,7 +20,7 @@ test("the top-bar logo is sized so its wordmark keeps the cap height of the text
   const capNow = 0.727 * 15; // Inter's cap height at the old 15px wordmark text
   const capLogo = (33.6 / 64) * TOP_BAR_LOGO_HEIGHT; // the wordmark's caps span 33.6 of its 64 units
   assert.ok(Math.abs(capNow - capLogo) < 0.3, `${capNow} vs ${capLogo}`);
-  assert.ok(TOP_BAR_LOGO_HEIGHT < 48); // inside the fixed 48px top bar
+  assert.ok(TOP_BAR_LOGO_HEIGHT < 56); // inside the 56px top bar (--topbar-h)
 });
 
 test("the three brand files are the approved ones: indigo mark in three pieces, ink wordmark, no live text", () => {
