@@ -2,7 +2,7 @@
 
 **Catch deal surprises before you sign.**
 
-Dealshape compares what the customer was promised with the contract and your product catalogue. It shows which commitments are missing, different or unsupported, with the source evidence. For B2B Sales and Delivery teams.
+Dealshape compares customer promises, contractual wording and the vendor's product catalogue, then flags commitments that are missing, different or unsupported, with linked source evidence. **AI surfaces gaps. Code checks sources. Teams decide the response.** For B2B Sales and Delivery teams.
 
 The customer remembers the proposal, the RFP answers and the calls; the contract says what it says. Dealshape reads a deal's paper trail before signing and again at handover, and shows what we're delivering, which commitments need attention and why, what people have noted about them, and which documents were checked. When the handover is complete it locks that record for Delivery, Customer Success and Support.
 
@@ -46,12 +46,22 @@ One commitment can carry several gaps, and they close independently. An approval
 2. **Detect (the model).** One model call reads the paper trail with the capability catalogue. It proposes each gap with the promise quoted word for word, the catalogue entry, and the contract clause or the missing wording.
 3. **Verify (code).** Every quote and citation is checked mechanically. A finding that fails a check is kept on record and never shown. On screen, **"What we found" shows only what code verified.** The model's own explanation is labelled "AI-written summary".
 4. **Recheck (code).** Add an updated document, such as a named exception or an aligned SOW, and the check runs again. A gap closes only when the new paperwork shows it no longer holds, and the screen says which document closed it. A failed check stores nothing.
-5. **Notes are a person's word, not proof.** A note can keep a commitment open with context, or mark it "Addressed by note". Either way it looks different from "Closed by documents", stays in the record, and reopens if the documents change.
+5. **A note records a decision; a document provides documentary support.** A note can keep a commitment open with context, or mark it "Addressed by note". Either way it looks different from "Closed by documents" and stays in the record. It reopens when a document included in its checking fingerprint changes; signed paperwork is currently excluded, so a signed contract does not reopen a note. Names in notes are typed, not authenticated approvals.
 6. **Hand over.** Sales and Delivery each write a note, the signed contract is uploaded, and completing the handover locks a read-only record. The record states honestly what is still open. Each document in it is stored with its version and the SHA-256 of the text Dealshape read, and opens as that exact text, read-only; the browser re-hashes the text and warns visibly on a mismatch. The record can be printed with the full text of every document as an optional appendix. The record's fingerprint covers the stored hashes.
 
 ## Where the AI comes in, and where it doesn't
 
-The model does the reading. It maps sales wording to the catalogue and the contract, which hand-written rules could not do on unseen deals (see the results below). Code does the deciding: a finding exists only if its quotes and citations check out, and it closes only when code can show the claim no longer holds. **The model never closes anything.** What code cannot check is the model's reading of a paraphrase. That is what the sealed runs measure.
+**AI surfaces gaps.** The model proposes potential gaps from the supplied documents and catalogue. It maps sales wording to the catalogue and the contract, which hand-written rules could not do on unseen deals (see the results below).
+
+**Code checks sources.** A finding is shown only if its quoted wording and references check out. Code rechecks each stored claim when documents change and controls status changes under defined rules; a gap closes only when code can show its claim no longer holds. **The model never closes anything.** What code cannot check is the model's reading of a paraphrase; that is what the sealed runs measure. Source matching does not establish truth, legal meaning, completeness or actual delivery capability.
+
+**Teams decide the response.** People clarify expectations, establish capability boundaries, authorise exceptions, update agreements and decide how to proceed.
+
+At runtime Dealshape is an AI-powered review workflow, not an agent: one model call proposes, fixed code checks. The model does not choose tools, plan investigations or execute a sequence of actions.
+
+## How it was built
+
+I used Claude Code as an agentic development partner to build Dealshape. I defined the business problem, product rules and acceptance criteria, then directed the implementation through tasks, review and testing. Every design choice, and what was rejected, is in `DECISIONS.md`.
 
 **Alder Bank and Noma Journeys are demo deals. Neither was part of a sealed evaluation** (only Coral Pay and Atlas Remit were; Harbour Bank is the development deal). The published results below describe the versions that were tested.
 
@@ -95,7 +105,7 @@ After the Coral Pay result, detection was rebuilt: one model call proposes each 
 - **Adding a capability to a catalogue marks every deal checked against it "Review out of date"** until it is checked again. That is safe, but noisy on many deals. Only Elva's catalogue can be added to in the app; Aivuna's is a published file.
 - **The verifier matches words, not meaning.** A finding is shown only if its quotes are word for word in the documents and its claim passes plain text checks: a promised value must appear in the promise, a "not offered" value must appear nowhere in that region's catalogue entry, a missing phrase (at most six words) must appear nowhere in the contract. So a real concern that the model words loosely is refused (Alder's one refused finding added "with no exceptions" to the promise), a paraphrased contract clause can read as missing, and a catalogue that lists an unavailable option explicitly would stop a "not offered" finding about it. For that reason Aivuna's catalogue states that voice is not offered in its top-level unlisted rule, not as a listed entry. The count of refused findings is shown on the deal page.
 - **The detection prompt still names the original vendor.** It says "the vendor, Elva", and was not changed for the Aivuna deal, because changing it would raise `v2_version` and invalidate every saved reading. Two vendors' catalogues run through one pipeline; what the Aivuna runs showed is recorded in `data/noma_journeys/BRIEF.md`.
-- **Signed paperwork is checked against the fixes, in a limited way.** A signed contract or signed SOW marks the deal Signed. Code (no model) then checks every gap that a draft contract or SOW closed: the exact sentence that closed it, matched with the verifier's normalisation, must be in the signed document. Found: the row says "Confirmed in the signed contract (Signed contract, 20 Oct)". Not found: the commitment shows as Needs attention again with the reason "The fix in Draft contract, version 2 was not found in the signed contract", and the earlier closure stays visible. A closure with no sentence to look for shows "Not confirmed against the signed contract". Approval closures (the pricing note) are not affected. The check is computed when a page is read; the ledger still records the closure. **Two limits, both erring toward attention:** a gap closed in an SOW is confirmed only if the signed document repeats the wording, and a signed contract that incorporates the revised SOW by reference, without repeating it, would wrongly reopen it. Also not done: a signed contract that newly contains wording for an open gap does not close it. The signed paperwork is never read by the model.
+- **Signed paperwork is checked against the fixes, in a limited way.** A signed contract or signed SOW marks the deal Signed. Code (no model) then checks every gap that a draft contract or SOW closed: the exact sentence that closed it, matched with the verifier's normalisation, must be in the signed document. Found: the row says "Confirmed in the signed contract (Signed contract, 20 Oct)". Not found: the commitment shows as Needs attention again with the reason "The fix in Draft contract, version 2 was not found in the signed contract", and the earlier closure stays visible. A closure with no sentence to look for shows "Not confirmed against the signed contract". Approval closures (the pricing note) are not affected. The check is computed when a page is read; the ledger still records the closure. **Two limits, both erring toward attention:** a gap closed in an SOW is confirmed only if the signed document repeats the wording, and a signed contract that incorporates the revised SOW by reference, without repeating it, would wrongly reopen it. Also not done: a signed contract that newly contains wording for an open gap does not close it. The check does not review all new or conflicting clauses, and it does not resolve legal precedence or incorporation by reference; anything it cannot confirm returns for review. The signed paperwork is never read by the model, and it does not reopen a note, so a signed clause contradicting a note could go undetected (future improvement: reconfirm notes at signing).
 - **The document hashes cover the text as read, not the original file.** The hash is of the extracted text as stored (Windows line endings are stored as plain ones), so a change to a file's layout, images or signature that leaves the text unchanged is not detected. The browser check confirms that the text shown matches the stored hash, and it trusts the server. Tamper evidence comes from the record fingerprint kept outside the system, for example on the printed record. Records locked before 21 Oct 2026 show no hashes.
 - **Formats.** PDF text layer only (no OCR); Excel by stored values only; PowerPoint slide text only.
 - **Synthetic data.** Every deal is fictional and was written for this build.
@@ -104,7 +114,7 @@ After the Coral Pay result, detection was rebuilt: one model call proposes each 
 ## How it was tested
 
 - **Sealed evaluation.** Two deals were written and sealed before the code that tested them, and each configuration ran once. The labels, documents and seals are never edited, and nothing was tuned on them.
-- **Automated tests:** 776 Python tests and 114 front-end tests. They include regression checks on extraction, five resolution scenarios, "a failed check stores nothing", and "no internal key reaches any screen".
+- **Automated tests:** 776 Python tests and 120 front-end tests. They include regression checks on extraction, five resolution scenarios, "a failed check stores nothing", and "no internal key reaches any screen".
 - **Reviewers:** a Head of Growth (6 Oct), a COO (15 Oct) and a Delivery lead (16 Oct), plus one outside UI review. Two reviewers in different roles asked for visibility, not workflow, and the product was rebuilt around that. **Not yet done: an unaided test** with someone who has never seen the product.
 
 ## Run it locally
@@ -119,7 +129,7 @@ python -m uvicorn api:app --host 127.0.0.1 --port 8000
 cd frontend && npm run dev     # open http://127.0.0.1:5173
 ```
 
-The demo opens on the deals list with no API key. Both demo scripts (`docs/DEMO_SCRIPT_2026-10-20_alder.md` and `docs/DEMO_SCRIPT_2026-10-20_noma.md`) run end to end with no key, from cached readings, when each file is filed exactly as the script says ("A new version of …"). Filing a revision as "A new document" gives it today's date, so it needs the model and therefore a key. Reading any other new or changed contract or customer document also needs `ANTHROPIC_API_KEY` in the server's terminal. The browser never sees it.
+The demo opens on the deals list with no API key. Both demo scripts (`docs/DEMO_SCRIPT_2026-10-20_alder.md` and `docs/DEMO_SCRIPT_2026-10-20_noma.md`) run end to end with no key, from saved model readings (the app still verifies every finding and rechecks every stored claim), when each file is filed exactly as the script says ("A new version of …"). Filing a revision as "A new document" gives it today's date, so it needs the model and therefore a key. Reading any other new or changed contract or customer document also needs `ANTHROPIC_API_KEY` in the server's terminal. The browser never sees it.
 
 ## Where to look
 
@@ -128,12 +138,13 @@ The demo opens on the deals list with no API key. Both demo scripts (`docs/DEMO_
 | `DECISIONS.md` | Every design choice, the alternative rejected, and why |
 | `LEARNING_LOG.md` | What I learned, got stuck on and got wrong |
 | `docs/RESULTS_*.md` | The two sealed runs in full |
-| `docs/DEMO_SCRIPT_2026-10-20_alder.md` | The four-minute demo (Elva, Alder Bank) |
-| `docs/DEMO_SCRIPT_2026-10-20_noma.md` | The second demo (Aivuna, Noma Journeys) |
+| `docs/DEMO_SCRIPT_2026-10-20_alder.md` | The alternative demo (Elva, Alder Bank): a draft fix that didn't survive signing |
+| `docs/DEMO_SCRIPT_2026-10-21_noma.md` | The main demo (Aivuna, Noma Journeys), built around three business decisions |
+| `docs/DEMO_SCRIPT_2026-10-20_noma.md` | The earlier Noma script (superseded, kept for the record) |
 | `docs/` | Briefs, the integrity inspection, specs, design references |
 
 ## Credits and honesty
 
 All companies, people, products and deal terms are fictional. TRM Labs, Chainalysis, BioCatch, Zendesk, Freshdesk, Microsoft Azure and Amazon Web Services are real product or company names, used in the fictional catalogues and deals for realism only. No partnership is claimed. Aivuna and Noma Journeys are fictional and unrelated to any real business of a similar name.
 
-Built with Claude Code as build partner. Claude drafted the fictional documents, fixtures and briefs from my direction, and the screen designs started in Google Stitch. The product decisions, labels and evaluation design are mine.
+Built with Claude Code as an agentic development partner. Claude drafted the fictional documents, fixtures and briefs from my direction, and the screen designs started in Google Stitch. The business problem, product rules, acceptance criteria, labels and evaluation design are mine.

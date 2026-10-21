@@ -1,5 +1,7 @@
 # Dealshape demo script: Noma Journeys (20 Oct 2026)
 
+> **Superseded on 21 Oct 2026** by `docs/DEMO_SCRIPT_2026-10-21_noma.md`. Kept unchanged below for the record.
+
 **About 4 minutes. Desktop, browser at full width. Everything is fictional.** Same engine as the Alder Bank demo, a different vendor: Aivuna, an AI customer-support platform, selling to Noma Journeys, a Singapore travel company. Dealshape reviews this software sale, not the assistant.
 
 ## Before the demo (5 minutes, JUST DO)
