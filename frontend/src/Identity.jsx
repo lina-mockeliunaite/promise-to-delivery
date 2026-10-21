@@ -5,18 +5,21 @@ import { fmtDate } from "./format.js";
 import { headerScrolledPast } from "./dealpage.js";
 
 // [attach, past]: attach goes on the header card's ref; past is true while that card is scrolled up beneath the top bar.
-export function useScrolledPast(topBar = 48) {
+// The bar's height is the CSS variable --topbar-h (DealPage.css), read here so the two cannot drift apart; an explicit value overrides it.
+export const barHeight = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--topbar-h")) || 56;
+export function useScrolledPast(topBarOverride) {
   const [el, setEl] = useState(null);
   const [past, setPast] = useState(false);
   useEffect(() => {
     if (!el || typeof IntersectionObserver === "undefined") return undefined;
+    const topBar = topBarOverride ?? barHeight();
     const io = new IntersectionObserver(
       ([e]) => setPast(headerScrolledPast(e.isIntersecting, e.boundingClientRect.bottom, e.rootBounds?.top ?? topBar)),
       { rootMargin: `-${topBar}px 0px 0px 0px`, threshold: 0 },
     );
     io.observe(el);
     return () => io.disconnect();
-  }, [el, topBar]);
+  }, [el, topBarOverride]);
   return [setEl, past];
 }
 
