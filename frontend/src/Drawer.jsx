@@ -5,6 +5,7 @@ import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
 import { STAGE_LABELS, STATUS_CHIP, plainName, recordedBy, short } from "./dealpage.js";
 import { renderDocument } from "./markdown.js";
+import { shortHash, verifyText } from "./docHash.js";
 
 export const Icon = ({ d, size = 16 }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2"
@@ -154,7 +155,12 @@ export function CommitmentView({ v, titleId, readOnly, me = "", onOpenDoc, onSee
           {v.closed.length > 0 && (
             <div className="dr-closed">
               {v.status !== "closed" && <span className="dr-label">Already closed by the documents</span>}
-              {v.closed.map((c) => <p key={c.label}><strong>{c.label}.</strong> {c.by}</p>)}
+              {v.closed.map((c) => (
+                <div key={c.label} className="dr-gap">
+                  <p><strong>{c.gap.headline}</strong></p>
+                  {c.gap.notes.map((n) => <p key={n} className="dr-muted">{n}</p>)}
+                </div>
+              ))}
               {v.signedLines?.map((l) => <p key={l} className="dr-muted">{l}</p>)}
             </div>
           )}
@@ -238,6 +244,16 @@ export function DocumentView({ deal, doc, quote, titleId, backLabel, onBack, onC
     return () => { live = false; };
   }, [deal, doc.source_version_id]);
   const ready = !state.loading && !state.error;
+  // A document of a locked record carries the hash stored at handover. The browser hashes the text it received, byte for byte, and
+  // compares. A mismatch is a visible warning; it never hides the text.
+  const [check, setCheck] = useState(null);
+  useEffect(() => {
+    setCheck(null);
+    if (!ready || !doc.sha256) return undefined;
+    let live = true;
+    verifyText(state.text, doc.sha256).then((r) => live && setCheck(r));
+    return () => { live = false; };
+  }, [ready, state.text, doc.sha256]);
   const rendered = useMemo(() => (ready ? renderDocument(state.text, quote) : null), [ready, state.text, quote]);
   useEffect(() => { mark.current?.scrollIntoView({ block: "center" }); }, [rendered]);
   const stage = STAGE_LABELS[doc.stage];
@@ -252,6 +268,19 @@ export function DocumentView({ deal, doc, quote, titleId, backLabel, onBack, onC
           <a className="dr-drive" href={doc.link} target="_blank" rel="noopener noreferrer" aria-label="Open in Drive" title="Opens where the document lives">
             <Icon d={ICON.link} size={14} /> Open in Drive
           </a>
+        )}
+        {doc.sha256 && (
+          <div className={`dr-hash ${check && !check.ok ? "is-bad" : ""}`} role={check && !check.ok ? "alert" : undefined}>
+            <span className="dr-muted">SHA-256 stored at handover</span>
+            <code title={doc.sha256}>{shortHash(doc.sha256)}</code>
+            {check?.ok && <span className="dr-hash-ok">Matches the text shown</span>}
+            {check && !check.ok && (
+              <strong className="dr-hash-warn">
+                Warning: the text shown does not match the hash stored at handover. Do not rely on it as the text that was read.
+              </strong>
+            )}
+            {!check && ready && <span className="dr-muted">Checking…</span>}
+          </div>
         )}
         {quote && rendered && !rendered.found && <p className="dr-muted">The quoted sentence is not in this version of the document.</p>}
         {state.error ? <p className="dp-error">{state.error}</p> : !ready ? <p className="dr-muted">Loading…</p> : (

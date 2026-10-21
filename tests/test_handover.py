@@ -177,6 +177,51 @@ class TestHandoverComplete(HandoverCase):
         self.assertTrue(self.register()["handover"]["complete"])
 
 
+class TestDocumentHashes(HandoverCase):
+    """21 Oct: a new locked record stores, per document, the version id and the SHA-256 of the text Dealshape read. The fingerprint is
+    the SHA-256 of the exact stored record, so it covers the hashes. The browser hashes the text the server returns, byte for byte."""
+
+    TEXT = "Signed by both parties.\r\nThe customer\u2019s \u201cgo-live\u201d is 1 Dec \u2014 caf\u00e9 support included.\r\n"
+
+    def lock(self):
+        import hashlib
+        self.both_notes()
+        r = self.post("/api/deals/harbour_bank/documents", {
+            "name": "Signed contract", "doc_type": "signed_contract", "doc_date": "2026-10-15", "filename": "signed.md", "text": self.TEXT})
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertEqual(self.post("/api/deals/harbour_bank/review", {}).status_code, 200)
+        done = self.post("/api/deals/harbour_bank/handover/complete", {"completed_by": "Sam (delivery)"})
+        self.assertEqual(done.status_code, 200, done.text)
+        return done.json()["snapshot"], hashlib
+
+    def test_every_document_carries_its_version_and_the_hash_of_the_text_served(self):
+        snap, hashlib = self.lock()
+        self.assertTrue(snap["documents"])
+        for d in snap["documents"]:
+            self.assertRegex(d["sha256"], r"^[0-9a-f]{64}$")
+            served = self.client.get(f"/api/deals/harbour_bank/documents/text?version={d['source_version_id']}").json()["text"]
+            self.assertEqual(hashlib.sha256(served.encode("utf-8")).hexdigest(), d["sha256"], d["name"])
+        signed = next(d for d in snap["documents"] if d["name"] == "Signed contract")
+        served = self.client.get(f"/api/deals/harbour_bank/documents/text?version={signed['source_version_id']}").json()["text"]
+        self.assertIn("\u2019", served)  # curly quotes, the dash and the accent survive
+        self.assertIn("caf\u00e9", served)
+        self.assertNotIn("\r", served)  # CRLF is stored as LF; the hash is of the stored text, which is also what is served
+
+    def test_the_fingerprint_is_over_the_stored_record_and_so_covers_the_hashes(self):
+        import hashlib
+        import sqlite3
+        snap, _ = self.lock()
+        raw = sqlite3.connect(self.db)
+        (stored,) = raw.execute("SELECT snapshot_json FROM handover_completions").fetchone()
+        raw.close()
+        for d in snap["documents"]:
+            self.assertIn(d["sha256"], stored)
+        fingerprint = self.client.get("/api/deals/harbour_bank/handover").json()["fingerprint"]
+        self.assertEqual(fingerprint, hashlib.sha256(stored.encode("utf-8")).hexdigest())
+        changed = stored.replace(snap["documents"][0]["sha256"], "0" * 64, 1)
+        self.assertNotEqual(hashlib.sha256(changed.encode("utf-8")).hexdigest(), fingerprint)
+
+
 class TestNotesOnGaps(HandoverCase):
     def test_a_note_on_a_gap_keeps_it_open_and_is_frozen_with_the_record(self):
         self.sign()

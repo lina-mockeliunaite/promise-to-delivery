@@ -469,6 +469,30 @@ const uniq = (xs) => [...new Set(xs.filter(Boolean))];
 export const closedBy = (text) => String(text ?? "").replace(/^Resolved by /, "Closed by ")
   .replace(/ · (\d{1,2} [A-Z][a-z]{2} \d{4})/g, " · checked $1");
 
+// "Gap closed: approval found in Pricing and services note, version 2" (21 Oct), for the drawer's "What closed it" and for print; the
+// rows keep the short "Closed by …". Built from the finding's label and the stored closing text ("Resolved by A; B · C unchanged ·
+// 16 Oct 2026 · signed off by X"), so records locked earlier read the same way. The documents that changed are what closed the gap; the
+// ones that were checked with them, the check date and the sign-off are separate muted lines.
+const GAP_CLOSED = {
+  "No approval recorded": "approval found in",
+  "Missing from contract": "contract wording found in",
+  "Contract says something different": "contract wording now matches in",
+  "Not offered": "promise changed in",
+};
+export function gapClosed(finding, text) {
+  const parts = closedBy(text).trim().replace(/^Closed by /, "").split(" · ");
+  const changed = parts[0] && parts[0] !== "Closed in the documents" ? parts[0] : "";
+  const notes = [];
+  const unchanged = parts.find((p) => / unchanged$/.test(p));
+  if (unchanged) notes.push(`${unchanged.replace(/ unchanged$/, "")}: unchanged, checked with it`);
+  const checked = parts.find((p) => /^checked /.test(p));
+  if (checked) notes.push(`Check ${checked.replace(/^checked /, "on ")}`);
+  const signed = parts.find((p) => /^signed off by /.test(p));
+  if (signed) notes.push(signed[0].toUpperCase() + signed.slice(1));
+  const what = GAP_CLOSED[finding] ?? "closed in";
+  return { headline: changed ? `Gap closed: ${what} ${changed}` : "Gap closed in the documents", notes };
+}
+
 // The muted "Closed by …" lines under a closed row (20 Oct): the full stored text of each distinct closing, so every closing
 // document shows. Texts are the stored ones ("Resolved by Draft SOW, version 2 · 16 Oct 2026"), shown as "Closed by …".
 export const closedLines = (texts) => [...new Set((texts ?? []).map((t) => closedBy(t).trim()).filter(Boolean))];
@@ -507,7 +531,8 @@ export function commitmentView(c, status, documents) {
     signedLines: signedConfirmations(closedIssues.map((i) => i.signed_check)),
     reopenedLines: reopenedLines(unresolved),
     closedLines: closedLines(closedIssues.map((i) => i.resolved_by?.text)),
-    closed: closedIssues.map((i) => ({ label: FINDING_SHORT[i.finding] ?? i.finding, by: closedBy(i.resolved_by?.text) || (status === "closed" ? "Closed in the documents" : "") })),
+    closed: closedIssues.map((i) => ({ label: FINDING_SHORT[i.finding] ?? i.finding, by: closedBy(i.resolved_by?.text) || (status === "closed" ? "Closed in the documents" : ""),
+      gap: gapClosed(i.finding, i.resolved_by?.text) })),
     catalogue: status === "closed" ? [] : uniq(unresolved.map((i) => i.catalogue_path)),
     ai: status === "closed" ? [] : uniq(shown.filter((i) => i.signed_check?.status !== "not_found").map((i) => cleanReason(i.reason))),
     notes, seen: [...new Map(unresolved.flatMap((i) => i.seen || []).map((s) => [s.by, s])).values()],
@@ -570,7 +595,7 @@ export function frozenView({ item, status, closedFindings = [], documents = [], 
     signedLines: signedConfirmations(item.signed),
     reopenedLines: reopenedLines(issues),
     closedLines: closedLines(closedFindings.map((r) => r.resolved_by)),
-    closed: closedFindings.map((r) => ({ label: FINDING_SHORT[r.finding] ?? r.finding, by: closedBy(r.resolved_by) })),
+    closed: closedFindings.map((r) => ({ label: FINDING_SHORT[r.finding] ?? r.finding, by: closedBy(r.resolved_by), gap: gapClosed(r.finding, r.resolved_by) })),
     catalogue: uniq(issues.map((i) => i.catalogue_path)),
     ai: status === "closed" ? [] : uniq(findings.filter((f) => f.signed_check?.status !== "not_found").map((f) => cleanReason(f.why))),
     notes, seen: [...new Map(seenAll.map((s) => [s.by, s])).values()], issueIds: [],

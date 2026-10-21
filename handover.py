@@ -265,8 +265,11 @@ def build_snapshot(conn, slug: str, completed_by: str) -> dict:
         "brief": reg["brief"], "notes": reg["handover"]["notes"], "scope_note": reg["scope_note"],
         # 20 Oct, additive: how many proposed findings failed verification and were not shown. Older snapshots lack it.
         "check_coverage": {"rejected": reg["check_coverage"]["rejected"]},
+        # 21 Oct, additive: the exact version and the SHA-256 of the text Dealshape read (as stored, UTF-8), so the locked record can open
+        # that text and prove it is unchanged. Older snapshots lack both and stay plain.
         "documents": [{"name": d["name"], "type": d["doc_type_label"], "version": d["version"], "date": d["date"],
-                       "version_date": d["version_date"],
+                       "version_date": d["version_date"], "source_version_id": d["source_version_id"],
+                       "sha256": conn.execute("SELECT canonical_sha256 FROM source_versions WHERE id = ?", (d["source_version_id"],)).fetchone()[0],
                        "link": d.get("link")} for d in workspace.documents(conn, slug) if d["included"]],
         "open_items": open_items,
         "resolved_by_note": noted_items,

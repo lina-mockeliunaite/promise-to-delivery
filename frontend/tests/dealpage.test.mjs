@@ -333,7 +333,8 @@ test("notes in the drawer carry author and date, and a closed commitment shows w
   assert.deepEqual(n, [{ by: "Priya Nair", at: "2026-10-19T09:00:00Z", text: "Agreed on the call.", kind: "addressed" }]);
   const closed = { ...LIVE_C, issues: [{ id: 1, finding: "Missing from contract", state: "Resolved", resolved_by: { text: "Closed by Draft SOW, version 2" } }] };
   const v = commitmentView(closed, "closed", DOCS);
-  assert.deepEqual(v.closed, [{ label: "Not in the contract", by: "Closed by Draft SOW, version 2" }]);
+  assert.deepEqual(v.closed, [{ label: "Not in the contract", by: "Closed by Draft SOW, version 2",
+    gap: { headline: "Gap closed: contract wording found in Draft SOW, version 2", notes: [] } }]);
   assert.deepEqual(v.found, []); // what closed it is shown once, under its own heading
   assert.equal(v.contract.missing, null); // no "searched for" on a commitment whose contract gap is closed
   assert.deepEqual(v.ai, []);

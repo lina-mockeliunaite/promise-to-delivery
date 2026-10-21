@@ -10,6 +10,7 @@ import {
 } from "./dealpage.js";
 import { Drawer, CommitmentView, DocumentView, MismatchSentence, Icon, ICON } from "./Drawer.jsx";
 import BriefCard from "./BriefCard.jsx";
+import { appendixEntries, hasStoredText, shortHash } from "./docHash.js";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
 import { FICTIONAL, TAGLINE } from "./brand.js";
 import "./DealPage.css";
@@ -64,7 +65,8 @@ function PrintDetail({ v }) {
         {v.contract.missing ? ` ${v.contract.missingLabel} ${v.contract.missing.map((m) => `“${m}”`).join(", ")}` : ""}
         {v.contract.now ? ` Contract wording containing “${v.contract.now.target}”: “${v.contract.now.quote}” (${v.contract.now.label}), a lookup in the current documents.` : ""}</p>
       {v.found.map((f) => <p key={f.label}><strong>{f.label}</strong>{f.fact ? ` ${f.fact}` : ""}</p>)}
-      {v.closed.length > 0 && <p><strong>Closed by the documents:</strong> {v.closed.map((c) => `${c.label}. ${c.by}`).join(" ")}{v.signedLines?.length ? ` ${v.signedLines.join(" ")}` : ""}</p>}
+      {v.closed.map((c) => <p key={c.label}><strong>{c.gap.headline}</strong>{c.gap.notes.length ? ` ${c.gap.notes.map((n) => `${n}.`).join(" ")}` : ""}</p>)}
+      {v.closed.length > 0 && v.signedLines?.length > 0 && <p>{v.signedLines.join(" ")}</p>}
       {v.reopenedLines?.length > 0 && <p><strong>Signed paperwork:</strong> {v.reopenedLines.join(" ")}</p>}
       {v.ai.length > 0 && <p><em>AI-written summary · quotes checked against the supplied documents:</em> {v.ai.join(" ")}</p>}
       {v.notes.map((n) => <p key={`${n.by}|${n.text}`}><strong>{recordedBy(n.by, n.at, fmtDate)}:</strong> “{n.text}”</p>)}
@@ -79,8 +81,17 @@ export default function FrozenRecord({ deal, onBack }) {
   const [record, setRecord] = useState(false);
   const [headRef, headerGone] = useScrolledPast();
   const [documents, setDocuments] = useState([]);
-  const [drawer, setDrawer] = useState(null); // { type: "commitment", key } | { type: "doc", docKey, quote, fromKey }
+  const [drawer, setDrawer] = useState(null); // { type: "commitment", key } | { type: "doc", docKey, quote, fromKey } | { type: "record-doc", id }
+  const [withText, setWithText] = useState(false); // "Include full document text" in print (off by default)
+  const [texts, setTexts] = useState({}); // { version id: text as read }, fetched when the box is ticked
   useEffect(() => { api.fetchHandover(deal).then(setHv, (err) => setError(err.message)); }, [deal]);
+  const snapDocs = hv?.snapshot?.documents;
+  useEffect(() => {
+    if (!withText || !snapDocs) return;
+    for (const d of snapDocs.filter(hasStoredText)) {
+      api.fetchDocumentText(deal, d.source_version_id).then((r) => setTexts((t) => ({ ...t, [d.source_version_id]: r.text })), () => {});
+    }
+  }, [withText, snapDocs, deal]);
   useEffect(() => { api.fetchDocuments(deal).then((r) => setDocuments(r.documents), () => setDocuments([])); }, [deal]);
   useEffect(() => {
     const { c } = readHash(window.location.hash);
@@ -115,6 +126,7 @@ export default function FrozenRecord({ deal, onBack }) {
     ...closedOnly.map((p) => frozenView({ item: { promise: p, findings: [], ...(s.closed_items ?? []).find((x) => x.promise === p) }, status: "closed", closedFindings: closedFor(p), documents, titles })),
   ];
   const active = drawer ? views.find((v) => v.key === (drawer.key ?? drawer.fromKey)) : null;
+  const appendix = withText ? appendixEntries(s.documents, texts) : [];
   const printAll = () => { setRecord(true); setTimeout(() => window.print(), 80); };
   const copy = async () => {
     try {
@@ -135,7 +147,12 @@ export default function FrozenRecord({ deal, onBack }) {
         <span className="dp-brandline"><Logo /><span className="dp-tagline">{TAGLINE}</span></span>
         <span className="dp-row fr-noprint">
           <button type="button" className="dp-back" onClick={onBack}>← All deals</button>
-          <button type="button" className="dp-btn" onClick={printAll}>Print or save as PDF</button>
+          {s.documents.some(hasStoredText) && (
+            <label className="fr-withtext">
+              <input type="checkbox" checked={withText} onChange={(e) => setWithText(e.target.checked)} /> Include full document text
+            </label>
+          )}
+          <button type="button" className="dp-btn" onClick={printAll} disabled={withText && appendix.some((a) => a.text === null)}>Print or save as PDF</button>
         </span>
       </div>
 
@@ -212,16 +229,29 @@ export default function FrozenRecord({ deal, onBack }) {
           <div>
             <span className="dp-side-title">Documents at handover</span>
             <ul className="dp-docs">
-              {s.documents.map((d) => (
-                <li key={`${d.name}|${d.version}`}>
-                  <div className="dp-doc-row">
-                    {d.link
-                      ? <a className="dp-doc-name" href={d.link} target="_blank" rel="noopener noreferrer">{d.name}{d.version > 1 ? ` · v${d.version}` : ""} ↗</a>
-                      : <span className="dp-doc-name fr-plain">{d.name}{d.version > 1 ? ` · v${d.version}` : ""}</span>}
-                    <span className="dp-mono">{shortDate(d.version_date || d.date)}</span>
-                  </div>
-                </li>
-              ))}
+              {s.documents.map((d) => {
+                const name = `${d.name}${d.version > 1 ? ` · v${d.version}` : ""}`;
+                const stored = hasStoredText(d);
+                return (
+                  <li key={`${d.name}|${d.version}`}>
+                    <div className="dp-doc-row">
+                      {stored
+                        ? <button type="button" className="dp-doc-name dp-link-btn" onClick={() => setDrawer({ type: "record-doc", id: d.source_version_id })}
+                                  aria-haspopup="dialog" title="Opens the exact text read at handover">{name}</button>
+                        : d.link
+                          ? <a className="dp-doc-name" href={d.link} target="_blank" rel="noopener noreferrer">{name} ↗</a>
+                          : <span className="dp-doc-name fr-plain">{name}</span>}
+                      <span className="dp-mono">{shortDate(d.version_date || d.date)}</span>
+                    </div>
+                    {stored && (
+                      <div className="dp-doc-row fr-doc-hash">
+                        <code className="fr-hash" title={d.sha256}>SHA-256 {shortHash(d.sha256)}</code>
+                        {d.link && <a className="fr-noprint" href={d.link} target="_blank" rel="noopener noreferrer">Open in Drive ↗</a>}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           </div>
           {hv.fingerprint && (
@@ -238,6 +268,18 @@ export default function FrozenRecord({ deal, onBack }) {
         </div>
       </details>
 
+      {appendix.length > 0 && (
+        <div className="fr-appendix" data-testid="appendix">
+          {appendix.map((a) => (
+            <section key={a.key} className="fr-appendix-doc">
+              <h2>{a.name}{a.version > 1 ? ` · v${a.version}` : ""}</h2>
+              <p>Version {a.version} · {fmtDate(a.date)} · SHA-256 <code>{a.sha256}</code></p>
+              <pre>{a.text}</pre>
+            </section>
+          ))}
+        </div>
+      )}
+
       <footer className="dp-foot">Lists commitments where the customer's expectation, the contract and what we can sell don't line up. {FICTIONAL}</footer>
 
       {drawer && (
@@ -245,6 +287,10 @@ export default function FrozenRecord({ deal, onBack }) {
           {drawer.type === "commitment" && active && (
             <CommitmentView v={active} titleId="dr-title" readOnly onClose={() => { setDrawer(null); writeHash(null); }}
                             onOpenDoc={(doc, quote) => doc && setDrawer({ type: "doc", docKey: doc.source_key, quote, fromKey: active.key })} />
+          )}
+          {drawer.type === "record-doc" && s.documents.find((d) => d.source_version_id === drawer.id) && (
+            <DocumentView deal={deal} doc={s.documents.find((d) => d.source_version_id === drawer.id)} titleId="dr-title"
+                          onClose={() => setDrawer(null)} />
           )}
           {drawer.type === "doc" && documents.find((d) => d.source_key === drawer.docKey) && (
             <DocumentView deal={deal} doc={documents.find((d) => d.source_key === drawer.docKey)} quote={drawer.quote} titleId="dr-title"
