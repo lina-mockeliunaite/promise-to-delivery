@@ -4,6 +4,8 @@
 
 Dealshape compares customer promises, contractual wording and the vendor's product catalogue, then flags commitments that are missing, different or unsupported, with linked source evidence. **AI surfaces gaps. Code checks sources. Teams decide the response.** For B2B Sales and Delivery teams.
 
+*Built as the project From Promise to Delivery (hence the repository name); the product is Dealshape.*
+
 The customer remembers the proposal, the RFP answers and the calls; the contract says what it says. Dealshape reads a deal's paper trail before signing and again at handover, and shows what we're delivering, which commitments need attention and why, what people have noted about them, and which documents were checked. When the handover is complete it locks that record for Delivery, Customer Success and Support.
 
 It flags four kinds of mismatch:
@@ -18,19 +20,9 @@ It also says what it could not check: if the model proposed findings that failed
 
 *Demonstrated on fictional deals with a complete capability catalogue.* It is a local prototype, built in October 2026 to learn how to design, build and evaluate an AI system end to end.
 
-![Alder Bank deal page](docs/screens/2026-10-20/alder_deal.png)
+<!-- screenshot: Noma deal page, added in Part B -->
 
-## What it shows (Alder Bank, the fictional demo deal)
-
-| Commitment | What the customer was told | What the paperwork says |
-| --- | --- | --- |
-| Coaching-scam detection live at launch | Promised in the RFP response | The contract has no matching wording, and the catalogue needs a named approval that nobody recorded |
-| Hosting on Microsoft Azure | Promised in the RFP response | The contract says Amazon Web Services in the Sydney region, and Azure isn't offered |
-| 750,000 payments a day by the end of year one | Promised in the proposal | No matching wording in the contract, and no approval found |
-
-One commitment can carry several gaps, and they close independently. An approval does not put a promise into the contract.
-
-## A second scenario: two vendors' catalogues, one pipeline
+## What it shows (Noma Journeys, the main demo deal)
 
 **Noma Journeys** (fictional, Singapore) is buying an AI customer-support assistant from **Aivuna** (fictional), to answer guests' questions about bookings, changes and refunds by chat and email from 1 February 2027. Dealshape reviews that software sale, not the assistant. The same commitment-checking applies to assistants used by financial-services operations teams, and to any vendor whose promises can be set against a catalogue and a contract.
 
@@ -40,7 +32,19 @@ One commitment can carry several gaps, and they close independently. An approval
 | A dedicated launch specialist for the first 30 days, at no extra charge | A named internal exception is required and missing; the service is also missing from the contract and SOW | The revised pricing note supplies the exception, but the contract commitment is still missing, so it **still needs attention at handover** |
 | AI answers customers' phone calls at launch | Aivuna's catalogue lists chat and email only, and the SOW says the same | A person records that Noma agreed to launch on chat and email: **Addressed by note**, the mismatch still visible |
 
-**Each deal is checked against its own vendor's catalogue.** The four earlier deals use Elva's catalogue and kept every hash, finding and freshness state when the second one was added. **What this shows, and what it doesn't:** two vendors' catalogues run through one detection pipeline, and **the detection prompt still names the original vendor.** The model read the Aivuna deal once, at a cost of $0.0755, and found the designed gaps plus one legitimate extra. That is one demonstration run, not an accuracy measurement, and it does not show that any vendor's catalogue would work. Details: `data/noma_journeys/BRIEF.md`.
+**Each deal is checked against its own vendor's catalogue.** The other four deals (Alder Bank, plus the development and sealed evaluation deals) use Elva's catalogue, and kept every hash, finding and freshness state when Noma was added. **What this shows, and what it doesn't:** two vendors' catalogues run through one detection pipeline, and **the detection prompt still names the original vendor.** The model read the Aivuna deal once, at a cost of $0.0755, and found the designed gaps plus one legitimate extra. That is one demonstration run, not an accuracy measurement, and it does not show that any vendor's catalogue would work. Details: `data/noma_journeys/BRIEF.md`.
+
+## A second scenario: a draft fix that didn't survive signing (Alder Bank)
+
+**Alder Bank** (fictional) is buying scam protection for outbound instant payments from **Elva** (fictional), live from 1 February 2027. Here a fix to the draft SOW does not survive into the signed contract, so Dealshape reopens it.
+
+| Commitment | What the customer was told | What the paperwork says |
+| --- | --- | --- |
+| Coaching-scam detection live at launch | Promised in the RFP response | The contract has no matching wording, and the catalogue needs a named approval that nobody recorded |
+| Hosting on Microsoft Azure | Promised in the RFP response | The contract says Amazon Web Services in the Sydney region, and Azure isn't offered |
+| 750,000 payments a day by the end of year one | Promised in the proposal | No matching wording in the contract, and no approval found |
+
+One commitment can carry several gaps, and they close independently. An approval does not put a promise into the contract.
 
 ## How it works
 
@@ -131,7 +135,7 @@ python -m uvicorn api:app --host 127.0.0.1 --port 8000
 cd frontend && npm run dev     # open http://127.0.0.1:5173
 ```
 
-The demo opens on the deals list with no API key. Both demo scripts (`docs/DEMO_SCRIPT_2026-10-20_alder.md` and `docs/DEMO_SCRIPT_2026-10-20_noma.md`) run end to end with no key, from saved model readings (the app still verifies every finding and rechecks every stored claim), when each file is filed exactly as the script says ("A new version of …"). Filing a revision as "A new document" gives it today's date, so it needs the model and therefore a key. Reading any other new or changed contract or customer document also needs `ANTHROPIC_API_KEY` in the server's terminal. The browser never sees it.
+The demo opens on the deals list with no API key. Both demo scripts (`docs/DEMO_SCRIPT_2026-10-21_noma.md`, the main one, and `docs/DEMO_SCRIPT_2026-10-20_alder.md`, the second) run end to end with no key, from saved model readings (the app still verifies every finding and rechecks every stored claim), when each file is filed exactly as the script says ("A new version of …"). Filing a revision as "A new document" gives it today's date, so it needs the model and therefore a key. Reading any other new or changed contract or customer document also needs `ANTHROPIC_API_KEY` in the server's terminal. The browser never sees it.
 
 ## Where to look
 
@@ -140,10 +144,10 @@ The demo opens on the deals list with no API key. Both demo scripts (`docs/DEMO_
 | `DECISIONS.md` | Every design choice, the alternative rejected, and why |
 | `LEARNING_LOG.md` | What I learned, got stuck on and got wrong |
 | `docs/RESULTS_*.md` | The two sealed runs in full |
-| `docs/DEMO_SCRIPT_2026-10-20_alder.md` | The alternative demo (Elva, Alder Bank): a draft fix that didn't survive signing |
 | `docs/DEMO_SCRIPT_2026-10-21_noma.md` | The main demo (Aivuna, Noma Journeys), built around three business decisions |
+| `docs/DEMO_SCRIPT_2026-10-20_alder.md` | The second demo (Elva, Alder Bank): a draft fix that didn't survive signing |
 | `docs/DEMO_SCRIPT_2026-10-20_noma.md` | The earlier Noma script (superseded, kept for the record) |
-| `docs/` | Briefs, the integrity inspection, specs, design references |
+| `docs/README.md` | Index of everything else in `docs/`, current and historical |
 
 ## Credits and honesty
 

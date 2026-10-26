@@ -1,3 +1,5 @@
+*Historical: written during the build (30 Sep 2026) and not updated since. The current description is README.md; decisions are in DECISIONS.md.*
+
 # Design — From Promise to Delivery
 
 *Pre-signature deal review. v0.1, 25 Sep 2026. v0.2, 30 Sep 2026: revised into a local deal workspace with resolution checking (see "Revision v3" below).*

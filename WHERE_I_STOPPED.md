@@ -1,3 +1,5 @@
+*Historical: written during the build (30 Sep 2026) and not updated since. The current description is README.md; decisions are in DECISIONS.md.*
+
 # Where I stopped
 
 *Written 30 September 2026, close of Day 7. Read this first on 12 October (or before any work-ahead day).*

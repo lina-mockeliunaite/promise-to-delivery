@@ -1,3 +1,5 @@
+*Historical: written during the build (15 Oct 2026) and not updated since. The current description is README.md; decisions are in DECISIONS.md.*
+
 # Demo script, 3 minutes (v2, rewritten 15 Oct from the live walk-through)
 
 *Audience: CRO, founder, heads of growth, delivery and support. Say it in your words; the clicks are fixed. Rehearse twice before recording. Replaces the 10 Oct v1 script.*

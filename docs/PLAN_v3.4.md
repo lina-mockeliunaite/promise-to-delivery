@@ -1,3 +1,5 @@
+*Historical: written during the build (30 Sep 2026) and not updated since. The current description is README.md; decisions are in DECISIONS.md.*
+
 # From Promise to Delivery — Build & Learning Plan v3
 
 *Lina Mockeliunaite · 30 September 2026 · v3.4 · replaces v2.6 · product revised before Day 8 into a local deal workspace with resolution checking · technical checkpoint 16 Oct, target completion 21 Oct, hard stop 22 Oct · Days 1–7 unchanged*

@@ -14,12 +14,11 @@
    ```
    cd ~/Desktop/"From Promise to Delivery"/promise-to-delivery
    source .venv/bin/activate
-   read -s ANTHROPIC_API_KEY && export ANTHROPIC_API_KEY
-   [ -n "$ANTHROPIC_API_KEY" ] && echo "key set" || echo "key missing"
+   unset ANTHROPIC_API_KEY
    .venv/bin/python reset_demo.py
    .venv/bin/python -m uvicorn api:app --host 127.0.0.1 --port 8000
    ```
-3. **Window 2:** `cd frontend && npm run dev`. Then open http://127.0.0.1:5173/#welcome, which always shows the landing page.
+3. **Window 2:** `cd ~/Desktop/"From Promise to Delivery"/promise-to-delivery/frontend && npm run dev`. Then open http://127.0.0.1:5173/#welcome, which always shows the landing page.
 4. **Files ready:** keep a Finder window open on `data/scenarios/`, showing `AB-05_v2_named_exception.md`, `AB-06_v2_coaching_added.md` and `AB-09_signed_contract.md`.
 5. **Your name** is set in the app ("Recording as …").
 6. **Close every other tab.** Turn off notifications.
@@ -33,7 +32,7 @@
 | 0:45 | Click **Coaching-scam detection live at launch** | "Here's the comparison. The RFP response promised coaching-scam detection live at launch, in the exact wording of the source document. The contract and SOW have no matching wording, and the catalogue says it needs a named approval, which nobody recorded. That's two separate gaps on one promise." |
 | 1:10 | Point at the AI label | "The model reads the paperwork and finds these. But every quote is checked against the documents by code, and the gaps themselves are verified facts. The AI's summary is labelled as AI. It never closes anything." |
 | 1:25 | Coaching row → **Add updated document** → choose the file `AB-05_v2_named_exception.md` → check the form reads **This is: A new version of: Pricing and services note (currently v1)** (it is pre-selected; if it says "A new document", choose the version) → **Add and check** | "Product has approved a named exception. I add the new pricing note and the check runs again." *Point at What changed:* "The approval gap closed. The contract gap is still open, because an approval doesn't put a promise into the contract. A partial fix stays visibly partial." |
-| 2:00 | Coaching row → **Add updated document** → choose the file `AB-06_v2_coaching_added.md` → check the form reads **This is: A new version of: Draft SOW (currently v1)** → **Add and check** | "Now the SOW is updated. The contract side changed, so the model reads it. That takes a few seconds, and the API key must be set on the server." *Point:* "Closed by documents, in solid green, with the document that closed it. One document closed one gap, and the app shows why." |
+| 2:00 | Coaching row → **Add updated document** → choose the file `AB-06_v2_coaching_added.md` → check the form reads **This is: A new version of: Draft SOW (currently v1)** → **Add and check** | "Now the SOW is updated. The contract side changed, so a model reading is needed. The demo uses a saved reading, and the app still verifies every finding." *Point:* "Closed by documents, in solid green, with the document that closed it. One document closed one gap, and the app shows why." |
 | 2:35 | **Hosting on Microsoft Azure** → **Record a note** → **Mark as addressed by note** → "Customer agreed AWS Sydney on the 14 Oct call." → **Save note** | "Sometimes the answer is a conversation, not a document. A note is a person's word, so it looks different: outlined grey, not green. It stays in the handover record and reopens if the documents change." |
 | 3:00 | Sidebar **+ Add** → choose the file `AB-09_signed_contract.md` → **This is: A new document**, **Type: Signed contract** (leave Dated as today) → **Add and check** | "The signed contract arrives. The stage moves to Signed because of the document, not because someone clicked a button." **Then point at the coaching row, which is back under Needs attention:** "The revised SOW added coaching, but the signed contract incorporates the 9 October SOW — the fix never reached the signed agreement, so Dealshape reopens it. The earlier closure stays visible beneath it." *This is the closing moment: a fix in a draft is only as good as what was signed.* |
 | 3:15 | Add both handover notes, then **Complete handover** | "Sales and Delivery each write their note. The checklist shows what's missing, and completing locks the record." |
@@ -45,7 +44,7 @@
 | It happens | Say, and do |
 | --- | --- |
 | "Method Not Allowed", or the page won't load | "Old server, give me ten seconds." Stop it with `lsof -ti :8000 \| xargs kill`, then restart window 1 |
-| "This review needs the model…" | "That needs the API key on the server. Nothing was added, and that's the safety rule working." Then skip to the note step |
+| "This review needs the model…" | "Nothing was added; that's the safety rule." Skip to the note step, or reset and refile as **A new version of: …** |
 | The form says "This looks like a new version of …" | You chose "A new document" for a revised file. It would be dated today and sit beside the original. Click the primary button **Use "A new version of …"**. The quiet "Add as a new document anyway" is the only way past it |
 | "This review needs the model…" and the message names a document "added earlier as a new document" | An earlier step was filed as a new document, not a new version. Reset the demo and add it as **A new version of: …** |
 | Wrong file picked | The app warns you ("This looks like a…"). "And it catches me if I pick the wrong file." Cancel, then pick the right one |
