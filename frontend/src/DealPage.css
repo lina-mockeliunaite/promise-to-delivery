@@ -158,7 +158,7 @@ body:has(.dp) { background: #f8fafc; }
 .dp-titleline .dp-prow-title { min-width: 0; overflow-wrap: break-word; }
 .dp-titleline.is-stacked { flex-direction: column; align-items: flex-start; gap: 6px; }
 .dp-fbadges { display: inline-flex; flex-wrap: wrap; gap: 4px 6px; }
-.dp-fbadge { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 6px; border: 1px solid var(--line); background: transparent;
+.dp-fbadge { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 6px; border: 1px solid var(--line); background: var(--soft);
   color: var(--ink); font-size: 12.5px; font-weight: 600; line-height: 1.4; white-space: nowrap; }
 .dp-prow-first, .dp-prow-note { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .dp-prow-head .dp-chip { flex: none; }

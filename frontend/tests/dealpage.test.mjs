@@ -765,3 +765,18 @@ test("the contract section does not repeat the phrases: no 'No matching wording 
   assert.equal(gap.contract.text, "No matching wording found in the draft contract or SOW");
   assert.equal(gap.found[0].label, 'Not in the draft contract or SOW: "launch specialist"');
 });
+
+// 27 Oct: the promise badge has a light neutral fill so it is easy to find; the fill is an existing theme variable, never a colour.
+test("the promise badge fill is the theme's --soft variable: no hard-coded colour, and no urgency colour", async () => {
+  const fs = await import("node:fs");
+  const css = fs.readFileSync(new URL("../src/DealPage.css", import.meta.url), "utf8");
+  const rule = css.slice(css.indexOf(".dp-fbadge {"), css.indexOf("}", css.indexOf(".dp-fbadge {")) + 1);
+  assert.match(rule, /background: var\(--soft\);/);
+  assert.match(rule, /border: 1px solid var\(--line\);/);
+  assert.match(rule, /color: var\(--ink\);/);
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b|rgba?\(|hsla?\(/.test(rule), "the badge rule contains no literal colour"); // so it follows light and dark mode
+  assert.ok(!/amber|green|red|--tint|--accent/.test(rule), "no status colour: the status chip stays the only urgency signal");
+  // --soft is defined for both colour schemes
+  assert.match(css, /--soft: #f8fafc;/);
+  assert.match(css, /prefers-color-scheme: dark\) \{\s*\.dp \{[^}]*--soft: #16213a;/);
+});
