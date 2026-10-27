@@ -108,7 +108,7 @@ class TestAlderClosureReason(unittest.TestCase):
                 self.assertEqual(issue["finding"], "No approval recorded")
                 self.assertIn("named approver", issue["reason"])
                 self.assertIn("Arjun Rao", issue["reason"])
-                self.assertEqual(issue["resolved_by"]["text"].split(" · ")[0], "Resolved by Pricing and services note, version 2")
+                self.assertEqual(issue["resolved_by"]["text"].split(" · ")[0], "Resolved by Internal approvals note, version 2")
             finally:
                 conn.close()
 

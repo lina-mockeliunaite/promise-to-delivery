@@ -85,7 +85,7 @@ test("Excel and PowerPoint upload as binary; old and macro formats are refused w
 import { typeFromText, uploadMismatch } from "../src/format.js";
 
 const LABELS = { draft_sow: "Draft SOW", draft_contract: "Draft contract", signed_contract: "Signed contract", signed_sow: "Signed SOW",
-  pricing_services_note: "Pricing and services note", rfp_response: "RFP response", proposal: "Proposal" };
+  pricing_services_note: "Internal approvals note", rfp_response: "RFP response", proposal: "Proposal" };
 const SIGNED_HEAD = "# Master Services Agreement — Alder Bank (signed copy)\n\nDate: 12 October 2026\n\n## Signatures\n\nSigned for and on behalf of Elva:\nName: Tom Fraser\n";
 
 test("signed files are recognised by name and by what the file says about itself", () => {
@@ -110,7 +110,7 @@ test("the question names the type for a new document, and works the other way ro
   assert.equal(uploadMismatch({ fileName: "AB-09_signed_contract.md", head: SIGNED_HEAD, target: { type: "draft_contract" }, labels: LABELS }),
     "This looks like a signed contract. Add it as a draft contract anyway?");
   assert.equal(uploadMismatch({ fileName: "x.md", head: "# Signed SOW (signed copy)", target: { type: "pricing_services_note" }, labels: LABELS }),
-    "This looks like a signed SOW. Add it as a pricing and services note anyway?");
+    "This looks like a signed SOW. Add it as an internal approvals note anyway?");
   // a draft going in as a signed document: name and heading agree it is a draft contract
   assert.equal(uploadMismatch({ fileName: "AB-07_draft_contract.md", head: "# DRAFT Master Services Agreement contract", target: { type: "signed_contract" }, labels: LABELS }),
     "This looks like a draft contract. Add it as a signed contract anyway?");
@@ -132,7 +132,7 @@ const PRICING_HEAD = "# INTERNAL — Pricing and services note: Noma Journeys\n\
 const DOCS = [
   { source_key: "NJ-03", name: "RFP response", doc_type: "rfp_response" },
   { source_key: "NJ-04", name: "Proposal", doc_type: "proposal" },
-  { source_key: "NJ-05", name: "Pricing and services note", doc_type: "pricing_services_note" },
+  { source_key: "NJ-05", name: "Internal approvals note", doc_type: "pricing_services_note" },
   { source_key: "NJ-06", name: "Draft SOW", doc_type: "draft_sow" },
   { source_key: "NJ-07", name: "Draft contract", doc_type: "draft_contract" },
   { source_key: "NJ-01", name: "Call transcript of 14 Sep 2026", doc_type: "call_transcript" },
@@ -157,9 +157,9 @@ test("the plain question now also fires for a contract filed as the SOW (heading
 
 test("a pricing note filed as a proposal: the consequence, the right action first, the quiet way to go ahead", () => {
   const n = mismatchNotice({ fileName: "NJ-05_v2_named_exception.md", head: PRICING_HEAD, target: { type: "proposal" }, documents: DOCS, labels: L2 });
-  assert.equal(n.question, "This looks like a pricing and services note.");
+  assert.equal(n.question, "This looks like an internal approvals note.");
   assert.equal(n.consequence, "Filed as a proposal, it won't close the approval gap.");
-  assert.equal(n.use.text, "Use “A new version of Pricing and services note”");
+  assert.equal(n.use.text, "Use “A new version of Internal approvals note”");
   assert.deepEqual([n.use.source_key, n.use.doc_type], ["NJ-05", ""]);
   assert.equal(n.anyway, "Add as proposal anyway");
 });
@@ -174,7 +174,7 @@ test("a contract filed as a new version of the SOW: it replaces the SOW's wordin
 
 test("when the deal has no single document of that type, the primary action sets the type instead", () => {
   const none = mismatchNotice({ fileName: "x.md", head: PRICING_HEAD, target: { type: "proposal" }, documents: [{ source_key: "A", name: "Proposal", doc_type: "proposal" }], labels: L2 });
-  assert.equal(none.use.text, "Use “Pricing and services note” as the type");
+  assert.equal(none.use.text, "Use “Internal approvals note” as the type");
   assert.deepEqual([none.use.source_key, none.use.doc_type], ["", "pricing_services_note"]);
   const two = mismatchNotice({ fileName: "x.md", head: "# Call transcript — Noma", target: { type: "proposal" }, documents: DOCS, labels: L2 });
   assert.equal(two, null); // a call transcript heading is not one of the clear types, so no question
@@ -184,7 +184,7 @@ test("the consequences for signed paperwork and for a draft filed as a pricing n
   const signed = mismatchNotice({ fileName: "AB-09_signed_contract.md", head: SIGNED_HEAD, target: { type: "draft_contract" }, documents: [], labels: LABELS });
   assert.equal(signed.consequence, "Filed as a draft contract, it will be checked like a draft, and it won't mark the deal Signed.");
   const asPricing = mismatchNotice({ fileName: "NJ-07.md", head: CONTRACT_HEAD, target: { type: "pricing_services_note" }, documents: [], labels: L2 });
-  assert.equal(asPricing.consequence, "Filed as a pricing and services note, it would count as approval evidence, which it isn't.");
+  assert.equal(asPricing.consequence, "Filed as an internal approvals note, it would count as approval evidence, which it isn't.");
   const asSigned = mismatchNotice({ fileName: "NJ-07.md", head: CONTRACT_HEAD, target: { type: "signed_contract" }, documents: [], labels: LABELS });
   assert.equal(asSigned.consequence, "Filed as a signed contract, it would mark the deal Signed, but it isn't signed.");
   assert.equal(mismatchNotice({ fileName: "NJ-05.md", head: PRICING_HEAD, target: { type: "pricing_services_note" }, documents: DOCS, labels: L2 }), null);
@@ -214,9 +214,9 @@ import { newDocumentNotice } from "../src/format.js";
 
 test("a revision filed as a new document is questioned before anything is added: dated today, beside the original", () => {
   const n = newDocumentNotice({ fileName: "NJ-05_v2_named_exception.md", head: PRICING_HEAD, documents: DOCS, docType: "pricing_services_note", today: "21 Oct 2026" });
-  assert.equal(n.question, "This looks like a new version of Pricing and services note.");
-  assert.equal(n.consequence, "Added as a new document, it would be dated 21 Oct 2026 and sit beside Pricing and services note, not replace it, so the check would read both.");
-  assert.deepEqual([n.use.source_key, n.use.text], ["NJ-05", "Use “A new version of Pricing and services note”"]);
+  assert.equal(n.question, "This looks like a new version of Internal approvals note.");
+  assert.equal(n.consequence, "Added as a new document, it would be dated 21 Oct 2026 and sit beside Internal approvals note, not replace it, so the check would read both.");
+  assert.deepEqual([n.use.source_key, n.use.text], ["NJ-05", "Use “A new version of Internal approvals note”"]);
   assert.equal(n.anyway, "Add as a new document anyway");
 });
 
@@ -230,4 +230,13 @@ test("no notice for a file that does not look like a revision of anything in the
   assert.equal(newDocumentNotice({ fileName: "notes.md", head: "Some notes.", documents: DOCS, docType: "proposal", today: "21 Oct 2026" }), null);
   assert.equal(newDocumentNotice({ fileName: "AB-09_signed_contract.md", head: SIGNED_HEAD, documents: DOCS, docType: "signed_contract", today: "21 Oct 2026" }), null);
   assert.equal(newDocumentNotice({ fileName: "x.md", head: CONTRACT_HEAD, documents: [], docType: "draft_contract", today: "21 Oct 2026" }), null);
+});
+
+test("a label that starts with a vowel gets 'an': the internal approvals note", () => {
+  const labels = { pricing_services_note: "Internal approvals note", proposal: "Proposal", rfp_response: "RFP response", draft_sow: "Draft SOW" };
+  assert.equal(uploadMismatch({ fileName: "Pricing note.md", head: "# INTERNAL — Pricing and services note: X\n", target: { type: "proposal" }, labels }),
+    "This looks like an internal approvals note. Add it as a proposal anyway?");
+  assert.equal(uploadMismatch({ fileName: "proposal.md", head: "# Proposal\n", target: { type: "pricing_services_note" }, labels }),
+    "This looks like a proposal. Add it as an internal approvals note anyway?");
+  assert.equal(uploadMismatch({ fileName: "rfp.md", head: "# RFP response\n", target: { type: "proposal" }, labels }), "This looks like an RFP response. Add it as a proposal anyway?");
 });

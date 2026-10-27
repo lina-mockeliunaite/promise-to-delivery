@@ -125,10 +125,10 @@ class TestHarbourBankFlow(HandoffApiCase):
             self.assertIn("Contract says something different", top_html)
 
             self.assertIn("Closed: the issue is no longer found, and the evidence meets what was needed.", csv_resp.text)
-            self.assertIn("Pricing and services note, version 2", html)  # the fix's evidence, by type and exact version
-            self.assertIn("Pricing and services note", str(view["handoff"]["history"]))
+            self.assertIn("Internal approvals note, version 2", html)  # the fix's evidence, by type and exact version
+            self.assertIn("Internal approvals note", str(view["handoff"]["history"]))
             self.assertNotIn(".md", str(view) + csv_resp.text + html)
-            self.assertIn("Pricing note: named exception approved by", html)  # the approval evidence, in a sentence
+            self.assertIn("Approvals note: named exception approved by", html)  # the approval evidence, in a sentence
             self.assertEqual(self.commitment("Polygon, real time")["presence"],
                              "Not in the contract: the contract says batch instead.")
             everything = str(view) + csv_resp.text + html + str(self.register())
@@ -155,11 +155,11 @@ class TestHarbourBankFlow(HandoffApiCase):
 class TestDocumentNamesOnScreen(HandoffApiCase):
     def test_the_documents_list_and_register_name_documents_by_type_and_version_only(self):
         docs = self.client.get(f"{BASE}/documents").json()["documents"]
-        self.assertIn("Pricing and services note", [d["name"] for d in docs])
+        self.assertIn("Internal approvals note", [d["name"] for d in docs])
         self.assertTrue(all("filename" not in d for d in docs))
         self.approval_fix_and_recheck()
         docs = self.client.get(f"{BASE}/documents").json()["documents"]
-        note = next(d for d in docs if d["name"] == "Pricing and services note")
+        note = next(d for d in docs if d["name"] == "Internal approvals note")
         self.assertEqual(note["version"], 2)
         shown = [{k: v for k, v in d.items() if k != "source_key"} for d in docs]  # source_key is the API handle, never displayed
         text = str(self.register()) + str(shown)

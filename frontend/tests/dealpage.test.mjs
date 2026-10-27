@@ -62,7 +62,7 @@ test("evidence lines use only verified facts and say what the check can establis
   assert.equal(contractText("Amazon Web Services"), "Amazon Web Services");
   assert.match(gapLine("Not offered", { unlisted_value: "Microsoft Azure" }, "CAP-019/AU"), /no Microsoft Azure option .* in AU\. No exception/);
   assert.equal(gapLine("No approval recorded", { limit_name: "max_transactions_per_day", promised_quantity: 750000, limit_value: 500000 }),
-               "750,000 is above the catalogue limit of 500,000; a named approval is needed and the pricing note records none.");
+               "750,000 is above the catalogue limit of 500,000; a named approval is needed and the approvals note records none.");
   assert.equal(gapLine("Missing from contract", {}), ""); // title only: "Contract says" carries the "No matching wording found …" line (21 Oct)
   assert.equal(gapLine("Missing from contract", { missing_phrases: ["BioCatch"] }), "");
   assert.equal(gapLine("Contract says something different", { promised_value: "Azure", contract_value: "AWS" }), 'Told "Azure".'); // the told side only (21 Oct)

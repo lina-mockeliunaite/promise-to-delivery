@@ -105,7 +105,7 @@ function Documents({ deal, data, onChanged, startOpen }) {
         </button>
       </p>
       {!open ? null : data.documents.length === 0 ? (
-        <Notice>No documents yet. Upload the deal's paper trail: calls, RFP response, proposal, SOW, contract and the internal pricing note.</Notice>
+        <Notice>No documents yet. Upload the deal's paper trail: calls, RFP response, proposal, SOW, contract and the internal approvals note.</Notice>
       ) : (
         <div className="table-wrap">
           <table>

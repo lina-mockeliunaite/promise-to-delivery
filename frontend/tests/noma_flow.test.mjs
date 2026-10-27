@@ -14,7 +14,7 @@ const FILES = {
   pricing: { name: "NJ-05_v2_named_exception.md", head: read("../../data/scenarios/NJ-05_v2_named_exception.md").slice(0, 6000) },
   contract: { name: "NJ-07_v2_languages_aligned.md", head: read("../../data/scenarios/NJ-07_v2_languages_aligned.md").slice(0, 6000) },
 };
-const LABELS = { draft_sow: "Draft SOW", draft_contract: "Draft contract", pricing_services_note: "Pricing and services note", proposal: "Proposal" };
+const LABELS = { draft_sow: "Draft SOW", draft_contract: "Draft contract", pricing_services_note: "Internal approvals note", proposal: "Proposal" };
 const commitment = (word) => REG.commitments.find((c) => c.name.toLowerCase().includes(word));
 const open = (c) => c.issues.filter((i) => i.state !== "Resolved");
 const notice = (file, target) => mismatchNotice({ fileName: file.name, head: file.head, target, documents: REG.documents, labels: LABELS });
@@ -43,7 +43,7 @@ test("the wrong filing of the revised pricing note as a new Proposal is question
   const n = notice(FILES.pricing, { type: "proposal" });
   assert.ok(n, "the warning must appear");
   assert.equal(n.consequence, "Filed as a proposal, it won't close the approval gap.");
-  assert.equal(n.use.text, "Use “A new version of Pricing and services note”");
+  assert.equal(n.use.text, "Use “A new version of Internal approvals note”");
   assert.equal(n.anyway, "Add as proposal anyway");
 });
 
@@ -61,8 +61,8 @@ import { newDocumentNotice } from "../src/format.js";
 test("the mistaken path from the 21 Oct rehearsal: the pricing note filed as a new document is questioned before anything is added", () => {
   const n = newDocumentNotice({ fileName: FILES.pricing.name, head: FILES.pricing.head, documents: REG.documents, docType: "pricing_services_note", today: "21 Oct 2026" });
   assert.ok(n, "the warning must appear");
-  assert.equal(n.use.text, "Use “A new version of Pricing and services note”"); // the right action first
-  assert.match(n.consequence, /dated 21 Oct 2026 and sit beside Pricing and services note, not replace it/);
+  assert.equal(n.use.text, "Use “A new version of Internal approvals note”"); // the right action first
+  assert.match(n.consequence, /dated 21 Oct 2026 and sit beside Internal approvals note, not replace it/);
   assert.equal(n.anyway, "Add as a new document anyway");
   // the same for the contract, if it were filed as a new document
   const c = newDocumentNotice({ fileName: FILES.contract.name, head: FILES.contract.head, documents: REG.documents, docType: "draft_contract", today: "21 Oct 2026" });

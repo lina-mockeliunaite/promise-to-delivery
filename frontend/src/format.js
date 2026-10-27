@@ -85,7 +85,7 @@ export function typeFromText(head) {
 
 const SIGNED_TYPES = ["signed_contract", "signed_sow"];
 const lowerFirst = (t) => (/^[A-Z][a-z]/.test(t) ? t[0].toLowerCase() + t.slice(1) : t);
-const withArticle = (t) => `${/^(RFP|[AEIOU])/.test(t) ? "an" : "a"} ${t}`;
+const withArticle = (t) => `${/^(RFP|[AEIOUaeiou])/.test(t) ? "an" : "a"} ${t}`; // labels are lower-cased first: "an internal approvals note"
 
 // The types whose own heading is clear enough to question a filing: a draft contract, a draft SOW, a pricing note, a proposal or an
 // RFP response (20 Oct). A file's heading is its own statement of what it is, so it counts even when the file name is silent.

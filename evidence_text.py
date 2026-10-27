@@ -158,24 +158,24 @@ def approval_text(authorisation, language, refs, terms_json, catalogue_path=None
         sentences.append("A named exception can't cover this: change or withdraw the promise.")
     elif authorisation == "exception_approved":
         approval = refs.get("approval") or {}
-        sentences.append(f"Pricing note: named exception approved by {approval.get('approver', 'a named approver')}.")
+        sentences.append(f"Approvals note: named exception approved by {approval.get('approver', 'a named approver')}.")
         if approval.get("conditions"):
             sentences.append("Conditions: " + "; ".join(c.rstrip(".") for c in approval["conditions"])
                              + ". Each must be carried into the contract.")
     elif authorisation == "no_approval_evidence":
         row = notes[0].get("line") if notes else None
-        sentences.append(f"Pricing note: {pricing_note_cell(row)}." if row else "Pricing note: names no approval for this scope.")
+        sentences.append(f"Approvals note: {pricing_note_cell(row)}." if row else "Approvals note: names no approval for this scope.")
     elif authorisation == "unknown_needs_review":
         if not paths:
             sentences.append("Approval isn't inferred from implementation scope or from inclusion in the contract.")
             if searched:
-                sentences.append("The pricing note was searched and names nothing for it.")
+                sentences.append("The approvals note was searched and names nothing for it.")
         elif notes and notes[0].get("line") and pricing_note_cell(notes[0]["line"]) == "[no stored value]":
             # 9 Oct: a spreadsheet approval cell whose formula has no saved result (adapters.NO_VALUE, rules.NO_STORED_VALUE)
-            sentences.append("Pricing note: the approval cell is a spreadsheet formula with no saved value, so it says "
+            sentences.append("Approvals note: the approval cell is a spreadsheet formula with no saved value, so it says "
                              "neither yes nor no. Save the file in Excel, or record the approval as text.")
         elif notes and notes[0].get("line"):
-            sentences.append("Pricing note: approval wording found, but no approver is named.")
+            sentences.append("Approvals note: approval wording found, but no approver is named.")
         elif not notes and len(kinds) <= 1:
-            sentences.append("No pricing and services note among the selected documents.")
+            sentences.append("No internal approvals note among the selected documents.")
     return " ".join(sentences)

@@ -81,6 +81,15 @@ class TestPlainLanguage(unittest.TestCase):
         self.assertNotIn("recheck", workspace.plain("Not raised by this recheck, but nothing yet shows its closure criteria are met; it stays open."))
         self.assertNotIn("closure criteria", workspace.plain("closure criteria not shown by any current evidence"))
 
+    def test_closing_reasons_written_with_the_old_name_read_as_the_approvals_note(self):
+        # 26 Oct: ledger_v2.py (inside the config hash) still writes "the pricing note"; stored reasons are reworded when read
+        self.assertEqual(
+            workspace.plain("Closed: the pricing note now records an approval with a named approver: “Approved by Dana Lee (Product)”."),
+            "Closed: the approvals note now records an approval with a named approver: “Approved by Dana Lee (Product)”.")
+        self.assertEqual(
+            workspace.plain("Closed: the pricing-note line this finding relied on is no longer in the current pricing note."),
+            "Closed: the approvals-note line this finding relied on is no longer in the current approvals note.")
+
     def test_statement_lists_in_inclusion_text_are_dropped_cleanly(self):
         out = workspace.plain("Included: HB-06-S02, HB-06-S05, HB-06-S06 in HB-06 (incorporated by HB-07 Clause 3).",
                               {"HB-06": "Draft SOW", "HB-07": "Draft contract"})
@@ -102,7 +111,7 @@ class TestEvidenceChoice(unittest.TestCase):
 
 POLYGON_APPROVAL = ("Catalogue: On-chain wallet screening integration on Polygon (NUSD, real-time) in Singapore is in beta, "
                     "needs named approval, general availability planned 31 March 2027. "
-                    "Pricing note: no named exception approved for Harbour Bank.")
+                    "Approvals note: no named exception approved for Harbour Bank.")
 
 
 class TestApprovalText(unittest.TestCase):
@@ -121,11 +130,11 @@ class TestApprovalText(unittest.TestCase):
                 "source_versions": [{"role": "approval_evidence", "line": "| CAP-021 x | y | z | No named exception approved |"}]}
         self.assertEqual(self.text("no_approval_evidence", poly),
                          "Catalogue: On-chain wallet screening integration on Polygon (NUSD, real-time) in Singapore is in beta, "
-                         "needs named approval, general availability planned 31 March 2027. Pricing note: no named exception approved.")
+                         "needs named approval, general availability planned 31 March 2027. Approvals note: no named exception approved.")
         approved = {"catalogue": poly["catalogue"], "approval": {"approver": "Daniel Koh (Product)", "conditions": ["subject to a 10,000 cap"]},
                     "source_versions": poly["source_versions"]}
         out = self.text("exception_approved", approved)
-        self.assertIn("Pricing note: named exception approved by Daniel Koh (Product).", out)
+        self.assertIn("Approvals note: named exception approved by Daniel Koh (Product).", out)
         self.assertIn("Conditions: subject to a 10,000 cap. Each must be carried into the contract.", out)
         self.assertEqual(self.text("standard_authorised", {"catalogue": ["CAP-021/SG/Ethereum/NUSD/real_time"]}),
                          "Catalogue: On-chain wallet screening integration on Ethereum (NUSD, real-time) in Singapore is generally available and standard.")
@@ -135,7 +144,7 @@ class TestApprovalText(unittest.TestCase):
             {"role": "approval_evidence_searched"}]}))
         self.assertIn("approval wording found, but no approver is named",
                       self.text("unknown_needs_review", {**poly, "source_versions": [{"role": "approval_evidence", "line": "approved"}]}))
-        self.assertIn("No pricing and services note", self.text("unknown_needs_review", {"catalogue": poly["catalogue"]}))
+        self.assertIn("No internal approvals note", self.text("unknown_needs_review", {"catalogue": poly["catalogue"]}))
         self.assertIn("names no approval for this scope", self.text("no_approval_evidence", {**poly, "source_versions": [
             {"role": "approval_evidence", "line": None}]}))
 
@@ -333,7 +342,7 @@ class TestExports(HandoffCase):
         docs = workspace.documents(self.conn, "harbour_bank")
         self.assertEqual(sorted(d["name"] for d in docs), sorted([
             "Call transcript of 28 Sep 2026", "Call transcript of 2 Oct 2026", "RFP response", "Proposal",
-            "Pricing and services note", "Draft SOW", "Draft contract", "Customer email"]))
+            "Internal approvals note", "Draft SOW", "Draft contract", "Customer email"]))
         self.assertTrue(all("filename" not in d for d in docs))
         self.assertEqual(sorted(s["document"] for s in snap["sources"]), sorted(d["name"] for d in docs))
         rows = list(csv.reader(io.StringIO(handoff.render_csv(snap).lstrip("\ufeff"))))

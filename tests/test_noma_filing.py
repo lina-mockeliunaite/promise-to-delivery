@@ -118,8 +118,8 @@ class TestTheRefusalNamesTheLikelyCause(unittest.TestCase):
         self.assertEqual((pricing[0], pricing[2]), (200, 1))  # no model needed, so it goes in, beside the original
         self.assertEqual((contract[0], contract[2]), (409, 0))  # refused, nothing added
         self.assertIn("Nothing was added.", contract[1])
-        self.assertIn("was added earlier as a new document, dated the day it was added, next to Pricing and services note", contract[1])
-        self.assertIn("A new version of: Pricing and services note", contract[1])
+        self.assertIn("was added earlier as a new document, dated the day it was added, next to Internal approvals note", contract[1])
+        self.assertIn("A new version of: Internal approvals note", contract[1])
 
     def test_the_contract_itself_as_a_new_document_says_it_would_sit_next_to_the_draft_contract(self):
         mistaken = [{"name": "NJ-07_v2_languages_aligned.md", "filename": "NJ-07_v2_languages_aligned.md", "doc_type": "draft_contract",

@@ -131,11 +131,11 @@ class TestFixInsideTheFinding(LayoutCase):
         self.assertEqual(out["closed"], ["No approval recorded"])
         self.assertEqual(out["still_open"], ["Missing from contract", "Contract says something different"])
         self.assertEqual(out["model_calls"], 0)
-        self.assertEqual(out["document"], "Pricing and services note, version 2")
+        self.assertEqual(out["document"], "Internal approvals note, version 2")
         o = self.overview()
         self.assertEqual(o["freshness_label"], "Up to date")
         resolved = next(i for i in self.commitment("Polygon, real time")["issues"] if i["type"] == "approval")
-        self.assertTrue(resolved["resolved_by"]["text"].startswith("Resolved by Pricing and services note, version 2"))
+        self.assertTrue(resolved["resolved_by"]["text"].startswith("Resolved by Internal approvals note, version 2"))
         self.assertIn("signed off by Daniel Koh", resolved["resolved_by"]["text"])
         self.assertIn("No approval recorded", [f["finding"] for f in o["resolved_findings"]])
 
@@ -258,7 +258,7 @@ class TestDocumentText(LayoutCase):
         doc = self.finding("Polygon, real time", "approval")["resolved_by"]["documents"][0]
         r = self.client.get(DEAL + f"/documents/text?version={doc['source_version_id']}")
         self.assertEqual(r.status_code, 200, r.text)
-        self.assertEqual(r.json()["name"], "Pricing and services note, version 2")
+        self.assertEqual(r.json()["name"], "Internal approvals note, version 2")
         self.assertIn("Harbour Bank", r.json()["text"])
         conn = ledger.connect(self.db)
         try:

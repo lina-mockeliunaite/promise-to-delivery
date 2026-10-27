@@ -88,8 +88,8 @@ export function suggestFix(open, documents) {
     const d = byType("pricing_services_note");
     const alsoContract = kinds.includes("Missing from contract") || kinds.includes("Contract says something different");
     return { source_key: d?.source_key ?? "", doc_type: "pricing_services_note",
-             hint: "A named approval in the pricing note can close the approval gap." +
-                   (alsoContract ? " The contract gap needs a contract or SOW update; it stays open until then." : " Add the new version of the pricing note.") };
+             hint: "A named approval in the approvals note can close the approval gap." +
+                   (alsoContract ? " The contract gap needs a contract or SOW update; it stays open until then." : " Add the new version of the approvals note.") };
   }
   // A contract conflict is fixed in the document its contract-side quote comes from (20 Oct): a revised contract is a new version of the
   // contract, not of the SOW. The stored evidence names that document.
@@ -132,9 +132,9 @@ export function gapLine(finding, ev = {}, path = null) {
     case "No approval recorded":
       if (ev.limit_name && ev.promised_quantity) {
         const limit = ev.limit_value ? `the catalogue limit of ${n(ev.limit_value)}` : "the catalogue limit";
-        return `${n(ev.promised_quantity)} is above ${limit}; a named approval is needed and the pricing note records none.`;
+        return `${n(ev.promised_quantity)} is above ${limit}; a named approval is needed and the approvals note records none.`;
       }
-      return "The catalogue needs a named approval for this, and the pricing note records none.";
+      return "The catalogue needs a named approval for this, and the approvals note records none.";
     case "Missing from contract":
       return ""; // title only (21 Oct): "Contract says" carries "No matching wording found …" and the searched-for phrases
     case "Contract says something different":

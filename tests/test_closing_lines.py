@@ -91,7 +91,7 @@ class TestTheNomaRehearsalReplayed(unittest.TestCase):
 
     def test_when_one_document_is_all_there_is_nothing_is_marked_unchanged(self):
         r = self.closed("launch specialist")
-        self.assertEqual((r["changed"], r["unchanged"]), (["Pricing and services note, version 2"], []))
+        self.assertEqual((r["changed"], r["unchanged"]), (["Internal approvals note, version 2"], []))
         self.assertNotIn("unchanged", r["text"])
 
     def test_the_closed_languages_commitment_has_the_wording_now_found(self):

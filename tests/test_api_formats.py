@@ -289,13 +289,13 @@ class TestPricingNotesAsApprovalEvidence(FormatsCase):
         states, polygon = self.close_approval_with("note.docx", md_docx(scenario_text()))
         self.assertEqual(states["approval"], "Resolved")
         self.assertEqual(states["contract_gap"], "Needs action")
-        self.assertIn("Pricing note: named exception approved by Daniel Koh", polygon["authorisation_evidence"])
+        self.assertIn("Approvals note: named exception approved by Daniel Koh", polygon["authorisation_evidence"])
         self.assertEqual(next(d for d in self.documents() if d["source_key"] == "HB-05")["format"], "Word")
 
     def test_a_pdf_pricing_note_counts_as_approval_evidence(self):
         states, polygon = self.close_approval_with("note.pdf", mf.text_pdf([md_lines(scenario_text())]))
         self.assertEqual(states["approval"], "Resolved")
-        self.assertIn("Pricing note: named exception approved by Daniel Koh", polygon["authorisation_evidence"])
+        self.assertIn("Approvals note: named exception approved by Daniel Koh", polygon["authorisation_evidence"])
         self.assertEqual(next(d for d in self.documents() if d["source_key"] == "HB-05")["format"], "PDF")
 
 

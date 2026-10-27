@@ -119,7 +119,7 @@ class TestFixAndRecheck(V2Case):
         _, vasp = self.find("harbour_bank", "VASP", "No approval recorded")
         self.assertEqual(vasp, "Needs action")
         resolved = workspace.overview(self.conn, "harbour_bank")["resolved_findings"]
-        self.assertIn("Pricing and services note, version 2", resolved[0]["resolved_by"])
+        self.assertIn("Internal approvals note, version 2", resolved[0]["resolved_by"])
         self.assertNotIn("Proposal", resolved[0]["resolved_by"])  # only the document that closed it
         self.assertNotIn("RFP", resolved[0]["resolved_by"])
 

@@ -32,7 +32,7 @@ NEXT_STEP = {
 }
 DOC_TYPE_LABELS = {
     "call_transcript": "Call transcript", "rfp_response": "RFP response", "proposal": "Proposal",
-    "draft_sow": "Draft SOW", "draft_contract": "Draft contract", "pricing_services_note": "Pricing and services note",
+    "draft_sow": "Draft SOW", "draft_contract": "Draft contract", "pricing_services_note": "Internal approvals note",
     "customer_email": "Customer email", "security_questionnaire": "Security questionnaire",
     "signed_contract": "Signed contract", "signed_sow": "Signed SOW",
 }
@@ -96,7 +96,7 @@ def short_date(iso, year: bool = True) -> str:
 # 20 Oct: the version of a source the screens show is its latest INCLUDED version, else its latest. A version set aside after a
 # failed check (add_check.py) is excluded and never shows; the version it would have replaced is still the one in the review.
 def document_labels(conn, did: int) -> dict:
-    """{source_key: plain-language label} for one deal: the document type ('Pricing and services note'), never a file
+    """{source_key: plain-language label} for one deal: the document type ('Internal approvals note'), never a file
     name or key. Two documents of one type in a deal are told apart by date ('Call transcript of 28 Sep 2026'), then
     by a number if the dates match. The version is added where it is known exactly (see version_label)."""
     rows = conn.execute(
@@ -131,6 +131,12 @@ PHRASES = [
     ("Closed: this recheck no longer finds the issue, and the evidence below meets its closure criteria.",
      "Closed: the issue is no longer found, and the evidence meets what was needed."),
     ("closure criteria not shown by any current evidence", "nothing in the current documents shows it is closed"),
+    # 26 Oct: the pricing note is now the "internal approvals note". These closing reasons are written by ledger_v2.py, which is inside the
+    # config hash and so is not edited; stored reasons are reworded here, when they are read.
+    ("Closed: the pricing note now records an approval with a named approver:",
+     "Closed: the approvals note now records an approval with a named approver:"),
+    ("Closed: the pricing-note line this finding relied on is no longer in the current pricing note.",
+     "Closed: the approvals-note line this finding relied on is no longer in the current approvals note."),
 ]
 
 
@@ -474,7 +480,7 @@ def register(conn, slug: str) -> dict:
         if not types & {"draft_contract", "draft_sow"}:
             scope += " No draft contract or SOW in this deal, so nothing is checked against the contract."
         if "pricing_services_note" not in types:
-            scope += " No pricing and services note, so no approval can be found; approvals read as not recorded."
+            scope += " No internal approvals note, so no approval can be found; approvals read as not recorded."
     return {"deal": slug, "name": deal_title(slug, name), "freshness": fresh, "counts": counts, "commitments": commitments,
             "scope_note": scope,
             "resolved_means": "Resolved means the documented gap is closed, not that the work is ready."}
