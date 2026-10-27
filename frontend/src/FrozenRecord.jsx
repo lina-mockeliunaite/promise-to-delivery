@@ -62,7 +62,6 @@ function PrintDetail({ v }) {
       <p><strong>Customer was told:</strong>{" "}
         {v.told.length ? v.told.map((t) => `“${t.quote}” (${t.label}${t.date ? `, ${short(t.date)}` : ""})`).join(" ") : v.toldFallback}</p>
       <p><strong>Contract says:</strong>{v.contract.text ? ` ${v.contract.text}` : ""}{v.contract.quote ? ` “${v.contract.quote.quote}” (${v.contract.quote.label})` : ""}
-        {v.contract.missing ? ` ${v.contract.missingLabel} ${v.contract.missing.map((m) => `“${m}”`).join(", ")}` : ""}
         {v.contract.now ? ` Contract wording containing “${v.contract.now.target}”: “${v.contract.now.quote}” (${v.contract.now.label}), a lookup in the current documents.` : ""}</p>
       {v.found.map((f) => <p key={f.label}><strong>{f.label}</strong>{f.fact ? ` ${f.fact}` : ""}</p>)}
       {v.closed.map((c) => <p key={c.label}><strong>{c.gap.headline}</strong>{c.gap.notes.length ? ` ${c.gap.notes.map((n) => `${n}.`).join(" ")}` : ""}</p>)}

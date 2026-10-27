@@ -329,7 +329,7 @@ test("the drawer's view of a live commitment uses stored data only, and hides th
   assert.equal(v.contract.text, "No matching wording found in the draft contract or SOW");
   assert.deepEqual(v.contract.missing, ["BioCatch"]);
   assert.equal(v.found[0].label, "No approval found in the supplied documents");
-  assert.equal(v.found[1].label, "Not in the draft contract or SOW");
+  assert.equal(v.found[1].label, 'Not in the draft contract or SOW: "BioCatch"'); // the stored phrase is named (28 Oct)
   assert.deepEqual(v.ai, ["Needs a named approval."]); // the empty reason of the second finding is dropped
   assert.deepEqual(v.seen.map((s) => s.by), ["Tom Fraser"]);
   assert.deepEqual(v.notes, []);
@@ -617,17 +617,19 @@ test("no sentence appears in both 'Contract says' and the finding card, for ever
   }
 });
 
-test("'Not in the draft contract or SOW' is a title only, always; 'Contract says something different' shows the told side only", () => {
+test("'Not in the draft contract or SOW' names the stored phrases and has no body; 'Contract says something different' shows the told side only", () => {
   const issues = [{ id: 1, state: "Needs action", finding: "Missing from contract", evidence: { missing_phrases: ["BioCatch"] }, reason: "r" }];
   const v = commitmentView({ name: "X", contract: "Not included", statements: [], issues }, "open", []);
   assert.equal(v.contract.text, "No matching wording found in the draft contract or SOW");
-  assert.deepEqual(v.found, [{ label: "Not in the draft contract or SOW", fact: "" }]);
-  // always: whatever evidence the finding carries, and with or without searched phrases, live and locked
-  for (const evidence of [null, {}, { missing_phrases: ["a", "b"] }]) {
+  assert.deepEqual(v.found, [{ label: 'Not in the draft contract or SOW: "BioCatch"', fact: "" }]);
+  // no body, whatever evidence the finding carries, live and locked; the title names the stored phrases and nothing else
+  const TITLE = "Not in the draft contract or SOW";
+  const expectedTitle = new Map([[null, TITLE], [{}, TITLE], [{ missing_phrases: [] }, TITLE], [{ missing_phrases: ["a", "b"] }, `${TITLE}: "a" or "b"`]]);
+  for (const [evidence, title] of expectedTitle) {
     const live = commitmentView({ name: "X", contract: "Not included", statements: [], issues: [{ id: 1, state: "Needs action", finding: "Missing from contract", evidence, reason: "r" }] }, "open", []);
     const locked = frozenView({ item: { promise: "X", contract: "Not included", findings: [{ finding: "Missing from contract", evidence, why: "r", seen: [] }] }, status: "open", documents: [], titles: {} });
-    assert.deepEqual(live.found, [{ label: "Not in the draft contract or SOW", fact: "" }]);
-    assert.deepEqual(locked.found, [{ label: "Not in the draft contract or SOW", fact: "" }]);
+    assert.deepEqual(live.found, [{ label: title, fact: "" }]);
+    assert.deepEqual(locked.found, [{ label: title, fact: "" }]);
   }
   // reopened by the signed check, the reason is new information and stays
   const reopened = commitmentView({ name: "X", contract: "Not included", statements: [], issues: [{ id: 3, state: "Needs action", finding: "Missing from contract", evidence: null, reason: "r",
@@ -729,4 +731,37 @@ test("the drawer head puts the chip beneath the title and derives the close butt
   // the chip is rendered inside the title block, after the heading, and the close button after both
   const head = jsx.slice(jsx.indexOf("export function DrawerHead"), jsx.indexOf("const NOTE_KIND"));
   assert.ok(head.indexOf("<h2") < head.indexOf("dp-chip") && head.indexOf("dp-chip") < head.indexOf("dp-x"));
+});
+
+// 28 Oct: the "Not in the draft contract or SOW" card names the phrases stored on the finding, and the contract section no longer repeats them.
+test("the missing-from-contract title lists the stored phrases: one, two, three or more, none", () => {
+  const detail = (missing_phrases) => findingDetail({ finding: "Missing from contract", evidence: missing_phrases === undefined ? null : { missing_phrases } });
+  assert.equal(detail(["phone calls"]), 'Not in the draft contract or SOW: "phone calls"');
+  assert.equal(detail(["first 30 days", "no extra charge"]), 'Not in the draft contract or SOW: "first 30 days" or "no extra charge"');
+  assert.equal(detail(["dedicated Aivuna launch specialist", "first 30 days after launch", "no extra charge"]),
+    'Not in the draft contract or SOW: "dedicated Aivuna launch specialist", "first 30 days after launch" or "no extra charge"');
+  assert.equal(detail(["a", "b", "c", "d"]), 'Not in the draft contract or SOW: "a", "b", "c" or "d"');
+  assert.equal(detail([]), "Not in the draft contract or SOW"); // nothing stored: unchanged
+  assert.equal(detail(undefined), "Not in the draft contract or SOW");
+  assert.equal(detail(["", "  "]), "Not in the draft contract or SOW"); // blank phrases are not names
+});
+
+test("the contract section does not repeat the phrases: no 'No matching wording found for' and no 'Searched for' line, live and locked", async () => {
+  const fs = await import("node:fs");
+  for (const f of ["Drawer.jsx", "FrozenRecord.jsx"]) {
+    const src = fs.readFileSync(new URL(`../src/${f}`, import.meta.url), "utf8");
+    assert.ok(!src.includes("missingLabel") && !src.includes("contract.missing.map"), `${f} renders no searched-for line`);
+  }
+  // Noma phone calls (a conflict with a quote, plus a missing finding): the contract section shows the quote only; the card names "phone calls"
+  const issues = [
+    { id: 1, state: "Needs action", finding: "Contract says something different", evidence: { promised_value: "phone calls", contract_value: "chat and email", contract_quote: { quote: "Provider will operate the Assistant on chat and email.", source: "Draft SOW" } }, reason: "r" },
+    { id: 2, state: "Needs action", finding: "Missing from contract", evidence: { missing_phrases: ["phone calls"] }, reason: "r" }];
+  const v = commitmentView({ name: "Phone", contract: "chat and email", statements: [], issues }, "open", []);
+  assert.equal(v.contract.text, ""); // the generic line is hidden when there is a quote
+  assert.equal(v.contract.quote.quote, "Provider will operate the Assistant on chat and email.");
+  assert.deepEqual(v.found.map((f) => f.label), ['The contract says something different: "chat and email"', 'Not in the draft contract or SOW: "phone calls"']);
+  // launch specialist (a gap alone, no quote): the generic line stays; the phrases are on the card only
+  const gap = commitmentView({ name: "S", contract: "Not included", statements: [], issues: [{ id: 3, state: "Needs action", finding: "Missing from contract", evidence: { missing_phrases: ["launch specialist"] }, reason: "r" }] }, "open", []);
+  assert.equal(gap.contract.text, "No matching wording found in the draft contract or SOW");
+  assert.equal(gap.found[0].label, 'Not in the draft contract or SOW: "launch specialist"');
 });

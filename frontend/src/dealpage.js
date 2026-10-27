@@ -307,6 +307,16 @@ export function findingDetail(issue, contract = "") {
     const term = String(issue.evidence?.contract_value || contract || "").trim();
     return term ? `The contract says something different: "${term}"` : "The contract says something different";
   }
+  if (issue.finding === "Missing from contract") {
+    // 28 Oct: name what was searched for and not found, from the phrases stored on the finding (never composed here). The check reads the
+    // draft contract and SOW only, and the title says so. "a"; "a" or "b"; "a", "b" or "c". None stored: the title alone.
+    const phrases = (issue.evidence?.missing_phrases ?? []).map((p) => String(p).trim()).filter(Boolean);
+    if (phrases.length) {
+      const q = phrases.map((p) => `"${p}"`);
+      const list = q.length === 1 ? q[0] : `${q.slice(0, -1).join(", ")} or ${q[q.length - 1]}`;
+      return `${FINDING_DETAIL["Missing from contract"]}: ${list}`;
+    }
+  }
   return FINDING_DETAIL[issue.finding] ?? issue.finding;
 }
 
@@ -521,8 +531,7 @@ export const reopenedLines = (issues) => reopenedBySigned(issues).flatMap((i) =>
 const sentenceKey = (s) => String(s ?? "").replace(/[\u2018\u2019]/g, "'").replace(/[\u201c\u201d]/g, '"').toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 const sentencesOf = (t) => String(t ?? "").split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
 export function contractSaid(c) {
-  const searched = c.missing?.length ? `${c.missingLabel} ${c.missing.map((m) => `“${m}”`).join(", ")}` : "";
-  return [c.text, searched, c.quote?.quote, c.now?.quote].filter(Boolean).flatMap(sentencesOf);
+  return [c.text, c.quote?.quote, c.now?.quote].filter(Boolean).flatMap(sentencesOf); // the searched-for phrases are on the finding card, not here
 }
 export function withoutRepeats(found, contract) {
   const said = new Set(contractSaid(contract).map(sentenceKey));
