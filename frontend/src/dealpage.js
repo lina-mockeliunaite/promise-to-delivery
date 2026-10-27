@@ -397,7 +397,9 @@ export const STAGE_LABELS = { discovery: "Discovery", evaluation: "Evaluation", 
 // The one explanation the add-document form gives about closing (the gap-specific hint, when there is one, comes before it).
 export const GAP_CLOSES = "A gap closes only if the new paperwork shows it no longer holds.";
 
-export const SIGNED_NOTE = "Marks the deal signed. Its wording isn't checked; the checks used the drafts.";
+// 28 Oct: signed_check.py confirms earlier fixes closed by a draft contract or SOW against the signed text (approval closures are not checked
+// against it, and new clauses are not reviewed), so this says exactly that.
+export const SIGNED_NOTE = "Marks the deal signed. Earlier contract and SOW fixes are checked against its text; new clauses aren't reviewed.";
 export const isSignedDoc = (docType) => docType === "signed_contract" || docType === "signed_sow";
 
 // "Tom Fraser (Account Executive, fictional)" and "draft SOW, 9 Oct" as the brief's footer shows them: name, role, initials, basis.

@@ -221,7 +221,8 @@ test("', fictional' is dropped from displayed names only", () => {
 test("signed paperwork is recognised and carries its one-line note", () => {
   assert.ok(isSignedDoc("signed_contract") && isSignedDoc("signed_sow"));
   assert.ok(!isSignedDoc("draft_contract") && !isSignedDoc(undefined));
-  assert.equal(SIGNED_NOTE, "Marks the deal signed. Its wording isn't checked; the checks used the drafts.");
+  assert.equal(SIGNED_NOTE, "Marks the deal signed. Earlier contract and SOW fixes are checked against its text; new clauses aren't reviewed.");
+  assert.ok(!/isn't checked|used the drafts/.test(SIGNED_NOTE)); // the pre-21 Oct line, untrue since the signed-contract check
 });
 
 test("the contract column never says 'Not included' and shows what was searched for", () => {
