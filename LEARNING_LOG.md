@@ -213,3 +213,18 @@ Today’s checkpoint showed me how much the UI was getting in the way of underst
   - `--ff-only` makes git refuse a merge rather than quietly combine branches.
   - "No module named pytest" and "Missing script: test" are errors about how the tests were started, not failed tests.
   - The last line of a test run decides it: `OK` or `fail 0`. The noise above is tests breaking things on purpose.
+
+## 2026-10-27 — Findings belong to what they describe
+
+*Drafted by Claude at close on 27 Oct from the session record, at Lina's request. Lina to edit any line that isn't true for her.*
+
+- **A layout can make a true finding read as false.** The landing card said "Contract says chat and email · not offered". "Not offered" described the promise (phone calls), but it sat against the contract's wording, so it read as "chat and email aren't offered". Alder had the same flaw. The rule I set: a finding about the promise sits with the promise, as a badge beside the title; what the contract says gets its own line. It now applies to the cards, the deal rows, the drawer, the locked record and the print.
+- **Fixing one thing exposes the next.** Once the line was clean, the gaps around it stood out: the two landing cards laid out differently, the languages row said only "Contract differs" because of a 45-character limit set for the old joined sentence, and the drawer repeated "Contract says chat and email" twice. Each fix was its own plan, review, tests and screenshots.
+- **Check whether it's wording or logic before fixing.** "Not in the draft contract or SOW" next to a quote from the SOW looked like a contradiction. Both findings were true: the SOW names chat and email, and the words "phone calls" appear in neither document. The label just didn't say which words. Naming the missing phrase fixed it, without touching the check.
+- **The reviewer gets corrected too.** Claude proposed "None of the contract documents mention…". Claude Code pointed out that the check never reads signed paperwork, so that would claim more than was checked. The original "draft contract or SOW" was accurate; only the phrase was missing.
+- **Colour means urgency, nothing else.** I asked whether "Not offered" should be red or orange. It would compete with the orange status chip, and in the locked record the badge stays on a row already addressed by note, where red would say danger about something the customer has agreed. A light grey fill made the badge easier to find without turning it into a warning. I tried it live before deciding.
+- **Why the RFP matters if the contract is right.** The contract decides what we owe; the RFP decides what the customer expects. RFP responses are often attached to the contract, and a misrepresentation can survive an entire-agreement clause. Dealshape doesn't say which document is right. It makes sure the difference is fixed or knowingly agreed before Delivery inherits it.
+- **Practical:**
+  - This project's tests run with `python -m unittest discover -s tests -b`. Without `-b`, a test's own printed output can hide the summary line.
+  - One commit took three changes again, the same lesson as 21 Oct: commit each working change before starting the next.
+  - Before/after screenshots at desktop, 390px, light and dark caught what tests can't: a badge that wraps, a fill that disappears on hover.
