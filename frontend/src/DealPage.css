@@ -152,6 +152,14 @@ body:has(.dp) { background: #f8fafc; }
 .dp-prow.is-noted .dp-prow-title, .dp-prow.is-closed .dp-prow-title { font-weight: 500; }
 .dp-prow-line { font-size: 13px; color: var(--muted); }
 .dp-prow-line strong { color: var(--ink); font-weight: 600; }
+/* Findings about the promise sit beside the title as small outlined tags (27 Oct); the contract's wording is its own line beneath. The tag is
+   not the status chip (no pill, no dot, no fill), and its text carries the meaning. When there is no room it wraps directly beneath the title. */
+.dp-titleline { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
+.dp-titleline .dp-prow-title { min-width: 0; overflow-wrap: break-word; }
+.dp-titleline.is-stacked { flex-direction: column; align-items: flex-start; gap: 6px; }
+.dp-fbadges { display: inline-flex; flex-wrap: wrap; gap: 4px 6px; }
+.dp-fbadge { display: inline-flex; align-items: center; padding: 1px 7px; border-radius: 6px; border: 1px solid var(--line); background: transparent;
+  color: var(--ink); font-size: 12.5px; font-weight: 600; line-height: 1.4; white-space: nowrap; }
 .dp-prow-first, .dp-prow-note { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
 .dp-prow-head .dp-chip { flex: none; }
 .dp-chevron { color: var(--muted); display: inline-flex; flex: none; }
@@ -315,10 +323,15 @@ body:has(.dp) { background: #f8fafc; }
 @keyframes dr-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
 @media (prefers-reduced-motion: reduce) { .dr { animation: none; } }
 @media (max-width: 640px) { .dr { width: 100%; } }
-.dr-head { padding: 12px 20px 4px; flex: none; }
+/* Drawer head (28 Oct). The status chip always sits on its own line directly beneath the title, for every title length. The close button
+   stays top-right and is centred on the title's first line: its offset is derived from the title's size and line height and the button's
+   size, all defined here once, so it stays aligned if any of them changes. */
+.dr-head { --dr-title-size: 18px; --dr-title-leading: 1.3; --dr-x-size: 32px; padding: 12px 20px 4px; flex: none; }
 .dr-head-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
-.dr-head-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; min-width: 0; }
-.dr-head-title h2 { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3; }
+.dr-head-title { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; min-width: 0; }
+.dr-head-title h2 { font-size: var(--dr-title-size); font-weight: 600; letter-spacing: -0.01em; line-height: var(--dr-title-leading); }
+.dr-head-row .dp-x { width: var(--dr-x-size); height: var(--dr-x-size); min-height: 0; /* the app-wide button min-height (40px) would make it taller than --dr-x-size */
+  margin-top: calc((var(--dr-title-size) * var(--dr-title-leading) - var(--dr-x-size)) / 2); }
 .dr-sub { margin: 4px 0 0; font-size: 12px; color: var(--muted); }
 .dr-back { border: 0; background: none; padding: 0; margin: 0 0 4px; font: inherit; font-size: 13px; font-weight: 500; color: var(--accent); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; }
 .dr-back:hover { color: var(--accent-hover); text-decoration: underline; }
@@ -479,7 +492,7 @@ main.home.home-deal { max-width: none; margin: 0; padding: 0; }
 .dp-tl-toggle:disabled { cursor: default; }
 .dp-tl-toggle[aria-expanded="false"]:not(:disabled)::after { content: "+"; color: var(--muted); font-weight: 400; margin-left: 4px; }
 .dp-tl-count { font-weight: 400; color: var(--muted); font-size: 12px; }
-.dr-mismatch { margin: 0 0 14px; }
+.dr-mismatch { margin: 0 0 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 .dr-mismatch .dp-prow-line { font-size: 13px; }
 /* The wrong-file notice and the "+ Add" suggestion (20 Oct): what the file looks like, what filing it that way would do, the right action first */
 .dp-notice-box { display: flex; flex-direction: column; gap: 8px; }

@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  SIGNED_NOTE, attentionText, cleanReason, docLabel, extractedAs, findingDetail, firstDocDate, firstPromised, groupByStage, isSignedDoc, mismatchLine, plainName, mismatchParts, partsText, hashFor, readHash, matchDoc, closedBy, confirmedBy, headerScrolledPast, handoverChecklist, splitQuote, commitmentView, frozenView, closedLines, changeResult, coverageLine, journeyOpen, docCount, dealsText, commitmentsNeedText,
+  SIGNED_NOTE, attentionText, cleanReason, docLabel, extractedAs, findingDetail, firstDocDate, firstPromised, groupByStage, isSignedDoc, mismatchLine, promiseLabels, plainName, mismatchParts, partsText, hashFor, readHash, matchDoc, closedBy, confirmedBy, headerScrolledPast, handoverChecklist, splitQuote, commitmentView, frozenView, closedLines, changeResult, coverageLine, journeyOpen, docCount, dealsText, commitmentsNeedText,
   recordedBy, rowTitle, sourcesLine, suggestFix, verdictLine, whatChanged,
 } from "../src/dealpage.js";
 
@@ -116,21 +116,22 @@ const ALDER = [
     statements: [{ doc_type_label: "RFP response", date: "2026-09-29" }] },
 ];
 
-test("the mismatch line is built from verified finding labels, for Alder's three commitments", () => {
+test("the plain mismatch line labels itself: the promise's findings, then the contract's, for Alder's three commitments", () => {
   assert.deepEqual(ALDER.map((c) => mismatchLine(c.issues, c.contract)), [
-    "No approval found · Not in the contract",
-    "No approval found · Not in the contract",
-    "Not offered · Contract differs: Amazon Web Services in the Sydney region",
+    "Promise: No approval found. Contract has no matching wording.",
+    "Promise: No approval found. Contract has no matching wording.",
+    'Promise: Not offered. Contract says: "Amazon Web Services in the Sydney region".',
   ]);
 });
 
 test("the mismatch line appends a contract term only when it is short, and never repeats a finding", () => {
   const diff = (v) => [{ finding: "Contract says something different", evidence: { contract_value: v } }];
-  assert.equal(mismatchLine(diff("AWS Sydney")), "Contract differs: AWS Sydney");
-  assert.equal(mismatchLine(diff("x".repeat(80))), "Contract differs");
-  assert.equal(mismatchLine(diff(null), "Not included"), "Contract differs");
-  assert.equal(mismatchLine([{ finding: "Not offered" }, { finding: "Not offered" }]), "Not offered");
-  assert.equal(mismatchLine([{ finding: "Needs evidence" }]), "Needs evidence");
+  assert.equal(mismatchLine(diff("AWS Sydney")), 'Contract says: "AWS Sydney".'); // every term is quoted in the plain line
+  assert.equal(mismatchLine(diff("x".repeat(80))), `Contract says: "${"x".repeat(80)}".`); // 80 characters still fits (28 Oct: the limit was 45)
+  assert.equal(mismatchLine(diff("x".repeat(81))), "Contract differs."); // longer: left to the drawer, never shortened
+  assert.equal(mismatchLine(diff(null), "Not included"), "Contract differs.");
+  assert.equal(mismatchLine([{ finding: "Not offered" }, { finding: "Not offered" }]), "Promise: Not offered.");
+  assert.equal(mismatchLine([{ finding: "Needs evidence" }]), "Promise: Needs evidence."); // an unlisted label is about the promise: never dropped
   assert.equal(mismatchLine([]), "");
 });
 
@@ -239,30 +240,35 @@ test("a sidebar document name drops a date that only repeats the date column", (
 });
 
 // --- The drawer (20 Oct) ---------------------------------------------------------------------------------------------
-test("the sentence-style mismatch line starts with the contract segment, for Alder's three commitments", () => {
+test("the contract line carries only what the contract says; the promise's findings are badges (27 Oct), for Alder's three commitments", () => {
   const texts = ALDER.map((c) => partsText(mismatchParts(c.issues, c.contract)));
   assert.deepEqual(texts, [
-    "Contract has no matching wording · no approval found",
-    "Contract has no matching wording · no approval found",
-    "Contract says Amazon Web Services in the Sydney region · not offered",
+    "Contract has no matching wording",
+    "Contract has no matching wording",
+    "Contract says Amazon Web Services in the Sydney region",
   ]);
+  assert.deepEqual(ALDER.map((c) => promiseLabels(c.issues)), [["No approval found"], ["No approval found"], ["Not offered"]]);
   const hosting = mismatchParts(ALDER[2].issues, ALDER[2].contract);
-  assert.deepEqual(hosting.filter((p) => p.strong).map((p) => p.text), ["Amazon Web Services in the Sydney region", "not offered"]);
-  assert.ok(hosting.filter((p) => !p.strong).every((p) => p.text === "Contract says " || p.text === " · "));
+  assert.deepEqual(hosting.filter((p) => p.strong).map((p) => p.text), ["Amazon Web Services in the Sydney region"]);
+  assert.ok(hosting.filter((p) => !p.strong).every((p) => p.text === "Contract says "));
+  for (const c of ALDER) assert.ok(!partsText(mismatchParts(c.issues, c.contract)).includes(" · ")); // never joined with a badge
 });
 
-test("there is no 'Told' segment, and the plain mismatch line is untouched", () => {
+test("there is no 'Told' segment in the contract line", () => {
   for (const c of ALDER) assert.ok(!partsText(mismatchParts(c.issues, c.contract)).includes("Told"));
-  assert.equal(mismatchLine(ALDER[0].issues, ALDER[0].contract), "No approval found · Not in the contract");
 });
 
 test("a commitment with only a contract finding, and one with none", () => {
   assert.equal(partsText(mismatchParts([{ finding: "Missing from contract" }])), "Contract has no matching wording");
   assert.equal(partsText(mismatchParts([{ finding: "Contract says something different", evidence: { contract_value: "AWS, Sydney" } }])), "Contract says AWS, Sydney");
   assert.equal(partsText(mismatchParts([{ finding: "Contract says something different" }], "Not included")), "Contract differs");
-  assert.equal(partsText(mismatchParts([{ finding: "No approval recorded" }])), "No approval found");
-  assert.equal(partsText(mismatchParts([{ finding: "Needs evidence" }, { finding: "Needs evidence" }])), "Needs evidence");
+  assert.deepEqual(mismatchParts([{ finding: "No approval recorded" }]), []); // promise-only: no contract line
+  assert.deepEqual(promiseLabels([{ finding: "No approval recorded" }]), ["No approval found"]);
+  assert.deepEqual(mismatchParts([{ finding: "Needs evidence" }, { finding: "Needs evidence" }]), []);
+  assert.deepEqual(promiseLabels([{ finding: "Needs evidence" }, { finding: "Needs evidence" }]), ["Needs evidence"]); // an unlisted label is a badge, once
+  assert.deepEqual(promiseLabels([{ finding: "Missing from contract" }]), []); // contract-only: no badge
   assert.deepEqual(mismatchParts([]), []);
+  assert.deepEqual(promiseLabels([]), []);
 });
 
 test("the address bar carries the deal and the commitment key, and reads them back", () => {
@@ -314,8 +320,9 @@ test("the drawer's view of a live commitment uses stored data only, and hides th
   const v = commitmentView(LIVE_C, "open", DOCS);
   assert.equal(v.title, "Coaching-scam detection live at launch");
   assert.equal(v.extracted, LIVE_C.name);
-  assert.equal(v.plain, "No approval found · Not in the contract");
-  assert.equal(partsText(v.mismatch), "Contract has no matching wording · no approval found");
+  assert.equal(v.plain, "Promise: No approval found. Contract has no matching wording.");
+  assert.equal(partsText(v.mismatch), "Contract has no matching wording");
+  assert.deepEqual(v.badges, ["No approval found"]);
   assert.equal(v.first, "First found in the checked documents: RFP response, 29 Sep");
   assert.equal(v.told.length, 1); // the same quote in two documents is listed once, newest source first
   assert.equal(v.told[0].doc, DOCS[0]);
@@ -352,7 +359,8 @@ test("the locked record builds the same view from the snapshot and leaves out wh
   assert.equal(v.first, "First found in the checked documents: RFP response, 29 Sep");
   assert.deepEqual(v.told, []); // no quotes in this old snapshot: nothing is invented
   assert.equal(v.toldFallback, "Microsoft Azure in the Australia East region");
-  assert.equal(partsText(v.mismatch), "Contract says Amazon Web Services in the Sydney region · not offered");
+  assert.equal(partsText(v.mismatch), "Contract says Amazon Web Services in the Sydney region");
+  assert.deepEqual(v.badges, ["Not offered"]);
   assert.deepEqual(v.ai, ["The catalogue has no Azure option."]);
   assert.equal(v.found[0].label, "Not offered: no exception can fix this; only changing the promise can");
 });
@@ -631,4 +639,94 @@ test("'Not in the draft contract or SOW' is a title only, always; 'Contract says
   const dl = frozenView({ item: { promise: "X", contract: "chat and email", findings: [{ finding: "Contract says something different", evidence: { promised_value: "phone calls", contract_value: "chat and email" }, why: "r", seen: [] }] }, status: "open", documents: [], titles: {} });
   assert.equal(dl.found[0].fact, 'Told "phone calls".');
   assert.ok(!/the contract says/.test(d.found[0].fact + dl.found[0].fact));
+});
+
+// 27 Oct: a finding about the promise sits with the promise (a badge beside the title); what the contract says is its own line.
+test("Noma phone calls: 'Not offered' is a badge, and the contract line says only what the contract says", () => {
+  const issues = [{ id: 1, state: "Needs action", finding: "Not offered", evidence: { unlisted_value: "phone calls" }, catalogue_path: "CAP-003/SG", reason: "r" },
+    { id: 2, state: "Needs action", finding: "Contract says something different", evidence: { promised_value: "phone calls", contract_value: "chat and email" }, reason: "r" }];
+  const live = commitmentView({ name: "Phone", display_name: "AI answers customers' phone calls at launch", contract: "chat and email", statements: [], issues }, "open", []);
+  const locked = frozenView({ item: { promise: "Phone", contract: "chat and email", findings: issues.map((i) => ({ finding: i.finding, evidence: i.evidence, catalogue_path: i.catalogue_path, why: "r", seen: [] })) }, status: "open", documents: [], titles: { Phone: "AI answers customers' phone calls at launch" } });
+  for (const v of [live, locked]) {
+    assert.deepEqual(v.badges, ["Not offered"]);
+    assert.equal(partsText(v.mismatch), "Contract says chat and email");
+    assert.equal(v.plain, 'Promise: Not offered. Contract says: "chat and email".');
+  }
+});
+
+test("Noma launch specialist: 'No approval found' is a badge, and the contract line is 'no matching wording'", () => {
+  const issues = [{ id: 3, state: "Needs action", finding: "No approval recorded", evidence: null, reason: "r" },
+    { id: 4, state: "Needs action", finding: "Missing from contract", evidence: { missing_phrases: ["launch specialist"] }, reason: "r" }];
+  const live = commitmentView({ name: "Specialist", contract: "Not included", statements: [], issues }, "open", []);
+  assert.deepEqual(live.badges, ["No approval found"]);
+  assert.equal(partsText(live.mismatch), "Contract has no matching wording");
+  assert.equal(live.plain, "Promise: No approval found. Contract has no matching wording.");
+});
+
+test("contract-only has no badge, promise-only has no contract line, and several promise findings give several badges in order", () => {
+  const contractOnly = commitmentView({ name: "Lang", contract: "four languages", statements: [], issues: [{ id: 5, state: "Needs action", finding: "Contract says something different", evidence: { contract_value: "four languages" }, reason: "r" }] }, "open", []);
+  assert.deepEqual(contractOnly.badges, []);
+  assert.equal(partsText(contractOnly.mismatch), "Contract says four languages");
+  assert.equal(contractOnly.plain, 'Contract says: "four languages".');
+  const promiseOnly = commitmentView({ name: "P", contract: "Not included", statements: [], issues: [{ id: 6, state: "Needs action", finding: "Not offered", evidence: {}, reason: "r" }] }, "open", []);
+  assert.deepEqual(promiseOnly.badges, ["Not offered"]);
+  assert.deepEqual(promiseOnly.mismatch, []);
+  assert.equal(promiseOnly.plain, "Promise: Not offered.");
+  const several = commitmentView({ name: "S", contract: "Not included", statements: [], issues: [
+    { id: 7, state: "Needs action", finding: "No approval recorded", evidence: null, reason: "r" }, { id: 8, state: "Needs action", finding: "Not offered", evidence: {}, reason: "r" }] }, "open", []);
+  assert.deepEqual(several.badges, ["No approval found", "Not offered"]); // the existing finding order
+  assert.equal(several.plain, "Promise: No approval found, Not offered.");
+});
+
+test("a closed commitment shows no badges", () => {
+  const closed = commitmentView({ name: "C", contract: "x", statements: [], issues: [{ id: 9, state: "Resolved", finding: "No approval recorded", evidence: null, reason: "r", resolved_by: { text: "Resolved by Internal approvals note, version 2" } }] }, "closed", []);
+  assert.deepEqual(closed.badges, []);
+});
+
+// 28 Oct: the contract line has its own line, so a longer term fits (limit 80); the plain line quotes every term.
+test("the Noma languages term is shown in full on the contract line, in the plain line and in the locked view", () => {
+  const TERM = "four languages: English, Mandarin Chinese, Japanese and Korean"; // 62 characters, the longest in the sample deals
+  const issue = { id: 1, state: "Needs action", finding: "Contract says something different", evidence: { promised_value: "12 languages", contract_value: TERM }, reason: "r" };
+  const live = commitmentView({ name: "Lang", contract: TERM, statements: [], issues: [issue] }, "open", []);
+  assert.equal(partsText(live.mismatch), `Contract says ${TERM}`);
+  assert.equal(live.plain, `Contract says: "${TERM}".`);
+  assert.deepEqual(live.badges, []);
+  const locked = frozenView({ item: { promise: "Lang", contract: TERM, findings: [{ finding: issue.finding, evidence: issue.evidence, why: "r", seen: [] }] }, status: "open", documents: [], titles: {} });
+  assert.equal(partsText(locked.mismatch), `Contract says ${TERM}`);
+  assert.equal(locked.plain, `Contract says: "${TERM}".`);
+  // stored wording is never shortened: a term over the limit falls back to "Contract differs" and the full wording stays in the evidence
+  const long = "x".repeat(120);
+  const over = commitmentView({ name: "L", contract: long, statements: [], issues: [{ ...issue, evidence: { contract_value: long } }] }, "open", []);
+  assert.equal(partsText(over.mismatch), "Contract differs");
+});
+
+test("landing cards stack the badge under the title on every card, and the drawer summary carries only the badges", async () => {
+  const fs = await import("node:fs");
+  const landing = fs.readFileSync(new URL("../src/Landing.jsx", import.meta.url), "utf8");
+  const drawer = fs.readFileSync(new URL("../src/Drawer.jsx", import.meta.url), "utf8");
+  const css = fs.readFileSync(new URL("../src/DealPage.css", import.meta.url), "utf8");
+  assert.ok(landing.includes("labels={found[s.deal].badges} stacked />"));
+  assert.match(css, /\.dp-titleline\.is-stacked \{ flex-direction: column; align-items: flex-start;/);
+  const summary = drawer.slice(drawer.indexOf('className="dr-mismatch"') - 120, drawer.indexOf('className="dr-mismatch"') + 160);
+  assert.ok(summary.includes("PromiseBadges") && !summary.includes("MismatchSentence")); // the "Contract says" section below carries the wording
+  // rows, locked rows and the drawer keep the beside-then-wrap behaviour: only Landing.jsx passes `stacked`
+  for (const f of ["DealPage.jsx", "FrozenRecord.jsx"]) assert.ok(!fs.readFileSync(new URL(`../src/${f}`, import.meta.url), "utf8").includes("stacked"));
+});
+
+// 28 Oct: the drawer head. The status chip is always on its own line beneath the title; the close button is centred on the first line
+// of the title by a offset derived from the title's size and line height and the button's size (CSS variables, defined once).
+test("the drawer head puts the chip beneath the title and derives the close button's offset from the variables", async () => {
+  const fs = await import("node:fs");
+  const css = fs.readFileSync(new URL("../src/DealPage.css", import.meta.url), "utf8");
+  const jsx = fs.readFileSync(new URL("../src/Drawer.jsx", import.meta.url), "utf8");
+  assert.match(css, /\.dr-head-title \{ display: flex; flex-direction: column; align-items: flex-start;/); // never beside, never wrapping
+  assert.ok(!/\.dr-head-title \{[^}]*flex-wrap/.test(css));
+  for (const v of ["--dr-title-size: 18px", "--dr-title-leading: 1.3", "--dr-x-size: 32px"]) assert.equal(css.split(v).length - 1, 1, `${v} is defined once`);
+  assert.match(css, /\.dr-head-title h2 \{[^}]*font-size: var\(--dr-title-size\)[^}]*line-height: var\(--dr-title-leading\)/);
+  assert.match(css, /margin-top: calc\(\(var\(--dr-title-size\) \* var\(--dr-title-leading\) - var\(--dr-x-size\)\) \/ 2\)/); // no hard-coded offset
+  assert.ok(!/\.dr-head-row \.dp-x \{[^}]*margin-top: -\d/.test(css));
+  assert.match(css, /\.dr-head-row \.dp-x \{[^}]*min-height: 0;/); // the app-wide button min-height must not make it taller than --dr-x-size
+  // the chip is rendered inside the title block, after the heading, and the close button after both
+  const head = jsx.slice(jsx.indexOf("export function DrawerHead"), jsx.indexOf("const NOTE_KIND"));
+  assert.ok(head.indexOf("<h2") < head.indexOf("dp-chip") && head.indexOf("dp-chip") < head.indexOf("dp-x"));
 });

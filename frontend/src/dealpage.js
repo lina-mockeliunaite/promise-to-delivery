@@ -258,7 +258,7 @@ const FINDING_DETAIL = {
   "Missing from contract": "Not in the draft contract or SOW",
   "Not offered": "Not offered: no exception can fix this; only changing the promise can",
 };
-const SHORT_TERM = 45; // a stored contract term longer than this is left to the expanded row
+const SHORT_TERM = 80; // a stored contract term longer than this is left to the drawer (28 Oct: was 45, before the contract line had its own line)
 
 // The contract's own wording for a conflict, when it is short enough to sit on a one-line row.
 function shortTerm(issue, contract) {
@@ -266,20 +266,39 @@ function shortTerm(issue, contract) {
   return term && term.length <= SHORT_TERM && !/^(not included|no matching wording found)$/i.test(term) ? term : "";
 }
 
-// "No approval found · Not in the contract": the short form of each open finding, joined with " · ".
+// What a finding is about (27 Oct). A finding about the promise ("Not offered", "No approval found", and any label not listed here) sits with
+// the promise: a badge beside the title. A finding about the contract sits on the contract line. They are never joined into one sentence.
+const CONTRACT_FINDINGS = ["Contract says something different", "Missing from contract"];
+
+// The short labels of the findings about the promise, in the existing finding order, each once.
+export function promiseLabels(issues) {
+  const seen = new Set();
+  const out = [];
+  for (const i of issues ?? []) {
+    if (CONTRACT_FINDINGS.includes(i.finding) || seen.has(i.finding)) continue;
+    seen.add(i.finding);
+    out.push(FINDING_SHORT[i.finding] ?? i.finding);
+  }
+  return out;
+}
+
+// The plain-text form (the locked record's printed line): "Promise: Not offered. Contract says: chat and email." It labels itself, so
+// the relationship is explicit. The contract part follows the screen: a conflict takes precedence over a missing finding.
 // issues: the findings still showing; contract: the row's stored contract term.
 export function mismatchLine(issues, contract = "") {
-  const seen = new Set();
-  const parts = [];
-  for (const i of issues ?? []) {
-    const label = i.finding;
-    if (seen.has(label)) continue;
-    seen.add(label);
-    const short = FINDING_SHORT[label] ?? label;
-    const term = label === "Contract says something different" ? shortTerm(i, contract) : "";
-    parts.push(term ? `${short}: ${term}` : short);
+  const list = issues ?? [];
+  const promise = promiseLabels(list);
+  const conflict = list.find((i) => i.finding === "Contract says something different");
+  const missing = list.find((i) => i.finding === "Missing from contract");
+  const out = [];
+  if (promise.length) out.push(`Promise: ${promise.join(", ")}.`);
+  if (conflict) {
+    const term = shortTerm(conflict, contract);
+    out.push(term ? `Contract says: "${term}".` : "Contract differs.");
+  } else if (missing) {
+    out.push("Contract has no matching wording.");
   }
-  return parts.join(" · ");
+  return out.join(" ");
 }
 
 // The long form, shown in front of the check's reason in the expanded row.
@@ -397,30 +416,18 @@ export function docLabel(name, iso) {
 // Everything here is built from stored data: verified finding labels, stored short terms, exact quotes. Never from AI text,
 // except `ai`, which carries the stored explanation separately so the screen can label it.
 
-const lower = (t) => (t ? t[0].toLowerCase() + t.slice(1) : t);
-
-// The sentence-style mismatch line as segments: [{ text, strong }]. It starts with the contract segment, then each other
-// open finding's short form, lower-case. Dark (strong) terms, muted connecting words. mismatchLine (plain text) is unchanged.
+// The contract line as segments: [{ text, strong }] (27 Oct: the contract part only; findings about the promise are badges, see
+// promiseLabels). Dark (strong) term, muted connecting words. Empty when there is no contract finding.
 export function mismatchParts(issues, contract = "") {
   const list = issues ?? [];
-  const parts = [];
-  const push = (segment) => { if (parts.length) parts.push({ text: " · ", strong: false }); parts.push(...segment); };
   const conflict = list.find((i) => i.finding === "Contract says something different");
   const missing = list.find((i) => i.finding === "Missing from contract");
   if (conflict) {
     const term = shortTerm(conflict, contract);
-    push(term ? [{ text: "Contract says ", strong: false }, { text: term, strong: true }] : [{ text: "Contract differs", strong: true }]);
-  } else if (missing) {
-    push([{ text: "Contract has ", strong: false }, { text: "no matching wording", strong: true }]);
+    return term ? [{ text: "Contract says ", strong: false }, { text: term, strong: true }] : [{ text: "Contract differs", strong: true }];
   }
-  const seen = new Set();
-  for (const i of list) {
-    if (i === conflict || i === missing || seen.has(i.finding)) continue;
-    seen.add(i.finding);
-    push([{ text: lower(FINDING_SHORT[i.finding] ?? i.finding), strong: true }]);
-  }
-  if (parts.length && !conflict && !missing) parts[0] = { ...parts[0], text: parts[0].text[0].toUpperCase() + parts[0].text.slice(1) };
-  return parts;
+  if (missing) return [{ text: "Contract has ", strong: false }, { text: "no matching wording", strong: true }];
+  return [];
 }
 export const partsText = (parts) => parts.map((p) => p.text).join("");
 
@@ -537,7 +544,7 @@ export function commitmentView(c, status, documents) {
   }
   return {
     key: c.ref ?? null, title: rowTitle(c), extracted: extractedAs(c), status,
-    first: firstPromised(c.statements, c.first_found), mismatch: mismatchParts(unresolved, c.contract), plain: mismatchLine(unresolved, c.contract),
+    first: firstPromised(c.statements, c.first_found), mismatch: mismatchParts(unresolved, c.contract), badges: promiseLabels(unresolved), plain: mismatchLine(unresolved, c.contract),
     told: toldQuotesWithDocs(c.statements, documents),
     contract,
     found: status === "closed" ? [] : withoutRepeats(unresolved.map((i) => ({ label: findingDetail(i, c.contract),
@@ -601,7 +608,7 @@ export function frozenView({ item, status, closedFindings = [], documents = [], 
   const title = titles[name] || name;
   return {
     key: name, title, extracted: titles[name] && titles[name] !== name ? name : "", status,
-    first: firstPromised(statements, item.first_found), mismatch: mismatchParts(issues, item.contract), plain: mismatchLine(issues, item.contract),
+    first: firstPromised(statements, item.first_found), mismatch: mismatchParts(issues, item.contract), badges: promiseLabels(issues), plain: mismatchLine(issues, item.contract),
     told: quoted.length ? quoted.map((q) => ({ quote: q.quote, label: q.source, date: q.date ?? "", doc: matchDoc(documents, [q.source], q.date) })) : [],
     toldFallback: item.told ?? "",
     contract,

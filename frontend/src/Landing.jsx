@@ -5,7 +5,7 @@ import Logo from "./Logo.jsx";
 import { useEffect, useState } from "react";
 import * as api from "./api.js";
 import { AUDIENCE, DESCRIPTION, FICTIONAL, TAGLINE } from "./brand.js";
-import { MismatchSentence } from "./Drawer.jsx";
+import { MismatchSentence, TitleLine } from "./Drawer.jsx";
 import { availableSamples, pickMismatch } from "./landing.js";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-500.css";
@@ -43,7 +43,7 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
               <article key={s.deal} className="dp-card land-example">
                 <span className="dp-eyebrow">{s.title}</span>
                 <span className="land-parties">{s.parties}</span>
-                <span className="dp-prow-title">{found[s.deal].title}</span>
+                <TitleLine title={found[s.deal].title} labels={found[s.deal].badges} stacked />
                 <MismatchSentence parts={found[s.deal].parts} />
                 <button type="button" className="dp-btn dp-btn-dark land-open" onClick={() => onOpen(s.deal)}>Open this sample deal</button>
               </article>

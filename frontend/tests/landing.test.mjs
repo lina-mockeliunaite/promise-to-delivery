@@ -28,7 +28,8 @@ test("the example mismatch comes from the stored register: the not-offered commi
   ] };
   const m = pickMismatch(reg);
   assert.equal(m.title, "Hosting on Microsoft Azure");
-  assert.match(partsText(m.parts), /not offered/i);
+  assert.deepEqual(m.badges, ["Not offered"]); // a finding about the promise is a badge beside the title
+  assert.equal(partsText(m.parts), "Contract says Amazon Web Services in the Sydney region"); // the contract line stands alone
   assert.equal(pickMismatch({ commitments: [] }), null);
   assert.equal(pickMismatch(null), null);
   const closedOnly = { commitments: [{ name: "X", contract: "", issues: [{ finding: "Not offered", state: "Resolved" }] }] };
@@ -62,7 +63,8 @@ test("Aivuna's card shows the commitment the product does not offer, read from i
   ] };
   const m = pickMismatch(reg);
   assert.equal(m.title, "AI answers customers' phone calls at launch");
-  assert.match(partsText(m.parts), /not offered/i);
+  assert.deepEqual(m.badges, ["Not offered"]);
+  assert.equal(partsText(m.parts), "Contract says chat and email"); // not "chat and email · not offered"
 });
 
 test("the home header carries the shared-view line, not the old eyebrow, and no count badge", async () => {

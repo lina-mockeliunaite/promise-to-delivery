@@ -8,7 +8,7 @@ import { fmtDate, fmtDateTime } from "./format.js";
 import {
   STATUS_CHIP, attentionText, coverageLine, frozenView, hashFor, plainName, readHash, recordedBy, short, verdictLine,
 } from "./dealpage.js";
-import { Drawer, CommitmentView, DocumentView, MismatchSentence, Icon, ICON } from "./Drawer.jsx";
+import { Drawer, CommitmentView, DocumentView, MismatchSentence, TitleLine, Icon, ICON } from "./Drawer.jsx";
 import BriefCard from "./BriefCard.jsx";
 import { appendixEntries, hasStoredText, shortHash } from "./docHash.js";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
@@ -35,7 +35,7 @@ function FrozenRow({ v, active, onOpen }) {
       <div className="dp-prow-head" onClick={onOpen} role="button" tabIndex={0} aria-haspopup="dialog" aria-expanded={active}
            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen())}>
         <span className="dp-prow-main">
-          <span className="dp-prow-title">{v.title}</span>
+          <TitleLine title={v.title} labels={v.status !== "closed" ? v.badges : []} />
           {v.status !== "closed" && <MismatchSentence parts={v.mismatch} />}
           {v.first && <span className="dp-prow-first">{v.first}</span>}
           {v.status === "closed" && v.closedLines.map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
@@ -57,7 +57,7 @@ function FrozenRow({ v, active, onOpen }) {
 function PrintDetail({ v }) {
   return (
     <div className="fr-print">
-      {v.plain && <p><strong>Mismatch:</strong> {v.plain}</p>}
+      {v.plain && <p>{v.plain}</p>}
       {v.extracted && <p className="dp-muted-line">Extracted as: {v.extracted}</p>}
       <p><strong>Customer was told:</strong>{" "}
         {v.told.length ? v.told.map((t) => `“${t.quote}” (${t.label}${t.date ? `, ${short(t.date)}` : ""})`).join(" ") : v.toldFallback}</p>

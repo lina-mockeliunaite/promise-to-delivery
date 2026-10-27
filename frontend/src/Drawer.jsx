@@ -107,7 +107,9 @@ export function CommitmentView({ v, titleId, readOnly, me = "", onOpenDoc, onSee
     <>
       <DrawerHead id={titleId} title={v.title} chip={v.status} onClose={onClose} />
       <div className="dr-body">
-        {v.status !== "closed" && v.mismatch.length > 0 && <p className="dr-mismatch"><MismatchSentence parts={v.mismatch} /></p>}
+        {v.status !== "closed" && v.badges.length > 0 && (
+          <div className="dr-mismatch"><PromiseBadges labels={v.badges} /></div> // the contract's wording is the "Contract says" section below
+        )}
         <section className="dr-sec">
           <h3 className="dr-label">Customer was told</h3>
           {v.told.map((t) => (
@@ -291,7 +293,29 @@ export function DocumentView({ deal, doc, quote, titleId, backLabel, onBack, onC
   );
 }
 
-// Used by both: the line the sentence-style mismatch is rendered with (dark terms, muted connecting words).
+// The findings about the promise, as small outlined tags (27 Oct). Not the status chip: square-cornered, no dot, no fill, so the text carries
+// the meaning. Renders nothing when there are none.
+export function PromiseBadges({ labels }) {
+  if (!labels?.length) return null;
+  return (
+    <span className="dp-fbadges" role="list" title="About what the customer was promised">
+      {labels.map((l) => <span key={l} role="listitem" className="dp-fbadge">{l}</span>)}
+    </span>
+  );
+}
+
+// A title with its promise findings beside it; the badges wrap directly beneath the title when there is no room, and never squeeze it.
+// stacked (the landing cards): the badges always sit on their own line beneath the title, so every card has the same layout.
+export function TitleLine({ title, labels, className = "dp-prow-title", stacked = false }) {
+  return (
+    <span className={`dp-titleline${stacked ? " is-stacked" : ""}`}>
+      <span className={className}>{title}</span>
+      <PromiseBadges labels={labels} />
+    </span>
+  );
+}
+
+// Used by all: the contract line (dark terms, muted connecting words).
 export function MismatchSentence({ parts }) {
   if (!parts.length) return null;
   return (
