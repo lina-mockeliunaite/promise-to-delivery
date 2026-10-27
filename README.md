@@ -20,7 +20,7 @@ It also says what it could not check: if the model proposed findings that failed
 
 *Demonstrated on fictional deals with a complete capability catalogue.* It is a local prototype, built in October 2026 to learn how to design, build and evaluate an AI system end to end.
 
-<!-- screenshot: Noma deal page, added in Part B -->
+![The Noma Journeys deal page in Dealshape: three commitments needing attention, each with what the contract says and, where it applies, a badge for what is wrong with the promise](docs/screens/2026-10-27/readme_noma_deal.png)
 
 ## What it shows (Noma Journeys, the main demo deal)
 
