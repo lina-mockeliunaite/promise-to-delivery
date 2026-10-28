@@ -1,6 +1,6 @@
 // The landing page (20 Oct): shown on the first visit, then the home list straight away. Remembered per browser only, in
 // localStorage; when storage is unavailable the landing page shows. Pure helpers, so they are tested without a browser.
-import { mismatchParts, promiseLabels, rowTitle } from "./dealpage.js";
+import { mismatchParts, promiseLabels, rowTitle, toldParts } from "./dealpage.js";
 
 export const SEEN_KEY = "ptd.landingSeen";
 // The two sample scenarios the landing page offers (20 Oct): same engine, two vendors' catalogues. Labels are fixed wording; each
@@ -30,5 +30,5 @@ export function pickMismatch(register) {
   const open = (register?.commitments ?? []).map((c) => ({ c, issues: c.issues.filter((i) => i.state !== "Resolved") })).filter((x) => x.issues.length);
   const pick = open.find((x) => x.issues.some((i) => i.finding === "Not offered")) ?? open[0];
   if (!pick) return null;
-  return { title: rowTitle(pick.c), badges: promiseLabels(pick.issues), parts: mismatchParts(pick.issues, pick.c.contract) };
+  return { title: rowTitle(pick.c), badges: promiseLabels(pick.issues), told: toldParts(pick.issues, pick.c.statements, pick.c.first_found), parts: mismatchParts(pick.issues, pick.c.contract) };
 }

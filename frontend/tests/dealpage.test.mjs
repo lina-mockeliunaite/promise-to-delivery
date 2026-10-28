@@ -781,3 +781,58 @@ test("the promise badge fill is the theme's --soft variable: no hard-coded colou
   assert.match(css, /--soft: #f8fafc;/);
   assert.match(css, /prefers-color-scheme: dark\) \{\s*\.dp \{[^}]*--soft: #16213a;/);
 });
+
+// 28 Oct: the customer's side and the contract's side are parallel lines, each with its stored term and its source.
+import { toldParts, firstSource } from "../src/dealpage.js";
+import { pickMismatch } from "../src/landing.js";
+const lineText = (parts) => partsText(parts);
+
+test("Noma phone calls: both lines carry the stored term and the document", () => {
+  const issues = [{ id: 1, state: "Needs action", finding: "Not offered", evidence: {} },
+    { id: 2, state: "Needs action", finding: "Contract says something different",
+      evidence: { promised_value: "phone calls", contract_value: "chat and email", contract_quote: { quote: "Provider will operate the Assistant on chat and email.", source: "Draft SOW" } } }];
+  const c = { name: "Phone", display_name: "AI answers customers' phone calls at launch", contract: "chat and email", first_found: { doc_type_label: "RFP response", date: "2026-09-28" }, statements: [], issues };
+  const live = commitmentView(c, "open", []);
+  assert.equal(lineText(live.toldLine), "Customer was told phone calls · RFP response, 28 Sep");
+  assert.equal(lineText(live.mismatch), "Contract says chat and email · Draft SOW");
+  assert.deepEqual(live.toldLine.filter((p) => p.strong).map((p) => p.text), ["phone calls"]); // the term is dark, the label and source muted
+  const locked = frozenView({ item: { promise: "Phone", contract: "chat and email", first_found: c.first_found, findings: issues.map((i) => ({ finding: i.finding, evidence: i.evidence, why: "r", seen: [] })) }, status: "open", documents: [], titles: {} });
+  assert.equal(lineText(locked.toldLine), "Customer was told phone calls · RFP response, 28 Sep");
+  assert.equal(lineText(locked.mismatch), "Contract says chat and email · Draft SOW");
+});
+
+test("no stored promised term: the customer line is the source alone; no stored contract source: the contract line has none", () => {
+  const issues = [{ id: 3, state: "Needs action", finding: "No approval recorded", evidence: null },
+    { id: 4, state: "Needs action", finding: "Missing from contract", evidence: { missing_phrases: ["launch specialist"] } }];
+  const c = { name: "Specialist", contract: "Not included", first_found: { doc_type_label: "RFP response", date: "2026-09-28" }, statements: [], issues };
+  const v = commitmentView(c, "open", []);
+  assert.equal(lineText(v.toldLine), "Customer was told in RFP response, 28 Sep"); // no leading dot, no term
+  assert.equal(lineText(v.mismatch), "Contract has no matching wording"); // nothing was found anywhere, so there is no source to name
+  // a conflict with no stored quote has no source either; and an over-limit term falls back to "Contract differs" (the source stays)
+  assert.equal(lineText(mismatchParts([{ finding: "Contract says something different", evidence: { contract_value: "AWS Sydney" } }])), "Contract says AWS Sydney");
+  const long = "x".repeat(81);
+  assert.equal(lineText(mismatchParts([{ finding: "Contract says something different", evidence: { contract_value: long, contract_quote: { quote: "q", source: "Draft SOW" } } }])), "Contract differs · Draft SOW");
+  assert.equal(lineText(toldParts([{ finding: "Contract says something different", evidence: { promised_value: long } }], [], { doc_type_label: "Proposal", date: "2026-10-02" })), "Customer was told in Proposal, 2 Oct");
+});
+
+test("a closed row says where the customer was told and nothing about a term; no source and no term gives no line", () => {
+  const closed = commitmentView({ name: "Lang", contract: "x", first_found: { doc_type_label: "RFP response", date: "2026-09-28" }, statements: [],
+    issues: [{ id: 5, state: "Resolved", finding: "Contract says something different", evidence: { promised_value: "12 languages" }, resolved_by: { text: "Resolved by Draft contract, version 2" } }] }, "closed", []);
+  assert.equal(lineText(closed.toldLine), "Customer was told in RFP response, 28 Sep");
+  assert.deepEqual(closed.mismatch, []); // the Closed by lines are unchanged
+  assert.ok(closed.closedLines.length > 0);
+  assert.deepEqual(toldParts([], [], null), []);
+  assert.equal(firstSource([{ doc_type_label: "Proposal", date: "2026-10-05" }, { doc_type_label: "RFP response", date: "2026-09-28" }], null), "RFP response, 28 Sep"); // the earliest statement
+  // the term and the source can each be absent on its own
+  assert.equal(lineText(toldParts([{ finding: "Contract says something different", evidence: { promised_value: "12 languages" } }], [], null)), "Customer was told 12 languages");
+});
+
+test("the landing pick carries the customer line above the contract line, from the same helpers", () => {
+  const reg = { commitments: [{ name: "Phone", display_name: "AI answers customers' phone calls at launch", contract: "chat and email",
+    first_found: { doc_type_label: "RFP response", date: "2026-09-28" }, statements: [],
+    issues: [{ finding: "Not offered", state: "Needs action", evidence: {} },
+      { finding: "Contract says something different", state: "Needs action", evidence: { promised_value: "phone calls", contract_value: "chat and email", contract_quote: { quote: "q", source: "Draft SOW" } } }] }] };
+  const m = pickMismatch(reg);
+  assert.equal(partsText(m.told), "Customer was told phone calls · RFP response, 28 Sep");
+  assert.equal(partsText(m.parts), "Contract says chat and email · Draft SOW");
+});

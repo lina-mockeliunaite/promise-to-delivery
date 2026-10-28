@@ -12,7 +12,7 @@ import * as api from "./api.js";
 import { addReady, fmtDate, fmtDateTime, mismatchNotice, newDocumentNotice, uploadKind } from "./format.js";
 import {
   CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, coverageLine, docCount, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
-  mismatchParts, promiseLabels, missingForHandover, handoverChecklist, plainName, readHash, recordedBy, rowTitle, firstPromised, suggestFix, useName, whatChanged,
+  mismatchParts, promiseLabels, missingForHandover, handoverChecklist, plainName, readHash, recordedBy, rowTitle, toldParts, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
 import BriefCard from "./BriefCard.jsx";
@@ -86,15 +86,14 @@ function CommitRow({ c, status, active, onOpen }) {
   const unresolved = c.issues.filter((i) => i.state !== "Resolved");
   const st = STATUS_CHIP[status];
   const noteRes = unresolved.find((i) => i.note_resolution)?.note_resolution;
-  const first = firstPromised(c.statements, c.first_found);
   return (
     <li className={`dp-prow is-${status} ${active ? "is-active" : ""}`}>
       <div className="dp-prow-head" onClick={onOpen} role="button" tabIndex={0} aria-haspopup="dialog" aria-expanded={active}
            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen())}>
         <span className="dp-prow-main">
           <TitleLine title={rowTitle(c)} labels={status !== "closed" ? promiseLabels(unresolved) : []} />
+          <MismatchSentence parts={toldParts(status === "closed" ? [] : unresolved, c.statements, c.first_found)} />
           {status !== "closed" && <MismatchSentence parts={mismatchParts(unresolved, c.contract)} />}
-          {first && <span className="dp-prow-first">{first}</span>}
           {status === "closed" && closedLines(c.issues.filter((i) => i.state === "Resolved").map((i) => i.resolved_by?.text))
             .map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
           {status === "closed" && signedConfirmations(c.issues.filter((i) => i.state === "Resolved").map((i) => i.signed_check))

@@ -331,6 +331,29 @@ export function firstPromised(statements, found) {
   return `First found in the checked documents: ${first.doc_type_label}${first.date ? `, ${short(first.date)}` : ""}`;
 }
 
+// The source of the customer's promise, "RFP response, 29 Sep": the server's first_found when there is one, else the earliest statement's own
+// source label and date (a locked record holds no document text). Same rule as firstPromised, without its wording.
+export function firstSource(statements, found) {
+  const one = (label, date) => `${label}${date ? `, ${short(date)}` : ""}`;
+  if (found?.doc_type_label) return one(found.doc_type_label, found.date);
+  const dated = (statements ?? []).filter((s) => s.doc_type_label);
+  if (!dated.length) return "";
+  const first = [...dated].sort((a, b) => (a.date || "9999").localeCompare(b.date || "9999"))[0];
+  return one(first.doc_type_label, first.date);
+}
+
+// The customer's side of the row, parallel to the contract line (28 Oct): "Customer was told **12 languages** · RFP response, 28 Sep". The term is the
+// promised_value stored on a "Contract says something different" finding (same 80-character limit); the source is where it was first found.
+// With no stored term it is the source alone, "Customer was told in RFP response, 28 Sep". Nothing is composed from anything else.
+export function toldParts(issues, statements, found) {
+  const conflict = (issues ?? []).find((i) => i.finding === "Contract says something different");
+  const raw = String(conflict?.evidence?.promised_value ?? "").trim();
+  const term = raw && raw.length <= SHORT_TERM ? raw : "";
+  const source = firstSource(statements, found);
+  if (term) return [{ text: "Customer was told ", strong: false }, { text: term, strong: true }, ...(source ? [{ text: ` · ${source}`, strong: false }] : [])];
+  return source ? [{ text: `Customer was told in ${source}`, strong: false }] : [];
+}
+
 // The title shown for a commitment: the owner-confirmed plain title if there is one, otherwise the extracted name.
 export const rowTitle = (c) => c.display_name || c.name;
 export const extractedAs = (c) => (c.display_name && c.display_name !== c.name ? c.name : "");
@@ -429,14 +452,17 @@ export function docLabel(name, iso) {
 // except `ai`, which carries the stored explanation separately so the screen can label it.
 
 // The contract line as segments: [{ text, strong }] (27 Oct: the contract part only; findings about the promise are badges, see
-// promiseLabels). Dark (strong) term, muted connecting words. Empty when there is no contract finding.
+// promiseLabels). Dark (strong) term, muted connecting words, then the document it was found in when one is stored (28 Oct). Empty when there is no contract finding.
 export function mismatchParts(issues, contract = "") {
   const list = issues ?? [];
   const conflict = list.find((i) => i.finding === "Contract says something different");
   const missing = list.find((i) => i.finding === "Missing from contract");
   if (conflict) {
+    // the document the contract wording was found in, when one is stored on the finding (a label such as "Draft SOW")
+    const src = conflict.evidence?.contract_quote?.source;
+    const from = src ? [{ text: ` · ${src}`, strong: false }] : [];
     const term = shortTerm(conflict, contract);
-    return term ? [{ text: "Contract says ", strong: false }, { text: term, strong: true }] : [{ text: "Contract differs", strong: true }];
+    return term ? [{ text: "Contract says ", strong: false }, { text: term, strong: true }, ...from] : [{ text: "Contract differs", strong: true }, ...from];
   }
   if (missing) return [{ text: "Contract has ", strong: false }, { text: "no matching wording", strong: true }];
   return [];
@@ -555,7 +581,7 @@ export function commitmentView(c, status, documents) {
   }
   return {
     key: c.ref ?? null, title: rowTitle(c), extracted: extractedAs(c), status,
-    first: firstPromised(c.statements, c.first_found), mismatch: mismatchParts(unresolved, c.contract), badges: promiseLabels(unresolved), plain: mismatchLine(unresolved, c.contract),
+    first: firstPromised(c.statements, c.first_found), toldLine: toldParts(status === "closed" ? [] : unresolved, c.statements, c.first_found), mismatch: mismatchParts(unresolved, c.contract), badges: promiseLabels(unresolved), plain: mismatchLine(unresolved, c.contract),
     told: toldQuotesWithDocs(c.statements, documents),
     contract,
     found: status === "closed" ? [] : withoutRepeats(unresolved.map((i) => ({ label: findingDetail(i, c.contract),
@@ -619,7 +645,7 @@ export function frozenView({ item, status, closedFindings = [], documents = [], 
   const title = titles[name] || name;
   return {
     key: name, title, extracted: titles[name] && titles[name] !== name ? name : "", status,
-    first: firstPromised(statements, item.first_found), mismatch: mismatchParts(issues, item.contract), badges: promiseLabels(issues), plain: mismatchLine(issues, item.contract),
+    first: firstPromised(statements, item.first_found), toldLine: toldParts(status === "closed" ? [] : issues, statements, item.first_found), mismatch: mismatchParts(issues, item.contract), badges: promiseLabels(issues), plain: mismatchLine(issues, item.contract),
     told: quoted.length ? quoted.map((q) => ({ quote: q.quote, label: q.source, date: q.date ?? "", doc: matchDoc(documents, [q.source], q.date) })) : [],
     toldFallback: item.told ?? "",
     contract,

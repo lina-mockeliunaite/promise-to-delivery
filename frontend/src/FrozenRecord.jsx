@@ -36,8 +36,8 @@ function FrozenRow({ v, active, onOpen }) {
            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen())}>
         <span className="dp-prow-main">
           <TitleLine title={v.title} labels={v.status !== "closed" ? v.badges : []} />
+          <MismatchSentence parts={v.toldLine} />
           {v.status !== "closed" && <MismatchSentence parts={v.mismatch} />}
-          {v.first && <span className="dp-prow-first">{v.first}</span>}
           {v.status === "closed" && v.closedLines.map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
           {v.status === "closed" && v.signedLines.map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
           {v.status !== "closed" && v.reopenedLines.map((l) => <span key={l} className="dp-prow-note">{l}</span>)}

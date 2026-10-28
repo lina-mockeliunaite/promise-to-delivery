@@ -44,6 +44,7 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
                 <span className="dp-eyebrow">{s.title}</span>
                 <span className="land-parties">{s.parties}</span>
                 <TitleLine title={found[s.deal].title} labels={found[s.deal].badges} stacked />
+                <MismatchSentence parts={found[s.deal].told} />
                 <MismatchSentence parts={found[s.deal].parts} />
                 <button type="button" className="dp-btn dp-btn-dark land-open" onClick={() => onOpen(s.deal)}>Open this sample deal</button>
               </article>
