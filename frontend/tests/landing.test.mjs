@@ -39,7 +39,7 @@ test("the example mismatch comes from the stored register: the not-offered commi
 test("the positioning copy is the agreed text", () => {
   assert.equal(TAGLINE, "Catch deal surprises before you sign.");
   assert.equal(AUDIENCE, "For B2B Sales and Delivery teams.");
-  assert.match(DESCRIPTION, /^Dealshape compares what the customer was promised with the contract and your product catalogue\./);
+  assert.equal(DESCRIPTION, "Dealshape compares what the customer was promised during the sales process with what the contract and product catalogue say. See which commitments are missing, different or unsupported, with the source evidence.");
 });
 
 test("the landing page offers the two sample scenarios, AI support first, each only when its deal exists", () => {

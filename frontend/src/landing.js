@@ -30,5 +30,6 @@ export function pickMismatch(register) {
   const open = (register?.commitments ?? []).map((c) => ({ c, issues: c.issues.filter((i) => i.state !== "Resolved") })).filter((x) => x.issues.length);
   const pick = open.find((x) => x.issues.some((i) => i.finding === "Not offered")) ?? open[0];
   if (!pick) return null;
-  return { title: rowTitle(pick.c), badges: promiseLabels(pick.issues), told: toldParts(pick.issues, pick.c.statements, pick.c.first_found), parts: mismatchParts(pick.issues, pick.c.contract) };
+  return { title: rowTitle(pick.c), badges: promiseLabels(pick.issues), // the landing cards carry the terms only (28 Oct); rows, the locked record, the drawer and print keep the sources
+    told: toldParts(pick.issues, pick.c.statements, pick.c.first_found, { source: false }), parts: mismatchParts(pick.issues, pick.c.contract, { source: false }) };
 }

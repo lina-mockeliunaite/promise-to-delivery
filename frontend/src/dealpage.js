@@ -345,11 +345,11 @@ export function firstSource(statements, found) {
 // The customer's side of the row, parallel to the contract line (28 Oct): "Customer was told **12 languages** · RFP response, 28 Sep". The term is the
 // promised_value stored on a "Contract says something different" finding (same 80-character limit); the source is where it was first found.
 // With no stored term it is the source alone, "Customer was told in RFP response, 28 Sep". Nothing is composed from anything else.
-export function toldParts(issues, statements, found) {
+export function toldParts(issues, statements, found, { source: withSource = true } = {}) {
   const conflict = (issues ?? []).find((i) => i.finding === "Contract says something different");
   const raw = String(conflict?.evidence?.promised_value ?? "").trim();
   const term = raw && raw.length <= SHORT_TERM ? raw : "";
-  const source = firstSource(statements, found);
+  const source = withSource ? firstSource(statements, found) : "";
   if (term) return [{ text: "Customer was told ", strong: false }, { text: term, strong: true }, ...(source ? [{ text: ` · ${source}`, strong: false }] : [])];
   return source ? [{ text: `Customer was told in ${source}`, strong: false }] : [];
 }
@@ -453,13 +453,13 @@ export function docLabel(name, iso) {
 
 // The contract line as segments: [{ text, strong }] (27 Oct: the contract part only; findings about the promise are badges, see
 // promiseLabels). Dark (strong) term, muted connecting words, then the document it was found in when one is stored (28 Oct). Empty when there is no contract finding.
-export function mismatchParts(issues, contract = "") {
+export function mismatchParts(issues, contract = "", { source = true } = {}) {
   const list = issues ?? [];
   const conflict = list.find((i) => i.finding === "Contract says something different");
   const missing = list.find((i) => i.finding === "Missing from contract");
   if (conflict) {
     // the document the contract wording was found in, when one is stored on the finding (a label such as "Draft SOW")
-    const src = conflict.evidence?.contract_quote?.source;
+    const src = source ? conflict.evidence?.contract_quote?.source : "";
     const from = src ? [{ text: ` · ${src}`, strong: false }] : [];
     const term = shortTerm(conflict, contract);
     return term ? [{ text: "Contract says ", strong: false }, { text: term, strong: true }, ...from] : [{ text: "Contract differs", strong: true }, ...from];

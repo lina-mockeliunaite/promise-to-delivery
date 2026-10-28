@@ -833,6 +833,14 @@ test("the landing pick carries the customer line above the contract line, from t
     issues: [{ finding: "Not offered", state: "Needs action", evidence: {} },
       { finding: "Contract says something different", state: "Needs action", evidence: { promised_value: "phone calls", contract_value: "chat and email", contract_quote: { quote: "q", source: "Draft SOW" } } }] }] };
   const m = pickMismatch(reg);
-  assert.equal(partsText(m.told), "Customer was told phone calls · RFP response, 28 Sep");
-  assert.equal(partsText(m.parts), "Contract says chat and email · Draft SOW");
+  assert.equal(partsText(m.told), "Customer was told phone calls"); // the cards carry the terms only (28 Oct)
+  assert.equal(partsText(m.parts), "Contract says chat and email");
+  // rows keep their sources: the same findings through the row helpers
+  assert.equal(partsText(toldParts(reg.commitments[0].issues, [], reg.commitments[0].first_found)), "Customer was told phone calls · RFP response, 28 Sep");
+  assert.equal(partsText(mismatchParts(reg.commitments[0].issues, "chat and email")), "Contract says chat and email · Draft SOW");
+  // no stored promised term: no customer line on the card
+  const bare = pickMismatch({ commitments: [{ name: "S", contract: "Not included", first_found: { doc_type_label: "RFP response", date: "2026-09-28" }, statements: [],
+    issues: [{ finding: "No approval recorded", state: "Needs action", evidence: null }, { finding: "Missing from contract", state: "Needs action", evidence: { missing_phrases: ["x"] } }] }] });
+  assert.deepEqual(bare.told, []);
+  assert.equal(partsText(bare.parts), "Contract has no matching wording");
 });
