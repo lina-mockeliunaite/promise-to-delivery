@@ -10,7 +10,7 @@ export const SAMPLES = [
   { deal: "alder_bank", title: "Financial services, scam protection", parties: "Elva / Alder Bank" },
 ];
 // The landing cards are a summary, not a quote (28 Oct): a term is cut at its first colon, the number words one to twelve are shown as digits, and the
-// contract line says "Contract has" instead of "Contract says". The deal page, the drawer, the locked record and print keep the exact stored wording
+// contract line says "Contract specifies" instead of "Contract says". The deal page, the drawer, the locked record and print keep the exact stored wording
 // and "Contract says"; the evidence lives there. Nothing stored is changed.
 const NUMBER_WORDS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12 };
 export function cardTerm(term) {
@@ -18,7 +18,7 @@ export function cardTerm(term) {
   // whole words only, and not inside a hyphenated word ("one-time")
   return cut.replace(/(?<![-\w])(one|two|three|four|five|six|seven|eight|nine|ten|eleven|twelve)(?![-\w])/gi, (w) => String(NUMBER_WORDS[w.toLowerCase()]));
 }
-export const cardParts = (parts) => (parts ?? []).map((p) => (p.strong ? { ...p, text: cardTerm(p.text) } : p.text === "Contract says " ? { ...p, text: "Contract has " } : p));
+export const cardParts = (parts) => (parts ?? []).map((p) => (p.strong ? { ...p, text: cardTerm(p.text) } : p.text === "Contract says " ? { ...p, text: "Contract specifies " } : p));
 
 export const availableSamples = (deals) => SAMPLES.filter((s) => (deals ?? []).some((d) => d.deal === s.deal));
 
