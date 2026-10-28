@@ -3,8 +3,15 @@
 .land-inner { flex: 1; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 48px; align-items: center; max-width: 1120px; width: 100%; margin: 0 auto; padding: 64px 24px; }
 .land-intro { display: flex; flex-direction: column; gap: 14px; align-items: flex-start; }
 .land-intro h1 { margin: 6px 0 0; font-size: 36px; line-height: 1.15; letter-spacing: -0.02em; color: var(--ink); font-weight: 700; text-wrap: balance; }
+.land-sub { margin: 2px 0 0; font-size: 22px; font-weight: 600; line-height: 1.35; letter-spacing: -0.01em; color: var(--ink); }
+.land-sub span { display: block; }
 .land-desc { margin: 0; font-size: 16px; line-height: 1.55; color: var(--body); max-width: 34rem; text-wrap: pretty; }
-.land-aud { margin: 0; font-size: 13px; color: var(--muted); }
+/* Audience line: role emphasised, phrase muted; items wrap whole, and the separator trails an item so a line never starts with a dot. */
+.land-aud { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 4px 0; font-size: 13px; color: var(--muted); }
+.land-aud li { white-space: nowrap; }
+.land-aud li strong { color: var(--ink); font-weight: 600; }
+.land-aud li:not(:last-child)::after { content: "\00a0·\00a0"; color: var(--muted); }
+.land-cards-label { margin: 0 0 -4px; }
 .land-quiet { margin: 0; font-size: 13px; color: var(--muted); }
 .land-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-top: 8px; }
 .land-primary { padding: 10px 18px; font-size: 14px; }
@@ -13,4 +20,4 @@
 .land-open { align-self: flex-start; margin-top: 8px; }
 .land-example { display: flex; flex-direction: column; gap: 6px; padding: 20px 24px; }
 .land-example .dp-prow-title { font-size: 16px; }
-@media (max-width: 820px) { .land-inner { grid-template-columns: 1fr; gap: 28px; padding: 36px 16px; } .land-intro h1 { font-size: 28px; } }
+@media (max-width: 820px) { .land-inner { grid-template-columns: 1fr; gap: 28px; padding: 36px 16px; } .land-intro h1 { font-size: 28px; } .land-sub { font-size: 20px; } }

@@ -2,7 +2,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { SAMPLES, SEEN_KEY, availableSamples, landingSeen, markLandingSeen, pickMismatch } from "../src/landing.js";
-import { TAGLINE, DESCRIPTION, AUDIENCE } from "../src/brand.js";
+import { TAGLINE, DESCRIPTION, SUBHEAD, AUDIENCE_ITEMS, CARDS_LABEL } from "../src/brand.js";
 import { partsText } from "../src/dealpage.js";
 
 const store = () => { const m = new Map(); return { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, v) }; };
@@ -38,8 +38,10 @@ test("the example mismatch comes from the stored register: the not-offered commi
 
 test("the positioning copy is the agreed text", () => {
   assert.equal(TAGLINE, "Catch deal surprises before you sign.");
-  assert.equal(AUDIENCE, "For B2B Sales and Delivery teams.");
-  assert.equal(DESCRIPTION, "Dealshape compares what the customer was promised during the sales process with what the contract and product catalogue say. See which commitments are missing, different or unsupported, with the source evidence.");
+  assert.equal(DESCRIPTION, "Dealshape compares the two with your product catalogue, and shows every mismatch with its source.");
+  assert.deepEqual(SUBHEAD, ["Delivery inherits the contract.", "The customer remembers the proposal."]);
+  assert.deepEqual(AUDIENCE_ITEMS, [["Sales", "before signing"], ["Delivery", "at handover"], ["Product", "what can be sold"]]);
+  assert.equal(CARDS_LABEL, "What it catches");
 });
 
 test("the landing page offers the two sample scenarios, AI support first, each only when its deal exists", () => {
@@ -103,4 +105,22 @@ test("the deals-list footer carries a muted About Dealshape link, and leaving #w
   const app = fs.readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
   assert.ok(deals.includes('className="dl-about"') && deals.includes("About Dealshape"));
   assert.ok(app.includes("onAbout={about}") && app.includes("if (isWelcome(window.location.hash)) clearHash();"));
+});
+
+test("the landing page renders the headline, the two-line subhead, the description, the audience line and the cards label in order, with theme variables only", async () => {
+  const fs = await import("node:fs");
+  const jsx = fs.readFileSync(new URL("../src/Landing.jsx", import.meta.url), "utf8");
+  const css = fs.readFileSync(new URL("../src/Landing.css", import.meta.url), "utf8");
+  const at = (s) => jsx.indexOf(s);
+  assert.ok(at("<h1>{TAGLINE}</h1>") < at('className="land-sub"') && at('className="land-sub"') < at('className="land-desc"') && at('className="land-desc"') < at('className="land-aud"'));
+  assert.ok(jsx.includes("SUBHEAD.map((line) => <span key={line}>{line}</span>)")); // one block per line: exactly two lines
+  assert.ok(jsx.includes("<li key={role}><strong>{role}</strong> {phrase}</li>")); // role emphasised, phrase muted
+  assert.ok(at('className="land-cards"') < at("land-cards-label") && at("land-cards-label") < at("cards.map"));
+  assert.ok(jsx.includes("dp-eyebrow land-cards-label")); // the existing eyebrow style
+  const rules = css.split("\n").filter((l) => /^\.land-(sub|aud|cards-label)/.test(l)).join("\n");
+  assert.ok(!/#[0-9a-fA-F]{3,8}\b|rgba?\(/.test(rules), "no literal colours");
+  assert.match(css, /\.land-sub \{[^}]*color: var\(--ink\)/); // darker than the description (--body)
+  assert.match(css, /\.land-aud li \{ white-space: nowrap; \}/); // items wrap whole
+  assert.match(css, /\.land-aud li:not\(:last-child\)::after/); // the separator trails an item, never leads a line
+  assert.ok(!jsx.includes("AUDIENCE}"));
 });

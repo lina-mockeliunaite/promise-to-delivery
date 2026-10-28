@@ -4,7 +4,7 @@
 import Logo from "./Logo.jsx";
 import { useEffect, useState } from "react";
 import * as api from "./api.js";
-import { AUDIENCE, DESCRIPTION, FICTIONAL, TAGLINE } from "./brand.js";
+import { AUDIENCE_ITEMS, CARDS_LABEL, DESCRIPTION, FICTIONAL, SUBHEAD, TAGLINE } from "./brand.js";
 import { MismatchSentence, TitleLine } from "./Drawer.jsx";
 import { availableSamples, pickMismatch } from "./landing.js";
 import "@fontsource/inter/latin-400.css";
@@ -30,8 +30,11 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
         <section className="land-intro">
           <Logo height={36} />
           <h1>{TAGLINE}</h1>
+          <p className="land-sub">{SUBHEAD.map((line) => <span key={line}>{line}</span>)}</p>
           <p className="land-desc">{DESCRIPTION}</p>
-          <p className="land-aud">{AUDIENCE}</p>
+          <ul className="land-aud" aria-label="Who it is for">
+            {AUDIENCE_ITEMS.map(([role, phrase]) => <li key={role}><strong>{role}</strong> {phrase}</li>)}
+          </ul>
           <div className="land-actions">
             <button type="button" className="dp-link-btn dp-brand" onClick={onList}>See all deal reviews</button>
           </div>
@@ -39,6 +42,7 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
         </section>
         {cards.length > 0 && (
           <div className="land-cards" aria-label="Two sample scenarios">
+            <span className="dp-eyebrow land-cards-label">{CARDS_LABEL}</span>
             {cards.map((s) => (
               <article key={s.deal} className="dp-card land-example">
                 <span className="dp-eyebrow">{s.title}</span>
