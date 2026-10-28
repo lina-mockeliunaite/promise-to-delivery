@@ -3,10 +3,10 @@
 // for the landing page only; the home screen carries HOME_LINE under its heading (21 Oct).
 export const NAME = "Dealshape";
 export const TAGLINE = "Catch deal surprises before you sign.";
-export const DESCRIPTION = "Dealshape compares the two with your product catalogue, and shows every mismatch with its source.";
+export const DESCRIPTION = "Dealshape checks promises made during the sales process against the contract and product catalogue, and flags mismatches with source links.";
 export const HOME_LINE = "A shared view of what’s promised, agreed and deliverable.";
 // 28 Oct: the landing page's subhead (two lines), its audience line (role, phrase) and the label above the sample cards.
 export const SUBHEAD = ["Delivery inherits the contract.", "The customer remembers the proposal."];
-export const AUDIENCE_ITEMS = [["Sales", "before signing"], ["Delivery", "at handover"], ["Product", "what can be sold"]];
+export const AUDIENCE_ITEMS = [["Sales", "fix mismatches before signing"], ["Delivery", "know exactly what you inherit"], ["Product", "see promises the catalogue can't support"]];
 export const CARDS_LABEL = "What it catches";
 export const FICTIONAL = "All companies, people and deals are fictional.";

@@ -29,7 +29,7 @@ test("the example mismatch comes from the stored register: the not-offered commi
   const m = pickMismatch(reg);
   assert.equal(m.title, "Hosting on Microsoft Azure");
   assert.deepEqual(m.badges, ["Not offered"]); // a finding about the promise is a badge beside the title
-  assert.equal(partsText(m.parts), "Contract says Amazon Web Services in the Sydney region"); // the contract line stands alone
+  assert.equal(partsText(m.parts), "Contract has Amazon Web Services in the Sydney region"); // the contract line stands alone; the card is a summary, so "has"
   assert.equal(pickMismatch({ commitments: [] }), null);
   assert.equal(pickMismatch(null), null);
   const closedOnly = { commitments: [{ name: "X", contract: "", issues: [{ finding: "Not offered", state: "Resolved" }] }] };
@@ -38,9 +38,9 @@ test("the example mismatch comes from the stored register: the not-offered commi
 
 test("the positioning copy is the agreed text", () => {
   assert.equal(TAGLINE, "Catch deal surprises before you sign.");
-  assert.equal(DESCRIPTION, "Dealshape compares the two with your product catalogue, and shows every mismatch with its source.");
+  assert.equal(DESCRIPTION, "Dealshape checks promises made during the sales process against the contract and product catalogue, and flags mismatches with source links.");
   assert.deepEqual(SUBHEAD, ["Delivery inherits the contract.", "The customer remembers the proposal."]);
-  assert.deepEqual(AUDIENCE_ITEMS, [["Sales", "before signing"], ["Delivery", "at handover"], ["Product", "what can be sold"]]);
+  assert.deepEqual(AUDIENCE_ITEMS, [["Sales", "fix mismatches before signing"], ["Delivery", "know exactly what you inherit"], ["Product", "see promises the catalogue can't support"]]);
   assert.equal(CARDS_LABEL, "What it catches");
 });
 
@@ -66,7 +66,7 @@ test("Aivuna's card shows the commitment the product does not offer, read from i
   const m = pickMismatch(reg);
   assert.equal(m.title, "AI answers customers' phone calls at launch");
   assert.deepEqual(m.badges, ["Not offered"]);
-  assert.equal(partsText(m.parts), "Contract says chat and email"); // not "chat and email · not offered"
+  assert.equal(partsText(m.parts), "Contract has chat and email"); // not "chat and email · not offered"
 });
 
 test("the home header carries the shared-view line, not the old eyebrow, and no count badge", async () => {
@@ -120,7 +120,95 @@ test("the landing page renders the headline, the two-line subhead, the descripti
   const rules = css.split("\n").filter((l) => /^\.land-(sub|aud|cards-label)/.test(l)).join("\n");
   assert.ok(!/#[0-9a-fA-F]{3,8}\b|rgba?\(/.test(rules), "no literal colours");
   assert.match(css, /\.land-sub \{[^}]*color: var\(--ink\)/); // darker than the description (--body)
-  assert.match(css, /\.land-aud li \{ white-space: nowrap; \}/); // items wrap whole
-  assert.match(css, /\.land-aud li:not\(:last-child\)::after/); // the separator trails an item, never leads a line
+  assert.match(css, /\.land-aud \{[^}]*flex-direction: column;/); // a stacked list: one line per role
+  assert.match(css, /\.land-aud li strong::after \{ content: " \\00b7"; color: var\(--muted\)/); // the dot follows the role
+  assert.ok(!/white-space: nowrap/.test(css.slice(css.indexOf(".land-aud {"), css.indexOf(".land-cards-label"))));
   assert.ok(!jsx.includes("AUDIENCE}"));
+});
+
+// 28 Oct: the two sample cards show different kinds of mismatch, picked by a rule computed from the stored register.
+import { pickMismatches } from "../src/landing.js";
+const conflict = (promised, contract) => ({ finding: "Contract says something different", state: "Needs action", evidence: { promised_value: promised, contract_value: contract } });
+const gap = (finding) => ({ finding, state: "Needs action", evidence: {} });
+const NOMA = { commitments: [
+  { name: "Lang", display_name: "Support in 12 languages at launch", contract: "four languages: English, Mandarin Chinese, Japanese and Korean", statements: [], issues: [conflict("12 languages", "four languages: English, Mandarin Chinese, Japanese and Korean")] },
+  { name: "Specialist", display_name: "Dedicated launch specialist for the first 30 days, at no extra charge", contract: "Not included", statements: [], issues: [gap("No approval recorded"), gap("Missing from contract")] },
+  { name: "Phone", display_name: "AI answers customers' phone calls at launch", contract: "chat and email", statements: [], issues: [gap("Not offered"), conflict("phone calls", "chat and email")] },
+] };
+const ALDER = { commitments: [
+  { name: "Hosting", display_name: "Hosting on Microsoft Azure", contract: "Amazon Web Services in the Sydney region", statements: [], issues: [gap("Not offered"), conflict("Microsoft Azure in the Australia East region", "Amazon Web Services in the Sydney region")] },
+  { name: "Coaching", display_name: "Coaching-scam detection live at launch", contract: "Not included", statements: [], issues: [gap("No approval recorded"), gap("Missing from contract")] },
+  { name: "Volume", display_name: "750,000 payments a day by the end of year one", contract: "Not included", statements: [], issues: [gap("No approval recorded"), gap("Missing from contract")] },
+] };
+
+test("reset state: Noma shows the languages mismatch (the plainest, both terms stored), Alder keeps hosting with its Not offered badge", () => {
+  const [noma, alder] = pickMismatches([NOMA, ALDER]);
+  assert.equal(noma.title, "Support in 12 languages at launch");
+  assert.deepEqual(noma.badges, []); // a contract difference only: nothing about the promise
+  assert.equal(partsText(noma.told), "Customer was told 12 languages");
+  assert.equal(partsText(noma.parts), "Contract has 4 languages"); // cut at the colon, number word as a digit
+  assert.equal(alder.title, "Hosting on Microsoft Azure");
+  assert.deepEqual(alder.badges, ["Not offered"]);
+  assert.equal(partsText(alder.told), "Customer was told Microsoft Azure in the Australia East region");
+});
+
+test("the rule: only commitments with both terms; a kind not already shown first; then the fewest findings; then register order", () => {
+  // only the commitments with a stored customer term and a stored contract term are eligible (not the specialist, which has neither)
+  const only = pickMismatch({ commitments: [NOMA.commitments[1], NOMA.commitments[2]] });
+  assert.equal(only.title, "AI answers customers' phone calls at launch");
+  // fewest findings breaks a tie: languages (1 finding) over phone calls (2)
+  assert.equal(pickMismatch(NOMA).title, "Support in 12 languages at launch");
+  // a kind not already shown beats fewer findings: with "Contract says something different" already shown, phone calls adds "Not offered"
+  assert.equal(pickMismatch(NOMA, new Set(["Contract says something different"])).title, "AI answers customers' phone calls at launch");
+  // register order is the last tie-break
+  const twin = { commitments: [{ ...NOMA.commitments[0], name: "A", display_name: "First" }, { ...NOMA.commitments[0], name: "B", display_name: "Second" }] };
+  assert.equal(pickMismatch(twin).title, "First");
+  // nothing eligible: the earlier rule (the not-offered commitment first, else the first open one)
+  const none = { commitments: [{ name: "X", display_name: "X", contract: "Not included", statements: [], issues: [gap("No approval recorded")] }, { name: "Y", display_name: "Y", contract: "z", statements: [], issues: [gap("Not offered")] }] };
+  assert.equal(pickMismatch(none).title, "Y");
+  assert.equal(pickMismatch({ commitments: [none.commitments[0]] }).title, "X");
+  assert.equal(pickMismatch({ commitments: [] }), null);
+  // a card that cannot load leaves the other alone; a closed gap is never picked
+  assert.deepEqual(pickMismatches([null, ALDER]).map((p) => p && p.title), [null, "Hosting on Microsoft Azure"]);
+  const closed = { commitments: [{ ...NOMA.commitments[0], issues: [{ ...conflict("a", "b"), state: "Resolved" }] }] };
+  assert.equal(pickMismatch(closed), null);
+});
+
+test("the cards' button says 'Open sample deal', and a wrapped comparison line is balanced", async () => {
+  const fs = await import("node:fs");
+  const jsx = fs.readFileSync(new URL("../src/Landing.jsx", import.meta.url), "utf8");
+  const css = fs.readFileSync(new URL("../src/Landing.css", import.meta.url), "utf8");
+  assert.ok(jsx.includes(">Open sample deal</button>") && !jsx.includes("Open this sample deal"));
+  assert.match(css, /\.land-example \.dp-prow-line \{ text-wrap: balance; \}/);
+});
+
+// 28 Oct: the landing cards are a summary, not a quote. Only the cards are changed; every other screen keeps the exact stored wording.
+import { cardTerm, cardParts } from "../src/landing.js";
+import { mismatchParts, toldParts } from "../src/dealpage.js";
+
+test("card terms: cut at the first colon, number words one to twelve as digits, whole words only", () => {
+  assert.equal(cardTerm("four languages: English, Mandarin Chinese, Japanese and Korean"), "4 languages");
+  assert.equal(cardTerm("twelve languages"), "12 languages");
+  assert.equal(cardTerm("12 languages"), "12 languages");
+  assert.equal(cardTerm("Four languages"), "4 languages"); // case-insensitive
+  assert.equal(cardTerm("one to eleven seats"), "1 to 11 seats");
+  assert.equal(cardTerm("thirteen languages"), "thirteen languages"); // only one to twelve
+  assert.equal(cardTerm("a one-time fee"), "a one-time fee"); // not inside a hyphenated word
+  assert.equal(cardTerm("someone phoned"), "someone phoned"); // whole words only
+  assert.equal(cardTerm("chat and email"), "chat and email");
+  assert.equal(cardTerm(""), "");
+});
+
+test("on the cards the contract label is 'Contract has' and the customer label stays 'Customer was told', for both terms", () => {
+  const issues = [{ finding: "Contract says something different", state: "Needs action", evidence: { promised_value: "twelve languages", contract_value: "four languages: English, Korean" } }];
+  const c = { name: "Lang", display_name: "Support in 12 languages at launch", contract: "four languages: English, Korean", statements: [], issues };
+  const card = pickMismatch({ commitments: [c] });
+  assert.equal(partsText(card.told), "Customer was told 12 languages");
+  assert.equal(partsText(card.parts), "Contract has 4 languages");
+  // the same findings on the deal page keep the exact stored wording and "Contract says"
+  assert.equal(partsText(toldParts(issues, [], null)), "Customer was told twelve languages");
+  assert.equal(partsText(mismatchParts(issues, c.contract)), "Contract says four languages: English, Korean");
+  // the other contract wordings on a card are untouched
+  assert.equal(partsText(cardParts([{ text: "Contract has ", strong: false }, { text: "no matching wording", strong: true }])), "Contract has no matching wording");
+  assert.equal(partsText(cardParts([{ text: "Contract differs", strong: true }])), "Contract differs");
 });

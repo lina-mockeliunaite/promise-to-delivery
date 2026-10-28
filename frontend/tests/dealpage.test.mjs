@@ -834,7 +834,7 @@ test("the landing pick carries the customer line above the contract line, from t
       { finding: "Contract says something different", state: "Needs action", evidence: { promised_value: "phone calls", contract_value: "chat and email", contract_quote: { quote: "q", source: "Draft SOW" } } }] }] };
   const m = pickMismatch(reg);
   assert.equal(partsText(m.told), "Customer was told phone calls"); // the cards carry the terms only (28 Oct)
-  assert.equal(partsText(m.parts), "Contract says chat and email");
+  assert.equal(partsText(m.parts), "Contract has chat and email"); // the landing card (a summary); rows keep "Contract says" below
   // rows keep their sources: the same findings through the row helpers
   assert.equal(partsText(toldParts(reg.commitments[0].issues, [], reg.commitments[0].first_found)), "Customer was told phone calls · RFP response, 28 Sep");
   assert.equal(partsText(mismatchParts(reg.commitments[0].issues, "chat and email")), "Contract says chat and email · Draft SOW");

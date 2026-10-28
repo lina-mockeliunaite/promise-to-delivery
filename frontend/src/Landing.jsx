@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import * as api from "./api.js";
 import { AUDIENCE_ITEMS, CARDS_LABEL, DESCRIPTION, FICTIONAL, SUBHEAD, TAGLINE } from "./brand.js";
 import { MismatchSentence, TitleLine } from "./Drawer.jsx";
-import { availableSamples, pickMismatch } from "./landing.js";
+import { availableSamples, pickMismatches } from "./landing.js";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-500.css";
 import "@fontsource/inter/latin-600.css";
@@ -16,13 +16,16 @@ import "./Landing.css";
 
 export default function Landing({ deals, unavailable = false, onOpen, onList }) {
   const samples = availableSamples(deals);
-  const [found, setFound] = useState({}); // deal -> mismatch read from its register; absent until it loads, and when it cannot be read
+  const [registers, setRegisters] = useState({}); // deal -> its register; absent until it loads, and when it cannot be read
   const key = samples.map((s) => s.deal).join(",");
   useEffect(() => {
     let live = true;
-    samples.forEach((s) => api.fetchRegister(s.deal).then((r) => live && setFound((f) => ({ ...f, [s.deal]: pickMismatch(r) })), () => {}));
+    samples.forEach((s) => api.fetchRegister(s.deal).then((r) => live && setRegisters((f) => ({ ...f, [s.deal]: r })), () => {}));
     return () => { live = false; };
   }, [key]);
+  // The cards are picked together, in card order, so they show different kinds of mismatch (see pickMismatches).
+  const picks = pickMismatches(samples.map((s) => registers[s.deal] ?? null));
+  const found = Object.fromEntries(samples.map((s, n) => [s.deal, picks[n]]));
   const cards = samples.filter((s) => found[s.deal]);
   return (
     <div className="dp land">
@@ -50,7 +53,7 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
                 <TitleLine title={found[s.deal].title} labels={found[s.deal].badges} stacked />
                 <MismatchSentence parts={found[s.deal].told} />
                 <MismatchSentence parts={found[s.deal].parts} />
-                <button type="button" className="dp-btn dp-btn-dark land-open" onClick={() => onOpen(s.deal)}>Open this sample deal</button>
+                <button type="button" className="dp-btn dp-btn-dark land-open" onClick={() => onOpen(s.deal)}>Open sample deal</button>
               </article>
             ))}
           </div>
