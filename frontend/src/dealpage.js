@@ -65,14 +65,80 @@ export function whatChanged(before, after) {
       return { promise: i.promise, finding: i.finding, why: why.charAt(0).toUpperCase() + why.slice(1),
                by: n.resolved_by?.text ?? "" };
     });
-  const opened = now.filter((i) => i.state !== "Resolved" && !wasOpen.has(i.id)).map((i) => ({ promise: i.promise, finding: i.finding }));
-  const touched = new Set([...closed, ...opened].map((x) => x.promise));
+  // 31 Oct: the signed-contract check (signed_check, already on each issue) can confirm an earlier fix or find it missing from the signed paperwork. A gap it
+  // reopens is not a new gap, and a confirmation is a result too; both are read from the two registers, nothing more.
+  const beforeById = new Map(rows(before).map((i) => [i.id, i]));
+  const reopened = now.filter((i) => i.state !== "Resolved" && !wasOpen.has(i.id) && i.signed_check?.status === "not_found")
+    .map((i) => ({ promise: i.promise, finding: i.finding, reason: i.signed_check.reason ?? "" }));
+  const confirmed = now.filter((i) => i.signed_check?.status === "confirmed" && beforeById.get(i.id)?.signed_check?.status !== "confirmed")
+    .map((i) => ({ promise: i.promise, finding: i.finding }));
+  const reopenedIds = new Set(now.filter((i) => i.state !== "Resolved" && !wasOpen.has(i.id) && i.signed_check?.status === "not_found").map((i) => i.id));
+  const opened = now.filter((i) => i.state !== "Resolved" && !wasOpen.has(i.id) && !reopenedIds.has(i.id)).map((i) => ({ promise: i.promise, finding: i.finding }));
+  const touched = new Set([...closed, ...opened, ...reopened, ...confirmed].map((x) => x.promise));
   const stillOpen = now.filter((i) => i.state !== "Resolved" && touched.has(i.promise) && wasOpen.has(i.id))
     .map((i) => ({ promise: i.promise, finding: i.finding }));
   // A gap resolved by a current note is not open on screen either (one truth with the deal list and the page).
   const openPromises = new Set(now.filter((i) => i.state !== "Resolved" && !i.note_resolution?.current).map((i) => i.promise)).size;
-  return { closed, opened, stillOpen, openPromises };
+  return { closed, opened, reopened, confirmed, stillOpen, openPromises };
 }
+
+// "What changed", per commitment (31 Oct). The headline is the change on the commitment the person acted on (`acted`: the commitment whose drawer
+// the document was added from; from the sidebar, the commitments the document closed, confirmed or reopened something on). Everything else that
+// moved is one line naming the commitments, and the detail boxes are grouped under each commitment's title. Wording is the existing wording.
+export function changeView(change, titleOf = (n) => n, acted = null) {
+  const { closed = [], opened = [], reopened = [], confirmed = [] } = change;
+  // The card shows what the document changed. "Still open" is shown only on the commitment acted on (a partial fix reads "Approval found · the contract
+  // gap on this commitment is still open"); from the sidebar, on the commitments the document closed or confirmed something on. The other commitments'
+  // unchanged gaps are in the list below the card.
+  const stillFor = new Set(acted ? [acted] : [...closed, ...confirmed].map((x) => x.promise));
+  const stillOpen = (change.stillOpen ?? []).filter((x) => stillFor.has(x.promise));
+  const all = [...closed, ...stillOpen, ...opened, ...reopened, ...confirmed];
+  const names = [...new Set(all.map((x) => x.promise))];
+  const direct = new Set(acted ? [acted] : [...closed, ...reopened, ...confirmed].map((x) => x.promise));
+  const order = [...names.filter((n) => direct.has(n)), ...names.filter((n) => !direct.has(n))];
+  const pick = (list, n) => list.filter((x) => x.promise === n);
+  const groups = order.map((promise) => ({ promise, title: titleOf(promise), closed: pick(closed, promise), stillOpen: pick(stillOpen, promise),
+    opened: pick(opened, promise), reopened: pick(reopened, promise), confirmed: pick(confirmed, promise) }));
+  const titles = (list) => [...new Set(list.map((x) => titleOf(x.promise)))].join("; ");
+  const n = (k, one, many) => `${k} ${k === 1 ? one : many}`;
+  const mine = (list) => list.filter((x) => direct.has(x.promise));
+  const lead = [];
+  if (mine(closed).length || mine(opened).length || mine(stillOpen).length) {
+    lead.push(changeResult({ closed: mine(closed), opened: mine(opened), stillOpen: mine(stillOpen) }).replace(/\.$/, ""));
+  }
+  if (mine(confirmed).length) lead.push(`${n(mine(confirmed).length, "earlier fix", "earlier fixes")} confirmed in the signed contract: ${titles(mine(confirmed))}`);
+  if (mine(reopened).length) lead.push(`${n(mine(reopened).length, "earlier fix", "earlier fixes")} not found in the signed contract, reopened: ${titles(mine(reopened))}`);
+  const headline = lead.length ? `${lead.join(" · ")}.`
+    : all.length ? `Nothing changed on ${acted ? titleOf(acted) : "the commitments the document touched"}.`
+    : "Nothing closed and nothing new: the document did not change any gap.";
+  const label = (f) => lowerFirst(FINDING_SHORT[f] ?? f);
+  const elsewhere = order.filter((p) => !direct.has(p)).map((p) => {
+    const g = groups.find((x) => x.promise === p);
+    const bits = [];
+    if (g.closed.length) bits.push(`${g.closed.length} closed`);
+    if (g.opened.length) bits.push(`${n(g.opened.length, "new gap", "new gaps")}, ${g.opened.map((x) => label(x.finding)).join(" and ")}`);
+    if (g.reopened.length) bits.push(`reopened, ${g.reopened.map((x) => label(x.finding)).join(" and ")}`);
+    return `${g.title}: ${bits.join("; ")}`;
+  });
+  return { headline, elsewhere: elsewhere.length ? `Elsewhere: ${elsewhere.join(" · ")}.` : "", groups };
+}
+
+// The date a document states about itself ("Date: 20 October 2026" among its first lines) as YYYY-MM-DD, or null: the add form's "Dated" field starts
+// from it (31 Oct), as the server already does for a new version. The same reading as workspace.stated_date.
+const FULL_MONTHS = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"];
+export function statedDate(text) {
+  const m = /^\W*Date\W*:\s*(?:(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})|(\d{4})-(\d{2})-(\d{2}))\s*$/im.exec(String(text ?? "").split(/\r?\n/).slice(0, 30).join("\n"));
+  if (!m) return null;
+  const pad = (v, w) => String(v).padStart(w, "0");
+  if (m[4]) return +m[6] >= 1 && +m[6] <= 31 ? `${m[4]}-${m[5]}-${m[6]}` : null;
+  const mo = FULL_MONTHS.indexOf(m[2].toLowerCase()) + 1;
+  return mo && +m[1] >= 1 && +m[1] <= 31 ? `${m[3]}-${pad(mo, 2)}-${pad(m[1], 2)}` : null;
+}
+export const datePrefill = (head, today) => statedDate(head) ?? today;
+
+// What the "What changed" card calls the document just added: its plain name and date, never the file name.
+export const changeDocLabel = ({ name, existing, version, date }) =>
+  existing ? `${name}, new version (v${version}, ${short(date)})` : `${name}, ${short(date)}`;
 
 // Which document usually resolves a gap: the pricing note for an approval, the SOW for the contract, the promise itself
 // when the product doesn't offer it. A suggestion only; the person can pick any document.
@@ -172,6 +238,13 @@ export function missingForHandover({ isSigned, notes }) {
   if (!notes?.sales) out.push("add the Sales note");
   if (!notes?.delivery) out.push("add the Delivery note");
   return out;
+}
+
+// The Handover card (31 Oct) is folded to its header until the deal is Signed or later (isSigned: the stage from the documents, the one the stage bar
+// shows) or a handover note exists, so written content is never hidden. A person's choice holds for the stage it was made at and until the page reloads.
+export function handoverOpen({ isSigned, notes, manual, stage }) {
+  if (manual && manual.stage === stage) return manual.open;
+  return Boolean(isSigned || notes?.sales || notes?.delivery);
 }
 
 // The three things a handover needs, in the order a person would do them, built from missingForHandover. done = not missing.
@@ -344,14 +417,15 @@ export function firstSource(statements, found) {
 
 // The customer's side of the row, parallel to the contract line (28 Oct): "Customer was told **12 languages** · RFP response, 28 Sep". The term is the
 // promised_value stored on a "Contract says something different" finding (same 80-character limit); the source is where it was first found.
-// With no stored term it is the source alone, "Customer was told in RFP response, 28 Sep". Nothing is composed from anything else.
+// With no stored term it is the source alone, "Promised in RFP response, 28 Sep" (31 Oct; it was "Customer was told in …", which sounded like a quoted term
+// was missing). Nothing is composed from anything else.
 export function toldParts(issues, statements, found, { source: withSource = true } = {}) {
   const conflict = (issues ?? []).find((i) => i.finding === "Contract says something different");
   const raw = String(conflict?.evidence?.promised_value ?? "").trim();
   const term = raw && raw.length <= SHORT_TERM ? raw : "";
   const source = withSource ? firstSource(statements, found) : "";
   if (term) return [{ text: "Customer was told ", strong: false }, { text: term, strong: true }, ...(source ? [{ text: ` · ${source}`, strong: false }] : [])];
-  return source ? [{ text: `Customer was told in ${source}`, strong: false }] : [];
+  return source ? [{ text: `Promised in ${source}`, strong: false }] : [];
 }
 
 // The title shown for a commitment: the owner-confirmed plain title if there is one, otherwise the extracted name.

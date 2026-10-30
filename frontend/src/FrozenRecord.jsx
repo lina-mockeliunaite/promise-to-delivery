@@ -8,7 +8,7 @@ import { fmtDate, fmtDateTime } from "./format.js";
 import {
   STATUS_CHIP, attentionText, coverageLine, frozenView, hashFor, plainName, readHash, recordedBy, short, verdictLine,
 } from "./dealpage.js";
-import { Drawer, CommitmentView, DocumentView, MismatchSentence, TitleLine, Icon, ICON } from "./Drawer.jsx";
+import { CardHead, Drawer, CommitmentView, DocumentView, MismatchSentence, TitleLine, Icon, ICON } from "./Drawer.jsx";
 import BriefCard from "./BriefCard.jsx";
 import { appendixEntries, hasStoredText, shortHash } from "./docHash.js";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
@@ -179,15 +179,12 @@ export default function FrozenRecord({ deal, onBack }) {
       </section>
 
       <section className={`dp-card dp-promises ${counts.open ? "is-attention" : "is-clear"}`}>
-        <div className="dp-sec-head">
-          <div className="dp-sec-title">
-            <h2>Commitments at handover</h2>
-            <span className={`dp-chip ${counts.open ? "dp-chip-amber" : "dp-chip-grey"}`}>
-              <span className={`dp-dot ${counts.open ? "" : "dp-dot-grey"}`} />
-              {attentionText(counts.open, counts.noted)}
-            </span>
-          </div>
-        </div>
+        <CardHead eyebrow="Commitments" title="At handover">
+          <span className={`dp-chip ${counts.open ? "dp-chip-amber" : "dp-chip-grey"}`}>
+            <span className={`dp-dot ${counts.open ? "" : "dp-dot-grey"}`} />
+            {attentionText(counts.open, counts.noted)}
+          </span>
+        </CardHead>
         {coverageLine(s.check_coverage?.rejected) && <p className="dp-coverage">{coverageLine(s.check_coverage.rejected)}</p>}
         {views.length === 0 && <p className="dp-faint dp-pad">No commitment had a gap on the documents checked.</p>}
         <ul className="dp-plist">

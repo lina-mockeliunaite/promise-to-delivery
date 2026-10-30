@@ -806,19 +806,19 @@ test("no stored promised term: the customer line is the source alone; no stored 
     { id: 4, state: "Needs action", finding: "Missing from contract", evidence: { missing_phrases: ["launch specialist"] } }];
   const c = { name: "Specialist", contract: "Not included", first_found: { doc_type_label: "RFP response", date: "2026-09-28" }, statements: [], issues };
   const v = commitmentView(c, "open", []);
-  assert.equal(lineText(v.toldLine), "Customer was told in RFP response, 28 Sep"); // no leading dot, no term
+  assert.equal(lineText(v.toldLine), "Promised in RFP response, 28 Sep"); // no leading dot, no term
   assert.equal(lineText(v.mismatch), "Contract has no matching wording"); // nothing was found anywhere, so there is no source to name
   // a conflict with no stored quote has no source either; and an over-limit term falls back to "Contract differs" (the source stays)
   assert.equal(lineText(mismatchParts([{ finding: "Contract says something different", evidence: { contract_value: "AWS Sydney" } }])), "Contract says AWS Sydney");
   const long = "x".repeat(81);
   assert.equal(lineText(mismatchParts([{ finding: "Contract says something different", evidence: { contract_value: long, contract_quote: { quote: "q", source: "Draft SOW" } } }])), "Contract differs · Draft SOW");
-  assert.equal(lineText(toldParts([{ finding: "Contract says something different", evidence: { promised_value: long } }], [], { doc_type_label: "Proposal", date: "2026-10-02" })), "Customer was told in Proposal, 2 Oct");
+  assert.equal(lineText(toldParts([{ finding: "Contract says something different", evidence: { promised_value: long } }], [], { doc_type_label: "Proposal", date: "2026-10-02" })), "Promised in Proposal, 2 Oct");
 });
 
 test("a closed row says where the customer was told and nothing about a term; no source and no term gives no line", () => {
   const closed = commitmentView({ name: "Lang", contract: "x", first_found: { doc_type_label: "RFP response", date: "2026-09-28" }, statements: [],
     issues: [{ id: 5, state: "Resolved", finding: "Contract says something different", evidence: { promised_value: "12 languages" }, resolved_by: { text: "Resolved by Draft contract, version 2" } }] }, "closed", []);
-  assert.equal(lineText(closed.toldLine), "Customer was told in RFP response, 28 Sep");
+  assert.equal(lineText(closed.toldLine), "Promised in RFP response, 28 Sep");
   assert.deepEqual(closed.mismatch, []); // the Closed by lines are unchanged
   assert.ok(closed.closedLines.length > 0);
   assert.deepEqual(toldParts([], [], null), []);

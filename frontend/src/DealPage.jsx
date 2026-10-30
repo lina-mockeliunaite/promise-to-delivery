@@ -3,7 +3,7 @@
 // deal's shape stay in view. The only way a gap closes is a new document version that the check confirms; notes and "seen"
 // never close anything.
 import { BrandBlock } from "./Logo.jsx";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-500.css";
 import "@fontsource/inter/latin-600.css";
@@ -12,12 +12,12 @@ import * as api from "./api.js";
 import { addReady, fmtDate, fmtDateTime, mismatchNotice, newDocumentNotice, uploadKind } from "./format.js";
 import {
   CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, coverageLine, docCount, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
-  mismatchParts, promiseLabels, missingForHandover, handoverChecklist, plainName, readHash, recordedBy, rowTitle, toldParts, suggestFix, useName, whatChanged,
+  mismatchParts, promiseLabels, missingForHandover, handoverChecklist, handoverOpen, changeView, changeDocLabel, datePrefill, plainName, readHash, recordedBy, rowTitle, toldParts, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
 import BriefCard from "./BriefCard.jsx";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
-import { Drawer, DrawerHead, CommitmentView, DocumentView, MismatchSentence, TitleLine, Icon as DIcon, ICON } from "./Drawer.jsx";
+import { CardHead, Drawer, DrawerHead, CommitmentView, DocumentView, MismatchSentence, TitleLine, Icon as DIcon, ICON } from "./Drawer.jsx";
 import { FICTIONAL } from "./brand.js";
 import CatalogueModal from "./CatalogueModal.jsx";
 import "./DealPage.css";
@@ -70,6 +70,32 @@ function Hint({ children }) {
 }
 
 
+// The header's meta line (31 Oct): the document count is not repeated here; the sidebar heading "Deal journey · N documents" has it.
+export function DealMeta({ reg }) {
+  return (
+    <ul className="dp-props">
+      {reg.brief?.go_live && <li><Icon d={I.calendar} size={15} /><span>Target go-live</span><strong>{fmtDate(reg.brief.go_live)}</strong></li>}
+      <li><Icon d={I.clock} size={15} /><span>Last checked</span><strong>{fmtDate(reg.freshness.finished_at)}</strong></li>
+    </ul>
+  );
+}
+
+// The Handover card's header line (31 Oct): the heading, the "N of 3 ready" chip and the Show / Hide button for the card's body.
+export function HandoverHead({ checklist, missing, open, bodyId, onToggle }) {
+  return (
+    <div className="dp-sec-head">
+      <div className="dp-sec-title">
+        <h2>Handover</h2>
+        <span className="dp-chip dp-chip-grey">
+          <span className="dp-segs" aria-hidden="true">{checklist.map((i) => <span key={i.key} className={i.done ? "is-done" : ""} />)}</span>
+          {missing.length ? `${checklist.filter((i) => i.done).length} of ${checklist.length} ready` : "Ready to complete"}
+        </span>
+      </div>
+      <button type="button" className="dp-link-btn dp-handover-toggle" aria-expanded={open} aria-controls={bodyId} onClick={onToggle}>{open ? "Hide" : "Show"}</button>
+    </div>
+  );
+}
+
 // The heading's chip: amber "N need attention" while any do, otherwise a neutral "Nothing needs attention" (+ addressed by note).
 function AttentionChip({ open, noted }) {
   return (
@@ -82,7 +108,7 @@ function AttentionChip({ open, noted }) {
 
 // One row of the list: title, the sentence-style mismatch line, where it was first promised, the status, a chevron. Click opens
 // the drawer; the row takes a soft accent tint while its commitment is open there.
-function CommitRow({ c, status, active, onOpen }) {
+export function CommitRow({ c, status, active, onOpen }) {
   const unresolved = c.issues.filter((i) => i.state !== "Resolved");
   const st = STATUS_CHIP[status];
   const noteRes = unresolved.find((i) => i.note_resolution)?.note_resolution;
@@ -175,52 +201,77 @@ function NotePanel({ role, label, who, note, name, setName, onSave }) {
   );
 }
 
-function ChangePanel({ change, titleOf, onClose }) {
-  const { closed, opened, stillOpen, openPromises } = change;
-  const nothing = !closed.length && !opened.length;
+export function ChangePanel({ change, titleOf, onClose }) {
+  const { openPromises } = change;
   const short = (f) => FINDING_SHORT[f] ?? f;
+  const view = changeView(change, titleOf, change.acted);
   return (
     <section className="dp-card dp-change" role="status" aria-live="polite">
       <div className="dp-change-body">
         <div className="dp-change-head">
           <h2><Icon d={I.sync} size={18} /> After adding {change.doc}</h2>
-          <p className="dp-change-result">{changeResult(change)}</p>
+          <p className="dp-change-result">{view.headline}</p>
+          {view.elsewhere && <p className="dp-change-else">{view.elsewhere}</p>}
         </div>
         <div className="dp-change-rows">
-          {closed.map((x) => (
-            <div key={`c|${x.promise}|${x.finding}`} className="dp-change-row is-closed">
-              <span className="dp-change-mark"><Icon d={I.check} size={13} /></span>
-              <div>
-                <div className="dp-change-line">
-                  <strong>{titleOf(x.promise)}: {short(x.finding)}</strong>
-                  <span className="dp-chip dp-chip-green"><span className="dp-dot dp-dot-green" />Closed by documents</span>
+          {view.groups.map((g) => (
+            <div key={g.promise} className="dp-change-group">
+              <h3 className="dp-change-title">{g.title}</h3>
+              {g.closed.map((x) => (
+                <div key={`c|${x.finding}`} className="dp-change-row is-closed">
+                  <span className="dp-change-mark"><Icon d={I.check} size={13} /></span>
+                  <div>
+                    <div className="dp-change-line">
+                      <strong>{short(x.finding)}</strong>
+                      <span className="dp-chip dp-chip-green"><span className="dp-dot dp-dot-green" />Closed by documents</span>
+                    </div>
+                    <p>{x.why}</p>
+                    {x.by && <p className="dp-change-by">{closedBy(x.by)}</p>}
+                  </div>
                 </div>
-                <p>{x.why}</p>
-                {x.by && <p className="dp-change-by">{closedBy(x.by)}</p>}
-              </div>
-            </div>
-          ))}
-          {stillOpen.map((x) => (
-            <div key={`s|${x.promise}|${x.finding}`} className="dp-change-row is-open">
-              <span className="dp-change-mark"><Icon d={I.alert} size={13} /></span>
-              <div>
-                <div className="dp-change-line"><strong>Still needs attention: {short(x.finding)}</strong></div>
-                <p className="dp-change-by">{titleOf(x.promise)}</p>
-              </div>
-            </div>
-          ))}
-          {opened.map((x) => (
-            <div key={`n|${x.promise}|${x.finding}`} className="dp-change-row is-open">
-              <span className="dp-change-mark"><Icon d={I.alert} size={13} /></span>
-              <div>
-                <div className="dp-change-line">
-                  <strong>{titleOf(x.promise)}: {short(x.finding)}</strong>
-                  <span className="dp-chip dp-chip-amber"><span className="dp-dot" />New</span>
+              ))}
+              {g.confirmed.map((x) => (
+                <div key={`k|${x.finding}`} className="dp-change-row is-closed">
+                  <span className="dp-change-mark"><Icon d={I.check} size={13} /></span>
+                  <div>
+                    <div className="dp-change-line">
+                      <strong>{short(x.finding)}: earlier fix confirmed</strong>
+                      <span className="dp-chip dp-chip-green"><span className="dp-dot dp-dot-green" />Confirmed in the signed contract</span>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ))}
+              {g.reopened.map((x) => (
+                <div key={`r|${x.finding}`} className="dp-change-row is-open">
+                  <span className="dp-change-mark"><Icon d={I.alert} size={13} /></span>
+                  <div>
+                    <div className="dp-change-line">
+                      <strong>{short(x.finding)}: earlier fix not found in the signed contract</strong>
+                      <span className="dp-chip dp-chip-amber"><span className="dp-dot" />Reopened</span>
+                    </div>
+                    {x.reason && <p>{x.reason}</p>}
+                  </div>
+                </div>
+              ))}
+              {g.stillOpen.map((x) => (
+                <div key={`s|${x.finding}`} className="dp-change-row is-open">
+                  <span className="dp-change-mark"><Icon d={I.alert} size={13} /></span>
+                  <div><div className="dp-change-line"><strong>Still needs attention: {short(x.finding)}</strong></div></div>
+                </div>
+              ))}
+              {g.opened.map((x) => (
+                <div key={`n|${x.finding}`} className="dp-change-row is-open">
+                  <span className="dp-change-mark"><Icon d={I.alert} size={13} /></span>
+                  <div>
+                    <div className="dp-change-line">
+                      <strong>{short(x.finding)}</strong>
+                      <span className="dp-chip dp-chip-amber"><span className="dp-dot" />New</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ))}
-          {nothing && <p className="dp-change-nothing">Nothing closed and nothing new: the document did not change any gap.</p>}
         </div>
         <div className="dp-change-foot">
           <span className="dp-change-count">{openPromises} {openPromises === 1 ? "commitment still needs" : "commitments still need"} attention.</span>
@@ -389,11 +440,16 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
   const [error, setError] = useState(null);
   const [over, setOver] = useState(false);
   const [head, setHead] = useState(""); // the start of a text file, read when it is picked, to notice a wrong file
+  const [dateEdited, setDateEdited] = useState(false); // once the person types a date, a picked file no longer changes it
   const pick = (file) => {
     setForm((f) => ({ ...f, file }));
     setHead("");
     setError(null);
-    if (file && uploadKind(file.name) !== "binary" && file.slice) file.slice(0, 6000).text().then(setHead, () => setHead(""));
+    // A new document's "Dated" starts from the date the file states about itself (31 Oct), today when it states none; the person can change it.
+    const today = new Date().toISOString().slice(0, 10);
+    if (file && uploadKind(file.name) !== "binary" && file.slice) {
+      file.slice(0, 6000).text().then((t) => { setHead(t); if (!dateEdited) setForm((f) => ({ ...f, doc_date: datePrefill(t, today) })); }, () => setHead(""));
+    } else if (!dateEdited) setForm((f) => ({ ...f, doc_date: today }));
   };
   const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
   const existingDoc = form.source_key ? documents.find((d) => d.source_key === form.source_key) : null;
@@ -419,7 +475,7 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
         : { name: form.file.name, filename: form.file.name, doc_type: form.doc_type, doc_date: form.doc_date, ...content };
       const r = await api.addDocumentAndCheck(deal, body); // refused before writing if the model is needed and unavailable
       const existing = documents.find((d) => d.source_key === form.source_key);
-      onDone(r.review, existing ? `${existing.name}, new version` : form.file.name);
+      onDone(r.review, { name: existing ? existing.name : (labels[form.doc_type] ?? form.file.name), source_key: existing ? existing.source_key : null, date: form.doc_date });
     } catch (err) {
       setError(err.message);
     } finally {
@@ -448,7 +504,7 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
             </label>
             <label>
               Dated
-              <input type="date" value={form.doc_date} onChange={set("doc_date")} />
+              <input type="date" value={form.doc_date} onChange={(e) => { setDateEdited(true); set("doc_date")(e); }} />
             </label>
           </>
         )}
@@ -503,7 +559,7 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
 }
 
 
-function DocumentList({ deal, stages, documents, name, setName, onChanged, onView, onAdd, onHelp, activeDoc }) {
+export function DocumentList({ deal, stages, documents, name, setName, onChanged, onView, onAdd, onHelp, activeDoc }) {
   const [draft, setDraft] = useState("");
   const [toggled, setToggled] = useState({}); // stage key -> true/false once the person clicks it; until then only the current stage is open
   const open0 = journeyOpen(stages);
@@ -565,12 +621,15 @@ function DocumentList({ deal, stages, documents, name, setName, onChanged, onVie
             <div className="dp-tl-body">
               <button type="button" className="dp-tl-name dp-tl-toggle" aria-expanded={isOpen(s.key)} disabled={s.docs.length === 0}
                       onClick={() => setToggled((t) => ({ ...t, [s.key]: !isOpen(s.key) }))}>
-                <span>{s.label}<span className="dp-tl-count"> · {docCount(s.docs.length)}</span></span>
+                <span>{s.label}{s.state !== "todo" && <span className="dp-tl-count"> · {docCount(s.docs.length)}</span>}</span>
                 <span className="dp-tl-right">
                   {s.gaps_started > 0 && <span className="dp-stage-gaps">{s.gaps_started} {s.gaps_started === 1 ? "gap" : "gaps"} started here</span>}
                   {s.state === "current" && <span className="dp-tl-tag">Current stage</span>}
                   {s.state === "todo" && <span className="dp-tl-tag">Not yet</span>}
                 </span>
+                {s.docs.length > 0
+                  ? <span className="dp-tl-chev" aria-hidden="true"><Icon d={I.chevron} size={14} /></span>
+                  : <span className="dp-tl-gap" aria-hidden="true" />}
               </button>
               {s.key === "contracting" && s.note && <span className="dp-tl-note">{s.note}</span>}
               {s.docs.length > 0 && isOpen(s.key) && <ul className="dp-docs">{s.docs.map(doc)}</ul>}
@@ -586,6 +645,17 @@ function DocumentList({ deal, stages, documents, name, setName, onChanged, onVie
 // The pre-revamp detailed view stays in the code but off the demo path: its link shows only with ?detailed in the URL.
 const SHOW_DETAILED = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("detailed");
 
+// The live page's footer (31 Oct): the scope sentence ("Lists commitments where…") is gone, since the heading says it; the coverage sentence stays.
+// The locked record, the deal list and the landing page keep their own footers.
+export function DealFooter({ onClassic }) {
+  return (
+    <footer className="dp-foot">
+      Checked against the documents listed and the product catalogue. {FICTIONAL}
+      {onClassic && SHOW_DETAILED && <> · <button type="button" className="dp-link-btn" onClick={onClassic}>Open the detailed view</button></>}
+    </footer>
+  );
+}
+
 export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   const [reg, setReg] = useState(null);
   const [docs, setDocs] = useState(null);
@@ -599,6 +669,8 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   const [change, setChange] = useState(null); // the "What changed" card after a document or a recheck
   const [askName, setAskName] = useState(null); // { fn, initial }: the name prompt, only for actions that have no form of their own
   const [help, setHelp] = useState(false);
+  const [handoverManual, setHandoverManual] = useState(null); // { stage, open }: a person's choice for the Handover card, kept until the stage changes or the page reloads
+  const handoverBodyId = useId();
   // The drawer: { type: "commitment", id } | { type: "doc", docKey, quote, fromId } | { type: "add", fromId } | { type: "note", id }
   const [drawer, setDrawer] = useState(null);
   const hashed = useRef(false);
@@ -660,11 +732,18 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
     }).finally(() => setChecking(false));
   };
 
-  const docDone = async (review, doc) => {
+  const docDone = async (review, added) => {
+    const acted = drawerC?.name ?? null; // the commitment the document was added from; none when added from the sidebar
     closeDrawer();
     setMessage(null);
     const after = await api.fetchRegister(deal);
-    setChange({ ...whatChanged(reg, after), doc, modelCalls: review.model_calls });
+    // The card names the document by its plain name and date, never the file name (31 Oct); a new version's date is the one the server shows.
+    let label = changeDocLabel({ name: added.name, existing: false, date: added.date });
+    if (added.source_key) {
+      const d = (await api.fetchDocuments(deal)).documents.find((x) => x.source_key === added.source_key);
+      if (d) label = changeDocLabel({ name: d.name, existing: true, version: d.version, date: d.version_date || d.date });
+    }
+    setChange({ ...whatChanged(reg, after), doc: label, acted, modelCalls: review.model_calls });
     load();
     onDealsChanged?.();
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -692,6 +771,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   const included = docs.documents.filter((d) => d.included);
   const missing = missingForHandover({ isSigned, notes });
   const checklist = handoverChecklist({ isSigned, notes });
+  const handoverIsOpen = handoverOpen({ isSigned, notes, manual: handoverManual, stage: reg.stage.current });
   const completer = (name || completeDraft).trim();
   const fromId = drawer?.type === "commitment" || drawer?.type === "note" ? drawer.id : drawer?.fromId ?? null;
   const drawerC = fromId != null ? byId(fromId) : null;
@@ -730,25 +810,18 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
                 </button>
               )}
             </div>
-            <ul className="dp-props">
-              {reg.brief?.go_live && <li><Icon d={I.calendar} size={15} /><span>Target go-live</span><strong>{fmtDate(reg.brief.go_live)}</strong></li>}
-              <li><Icon d={I.clock} size={15} /><span>Last checked</span><strong>{fmtDate(reg.freshness.finished_at)}</strong></li>
-              <li><Icon d={I.files} size={15} /><span>Documents</span><strong>({included.length})</strong></li>
-            </ul>
+            <DealMeta reg={reg} />
           </section>
 
-          <BriefCard brief={reg.brief} />
+          <BriefCard brief={reg.brief} collapsible />
 
           {message && <div className={`dp-message is-${message.kind}`} role="status">{message.text}</div>}
           {change && <ChangePanel change={change} titleOf={(n) => reg.commitments.find((c) => c.name === n)?.display_name || n} onClose={() => setChange(null)} />}
 
           <section className={`dp-card dp-promises ${openRows.length ? "is-attention" : "is-clear"}`} id="dp-commitments">
-            <div className="dp-sec-head">
-              <div className="dp-sec-title">
-                <h2>Commitments needing attention</h2>
-                <AttentionChip open={openRows.length} noted={(reg.noted_rows || []).length} />
-              </div>
-            </div>
+            <CardHead eyebrow="Commitments" title="What the customer was promised">
+              <AttentionChip open={openRows.length} noted={(reg.noted_rows || []).length} />
+            </CardHead>
             {coverageLine(reg.check_coverage?.rejected) && <p className="dp-coverage">{coverageLine(reg.check_coverage.rejected)}</p>}
             {promiseRows.length === 0 && <p className="dp-faint dp-pad">No commitments with gaps on the current documents.</p>}
             <ul className="dp-plist">
@@ -759,16 +832,9 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
           </section>
 
           <section className="dp-card dp-handover">
-            <div className="dp-sec-head">
-              <div className="dp-sec-title">
-                <h2>Handover</h2>
-                <span className="dp-chip dp-chip-grey">
-                  <span className="dp-segs" aria-hidden="true">{checklist.map((i) => <span key={i.key} className={i.done ? "is-done" : ""} />)}</span>
-                  {missing.length ? `${checklist.filter((i) => i.done).length} of ${checklist.length} ready` : "Ready to complete"}
-                </span>
-              </div>
-            </div>
-            <div className="dp-handover-body">
+            <HandoverHead checklist={checklist} missing={missing} open={handoverIsOpen} bodyId={handoverBodyId}
+                          onToggle={() => setHandoverManual({ stage: reg.stage.current, open: !handoverIsOpen })} />
+            <div className="dp-handover-body" id={handoverBodyId} hidden={!handoverIsOpen}>
               <div className="dp-notes">
                 <NotePanel role="sales" label="Deal owner's handoff note" who="Sales" note={notes.sales} name={name} setName={setName}
                            onSave={(role, text, by) => api.saveHandoverNote(deal, { role, note: text, entered_by: by }).then(() => { load(); onDealsChanged?.(); })} />
@@ -805,10 +871,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
             </div>
           </section>
 
-          <footer className="dp-foot">
-            Lists commitments where the customer's expectation, the contract and what we can sell don't line up. Checked against the documents listed and the product catalogue. {FICTIONAL}
-            {onClassic && SHOW_DETAILED && <> · <button type="button" className="dp-link-btn" onClick={onClassic}>Open the detailed view</button></>}
-          </footer>
+          <DealFooter onClassic={onClassic} />
         </div>
 
         <aside className="dp-aside">

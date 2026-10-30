@@ -75,6 +75,6 @@ test("print writes the record fingerprint and every document hash in full; the s
   assert.match(css, /\n\.fr-h-full \{ display: none; \}/); // full value hidden on screen (a plain rule, outside the print block)
   assert.match(print, /\.fr-h-short \{ display: none; \}/); // short form hidden in print
   assert.match(print, /\.fr-h-full \{ display: inline;/);
-  assert.match(print, /\.fr \.dp-prow-head \{ padding: 8px 20px; \}/); // rows keep their side padding in print: nothing under the card's edge bar
+  assert.match(print, /\.fr \.dp-prow-head \{ padding: 9px 20px; \}/); // rows keep their side padding in print: nothing under the card's edge bar
   assert.match(print, /\.fr \.dp-promises \{ break-inside: auto; \}/);
 });

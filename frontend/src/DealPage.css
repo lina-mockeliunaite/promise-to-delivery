@@ -124,10 +124,23 @@ body:has(.dp) { background: #f8fafc; }
 .dp-promises.is-clear::before { background: var(--grey-line); }
 .dp-brief-card .dp-sec-head { margin: 0; padding: 14px 20px 10px; display: block; }
 .dp-brief-card .dp-sec-head h2 { margin-top: 4px; }
+/* Section headings (31 Oct): the commitments card takes the brief card's header, an eyebrow above the heading (so the heading is no longer one more row), and
+   both headings are 17px (they were 15px, a pixel above the 14px row titles). The chip sits beside the heading. */
+.dp-promises .dp-sec-head { display: block; }
+.dp-promises .dp-sec-title { margin-top: 4px; }
+.dp-brief-card .dp-sec-head h2, .dp-promises .dp-sec-head h2 { font-size: 17px; }
+/* A little more room under the header than between rows (rows are 14px of padding apart; the locked record's are 9px). */
+.dp-promises .dp-plist { margin-top: 8px; }
+.fr .dp-plist { margin-top: 4px; }
 .dp-eyebrow { display: block; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent); }
 .dp-brief-body { padding: 0 20px 14px; }
 .dp-brief { margin: 0; color: var(--body-2); font-size: 13px; line-height: 1.5; }
 .dp-deliverables { margin: 10px 0 0; padding: 0; list-style: none; font-size: 13px; line-height: 20px; color: var(--ink); }
+.dp-brief-toggle { display: flex; width: fit-content; margin-top: 8px; }
+/* Folded only: App.css gives every button min-height 40px, which left ~11px of dead space above and below the text (30 Oct). Expanded keeps its spacing. */
+.dp-brief-toggle[aria-expanded="false"] { min-height: 0; margin-top: 6px; }
+/* The live page folds the list (hidden); print always shows it, and drops the button (30 Oct). */
+@media print { .dp-brief-card .dp-deliverables[hidden] { display: block !important; } .dp-brief-toggle { display: none; } }
 .dp-deliverables li { position: relative; padding: 6px 0 6px 16px; border-top: 1px solid var(--hair); }
 .dp-deliverables li:first-child { border-top: 0; }
 .dp-deliverables li::before { content: ""; position: absolute; left: 2px; top: 13px; width: 6px; height: 6px; border-radius: 999px; background: var(--accent); }
@@ -141,10 +154,17 @@ body:has(.dp) { background: #f8fafc; }
 .dp-promises .dp-sec-head, .dp-handover .dp-sec-head { margin: 0; padding: 14px 20px 10px; }
 .dp-handover { padding: 0; }
 .dp-handover-body { padding: 0 20px 14px; display: flex; flex-direction: column; gap: 12px; }
+/* Folded until Signed or a note exists (31 Oct). The body keeps its display above, so hidden needs its own rule; print always shows the card, without the button.
+   App.css gives every button min-height 40px, which would make the header taller than the chip. */
+.dp-handover-body[hidden] { display: none; }
+.dp-handover-toggle { min-height: 0; }
+@media print { .dp-handover .dp-handover-body[hidden] { display: flex !important; } .dp-handover-toggle { display: none; } }
 .dp-sec-title { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
 .dp-plist { list-style: none; margin: 0; padding: 0; }
 .dp-prow { border-top: 1px solid var(--hair); }
-.dp-prow-head { display: flex; align-items: center; gap: 12px; padding: 12px 20px; cursor: pointer; }
+.dp-prow-head { display: flex; align-items: center; gap: 12px; padding: 14px 20px; cursor: pointer; }
+/* The locked record's rows keep the same proportion to the live page's (9px against 14px; it was 12px against 18px); print follows it (it was 8px). */
+.fr .dp-prow-head { padding: 9px 20px; }
 .dp-prow-head:hover { background: var(--soft); }
 .dp-prow.is-active .dp-prow-head { background: var(--tint); }
 .dp-prow-main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
@@ -152,6 +172,11 @@ body:has(.dp) { background: #f8fafc; }
 .dp-prow.is-noted .dp-prow-title, .dp-prow.is-closed .dp-prow-title { font-weight: 500; }
 .dp-prow-line { font-size: 13px; color: var(--muted); }
 .dp-prow-line strong { color: var(--ink); font-weight: 600; }
+/* Each row reads as one tight block (31 Oct): 4px from the title line to the first explanation line (the column's 2px gap plus 2px here), 2px between the
+   explanation lines, and the key words in them are 500 so they do not compete with the title. Rows are told apart by space (the head's padding), not by
+   decoration. Scoped to .dp-prow: the live page and the locked record change; the landing cards and the drawer keep the rules above. */
+.dp-prow .dp-titleline { margin-bottom: 2px; }
+.dp-prow .dp-prow-line strong { font-weight: 500; }
 /* Findings about the promise sit beside the title as small outlined tags (27 Oct); the contract's wording is its own line beneath. The tag is
    not the status chip (no pill, no dot, no fill), and its text carries the meaning. When there is no room it wraps directly beneath the title. */
 .dp-titleline { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-width: 0; }
@@ -258,7 +283,10 @@ body:has(.dp) { background: #f8fafc; }
 .dp-change-line strong { font-weight: 600; }
 .dp-change-row p { margin: 2px 0 0; font-size: 12px; color: var(--body); }
 .dp-change-row p.dp-change-by { color: var(--muted); }
-.dp-change-nothing { margin: 0; font-size: 13px; color: var(--muted); }
+/* "What changed" per commitment (31 Oct): one line for what moved elsewhere, and the detail boxes grouped under each commitment's title. */
+.dp-change-else { margin: 4px 0 0 26px; font-size: 13px; color: var(--body); }
+.dp-change-group { display: flex; flex-direction: column; gap: 8px; }
+.dp-change-title { margin: 4px 0 0; font-size: 13px; font-weight: 600; color: var(--ink); }
 .dp-change-foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 10px; border-top: 1px solid var(--hair); }
 .dp-change-count { font-size: 13px; font-weight: 500; color: var(--body); }
 .dp-change-foot .dp-link-btn { text-decoration: none; }
@@ -416,6 +444,7 @@ body:has(.dp) { background: #f8fafc; }
   .fr .dp-promises { break-inside: auto; }
   .fr .dp-sec-head { break-after: avoid; }
   .fr .dp-prow { break-inside: avoid; }
+  .fr .dp-prow-head { padding: 9px 20px; } /* follows the screen value (31 Oct; was 8px); the side padding stays so nothing sits under the card's edge bar */
   /* Hashes print in full, wrapping if needed; on screen they are short, with the full value on hover. */
   .fr .fr-h-short { display: none; }
   .fr .fr-h-full { display: inline; word-break: break-all; }
@@ -428,7 +457,6 @@ body:has(.dp) { background: #f8fafc; }
   .fr .fr-doc-hash .fr-hash { font-size: 11.5px; padding: 1px 8px; }
   .fr .dp-docs { margin-top: 2px; gap: 0; }
   .fr .dp-docs li, .fr .fr-record-body > div:last-child { break-inside: avoid; }
-  .fr .dp-prow-head { padding: 8px 20px; }
   .fr .fr-print { display: block; padding: 0 20px 10px; font-size: 12px; color: #1e293b; }
   .fr .fr-print p { margin: 2px 0; }
   .fr-record > summary { display: none; }
@@ -490,7 +518,13 @@ main.home.home-deal { max-width: none; margin: 0; padding: 0; }
 .dp-coverage { margin: 0; padding: 0 20px 8px; font-size: 12px; color: var(--muted); }
 .dp-tl-toggle { border: 0; background: none; padding: 0; font: inherit; text-align: left; cursor: pointer; width: 100%; }
 .dp-tl-toggle:disabled { cursor: default; }
-.dp-tl-toggle[aria-expanded="false"]:not(:disabled)::after { content: "+"; color: var(--muted); font-weight: 400; margin-left: 4px; }
+/* A stage that can open shows a small chevron (31 Oct): right when collapsed, down when open. Decorative; the button carries aria-expanded. */
+.dp-tl-chev { display: inline-flex; flex: none; margin-left: 4px; color: var(--muted); transition: transform 150ms ease; }
+.dp-tl-toggle[aria-expanded="true"] .dp-tl-chev { transform: rotate(90deg); }
+/* The tags (gaps, Current stage, Not yet) sit against the chevron's column on every row; an empty stage keeps the column's width, empty. */
+.dp-tl-toggle .dp-tl-right { margin-left: auto; }
+.dp-tl-gap { flex: none; width: 18px; }
+@media (prefers-reduced-motion: reduce) { .dp-tl-chev { transition: none; } }
 .dp-tl-count { font-weight: 400; color: var(--muted); font-size: 12px; }
 .dr-mismatch { margin: 0 0 14px; display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
 .dr-mismatch .dp-prow-line { font-size: 13px; }

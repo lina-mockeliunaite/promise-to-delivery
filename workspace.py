@@ -156,6 +156,9 @@ def plain(text, names: dict | None = None) -> str:
     out = _STATEMENT_KEY.sub("", out)
     out = _COMMITMENT_KEY.sub(commitment, out)
     for key in sorted(names or {}, key=len, reverse=True):
+        # 31 Oct: a stored sentence can name a document by its file name ("NJ-07_draft_contract.md"); the `\b` below does not match a key that
+        # runs on into an underscore, so the file name becomes the document's plain label first. ledger_v2.py, which writes the sentence, is hashed.
+        out = re.sub(rf"\b{re.escape(key)}[\w.\-]*\.(?:md|txt|pdf|docx|xlsx|pptx)\b", lambda _m, k=key: names[k], out, flags=re.I)
         out = re.sub(rf"\b{re.escape(key)}\b", names[key], out)
     return re.sub(r"\s{2,}", " ", out).replace(" ,", ",").replace(" .", ".").strip()
 

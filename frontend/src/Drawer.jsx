@@ -303,6 +303,19 @@ export function PromiseBadges({ labels }) {
   );
 }
 
+// The commitments card's header (31 Oct), the Deal brief card's pattern: a small eyebrow above the heading, with the status chip beside the heading.
+export function CardHead({ eyebrow, title, children }) {
+  return (
+    <div className="dp-sec-head">
+      <span className="dp-eyebrow">{eyebrow}</span>
+      <div className="dp-sec-title">
+        <h2>{title}</h2>
+        {children}
+      </div>
+    </div>
+  );
+}
+
 // A title with its promise findings beside it; the badges wrap directly beneath the title when there is no room, and never squeeze it.
 // stacked (the landing cards): the badges always sit on their own line beneath the title, so every card has the same layout.
 export function TitleLine({ title, labels, className = "dp-prow-title", stacked = false }) {
