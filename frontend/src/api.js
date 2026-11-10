@@ -23,6 +23,7 @@ const postJson = (path, body) =>
 
 const d = (deal) => `/api/deals/${encodeURIComponent(deal)}`;
 
+export const resetDemo = () => postJson("/api/demo/reset"); // 10 Nov: restore the sample deals; the old ledger is kept as a backup
 export const fetchDeals = () => getJson("/api/workspace/deals");
 export const createDeal = (name) => postJson("/api/user-deals", { name });
 export const fetchDocuments = (deal) => getJson(`${d(deal)}/documents`);

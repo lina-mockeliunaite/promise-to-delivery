@@ -80,3 +80,26 @@ export function lastVendor(vendors, storage = globalThis.localStorage) {
 export function rememberVendor(id, storage = globalThis.localStorage) {
   try { storage.setItem(VENDOR_KEY, id); } catch { /* the choice lasts for this page only */ }
 }
+
+// "Reset demo" (10 Nov): an inline confirm in the deal-list footer. The steps are plain data so they are tested without a browser.
+export const RESET_QUESTION = "Restore all sample deals to their starting point? Anything you changed is kept in a backup file.";
+export const RESET_IDLE = { step: "idle", message: "" };
+export function resetNext(state, event, message = "") {
+  if (event === "ask" && state.step === "idle") return { step: "confirming", message: "" };
+  if (event === "cancel" && state.step === "confirming") return RESET_IDLE; // nothing else happens
+  if (event === "run" && state.step === "confirming") return { step: "busy", message: "" };
+  if (event === "fail" && state.step === "busy") return { step: "confirming", message }; // the server's words, inline
+  return state;
+}
+// Calls the endpoint; on success sets #welcome and reloads the whole page, so no screen keeps stale state. The name
+// ("Recording as", in localStorage) is not touched here and survives the reload. On failure returns the server's message.
+export async function runReset(resetApi, { setHash, reload }) {
+  try {
+    await resetApi();
+  } catch (err) {
+    return { ok: false, message: err?.message || "The reset failed." };
+  }
+  setHash("#welcome");
+  reload();
+  return { ok: true, message: "" };
+}

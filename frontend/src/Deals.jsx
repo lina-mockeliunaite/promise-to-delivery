@@ -6,6 +6,7 @@ import * as api from "./api.js";
 import { FILTERS, SORTS, counts, initials, lastVendor, page, relativeTime, rememberVendor, vendorsOf, visibleDeals } from "./deals.js";
 import { commitmentsNeedText, dealsText, plainName } from "./dealpage.js";
 import CatalogueModal from "./CatalogueModal.jsx";
+import ResetDemo from "./ResetDemo.jsx";
 import { FICTIONAL, HOME_LINE } from "./brand.js";
 import "./Deals.css";
 
@@ -220,7 +221,7 @@ export default function Deals({ deals, onOpen, onCreated, onAbout }) {
           )}
         </footer>
       </section>
-      <footer className="dl-pagefoot">{FICTIONAL}{onAbout && <> <button type="button" className="dl-about" onClick={onAbout}>About Dealshape</button></>}</footer>
+      <footer className="dl-pagefoot">{FICTIONAL}{onAbout && <> <button type="button" className="dl-about" onClick={onAbout}>About Dealshape</button></>} <ResetDemo /></footer>
     </div>
   );
 }

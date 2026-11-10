@@ -135,6 +135,8 @@ python -m uvicorn api:app --host 127.0.0.1 --port 8000
 cd frontend && npm run dev     # open http://127.0.0.1:5173
 ```
 
+To restore the demo while the app is running, use **Reset demo** in the deal-list footer: it asks first, keeps the old ledger as a backup file, and reloads on the welcome page. It runs the same reset as `python reset_demo.py` (the script stays, and is the way to build the first ledger); neither needs a key or makes a model call.
+
 The demo opens on the deals list with no API key. Both demo scripts (`docs/DEMO_SCRIPT_2026-10-21_noma.md`, the main one, and `docs/DEMO_SCRIPT_2026-10-20_alder.md`, the second) run end to end with no key, from saved model readings (the app still verifies every finding and rechecks every stored claim), when each file is filed exactly as the script says ("A new version of …"). Filing a revision as "A new document" gives it today's date, so it needs the model and therefore a key. Reading any other new or changed contract or customer document also needs `ANTHROPIC_API_KEY` in the server's terminal. The browser never sees it.
 
 ## Where to look

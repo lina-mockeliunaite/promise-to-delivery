@@ -21,6 +21,7 @@ from pathlib import Path
 
 import os
 import sqlite3
+import threading
 
 from fastapi import Body, Depends, FastAPI, Header, HTTPException, Query
 from fastapi.responses import JSONResponse, Response
@@ -40,6 +41,7 @@ import integrity
 import ledger
 import ledger_fixes
 import recheck
+import reset_demo
 import workspace
 import workspace_records
 
@@ -264,6 +266,26 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
         if not isinstance(text, str) or len(text.encode("utf-8")) > 1_000_000:
             raise HTTPException(status_code=400, detail="Send the document as text, up to 1 MB.")
         return filename, text, {}
+
+    reset_lock = threading.Lock()
+
+    @app.post("/api/demo/reset", dependencies=[Depends(write_guard)])
+    def demo_reset():
+        """Restore the sample deals (10 Nov): reset_demo.reset builds the new ledger beside the old one, backs the old one up
+        and swaps with os.replace; each request opens its own connection, so the next request sees the new file. The path
+        is outside /api/deals/, so a locked handover does not block it. No model call, no key."""
+        if not reset_lock.acquire(blocking=False):
+            raise HTTPException(status_code=409, detail="A reset is already running. Try again in a moment.")
+        try:
+            done = reset_demo.reset(ledger_path)
+        except reset_demo.ResetError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from None
+        except Exception:
+            raise HTTPException(status_code=500, detail="The reset failed and the current ledger was left as it was.") from None
+        finally:
+            reset_lock.release()
+        return {"deals_restored": len(done["deals"]), "deals": [d["deal"] for d in done["deals"]],
+                "model_calls": done["model_calls"], "backup": done["backup"].name if done["backup"] else None}
 
     @app.get("/api/workspace/deals")
     def ws_deals(conn=Depends(db)):
