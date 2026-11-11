@@ -746,6 +746,16 @@ def earliest_match(quotes: list, docs: list):
     return min(hits, key=lambda d: (d["date"] or "9999", d["key"])) if hits else None
 
 
+def sources_of(quote: str, docs: list) -> list:
+    """Every customer-facing checked document that contains this exact sentence (verifier's normalisation), earliest first
+    (ties by source key), as [{doc_type_label, date}]. The drawer's "Customer was told" source: the first is where the
+    sentence was first found, the rest are "also in". Read-time only; the stored quote and reading are untouched."""
+    import detect_v2
+    q = detect_v2._n(quote or "")
+    hits = sorted((d for d in docs if q and q in d["norm"]), key=lambda d: (d["date"] or "9999", d["key"]))
+    return [{"doc_type_label": d["label"], "date": d["date"]} for d in hits]
+
+
 def commitment_quotes(conn, cid: int) -> list:
     """The exact sentences a commitment was found in: the statements of its latest review, as the register lists them."""
     return [q for (q,) in conn.execute(
@@ -798,6 +808,8 @@ def overview(conn, slug: str) -> dict:
     searchable = _searchable_documents(conn, did, slug)
     for c in reg["commitments"]:
         c["first_found"] = first_found(c, searchable)
+        for st in c.get("statements", []):  # 11 Nov: the same rule per sentence, so the drawer and the row name the same source
+            st["found_in"] = sources_of(st.get("quote"), searchable)
         c["contract_now"] = contract_now_for(conn, did, slug, c["id"], labels) if any(i["state"] == "Resolved" for i in c["issues"]) else None
         open_n = 0
         noted_n = 0

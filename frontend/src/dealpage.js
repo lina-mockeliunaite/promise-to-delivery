@@ -275,7 +275,28 @@ const CLOSED_PHRASE = {
   "No approval recorded": "Approval found",
   "Missing from contract": "Contract wording found",
   "Contract says something different": "Contract wording now matches the promise",
+  "Needs evidence": "Evidence found",
+  "A condition was dropped": "Condition restored",
+  "Not offered": "Promise changed",
 };
+// A closed gap is named by what is now true, not by the finding it was (11 Nov): "Approval found", not "No approval found".
+export const closedTitle = (finding) => CLOSED_PHRASE[finding] ?? `${FINDING_SHORT[finding] ?? finding}: closed`;
+
+// "1 of 2 gaps closed", shown beside a row's status when some of its gaps are closed and others are not (11 Nov). Empty otherwise.
+export function gapProgress(issues) {
+  const all = issues ?? [];
+  const closed = all.filter((i) => i.state === "Resolved").length;
+  return closed > 0 && closed < all.length ? `${closed} of ${all.length} gaps closed` : "";
+}
+
+// One stable order for the commitment rows (11 Nov), from the data alone: the date the promise was first made (the server's first_found,
+// else the earliest statement's date), then the title. A row with no date comes last. Status does not move a row, so a check never
+// re-sorts the list, and every visitor sees the same order, after a reset too.
+export const firstPromisedDate = (c) => c.first_found?.date
+  || (c.statements ?? []).map((s) => s.date).filter(Boolean).sort()[0] || "";
+export const orderPromises = (rows) => [...rows].sort((a, b) =>
+  (firstPromisedDate(a.c) || "9999").localeCompare(firstPromisedDate(b.c) || "9999")
+  || rowTitle(a.c).toLowerCase().localeCompare(rowTitle(b.c).toLowerCase()));
 const OPEN_NOUN = {
   "No approval recorded": "the approval gap",
   "Missing from contract": "the contract gap",
@@ -326,6 +347,7 @@ export const FINDING_SHORT = {
   "Contract says something different": "Contract differs",
   "Not offered": "Not offered",
 };
+export const rowTitle = (c) => c.display_name || c.name;
 const FINDING_DETAIL = {
   "No approval recorded": "No approval found in the supplied documents",
   "Missing from contract": "Not in the draft contract or SOW",
@@ -429,7 +451,6 @@ export function toldParts(issues, statements, found, { source: withSource = true
 }
 
 // The title shown for a commitment: the owner-confirmed plain title if there is one, otherwise the extracted name.
-export const rowTitle = (c) => c.display_name || c.name;
 export const extractedAs = (c) => (c.display_name && c.display_name !== c.name ? c.name : "");
 
 // The handover record's honest verdict. "No open gaps" is never said when anything was addressed by note.
@@ -673,11 +694,24 @@ export function commitmentView(c, status, documents) {
   };
 }
 
-function toldQuotesWithDocs(statements, documents) {
-  const seen = new Set();
-  return (statements ?? []).filter((s) => s.quote && !seen.has(s.quote) && seen.add(s.quote))
-    .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))
-    .map((s) => ({ quote: s.quote, label: s.doc_type_label ?? s.source, date: s.date ?? "", doc: matchDoc(documents, [s.source_name, s.doc_type_label], s.date) }));
+// "Customer was told" blocks (11 Nov): one per distinct sentence. Its source is the earliest customer-facing document that contains the exact
+// sentence (the server's found_in, the same rule as the row's "Promised in"), and every other such document is "also in". Without found_in (a
+// reading whose sentence no current document contains) the statement's own source is used. Earliest block first.
+export const alsoIn = (also) => (also?.length ? `also in ${also.map((x) => `${x.label}${x.date ? `, ${short(x.date)}` : ""}`).join("; ")}` : "");
+export function toldQuotesWithDocs(statements, documents) {
+  const byQuote = new Map();
+  for (const s of statements ?? []) {
+    if (!s.quote) continue;
+    const mine = (s.found_in ?? []).length ? s.found_in : [{ doc_type_label: s.doc_type_label ?? s.source, date: s.date ?? "" }];
+    const seen = byQuote.get(s.quote) ?? [];
+    for (const m of mine) if (!seen.some((x) => x.doc_type_label === m.doc_type_label && (x.date ?? "") === (m.date ?? ""))) seen.push(m);
+    byQuote.set(s.quote, seen);
+  }
+  return [...byQuote].map(([quote, list]) => {
+    const [first, ...rest] = [...list].sort((a, b) => (a.date || "9999").localeCompare(b.date || "9999"));
+    return { quote, label: first.doc_type_label, date: first.date ?? "", doc: matchDoc(documents, [first.doc_type_label], first.date),
+             also: rest.map((x) => ({ label: x.doc_type_label, date: x.date ?? "" })) };
+  }).sort((a, b) => (a.date || "9999").localeCompare(b.date || "9999") || a.quote.localeCompare(b.quote));
 }
 
 // The phrases searched for and not found, from the open findings' verified evidence.

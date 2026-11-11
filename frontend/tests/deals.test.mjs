@@ -14,14 +14,14 @@ const deals = [
 ];
 
 test("filters count only what they say", () => {
-  assert.deepEqual(counts(deals), { handover: 3, open: 2, complete: 1, earlier: 1 });
+  assert.deepEqual(counts(deals), { all: 4, open: 2, complete: 1, earlier: 1 }); // 11 Nov: "All deals" is every deal; needing attention is any stage, not complete
 });
 
 test("search matches name, owner or stage; sort by last updated puts the newest first", () => {
   assert.deepEqual(visibleDeals(deals, { query: "maya" }).map((d) => d.name), ["Harbour Bank"]);
   assert.deepEqual(visibleDeals(deals, { query: "signed" }).map((d) => d.name), ["Coral Pay"]);
-  assert.deepEqual(visibleDeals(deals).map((d) => d.name), ["Harbour Bank", "Coral Pay", "Atlas Remit"]);
-  assert.deepEqual(visibleDeals(deals, { sort: "gaps" }).map((d) => d.name), ["Harbour Bank", "Atlas Remit", "Coral Pay"]);
+  assert.deepEqual(visibleDeals(deals).map((d) => d.name), ["Harbour Bank", "Coral Pay", "Atlas Remit", "New Prospect"]);
+  assert.deepEqual(visibleDeals(deals, { sort: "gaps" }).map((d) => d.name), ["Harbour Bank", "Atlas Remit", "Coral Pay", "New Prospect"]);
   assert.deepEqual(visibleDeals(deals, { filter: "earlier" }).map((d) => d.name), ["New Prospect"]);
 });
 

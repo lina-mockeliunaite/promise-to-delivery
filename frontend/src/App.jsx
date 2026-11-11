@@ -1013,7 +1013,13 @@ function Workspace({ deal, onDealsChanged }) {
 // Public demo mode (10 Nov): the banner sits above every screen; with the mode off nothing is added.
 export default function App() {
   const [demo, setDemo] = useState(DEMO_OFF);
-  useEffect(() => { api.fetchDemoConfig().then(setDemo, () => {}); }, []);
+  // Asked again a few times if the first answer fails (a wake-up from sleep can drop one request), so a public page is never left without its banner.
+  useEffect(() => {
+    let alive = true;
+    const ask = (left) => api.fetchDemoConfig().then((r) => alive && setDemo(r), () => { if (alive && left > 0) setTimeout(() => ask(left - 1), 1500); });
+    ask(4);
+    return () => { alive = false; };
+  }, []);
   return <DemoContext.Provider value={demo}><DemoBanner /><AppBody /></DemoContext.Provider>;
 }
 
@@ -1034,6 +1040,9 @@ function AppBody() {
   }, []);
   useEffect(loadDeals, [loadDeals]);
   useEffect(() => { if (deals && current && !deals.some((x) => x.deal === current)) setCurrent(null); }, [deals, current]);
+  // 11 Nov: a new screen starts at the top. Going back to the deal list from a scrolled deal page used to keep the offset, which left the
+  // public banner above the window.
+  useEffect(() => { window.scrollTo(0, 0); }, [current, landing, classic]);
   // 21 Oct: #welcome typed into an open tab shows the landing page too.
   useEffect(() => {
     const onHash = () => { if (isWelcome(window.location.hash)) { setCurrent(null); setClassic(false); setLanding(true); } };

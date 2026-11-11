@@ -1,7 +1,7 @@
 // Public demo pieces (10 Nov): the banner, the note under a name field, and the sample-file list that replaces uploading.
 import { useEffect, useState } from "react";
 import * as api from "./api.js";
-import { NAME_NOTE, NO_SAMPLES, addSample, filingLine, useDemo } from "./demo.js";
+import { ALL_ADDED, NAME_NOTE, NO_SAMPLES, addSample, filingLine, sampleSteps, useDemo } from "./demo.js";
 
 export function DemoBanner() {
   const demo = useDemo();
@@ -34,16 +34,19 @@ export function SamplePicker({ deal, documents, labels, onDone, onClose, initial
       <span className="dp-field-label">Use a sample file</span>
       <p className="dp-faint dp-small">This public demo takes its own sample files, not uploads.</p>
       {samples && samples.length === 0 && !error && <p className="dp-faint dp-small">{NO_SAMPLES}</p>}
+      {samples && samples.length > 0 && sampleSteps(samples, documents).every((x) => x.state === "done") && <p className="demo-all-added" role="status">{ALL_ADDED[deal] ?? ""}</p>}
       <ol className="demo-sample-list">
-        {(samples ?? []).map((s, i) => (
-          <li key={s.file}>
-            <span className="demo-sample-n" aria-hidden="true">{i + 1}</span>
+        {sampleSteps(samples ?? [], documents).map(({ sample: s, n, state, after }) => (
+          <li key={s.file} className={`is-${state}`}>
+            <span className="demo-sample-n" aria-hidden="true">{n}</span>
             <div>
               <strong>{s.title}</strong>
               <span className="dp-small dp-block">{s.summary}</span>
               <span className="dp-faint dp-small dp-block">{filingLine(s, documents, labels)}</span>
             </div>
-            <button type="button" className="dp-btn dp-btn-dark" disabled={!!busy} onClick={() => add(s)}>{busy === s.file ? "Checking…" : "Add and check"}</button>
+            {state === "next" && <button type="button" className="dp-btn dp-btn-dark" disabled={!!busy} onClick={() => add(s)}>{busy === s.file ? "Checking…" : "Add and check"}</button>}
+            {state === "later" && <button type="button" className="dp-btn dp-btn-dark" disabled>After step {after}</button>}
+            {state === "done" && <span className="demo-sample-done">Added</span>}
           </li>
         ))}
       </ol>

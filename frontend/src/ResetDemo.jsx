@@ -2,11 +2,13 @@
 import { useState } from "react";
 import * as api from "./api.js";
 import { RESET_IDLE, RESET_QUESTION, resetNext, runReset } from "./deals.js";
+import { RESET_QUESTION_PUBLIC, useDemo } from "./demo.js";
 
 const browser = { setHash: (h) => { window.location.hash = h; }, reload: () => window.location.reload() };
 
 export default function ResetDemo({ resetApi = api.resetDemo, nav = browser, initial = RESET_IDLE }) {
   const [state, setState] = useState(initial);
+  const demo = useDemo();
   const go = async () => {
     setState((s) => resetNext(s, "run"));
     const done = await runReset(resetApi, nav);
@@ -17,7 +19,7 @@ export default function ResetDemo({ resetApi = api.resetDemo, nav = browser, ini
   }
   return (
     <div className="dl-reset" role="group" aria-label="Reset demo">
-      <p>{RESET_QUESTION}</p>
+      <p>{demo.public ? RESET_QUESTION_PUBLIC : RESET_QUESTION}</p>
       {state.message && <p className="dl-reset-error" role="alert">{state.message}</p>}
       <div className="dl-reset-actions">
         <button type="button" className="dl-btn" disabled={state.step === "busy"} onClick={go}>{state.step === "busy" ? "Resetting…" : "Reset"}</button>

@@ -39,3 +39,21 @@ export function filingLine(sample, documents, labels) {
   }
   return `Filed as a new document, type ${labels[sample.doc_type] ?? sample.doc_type}`;
 }
+
+// Public mode wording (11 Nov).
+export const RESET_QUESTION_PUBLIC = "Restore both sample deals to the start? This resets the demo for everyone.";
+export const REFUSED_FINDINGS = "Dealshape's checks can propose findings that the documents don't back up. Code tests every one against the documents and refuses any it can't support, so those are never shown and never counted.";
+export const ALL_ADDED = {
+  noma_journeys: "All samples added. Next: record a note on the phone row, then complete the handover.",
+  alder_bank: "All samples added. Next: record a note on the hosting row, then complete the handover.",
+};
+
+// The guided path through a deal's samples (11 Nov): which are already in the deal, which one is next, which wait. A new-version sample is in the
+// deal once its document is past version 1; a new-document sample once a document of its type is there. "later" says which step it waits for.
+export function sampleSteps(samples, documents) {
+  const docs = documents ?? [];
+  const used = (s) => (s.version_of ? docs.some((d) => d.source_key === s.version_of && d.version > 1) : docs.some((d) => d.doc_type === s.doc_type));
+  const next = samples.findIndex((s) => !used(s));
+  return samples.map((s, i) => ({ sample: s, n: i + 1,
+    state: next === -1 || i < next ? "done" : i === next ? "next" : "later", after: i })); // "After step N": the step before it
+}

@@ -11,7 +11,7 @@ import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
 import { addReady, fmtDate, fmtDateTime, mismatchNotice, newDocumentNotice, uploadKind } from "./format.js";
 import {
-  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, coverageLine, docCount, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
+  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, closedTitle, coverageLine, docCount, gapProgress, orderPromises, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
   mismatchParts, promiseLabels, missingForHandover, handoverChecklist, handoverOpen, changeView, changeDocLabel, datePrefill, plainName, readHash, recordedBy, rowTitle, toldParts, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
@@ -21,7 +21,7 @@ import { CardHead, Drawer, DrawerHead, CommitmentView, DocumentView, MismatchSen
 import { FICTIONAL } from "./brand.js";
 import CatalogueModal from "./CatalogueModal.jsx";
 import { DemoNameNote, SamplePicker } from "./DemoUI.jsx";
-import { NAME_NOTE, noteLimit, useDemo } from "./demo.js";
+import { NAME_NOTE, REFUSED_FINDINGS, noteLimit, useDemo } from "./demo.js";
 import "./DealPage.css";
 
 const Icon = ({ d, size = 15 }) => <DIcon d={d} size={size} />;
@@ -129,9 +129,12 @@ export function CommitRow({ c, status, active, onOpen }) {
           {status !== "closed" && reopenedLines(c.issues).map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
           {status === "noted" && noteRes && <span className="dp-prow-note">{recordedBy(noteRes.by, noteRes.at, fmtDate)}</span>}
         </span>
-        <span className={`dp-chip dp-chip-${st.tone}`} title={st.title}>
-          <span className={`dp-dot ${status === "noted" ? "dp-dot-grey" : status === "closed" ? "dp-dot-green" : ""}`} />
-          {st.label}
+        <span className="dp-prow-state">
+          {gapProgress(c.issues) && <span className="dp-prow-progress">{gapProgress(c.issues)}</span>}
+          <span className={`dp-chip dp-chip-${st.tone}`} title={st.title}>
+            <span className={`dp-dot ${status === "noted" ? "dp-dot-grey" : status === "closed" ? "dp-dot-green" : ""}`} />
+            {st.label}
+          </span>
         </span>
         <span className="dp-chevron" aria-hidden="true"><Icon d={I.chevron} size={16} /></span>
       </div>
@@ -226,8 +229,8 @@ export function ChangePanel({ change, titleOf, onClose }) {
                   <span className="dp-change-mark"><Icon d={I.check} size={13} /></span>
                   <div>
                     <div className="dp-change-line">
-                      <strong>{short(x.finding)}</strong>
-                      <span className="dp-chip dp-chip-green"><span className="dp-dot dp-dot-green" />Closed by documents</span>
+                      <strong>{closedTitle(x.finding)}</strong>
+                      <span className="dp-change-closed"> · closed by documents</span>
                     </div>
                     <p>{x.why}</p>
                     {x.by && <p className="dp-change-by">{closedBy(x.by)}</p>}
@@ -280,7 +283,6 @@ export function ChangePanel({ change, titleOf, onClose }) {
         <div className="dp-change-foot">
           <span className="dp-change-count">{openPromises} {openPromises === 1 ? "commitment still needs" : "commitments still need"} attention.</span>
           <span className="dp-row">
-            <button type="button" className="dp-link-btn" onClick={() => document.getElementById("dp-commitments")?.scrollIntoView({ behavior: "smooth", block: "start" })}>View commitments below</button>
             <button type="button" className="dp-link-btn dp-done" onClick={onClose}>Done</button>
           </span>
         </div>
@@ -425,6 +427,7 @@ function NamePrompt({ initial, onSave, onClose }) {
 
 
 function ClosingHelp({ onClose }) {
+  const demo = useDemo();
   return (
     <Modal title="How closing works" onClose={onClose}>
       <ol className="dp-how-list">
@@ -434,6 +437,7 @@ function ClosingHelp({ onClose }) {
       </ol>
       <p className="dp-faint dp-small">Without a document, a named person can record a note. Marked as addressed, it is listed apart as "Addressed by note", marked not in the documents, and reopens if the documents change.</p>
       <p className="dp-faint dp-small">A new document can also uncover a new gap. Removing a document never closes one. "Mark as seen" and notes kept open never close anything.</p>
+      {demo.public && <p className="dp-faint dp-small">{REFUSED_FINDINGS}</p>}
     </Modal>
   );
 }
@@ -631,7 +635,7 @@ export function DocumentList({ deal, stages, documents, name, setName, onChanged
             <div className="dp-tl-body">
               <button type="button" className="dp-tl-name dp-tl-toggle" aria-expanded={isOpen(s.key)} disabled={s.docs.length === 0}
                       onClick={() => setToggled((t) => ({ ...t, [s.key]: !isOpen(s.key) }))}>
-                <span>{s.label}{s.state !== "todo" && <span className="dp-tl-count"> · {docCount(s.docs.length)}</span>}</span>
+                <span>{s.label}{s.state !== "todo" && s.docs.length > 0 && <span className="dp-tl-count"> · {docCount(s.docs.length)}</span>}</span>
                 <span className="dp-tl-right">
                   {s.gaps_started > 0 && <span className="dp-stage-gaps">{s.gaps_started} {s.gaps_started === 1 ? "gap" : "gaps"} started here</span>}
                   {s.state === "current" && <span className="dp-tl-tag">Current stage</span>}
@@ -767,14 +771,14 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   if (reg.handover.complete) return <FrozenRecord deal={deal} onBack={onBack} />;
   const byId = (id) => reg.commitments.find((c) => c.id === id);
   const openRows = reg.open_rows.map(byId);
-  // One list: those needing attention first (most gaps first), then those addressed by note, then closed by the documents.
+  // One list in one stable order (11 Nov): earliest first-promised date, then title; a check changes a row's status, never its place.
   const closedIds = [...new Set(reg.resolved_findings.map((r) => r.commitment_id))]
     .filter((id) => !reg.open_rows.includes(id) && !(reg.noted_rows || []).includes(id));
-  const promiseRows = [
+  const promiseRows = orderPromises([
     ...openRows.map((c) => ({ c, status: "open" })),
     ...(reg.noted_rows || []).map((id) => ({ c: byId(id), status: "noted" })),
     ...closedIds.map((id) => ({ c: byId(id), status: "closed" })),
-  ].filter((r) => r.c);
+  ].filter((r) => r.c));
   const statusOf = (id) => promiseRows.find((r) => r.c.id === id)?.status ?? "open";
   const notes = reg.handover.notes;
   const STAGE_ORDER = ["discovery", "evaluation", "proposal", "shortlisted", "contracting", "signed", "handover"];
@@ -834,7 +838,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
             <CardHead eyebrow="Commitments" title="What the customer was promised">
               <AttentionChip open={openRows.length} noted={(reg.noted_rows || []).length} />
             </CardHead>
-            {coverageLine(reg.check_coverage?.rejected) && <p className="dp-coverage">{coverageLine(reg.check_coverage.rejected)}</p>}
+            {!demo.public && coverageLine(reg.check_coverage?.rejected) && <p className="dp-coverage">{coverageLine(reg.check_coverage.rejected)}</p>}
             {promiseRows.length === 0 && <p className="dp-faint dp-pad">No commitments with gaps on the current documents.</p>}
             <ul className="dp-plist">
               {promiseRows.map(({ c, status }) => (

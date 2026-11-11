@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
-import { STAGE_LABELS, STATUS_CHIP, plainName, recordedBy, short } from "./dealpage.js";
+import { STAGE_LABELS, STATUS_CHIP, alsoIn, plainName, recordedBy, short } from "./dealpage.js";
 import { renderDocument } from "./markdown.js";
 import { shortHash, verifyText } from "./docHash.js";
 
@@ -90,12 +90,13 @@ const NOTE_KIND = {
   kept: "",
 };
 
-function Source({ label, date, doc, onOpen }) {
+function Source({ label, date, doc, onOpen, also }) {
   const text = `${label}${date ? `, ${short(date)}` : ""}`;
   return (
     <p className="dr-source">
       Source:{" "}
       {doc && onOpen ? <button type="button" className="dr-linkbtn" onClick={onOpen}>{text}</button> : <span>{text}</span>}
+      {alsoIn(also) && <span className="dr-also"> · {alsoIn(also)}</span>}
     </p>
   );
 }
@@ -107,15 +108,12 @@ export function CommitmentView({ v, titleId, readOnly, me = "", onOpenDoc, onSee
     <>
       <DrawerHead id={titleId} title={v.title} chip={v.status} onClose={onClose} />
       <div className="dr-body">
-        {v.status !== "closed" && v.badges.length > 0 && (
-          <div className="dr-mismatch"><PromiseBadges labels={v.badges} /></div> // the contract's wording is the "Contract says" section below
-        )}
         <section className="dr-sec">
           <h3 className="dr-label">Customer was told</h3>
           {v.told.map((t) => (
             <div key={t.quote} className="dr-block">
               <blockquote className="dr-quote">{t.quote}</blockquote>
-              <Source label={t.label} date={t.date} doc={t.doc} onOpen={() => onOpenDoc?.(t.doc, t.quote)} />
+              <Source label={t.label} date={t.date} doc={t.doc} also={t.also} onOpen={() => onOpenDoc?.(t.doc, t.quote)} />
             </div>
           ))}
           {!v.told.length && (v.toldFallback ? <p className="dr-plain">{v.toldFallback}</p> : <p className="dr-muted">No checked quote is stored for this commitment.</p>)}

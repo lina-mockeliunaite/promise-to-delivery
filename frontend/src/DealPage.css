@@ -532,3 +532,9 @@ main.home.home-deal { max-width: none; margin: 0; padding: 0; }
 .dp-notice-box { display: flex; flex-direction: column; gap: 8px; }
 .dp-notice-box p { margin: 0; }
 .dp-notice-box .dp-row { align-items: center; flex-wrap: wrap; gap: 6px 14px; }
+
+/* 11 Nov: a closed gap in "What changed" reads "Approval found · closed by documents"; a row's gap progress sits beside its status. */
+.dp-change-closed { font-size: 13px; color: var(--ok, #166534); font-weight: 500; }
+.dp-prow-state { display: inline-flex; align-items: center; gap: 10px; flex: none; }
+.dp-prow-progress { font-size: 12px; color: var(--muted); white-space: nowrap; }
+.dr-also { color: var(--muted); }

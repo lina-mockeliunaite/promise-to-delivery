@@ -157,6 +157,6 @@ test("a commitment the person did not act on keeps no still-open item, even with
 
 test("the footer count and the model line are unchanged by what the card hides", () => {
   const html = renderToStaticMarkup(createElement(ChangePanel, { change: { ...revised(), openPromises: 2, doc: "Draft contract, new version (v2, 19 Oct)", acted: LANG, modelCalls: 0 }, titleOf, onClose() {} }));
-  assert.ok(html.includes("2 commitments still need attention.") && html.includes("View commitments below") && html.includes(">Done<"));
+  assert.ok(html.includes("2 commitments still need attention.") && !html.includes("View commitments below") && html.includes(">Done<")); // 11 Nov: one control, Done
   assert.ok(html.includes("No model call was needed: code checked every finding again."));
 });

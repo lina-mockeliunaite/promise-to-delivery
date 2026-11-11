@@ -2,9 +2,11 @@
 // open_gaps counts commitments that need attention, as the stage bar does; addressed_by_note counts those a note settled.
 // Every figure on the home screen is computed here from /api/workspace/deals: nothing is invented or estimated.
 
+// 11 Nov: the first tab is every deal (it read "In handover" and counted deals still in Contracting), and "needing attention" is every deal
+// whose handover is not complete and that has a commitment needing attention, at any stage.
 export const FILTERS = [
-  { key: "handover", label: "In handover", test: (d) => d.in_handover },
-  { key: "open", label: "Deals needing attention", test: (d) => d.in_handover && !d.handover_complete && d.open_gaps > 0 },
+  { key: "all", label: "All deals", test: () => true },
+  { key: "open", label: "Deals needing attention", test: (d) => !d.handover_complete && d.open_gaps > 0 },
   { key: "complete", label: "Handover complete", test: (d) => d.handover_complete },
   { key: "earlier", label: "Earlier stages", test: (d) => !d.in_handover },
 ];
@@ -25,7 +27,7 @@ export function matches(deal, query) {
   return [deal.name, deal.owner, deal.stage_label].some((v) => (v ?? "").toLowerCase().includes(q));
 }
 
-export function visibleDeals(deals, { filter = "handover", query = "", sort = "updated" } = {}) {
+export function visibleDeals(deals, { filter = "all", query = "", sort = "updated" } = {}) {
   const f = FILTERS.find((x) => x.key === filter) ?? FILTERS[0];
   const rows = deals.filter((d) => f.test(d) && matches(d, query));
   const byName = (a, b) => a.name.localeCompare(b.name);

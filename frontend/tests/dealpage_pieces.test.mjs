@@ -44,11 +44,11 @@ test("header: no Documents count, and Target go-live and Last checked stay", () 
   assert.ok(!read("DealPage.jsx").includes("<span>Documents</span>")); // the removed row is not rendered anywhere in the page
 });
 
-test("sidebar: a Not yet stage has no count; passed and current stages keep theirs, including 0 documents", () => {
+test("sidebar: a Not yet stage has no count, an empty stage has none either (11 Nov: no \"· 0 documents\"); stages with documents keep theirs", () => {
   const html = list();
   const todo = stageRow(html, "Signed");
   assert.ok(todo.includes("Not yet") && !todo.includes("document"));
-  assert.ok(stageRow(html, "Shortlisted").includes("· 0 documents"));
+  assert.ok(stageRow(html, "Shortlisted").includes("Shortlisted") && !stageRow(html, "Shortlisted").includes("0 documents") && !stageRow(html, "Shortlisted").includes("dp-tl-count"));
   assert.ok(stageRow(html, "Discovery").includes("· 1 document"));
   assert.ok(stageRow(html, "Contracting").includes("· 1 document"));
   assert.ok(html.includes("Deal journey · 2 documents")); // the one place the total is shown

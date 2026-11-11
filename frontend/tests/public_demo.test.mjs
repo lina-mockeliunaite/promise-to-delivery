@@ -97,7 +97,7 @@ test("the sample list is numbered in story order: title, one line of who did wha
   assert.ok(html.includes("Filed as a new version of: Internal approvals note<"));
   assert.ok(html.includes("Filed as a new document, type Signed contract<"));
   assert.ok(!html.includes("currently v") && !/Filed as[^<]*\d{4}/.test(html)); // no version number, no date in a filing line
-  assert.equal((html.match(/Add and check/g) || []).length, 2);
+  assert.equal((html.match(/Add and check/g) || []).length, 1); // only the next step is active; the other waits ("After step 1")
   assert.ok(!html.includes('type="file"') && !html.includes("browse files"));
   const none = within(ON, createElement(m.SamplePicker, { deal: "x", documents: [], labels: {}, onDone() {}, onClose() {}, initialSamples: [] }));
   assert.ok(none.includes("This deal has no sample files in the public demo."));

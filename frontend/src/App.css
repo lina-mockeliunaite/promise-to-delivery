@@ -369,3 +369,8 @@ main.home { max-width: 1440px; }
 .demo-sample-n { flex: none; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; background: var(--dl-btn-soft, #f1f5f9); }
 .demo-sample-list li > div { flex: 1; }
 .demo-sample-list li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--dl-line, #e2e8f0); border-radius: 8px; }
+.demo-sample-list li.is-later { opacity: 0.6; }
+.demo-sample-list li.is-done .demo-sample-n { background: #dcfce7; color: #166534; }
+.demo-sample-done { flex: none; font-size: 12px; color: var(--muted, #64748b); }
+.demo-all-added { margin: 8px 0 0; padding: 10px 12px; border-radius: 8px; background: #f0fdf4; color: #166534; font-size: 13px; }
+@media (prefers-color-scheme: dark) { .demo-all-added { background: #0f2a1a; color: #86efac; } }

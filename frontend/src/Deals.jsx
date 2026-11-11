@@ -7,6 +7,7 @@ import { FILTERS, SORTS, counts, initials, lastVendor, page, relativeTime, remem
 import { commitmentsNeedText, dealsText, plainName } from "./dealpage.js";
 import CatalogueModal from "./CatalogueModal.jsx";
 import ResetDemo from "./ResetDemo.jsx";
+import { useDemo } from "./demo.js";
 import { FICTIONAL, HOME_LINE } from "./brand.js";
 import "./Deals.css";
 
@@ -96,7 +97,8 @@ function NewDeal({ onCreated }) {
 }
 
 export default function Deals({ deals, onOpen, onCreated, onAbout }) {
-  const [filter, setFilter] = useState("handover");
+  const [filter, setFilter] = useState("all");
+  const demo = useDemo();
   const [query, setQuery] = useState("");
   const [sort, setSort] = useState("updated");
   const [pageNo, setPageNo] = useState(1);
@@ -121,12 +123,12 @@ export default function Deals({ deals, onOpen, onCreated, onAbout }) {
         </div>
         <div className="dl-actions">
           <button type="button" className="dl-btn" onClick={() => setCatalogue(true)}><Icon d={ICONS.box} size={16} /> Product catalogue</button>
-          <NewDeal onCreated={onCreated} />
+          {!demo.public && <NewDeal onCreated={onCreated} />}
         </div>
       </section>
       {catalogue && <CatalogueModal vendors={vendors} vendor={lastVendor(vendors)} onClose={() => setCatalogue(false)} onChanged={onCreated ? () => onCreated(null) : undefined} />}
 
-      <section className="dl-bar-row">
+      {!demo.public && <section className="dl-bar-row">
         <div className="dl-tabs" role="tablist" aria-label="Filter deals">
           {FILTERS.filter((f) => f.key !== "earlier" || n.earlier > 0).map((f) => (
             <button key={f.key} type="button" role="tab" aria-selected={filter === f.key}
@@ -150,7 +152,7 @@ export default function Deals({ deals, onOpen, onCreated, onAbout }) {
             </select>
           </label>
         </div>
-      </section>
+      </section>}
 
       <section className="dl-table-card">
         <div className="dl-scroll">
@@ -208,9 +210,11 @@ export default function Deals({ deals, onOpen, onCreated, onAbout }) {
           </table>
         </div>
         <footer className="dl-foot">
-          <span>
-            Showing <strong>{shown.rows.length}</strong> of <strong>{dealsText(rows.length)}</strong> · Sorted by {sortLabel}
-          </span>
+          {!demo.public && (
+            <span>
+              Showing <strong>{shown.rows.length}</strong> of <strong>{dealsText(rows.length)}</strong> · Sorted by {sortLabel}
+            </span>
+          )}
           <span className="dl-scope"><Icon d={ICONS.info} size={14} /> Lists commitments where the customer's expectation, the contract and what we can sell don't line up.</span>
           {shown.pages > 1 && (
             <span className="dl-pager">

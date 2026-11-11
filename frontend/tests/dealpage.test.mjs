@@ -325,8 +325,9 @@ test("the drawer's view of a live commitment uses stored data only, and hides th
   assert.equal(partsText(v.mismatch), "Contract has no matching wording");
   assert.deepEqual(v.badges, ["No approval found"]);
   assert.equal(v.first, "First found in the checked documents: RFP response, 29 Sep");
-  assert.equal(v.told.length, 1); // the same quote in two documents is listed once, newest source first
-  assert.equal(v.told[0].doc, DOCS[0]);
+  assert.equal(v.told.length, 1); // the same quote in two documents is listed once, earliest source first (11 Nov), the other as "also in"
+  assert.equal(v.told[0].doc, DOCS[1]);
+  assert.deepEqual(v.told[0].also, [{ label: "Proposal", date: "2026-10-02" }]);
   assert.equal(v.contract.text, "No matching wording found in the draft contract or SOW");
   assert.deepEqual(v.contract.missing, ["BioCatch"]);
   assert.equal(v.found[0].label, "No approval found in the supplied documents");
@@ -703,15 +704,14 @@ test("the Noma languages term is shown in full on the contract line, in the plai
   assert.equal(partsText(over.mismatch), "Contract differs");
 });
 
-test("landing cards stack the badge under the title on every card, and the drawer summary carries only the badges", async () => {
+test("landing cards stack the badge under the title on every card, and the drawer carries no badge of its own", async () => {
   const fs = await import("node:fs");
   const landing = fs.readFileSync(new URL("../src/Landing.jsx", import.meta.url), "utf8");
   const drawer = fs.readFileSync(new URL("../src/Drawer.jsx", import.meta.url), "utf8");
   const css = fs.readFileSync(new URL("../src/DealPage.css", import.meta.url), "utf8");
   assert.ok(landing.includes("labels={found[s.deal].badges} stacked />"));
   assert.match(css, /\.dp-titleline\.is-stacked \{ flex-direction: column; align-items: flex-start;/);
-  const summary = drawer.slice(drawer.indexOf('className="dr-mismatch"') - 120, drawer.indexOf('className="dr-mismatch"') + 160);
-  assert.ok(summary.includes("PromiseBadges") && !summary.includes("MismatchSentence")); // the "Contract says" section below carries the wording
+  assert.ok(!drawer.includes('className="dr-mismatch"')); // 11 Nov: the drawer no longer repeats the first finding's title as a badge; "Contract says" below carries the wording
   // rows, locked rows and the drawer keep the beside-then-wrap behaviour: only Landing.jsx passes `stacked`
   for (const f of ["DealPage.jsx", "FrozenRecord.jsx"]) assert.ok(!fs.readFileSync(new URL(`../src/${f}`, import.meta.url), "utf8").includes("stacked"));
 });

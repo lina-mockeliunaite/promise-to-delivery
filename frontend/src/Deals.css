@@ -91,7 +91,7 @@ body:has(.dl) { background: #f8fafc; }
 
 /* One list card: hairline rows, quiet uppercase column labels */
 .dl-table-card { background: var(--dl-card); border-radius: 14px; box-shadow: var(--dl-shadow); overflow: hidden; }
-.dl-scroll { overflow-x: auto; }
+.dl-scroll { overflow-x: auto; position: relative; } /* 11 Nov: the hidden "Action" header text is positioned, so it stays inside the scroller and no longer widens the page at 390px */
 .dl-table { width: 100%; border-collapse: collapse; text-align: left; }
 .dl-table th { font-family: inherit; background: transparent; padding: 12px 20px 8px; font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase; font-weight: 600; color: var(--dl-muted); white-space: nowrap; }
 .dl-table td { padding: 12px 20px; border-top: 1px solid var(--dl-hair); vertical-align: middle; white-space: nowrap; }
