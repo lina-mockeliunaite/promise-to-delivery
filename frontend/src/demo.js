@@ -180,8 +180,9 @@ export function guideAction(step, commitments) {
 export const GuidePublishContext = createContext(() => {});
 export const GuideStateContext = createContext(null);
 export const BAR_NOTE_FALLBACK = "Shared with other visitors. If a deal has already been worked through, click Reset demo.";
+// The current step for the bar: "Step N of 6" is shown above its text, the six progress dots beside it (11 Nov).
 export const barStepText = (steps) => {
   const current = steps.find((s) => s.state === "current");
-  return current ? { n: current.n, text: `Step ${current.n} of ${steps.length}: ${current.label}`, step: current } : null;
+  return current ? { n: current.n, total: steps.length, label: `Step ${current.n} of ${steps.length}`, text: current.label, step: current } : null;
 };
 export const BAR_DONE = "Done · Reset demo to try again";

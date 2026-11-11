@@ -135,11 +135,15 @@ const ON = { public: true, banner: "Public demo · fictional data", note: "Share
 const bar = (guide, { demo = ON, samples = null, open = false, tour = null, toured = null } = {}) => renderToStaticMarkup(createElement(m.DemoContext.Provider, { value: demo },
   createElement(m.GuideStateContext.Provider, { value: guide }, createElement(m.DemoBar, { initialSamples: samples, initialOpen: open, initialTour: tour, toured }))));
 const guideFor = (deal, samplesIn, noted, extra = {}) => { const s = state(deal, samplesIn, noted); return { deal, documents: s.documents, commitments: s.commitments, handoverComplete: false, facts: FACTS, onDo() {}, onTour() {}, ...extra }; };
-const stepText = (html) => decode((html.match(/<span class="demo-bar-step" role="status">([^<]*)<\/span>/) || [])[1] || "");
+const nOf = (html) => decode((html.match(/<span class="demo-bar-n">([^<]*)<\/span>/) || [])[1] || "");
+const textOf = (html) => decode((html.match(/<span class="demo-bar-step">([^<]*)<\/span>/) || [])[1] || "");
+const stepText = (html) => (/^Step/.test(nOf(html)) ? `${nOf(html)}: ${textOf(html)}` : textOf(html)); // "Step N of 6" above the step text, read together
 
 test("step 1: the bar reads 'Step 1 of 6: Get the picture' with a 'Show me' button", () => {
   const html = bar(guideFor("noma_journeys", 0), { samples: SAMPLES.noma_journeys, toured: false });
-  assert.ok(html.includes('<strong class="demo-bar-status">Public demo · fictional data</strong>'));
+  assert.ok(html.includes('<span class="demo-bar-pill">Demo guide</span>')); // the pill is uppercase by CSS
+  assert.ok(!html.includes("demo-bar-status")); // "Public demo · fictional data" has moved into the All steps dropdown on a deal page
+  assert.equal(nOf(html), "Step 1 of 6"); assert.equal(textOf(html), "Get the picture");
   assert.equal(stepText(html), "Step 1 of 6: Get the picture");
   assert.match(html, /<button type="button" class="demo-bar-do">Show me<\/button>/);
   assert.ok(!html.includes("Do step 1") && !html.includes("Skip tour"));
@@ -149,7 +153,7 @@ test("step 1: the bar reads 'Step 1 of 6: Get the picture' with a 'Show me' butt
 test("while the tour runs the bar's text is the caption, with 'N of 3', Next (Finish on the last part) and Skip tour", () => {
   for (const [part, label] of [[0, "Next"], [1, "Next"], [2, "Finish"]]) {
     const html = bar(guideFor("noma_journeys", 0), { samples: SAMPLES.noma_journeys, tour: part, toured: false });
-    assert.equal(stepText(html), m.tourCaptions("noma_journeys", FACTS)[part]);
+    assert.equal(textOf(html), m.tourCaptions("noma_journeys", FACTS)[part]); assert.equal(nOf(html), "Step 1 of 6");
     assert.ok(html.includes(`<span class="demo-bar-tourn">${part + 1} of 3</span>`));
     assert.ok(html.includes(`<button type="button" class="demo-bar-do">${label}</button>`) && html.includes(">Skip tour<"));
     assert.ok(!html.includes("Do step") && !html.includes("Show me"));
@@ -207,6 +211,7 @@ test("on every other page the bar is the status and Reset demo only", () => {
   const html = bar(null);
   assert.ok(html.includes("Public demo · fictional data") && html.includes(">Reset demo<"));
   assert.ok(!html.includes("All steps") && !html.includes("Do step") && !html.includes("demo-bar-step"));
+  assert.ok(html.includes('<span class="demo-bar-pill">Demo guide</span>') && html.includes('<strong class="demo-bar-status">Public demo · fictional data</strong>')); // landing and the deal list: the pill, the status, Reset demo
   const other = bar({ deal: "harbour_bank", documents: [], commitments: [], handoverComplete: false, onDo() {} }, { samples: [] });
   assert.ok(!other.includes("All steps") && !other.includes("demo-bar-step"));
 });
@@ -281,11 +286,12 @@ test("the page wires the tour and the guided drawer; the card is gone and local 
 test("the bar is sticky above every page, one line on desktop, two below 640px, and the page's own sticky parts sit under it", () => {
   const css = read("App.css");
   assert.match(css, /\.demo-bar \{ position: sticky; top: 0; z-index: 70;/);
-  assert.match(css, /\.demo-bar-row \{ display: flex; align-items: center; gap: 12px; padding: 6px 16px; \}/);
-  assert.match(css, /\.demo-bar-step \{ flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; \}/);
+  assert.match(css, /\.demo-bar-row \{ display: flex; align-items: center; gap: 14px; padding: 9px 16px; min-height: 38px; \}/); // no wrap: one line
+  assert.match(css, /\.demo-bar-step \{ font-size: 15px; font-weight: 600; color: #ffffff; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; \}/);
   const narrow = css.slice(css.indexOf("@media (max-width: 639px) {\n  .demo-bar-row"));
   assert.match(narrow, /\.demo-bar-row \{ flex-wrap: wrap;/);
-  assert.match(narrow, /\.demo-bar-step \{ flex: 1 1 150px; white-space: normal; overflow: visible; \}/);
+  assert.match(narrow, /\.demo-bar-stepblock \{ flex: 1 1 170px; \}/);
+  assert.match(narrow, /\.demo-bar-step \{ white-space: normal; overflow: visible; \}/); // wraps, never clips; the 15px is not reduced
   assert.match(css, /@media print \{ \.demo-bar \{ display: none; \} \}/);
   const dp = read("DealPage.css");
   assert.match(dp, /\.dp-topbar \{ position: sticky; top: var\(--demo-bar-h, 0px\);/);
@@ -295,4 +301,68 @@ test("the bar is sticky above every page, one line on desktop, two below 640px, 
 
 test("the deal list's footer 'Reset demo' link is for local mode only (the bar has it in public mode)", () => {
   assert.match(read("Deals.jsx"), /\{!demo\.public && <ResetDemo \/>\}<\/footer>/);
+});
+
+// ---- readability (11 Nov)
+test("the bar's step block: 'Step N of 6' above the step text, six progress dots (done, current, later), the Demo guide pill on the left", () => {
+  const html = bar(guideFor("noma_journeys", 1), { samples: SAMPLES.noma_journeys, toured: true });
+  assert.ok(html.indexOf("demo-bar-pill") < html.indexOf("demo-bar-stepblock"));
+  assert.ok(html.indexOf('class="demo-bar-n"') < html.indexOf('class="demo-bar-step"')); // the count above the text
+  const dots = html.match(/<span class="demo-bar-dot is-(done|current|later)"><\/span>/g);
+  assert.equal(dots.length, 6);
+  assert.deepEqual(dots.map((d) => d.match(/is-(\w+)/)[1]), ["done", "done", "current", "later", "later", "later"]);
+  assert.match(html, /aria-label="2 of 6 steps done"/);
+  assert.equal(nOf(html), "Step 3 of 6");
+  const done = bar(guideFor("noma_journeys", 3, true, { handoverComplete: true }), { samples: [], toured: false });
+  assert.equal(nOf(done), "All 6 steps"); assert.equal((done.match(/demo-bar-dot is-done/g) || []).length, 6);
+});
+
+test("the dropdown's top line is 'Public demo · fictional data', above the steps and the shared note", () => {
+  const html = bar(guideFor("noma_journeys", 0), { samples: SAMPLES.noma_journeys, open: true, toured: true });
+  const menu = html.slice(html.indexOf('class="demo-bar-menu"'));
+  assert.ok(menu.startsWith('class="demo-bar-menu" role="group" aria-label="All steps"><p class="demo-bar-menu-status">Public demo · fictional data</p><ol'));
+  assert.ok(menu.indexOf("demo-bar-menu-status") < menu.indexOf("demo-guide-list") && menu.indexOf("demo-guide-list") < menu.indexOf("demo-bar-note"));
+});
+
+test("sizes: the pill is small uppercase on a lighter slate; step count 12-13px light grey; step text 15px semi-bold white; buttons 36px/14px; links 14px; the bar about 56px", () => {
+  const css = read("App.css");
+  assert.match(css, /\.demo-bar-pill \{[^}]*background: #334155; color: #e2e8f0; font-size: 11px; font-weight: 600; letter-spacing: 0\.08em; text-transform: uppercase;/);
+  assert.match(css, /\.demo-bar-n \{ font-size: 12\.5px; color: #cbd5e1;/);
+  assert.match(css, /\.demo-bar-step \{ font-size: 15px; font-weight: 600; color: #ffffff;/);
+  assert.match(css, /\.demo-bar-do \{ flex: none; min-height: 36px; padding: 0 16px; font-size: 14px; font-weight: 600;/);
+  assert.match(css, /\.demo-bar-link \{[^}]*font-size: 14px;/);
+  assert.match(css, /\.demo-bar \{ position: sticky; top: 0; z-index: 70; background: #1e293b; color: #ffffff;/); // still sticky, still slate
+  // 9 + 9 padding + the two-line step block (12.5px + 15px at line-height 1.35 plus the gap) = about 56px
+  const lines = 12.5 * 1.35 + 15 * 1.35 + 1;
+  assert.ok(Math.abs(9 + 9 + lines - 56) <= 6, `bar height ${9 + 9 + lines}`);
+});
+
+test("the bar's text colours are AA on the slate: pill, step count, step text, links, button, dots (3:1)", () => {
+  const lum = (hex) => { const c = [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16) / 255).map((v) => (v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
+  const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+  const css = read("App.css");
+  const col = (re) => css.match(re)[1];
+  const SLATE = "#1e293b";
+  assert.equal(col(/\.demo-bar \{[^}]*background: (#[0-9a-f]{6})/), SLATE);
+  for (const [name, fg, bg] of [["pill", col(/\.demo-bar-pill \{[^}]*; color: (#[0-9a-f]{6})/), col(/\.demo-bar-pill \{[^}]*background: (#[0-9a-f]{6})/)],
+    ["step count", col(/\.demo-bar-n \{[^}]*color: (#[0-9a-f]{6})/), SLATE], ["step text", col(/\.demo-bar-step \{[^}]*color: (#[0-9a-f]{6})/), SLATE],
+    ["links", col(/\.demo-bar-link \{[^}]*color: (#[0-9a-f]{6})/), SLATE], ["button", col(/\.demo-bar-do \{[^}]*; color: (#[0-9a-f]{6})/), col(/\.demo-bar-do \{[^}]*background: (#[0-9a-f]{6})/)],
+    ["tour count", col(/\.demo-bar-tourn \{[^}]*color: (#[0-9a-f]{6})/), SLATE], ["menu status", col(/\.demo-bar-menu-status \{[^}]*color: (#[0-9a-f]{6})/), SLATE]]) {
+    assert.ok(ratio(fg, bg) >= 4.5, `${name}: ${ratio(fg, bg).toFixed(2)}`);
+  }
+  assert.ok(ratio(col(/\.demo-bar-dot\.is-done \{ background: (#[0-9a-f]{6})/), SLATE) >= 3); // non-text: 3:1
+  assert.ok(ratio(col(/\.demo-bar-dot\.is-later \{ border: 1\.5px solid (#[0-9a-f]{6})/), SLATE) >= 3);
+  assert.ok(ratio("#4f46e5", SLATE) >= 1.5 && ratio("#ffffff", "#4f46e5") >= 4.5); // the current dot is white with an indigo ring
+});
+
+test("the bare URL opens the landing page in public mode; local mode and deal links are unchanged", async () => {
+  const app = read("App.jsx");
+  assert.match(app, /const bareAtLoad = useRef\(window\.location\.hash === ""\);/);
+  assert.match(app, /if \(!demo\.public \|\| !bareAtLoad\.current\) return;\s*bareAtLoad\.current = false;\s*setCurrent\(null\); setClassic\(false\); setLanding\(true\);/);
+  // local mode: the landing page is still decided by showLanding alone
+  const { showLanding } = await import("../src/landing.js");
+  assert.equal(showLanding("", true, null), false); // seen, bare: the deal list (local)
+  assert.equal(showLanding("", false, null), true);  // first visit: the landing page
+  assert.equal(showLanding("#welcome", true, null), true);
+  assert.equal(showLanding("#d=noma_journeys", false, "noma_journeys"), false); // a deal link opens the deal
 });

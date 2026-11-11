@@ -56,8 +56,19 @@ export function DemoBar({ initialSamples = null, initialOpen = false, initialTou
   return (
     <div className="demo-bar" ref={bar} role="region" aria-label="Public demo">
       <div className="demo-bar-row">
-        <strong className="demo-bar-status">{demo.banner}</strong>
-        {steps && <span className="demo-bar-step" role="status">{captions ? captions[tour] : allDone ? BAR_DONE : now.text}</span>}
+        <span className="demo-bar-pill">Demo guide</span>
+        {!steps && <strong className="demo-bar-status">{demo.banner}</strong>}
+        {steps && (
+          <span className="demo-bar-stepblock" role="status">
+            <span className="demo-bar-meta">
+              <span className="demo-bar-n">{allDone ? `All ${steps.length} steps` : `Step ${now.n} of ${steps.length}`}</span>
+              <span className="demo-bar-dots" role="img" aria-label={`${steps.filter((s) => s.state === "done").length} of ${steps.length} steps done`}>
+                {steps.map((s) => <span key={s.n} className={`demo-bar-dot is-${s.state}`} />)}
+              </span>
+            </span>
+            <span className="demo-bar-step">{captions ? captions[tour] : allDone ? BAR_DONE : now.text}</span>
+          </span>
+        )}
         {captions && <span className="demo-bar-tourn">{tour + 1} of {captions.length}</span>}
         {captions && <button type="button" className="demo-bar-do" onClick={() => (tour < captions.length - 1 ? goTour(tour + 1) : stopTour(true))}>{tour < captions.length - 1 ? "Next" : "Finish"}</button>}
         {captions && <button type="button" className="demo-bar-link" onClick={() => stopTour(true)}>Skip tour</button>}
@@ -69,6 +80,7 @@ export function DemoBar({ initialSamples = null, initialOpen = false, initialTou
       </div>
       {steps && open && (
         <div className="demo-bar-menu" role="group" aria-label="All steps">
+          <p className="demo-bar-menu-status">{demo.banner}</p>
           <ol className="demo-guide-list">
             {steps.map((s) => (
               <li key={s.n} className={`is-${s.state}`}>

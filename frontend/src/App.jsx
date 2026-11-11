@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import * as api from "./api.js";
 import Handoff from "./Handoff.jsx";
 import Deals from "./Deals.jsx";
@@ -7,7 +7,7 @@ import Landing from "./Landing.jsx";
 import { WELCOME_HASH, isWelcome, landingSeen, markLandingSeen, showLanding } from "./landing.js";
 import { TAGLINE } from "./brand.js";
 import { readHash } from "./dealpage.js";
-import { DEMO_OFF, DemoContext, GuidePublishContext, GuideStateContext } from "./demo.js";
+import { DEMO_OFF, DemoContext, GuidePublishContext, GuideStateContext, useDemo } from "./demo.js";
 import { DemoBar } from "./DemoUI.jsx";
 import { TYPE_EFFECT, alsoLine, checkLine, checkUpload, fmtDate, fmtDateTime, guessType, plural, typeFromName, uploadKind } from "./format.js";
 
@@ -1033,6 +1033,7 @@ export default function App() {
 }
 
 function AppBody() {
+  const demo = useDemo();
   const [deals, setDeals] = useState(null);
   const [current, setCurrent] = useState(() => (isWelcome(window.location.hash) ? null : readHash(window.location.hash).d)); // #d=<deal>&c=<key>: a reload or a shared link reopens it
   const [landing, setLanding] = useState(() => showLanding(window.location.hash, landingSeen(), readHash(window.location.hash).d)); // first visit, or #welcome
@@ -1049,6 +1050,14 @@ function AppBody() {
   }, []);
   useEffect(loadDeals, [loadDeals]);
   useEffect(() => { if (deals && current && !deals.some((x) => x.deal === current)) setCurrent(null); }, [deals, current]);
+  // Public demo (11 Nov): the bare URL (no hash) opens the landing page, even for a returning visitor. Decided once, when the server says it is public mode; a
+  // deal link (#d=…) or #welcome is left alone, and local mode never gets here.
+  const bareAtLoad = useRef(window.location.hash === "");
+  useEffect(() => {
+    if (!demo.public || !bareAtLoad.current) return;
+    bareAtLoad.current = false;
+    setCurrent(null); setClassic(false); setLanding(true);
+  }, [demo.public]);
   // 11 Nov: a new screen starts at the top. Going back to the deal list from a scrolled deal page used to keep the offset, which left the
   // public banner above the window.
   useEffect(() => { window.scrollTo(0, 0); }, [current, landing, classic]);

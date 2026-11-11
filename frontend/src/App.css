@@ -388,31 +388,43 @@ main.home { max-width: 1440px; }
 .dp-prow.is-flash .dp-prow-head { animation: demo-flash 2.4s ease-out; }
 .dp-handover.is-flash { animation: demo-flash 2.4s ease-out; }
 
-/* The demo bar (11 Nov, public mode): one sticky bar above every page. Desktop is one line; below 640px the status and step are line 1 and the buttons line 2. */
-.demo-bar { position: sticky; top: 0; z-index: 70; background: #1e293b; color: #ffffff; border-bottom: 1px solid #334155; font-size: 12px; line-height: 1.4; } /* dark slate, white text (11 Nov): 14:1; links #c7d2fe 9:1 */
+/* The demo bar (11 Nov, public mode): one sticky bar above every page, about 56px on desktop. Left, a "Demo guide" pill; then "Step N of 6" with six progress dots above
+   the step text; then the button; at the right "All steps" and "Reset demo". Below 640px the pill and the step are line 1 and the buttons line 2. */
+.demo-bar { position: sticky; top: 0; z-index: 70; background: #1e293b; color: #ffffff; border-bottom: 1px solid #334155; font-size: 14px; line-height: 1.35; } /* dark slate, white text: 14:1 */
 @media print { .demo-bar { display: none; } }
-.demo-bar-row { display: flex; align-items: center; gap: 12px; padding: 6px 16px; }
-.demo-bar-status { flex: none; white-space: nowrap; font-weight: 600; }
-.demo-bar-step { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-/* The primary button in the brand indigo, with a light edge so it reads on the slate. */
-.demo-bar-do { flex: none; min-height: 0; padding: 3px 12px; font-size: 12px; font-weight: 600; line-height: 1.4; border: 1px solid #a5b4fc; border-radius: 999px; background: #4f46e5; color: #ffffff; cursor: pointer; }
+.demo-bar-row { display: flex; align-items: center; gap: 14px; padding: 9px 16px; min-height: 38px; }
+.demo-bar-pill { flex: none; padding: 3px 10px; border-radius: 999px; background: #334155; color: #e2e8f0; font-size: 11px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; white-space: nowrap; }
+.demo-bar-status { flex: none; white-space: nowrap; font-weight: 600; font-size: 14px; }
+.demo-bar-stepblock { flex: 0 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.demo-bar-meta { display: flex; align-items: center; gap: 10px; }
+.demo-bar-n { font-size: 12.5px; color: #cbd5e1; white-space: nowrap; }
+.demo-bar-dots { display: inline-flex; align-items: center; gap: 5px; }
+.demo-bar-dot { width: 8px; height: 8px; border-radius: 50%; box-sizing: border-box; }
+.demo-bar-dot.is-done { background: #a5b4fc; }
+.demo-bar-dot.is-current { background: #ffffff; box-shadow: 0 0 0 2px #4f46e5; }
+.demo-bar-dot.is-later { border: 1.5px solid #64748b; }
+.demo-bar-step { font-size: 15px; font-weight: 600; color: #ffffff; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The primary button in the brand indigo, with a light edge so it reads on the slate; normal button size (36px, 14px text). */
+.demo-bar-do { flex: none; min-height: 36px; padding: 0 16px; font-size: 14px; font-weight: 600; line-height: 1; border: 1px solid #a5b4fc; border-radius: 999px; background: #4f46e5; color: #ffffff; cursor: pointer; white-space: nowrap; }
 .demo-bar-do:hover { background: #4338ca; }
-.demo-bar-right { flex: none; margin-left: auto; display: flex; align-items: center; gap: 14px; }
-.demo-bar-link { border: 0; background: none; padding: 0; margin: 0; min-height: 0; font: inherit; font-weight: 500; color: #c7d2fe; text-decoration: underline; cursor: pointer; white-space: nowrap; }
+.demo-bar-right { flex: none; margin-left: auto; display: flex; align-items: center; gap: 16px; }
+.demo-bar-link { border: 0; background: none; padding: 0; margin: 0; min-height: 0; font: inherit; font-size: 14px; font-weight: 500; color: #c7d2fe; text-decoration: underline; cursor: pointer; white-space: nowrap; }
 .demo-bar-link:hover { color: #ffffff; }
 .demo-bar-link:focus-visible, .demo-bar-do:focus-visible { outline: 2px solid #ffffff; outline-offset: 2px; border-radius: 4px; }
 .demo-bar-menu, .demo-bar-reset { position: absolute; top: 100%; right: 16px; z-index: 71; width: min(440px, calc(100vw - 32px)); box-sizing: border-box; padding: 12px 14px; background: #1e293b; color: #e2e8f0; border: 1px solid #334155; border-top: 0; border-radius: 0 0 10px 10px; box-shadow: 0 10px 25px -5px rgba(2, 6, 23, 0.5); font-size: 13px; }
 .demo-bar-menu .demo-guide-list { margin-top: 0; }
 .demo-bar-note { margin: 10px 0 0; font-size: 12px; color: #cbd5e1; }
+.demo-bar-menu-status { margin: 0 0 8px; font-size: 13px; font-weight: 600; color: #ffffff; }
 .demo-bar-reset { margin: 0; text-align: left; border-radius: 0 0 10px 10px; }
 @media (max-width: 639px) {
-  .demo-bar-row { flex-wrap: wrap; gap: 4px 10px; }
-  .demo-bar-step { flex: 1 1 150px; white-space: normal; overflow: visible; } /* beside the status when it fits, wrapping rather than clipping */
+  .demo-bar-row { flex-wrap: wrap; gap: 6px 10px; padding: 8px 16px; }
+  .demo-bar-stepblock { flex: 1 1 170px; } /* beside the pill when it fits; the step text (still 15px) wraps rather than clips */
+  .demo-bar-step { white-space: normal; overflow: visible; }
   .demo-bar-do, .demo-bar-tourn, .demo-bar-row > .demo-bar-link { order: 3; }
   .demo-bar-right { order: 4; }
   .demo-bar-menu, .demo-bar-reset { left: 16px; right: 16px; width: auto; }
 }
-.demo-bar-tourn { flex: none; font-size: 11px; opacity: 0.85; white-space: nowrap; }
+.demo-bar-tourn { flex: none; font-size: 13px; color: #cbd5e1; white-space: nowrap; }
 .demo-hint { margin: 8px 0 0; padding: 8px 10px; border-radius: 8px; background: var(--tint, #eef2ff); color: var(--ink, #0f172a); font-size: 13px; }
 /* The dropdown and the reset confirm match the bar: slate, light text, indigo for the current step and the primary button. */
 .demo-bar-menu .demo-guide-list li, .demo-bar-menu .demo-guide-list li.is-done, .demo-bar-menu .demo-guide-list li.is-later { color: #e2e8f0; }
