@@ -20,6 +20,8 @@ import { IdentityLine, useScrolledPast } from "./Identity.jsx";
 import { CardHead, Drawer, DrawerHead, CommitmentView, DocumentView, MismatchSentence, TitleLine, Icon as DIcon, ICON } from "./Drawer.jsx";
 import { FICTIONAL } from "./brand.js";
 import CatalogueModal from "./CatalogueModal.jsx";
+import { DemoNameNote, SamplePicker } from "./DemoUI.jsx";
+import { NAME_NOTE, noteLimit, useDemo } from "./demo.js";
 import "./DealPage.css";
 
 const Icon = ({ d, size = 15 }) => <DIcon d={d} size={size} />;
@@ -143,6 +145,7 @@ function NameField({ stored, draft, onDraft }) {
     <label className="dp-name-field">
       <span>Your name</span>
       <input value={draft} onChange={(e) => onDraft(e.target.value)} placeholder="e.g. Sam (Delivery)" maxLength={120} required />
+      <DemoNameNote />
     </label>
   );
 }
@@ -151,6 +154,7 @@ function NameField({ stored, draft, onDraft }) {
 // One handover note slot. Empty: the role, the note's name and an "Add note" link. Written: the note as a quote, who recorded it
 // and when, and an "Update note" link.
 function NotePanel({ role, label, who, note, name, setName, onSave }) {
+  const demo = useDemo();
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState("");
   const [draft, setDraft] = useState("");
@@ -179,7 +183,7 @@ function NotePanel({ role, label, who, note, name, setName, onSave }) {
       </div>
       {editing ? (
         <form onSubmit={save} className="dp-note-form">
-          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} maxLength={2000} autoFocus
+          <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} maxLength={noteLimit(demo)} autoFocus
                     placeholder={role === "sales" ? "What Delivery should know: commitments needing attention, side promises, people to talk to" : "What you accept, what you need before kick-off"} />
           <NameField stored={name} draft={draft} onDraft={setDraft} />
           <div className="dp-row">
@@ -310,6 +314,7 @@ function Modal({ title, sub, dot, onClose, children }) {
 
 // Record a note, in the drawer. Keep it open (default) or mark as addressed by note; the name is asked for only if none is stored.
 function NoteForm({ deal, c, titleId, name, setName, canDecide, freshnessLabel, message, checking, onCheckAgain, onNoted, onBack, onClose }) {
+  const demo = useDemo();
   const open = c.issues.filter((i) => i.state !== "Resolved");
   const [how, setHow] = useState("keep"); // keep: stays Needs attention, note shown in the row; addressed: settled without a document
   const [note, setNote] = useState("");
@@ -354,16 +359,18 @@ function NoteForm({ deal, c, titleId, name, setName, canDecide, freshnessLabel, 
         </div>
         <label className="dp-field">
           <span>Note or recorded agreement</span>
-          <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={5} maxLength={2000} autoFocus />
+          <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={5} maxLength={noteLimit(demo)} autoFocus />
         </label>
         <div className="dp-author">
           {!name.trim() || changing ? (
             <label className="dp-name-field">
               <span>Your name</span>
               <input value={draft} onChange={(e) => setDraft(e.target.value)} placeholder="e.g. Sam (Delivery)" maxLength={120} required />
+              <DemoNameNote />
             </label>
           ) : (
-            <span>Recording as <strong>{plainName(name)}</strong> · <button type="button" className="dp-link-btn dp-brand" onClick={() => { setDraft(name); setChanging(true); }}>change</button></span>
+            <span>Recording as <strong>{plainName(name)}</strong> · <button type="button" className="dp-link-btn dp-brand" onClick={() => { setDraft(name); setChanging(true); }}>change</button>
+              {demo.public && <span className="dp-faint dp-small"> · {NAME_NOTE}</span>}</span>
           )}
         </div>
         {blocked && (
@@ -406,6 +413,7 @@ function NamePrompt({ initial, onSave, onClose }) {
     <Modal title="Your name" sub="Recorded with what you add. Remembered in this browser only." onClose={onClose}>
       <form className="dp-add" onSubmit={(e) => { e.preventDefault(); onSave(value.trim()); }}>
         <input value={value} onChange={(e) => setValue(e.target.value)} placeholder="e.g. Sam (Delivery)" maxLength={120} autoFocus />
+        <DemoNameNote />
         <div className="dp-row">
           <button type="submit" className="dp-btn dp-btn-dark" disabled={!value.trim()}>Continue</button>
           <button type="button" className="dp-btn" onClick={onClose}>Cancel</button>
@@ -432,6 +440,7 @@ function ClosingHelp({ onClose }) {
 
 
 function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
+  const demo = useDemo();
   // No silent default type (20 Oct): a document opened from a commitment is pre-selected by what usually closes that gap; from the
   // sidebar nothing is chosen until the person chooses, or accepts the suggestion made from the file.
   const [form, setForm] = useState({ source_key: preset?.source_key ?? "", doc_type: preset?.doc_type ?? "",
@@ -463,6 +472,7 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
   const revision = form.file && !form.source_key && !notice
     ? newDocumentNotice({ fileName: form.file.name, head, documents, docType: form.doc_type, today: fmtDate(form.doc_date) }) : null;
   const ready = addReady({ file: form.file, source_key: form.source_key, doc_type: form.doc_type });
+  if (demo.public) return <SamplePicker deal={deal} documents={documents} labels={labels} onDone={onDone} onClose={onClose} />; // no uploads in public mode
   const submit = async (e) => {
     e?.preventDefault();
     setBusy(true);
@@ -662,6 +672,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
   const [name, setName] = useName();
+  const demo = useDemo();
   const [completing, setCompleting] = useState(false);
   const [completeDraft, setCompleteDraft] = useState("");
   const [catFocus, setCatFocus] = useState(null); // null = closed, "" = open unfocused, "CAP-…/AU" = open at an entry
@@ -791,6 +802,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
             <span className="dp-me">
               Recording as <strong>{plainName(name)}</strong> ·{" "}
               <button type="button" className="dp-link-btn dp-brand" onClick={() => setAskName({ fn: null, initial: name })}>change</button>
+              {demo.public && <span className="dp-faint dp-small"> (visible to other visitors)</span>}
             </span>
           )}
           <button type="button" className="dp-btn dp-btn-small" onClick={() => setCatFocus("")}>Product catalogue</button>

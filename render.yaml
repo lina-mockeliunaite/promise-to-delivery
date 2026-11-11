@@ -1,0 +1,13 @@
+# Render Blueprint for the public demo (10 Nov). Free web service from the Dockerfile. No API key here, and none is needed.
+services:
+  - type: web
+    name: dealshape-demo
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /api/deals
+    envVars:
+      - key: DEALSHAPE_PUBLIC_DEMO
+        value: "1"
+      - key: DEALSHAPE_ALLOWED_HOSTS
+        sync: false # asked for when the Blueprint is created: the service's host, e.g. dealshape-demo.onrender.com

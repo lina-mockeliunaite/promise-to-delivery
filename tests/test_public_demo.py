@@ -1,0 +1,349 @@
+"""Public demo mode (10 Nov): on and off for every refusal, the two served deals, the sample-file path end to end for Noma
+and Alder (no key, no model call), the hourly reset under the reset lock, backups kept to three, and local mode unchanged.
+
+The ledger is built once from the saved v2 output into a temporary folder and copied per test; the real reading cache is
+only read (test_zz_cache_untouched checks the suite leaves it as it was). The real workspace/ledger.sqlite is never opened.
+"""
+
+import base64
+import os
+import shutil
+import sys
+import tempfile
+import threading
+import unittest
+from pathlib import Path
+from unittest import mock
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from fastapi.testclient import TestClient
+
+import api
+import config
+import public_demo
+import reset_demo
+
+H = {"X-Requested-With": "deal-workspace"}
+PUBLIC = ["alder_bank", "noma_journeys"]
+HIDDEN = ["harbour_bank", "coral_pay", "atlas_remit"]
+_template = {}
+
+
+def setUpModule():
+    tmp = tempfile.TemporaryDirectory()
+    _template["tmp"] = tmp
+    _template["db"] = Path(tmp.name) / "template.sqlite"
+    reset_demo.reset(_template["db"])
+
+
+def tearDownModule():
+    _template["tmp"].cleanup()
+
+
+def no_key():
+    return mock.patch.dict(os.environ, {k: v for k, v in os.environ.items() if k != "ANTHROPIC_API_KEY"}, clear=True)
+
+
+class Case(unittest.TestCase):
+    public = True
+
+    def setUp(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        self.dir = Path(tmp.name)
+        self.db = self.dir / "ledger.sqlite"
+        shutil.copy(_template["db"], self.db)
+        env = no_key()
+        env.start()
+        self.addCleanup(env.stop)
+        self.client = self.make(self.public)
+
+    def make(self, public, **kw):
+        return TestClient(api.create_app(dist_dir=self.dir / "no-dist", ledger_path=self.db, public=public, **kw),
+                          base_url="http://127.0.0.1", follow_redirects=False)
+
+    def post(self, path, body, client=None):
+        return (client or self.client).post(path, json=body, headers=H)
+
+    def sample_body(self, deal, file):
+        meta = public_demo.find_sample(deal, file)
+        text = self.client.get("/api/demo/sample", params={"deal": deal, "file": file}).json()["text"]
+        if meta.get("version_of"):
+            return {"source_key": meta["version_of"], "filename": file, "text": text}
+        return {"name": file, "filename": file, "doc_type": meta["doc_type"], "doc_date": meta["doc_date"], "text": text}
+
+    def add_sample(self, deal, file):
+        return self.post(f"/api/deals/{deal}/documents/add-and-check", self.sample_body(deal, file))
+
+
+class TestOnlyTwoDealsInPublicMode(Case):
+    def test_the_deal_list_has_only_alder_and_noma(self):
+        self.assertEqual(sorted(self.client.get("/api/deals").json()["deals"]), PUBLIC)
+        self.assertEqual(sorted(d["deal"] for d in self.client.get("/api/workspace/deals").json()["deals"]), PUBLIC)
+
+    def test_every_route_refuses_the_other_three_deals(self):
+        gets = ["register", "documents", "documents/text?version=1", "sources", "results/latest", "handover", "handoffs",
+                "handoffs/summary", "handoffs/export.csv"]
+        posts = {"note": {"note": "x", "entered_by": "y"}, "seen": {"issue_id": 1, "seen_by": "y"},
+                 "documents/add-and-check": {"filename": "a.md", "text": "x", "doc_type": "proposal", "name": "a"},
+                 "review": {}, "handover/complete": {"completed_by": "y"}}
+        for deal in HIDDEN:
+            for g in gets:
+                self.assertEqual(self.client.get(f"/api/deals/{deal}/{g}").status_code, 404, (deal, g))
+            for p, body in posts.items():
+                self.assertEqual(self.post(f"/api/deals/{deal}/{p}", body).status_code, 404, (deal, p))
+            self.assertEqual(self.client.get("/api/catalogue", params={"deal": deal}).status_code, 404, deal)
+        for deal in PUBLIC:
+            self.assertEqual(self.client.get(f"/api/deals/{deal}/register").status_code, 200, deal)
+
+    def test_a_vendor_catalogue_is_served_only_for_the_served_deals(self):
+        vendors = {d["vendor"] for d in self.client.get("/api/workspace/deals").json()["deals"]}
+        for v in vendors:
+            self.assertEqual(self.client.get("/api/catalogue", params={"vendor": v}).status_code, 200, v)
+        self.assertEqual(self.client.get("/api/catalogue", params={"vendor": "nobody"}).status_code, 404)
+
+    def test_local_mode_still_serves_all_five(self):
+        local = self.make(False)
+        self.assertEqual(sorted(local.get("/api/deals").json()["deals"]), sorted(config.UI_DEALS))
+        self.assertEqual(sorted(d["deal"] for d in local.get("/api/workspace/deals").json()["deals"]), sorted(config.UI_DEALS))
+        for deal in HIDDEN:
+            self.assertEqual(local.get(f"/api/deals/{deal}/register").status_code, 200, deal)
+
+
+class TestConfigAndHosts(Case):
+    def test_the_banner_and_note_cap_are_reported_only_in_public_mode(self):
+        on = self.client.get("/api/demo/config").json()
+        self.assertEqual(on, {"public": True, "note_max": 500, "banner": "Public demo · fictional data · shared with other visitors. "
+                                                                      "If this deal has already been worked through, click Reset demo."})
+        self.assertEqual(self.make(False).get("/api/demo/config").json(), {"public": False, "banner": None, "note_max": None})
+
+    def test_extra_hosts_count_only_in_public_mode(self):
+        with mock.patch.dict(os.environ, {"DEALSHAPE_ALLOWED_HOSTS": "demo.onrender.com, other.example"}):
+            def host(public, name):
+                c = TestClient(api.create_app(dist_dir=self.dir / "x", ledger_path=self.db, public=public), base_url=f"http://{name}")
+                return c.get("/api/deals").status_code
+            self.assertEqual(host(True, "demo.onrender.com"), 200)
+            self.assertEqual(host(True, "other.example"), 200)
+            self.assertEqual(host(True, "127.0.0.1"), 200)
+            self.assertEqual(host(True, "localhost"), 200)
+            self.assertEqual(host(True, "evil.example"), 400)
+            self.assertEqual(host(False, "demo.onrender.com"), 400)  # local mode ignores the variable
+            self.assertEqual(host(False, "localhost"), 200)
+
+    def test_the_mode_comes_from_the_environment_when_not_given(self):
+        for value, expected in (("1", True), ("0", False), ("", False), ("true", False)):
+            with mock.patch.dict(os.environ, {"DEALSHAPE_PUBLIC_DEMO": value}):
+                c = TestClient(api.create_app(dist_dir=self.dir / "x", ledger_path=self.db), base_url="http://127.0.0.1")
+                self.assertEqual(c.get("/api/demo/config").json()["public"], expected, value)
+        with mock.patch.dict(os.environ, {}, clear=False):
+            os.environ.pop("DEALSHAPE_PUBLIC_DEMO", None)
+            c = TestClient(api.create_app(dist_dir=self.dir / "x", ledger_path=self.db), base_url="http://127.0.0.1")
+            self.assertFalse(c.get("/api/demo/config").json()["public"])
+
+
+class TestRefusals(Case):
+    def test_new_deals_capabilities_and_links_are_refused_in_public_and_not_in_local(self):
+        local = self.make(False)
+        doc = self.client.get("/api/deals/noma_journeys/documents").json()["documents"][0]["source_key"]
+        cases = [("/api/user-deals", {"name": "My deal"}, "user_deal"),
+                 ("/api/catalogue/capabilities", {"name": "x"}, "capability"),
+                 ("/api/deals/noma_journeys/documents/link", {"source_key": doc, "url": "https://example.com/x", "set_by": "A"}, "link")]
+        for path, body, what in cases:
+            r = self.post(path, body)
+            self.assertEqual((r.status_code, r.json()["detail"]), (403, public_demo.REFUSED[what]), path)
+            l = self.post(path, body, local)
+            self.assertNotEqual(l.json().get("detail"), public_demo.REFUSED[what], path)
+        self.assertEqual(self.post("/api/user-deals", {"name": "My deal"}, local).status_code, 200)
+
+    def test_notes_over_500_characters_are_refused_in_public_and_allowed_in_local(self):
+        local = self.make(False)
+        long, ok = "x" * 501, "x" * 500
+        issue = next(i["id"] for c in self.client.get("/api/deals/noma_journeys/register").json()["commitments"] for i in c["issues"])
+        cases = [("note", {"note": long, "entered_by": "Ann"}), ("handover/notes", {"role": "sales", "note": long, "entered_by": "Ann"}),
+                 ("handover/notes", {"role": "delivery", "note": long, "entered_by": "Ann"}),
+                 ("issues", {"issue_id": issue, "note": long}),
+                 ("decisions", {"kind": "must_fix", "issue_id": issue, "by": "Ann", "reason": long})]
+        for path, body in cases:
+            r = self.post(f"/api/deals/noma_journeys/{path}", body)
+            self.assertEqual(r.status_code, 400, path)
+            self.assertIn("500 characters", r.json()["detail"])
+        for path, body in cases:
+            okbody = {k: ((ok[:300] if path == "note" else ok) if v == long else v) for k, v in body.items()}  # the deal note has its own 300 cap
+            self.assertEqual(self.post(f"/api/deals/noma_journeys/{path}", okbody).status_code, 200, path)
+        self.assertEqual(self.post("/api/deals/alder_bank/handover/notes", {"role": "sales", "note": long, "entered_by": "Ann"}, local).status_code, 200)
+
+    def test_a_free_upload_is_refused_unless_it_is_a_bundled_sample_of_that_deal(self):
+        local = self.make(False)
+        body = {"name": "My notes", "filename": "mine.md", "text": "Anything at all.", "doc_type": "proposal", "doc_date": "2026-11-01"}
+        for route in ("documents", "documents/add-and-check"):
+            r = self.post(f"/api/deals/noma_journeys/{route}", body)
+            self.assertEqual((r.status_code, r.json()["detail"]), (400, public_demo.NOT_A_SAMPLE), route)
+        raw = {"name": "x", "filename": "x.pdf", "file_base64": base64.b64encode(b"%PDF-1.4 not a sample").decode(), "doc_type": "proposal"}
+        self.assertEqual(self.post("/api/deals/noma_journeys/documents", raw).json()["detail"], public_demo.NOT_A_SAMPLE)
+        check = self.post("/api/deals/noma_journeys/findings/check", {"issue_id": 1, "filename": "m.md", "text": "Anything."})
+        self.assertEqual(check.json()["detail"], public_demo.NOT_A_SAMPLE)
+        # a sample of another deal is not a sample of this one; the same bytes sent as a base64 file do count
+        other = (config.scenario_path("AB-05_v2_named_exception.md")).read_text(encoding="utf-8")
+        self.assertEqual(self.post("/api/deals/noma_journeys/documents", {**body, "text": other}).status_code, 400)
+        mine = config.scenario_path("NJ-09_signed_contract.md").read_bytes()
+        as_file = {"name": "s", "filename": "NJ-09_signed_contract.md", "file_base64": base64.b64encode(mine).decode(), "doc_type": "signed_contract", "doc_date": "2026-10-20"}
+        self.assertEqual(self.post("/api/deals/noma_journeys/documents", {**as_file}).status_code, 200)
+        self.assertEqual(self.post("/api/deals/noma_journeys/documents", body, local).status_code, 200)  # local: any file
+
+    def test_the_sample_routes_exist_only_in_public_mode_and_only_for_the_served_deals(self):
+        listing = self.client.get("/api/demo/samples", params={"deal": "noma_journeys"}).json()["samples"]
+        self.assertEqual([s["file"] for s in listing], ["NJ-05_v2_named_exception.md", "NJ-07_v2_languages_aligned.md", "NJ-09_signed_contract.md"])
+        self.assertTrue(all(s["description"] for s in listing))
+        alder = self.client.get("/api/demo/samples", params={"deal": "alder_bank"}).json()["samples"]
+        self.assertEqual([s["file"] for s in alder], ["AB-05_v2_named_exception.md", "AB-06_v2_coaching_added.md", "AB-09_signed_contract.md"])
+        self.assertEqual(self.client.get("/api/demo/samples", params={"deal": "harbour_bank"}).status_code, 404)
+        for bad in ("../../CLAUDE.md", "HB-05_v2_named_exception.md", "scenarios.json", "NOPE.md"):
+            self.assertEqual(self.client.get("/api/demo/sample", params={"deal": "noma_journeys", "file": bad}).status_code, 404, bad)
+        local = self.make(False)
+        self.assertEqual(local.get("/api/demo/samples", params={"deal": "noma_journeys"}).status_code, 404)
+        self.assertEqual(local.get("/api/demo/sample", params={"deal": "noma_journeys", "file": "NJ-09_signed_contract.md"}).status_code, 404)
+
+    def test_every_sample_on_offer_is_a_real_file_with_a_known_filing(self):
+        for deal, items in public_demo.SAMPLES.items():
+            self.assertIn(deal, config.UI_DEALS)
+            for s in items:
+                self.assertTrue(config.scenario_path(s["file"]).is_file(), s["file"])
+                self.assertTrue(bool(s.get("version_of")) != bool(s.get("doc_type")), s["file"])
+
+    def test_the_model_is_never_called_even_with_a_key_in_the_environment(self):
+        with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "sk-sentinel-not-a-key"}), mock.patch("anthropic.Anthropic") as client:
+            r = self.add_sample("noma_journeys", "NJ-09_signed_contract.md")
+            self.assertEqual(r.status_code, 200, r.text)
+            self.assertNotIn("sk-sentinel", r.text)
+        client.assert_not_called()
+
+    def test_the_no_key_message_is_plain_in_public_mode_and_unchanged_in_local(self):
+        import extraction_cache
+        local = self.make(False)
+        with mock.patch.object(api.deal_catalogue, "recheck", side_effect=extraction_cache.ExtractionFailed("x")):
+            self.assertEqual(self.post("/api/deals/noma_journeys/review", {}).json()["detail"], public_demo.NO_MODEL)
+            self.assertIn("API key", self.post("/api/deals/noma_journeys/review", {}, local).json()["detail"])
+
+
+class TestSamplePathEndToEnd(Case):
+    def test_noma_nj05_nj07_nj09_through_the_sample_path_with_no_key_and_no_model_call(self):
+        for file in ("NJ-05_v2_named_exception.md", "NJ-07_v2_languages_aligned.md", "NJ-09_signed_contract.md"):
+            r = self.add_sample("noma_journeys", file)
+            self.assertEqual(r.status_code, 200, (file, r.text))
+            self.assertEqual(r.json()["review"]["model_calls"], 0, file)
+        reg = self.client.get("/api/deals/noma_journeys/register").json()
+        self.assertEqual(reg["stage"]["current"], "signed")
+        self.assertEqual(reg["freshness"]["state"], "Up to date")
+
+    def test_alder_ab05_ab06_ab09_through_the_sample_path_with_no_key_and_no_model_call(self):
+        for file in ("AB-05_v2_named_exception.md", "AB-06_v2_coaching_added.md", "AB-09_signed_contract.md"):
+            r = self.add_sample("alder_bank", file)
+            self.assertEqual(r.status_code, 200, (file, r.text))
+            self.assertEqual(r.json()["review"]["model_calls"], 0, file)
+        reg = self.client.get("/api/deals/alder_bank/register").json()
+        self.assertEqual(reg["stage"]["current"], "signed")
+        self.assertEqual(reg["freshness"]["state"], "Up to date")
+
+
+class TestResets(Case):
+    def hourly(self, db=None):
+        """The app started the public way (lifespan runs), with the hourly thread replaced by a handle the test drives."""
+        jobs = []
+        real = public_demo.HourlyReset
+
+        def start(job):
+            jobs.append(job)
+            return job
+        patch = mock.patch.object(real, "start", start)
+        patch.start()
+        self.addCleanup(patch.stop)
+        app = api.create_app(dist_dir=self.dir / "x", ledger_path=db or self.db, public=True, hourly=True)
+        client = TestClient(app, base_url="http://127.0.0.1")
+        client.__enter__()
+        self.addCleanup(client.__exit__, None, None, None)
+        return client, jobs[0]
+
+    def test_startup_builds_a_missing_ledger_and_starts_the_hourly_job(self):
+        fresh = self.dir / "new" / "ledger.sqlite"
+        client, job = self.hourly(fresh)
+        self.assertTrue(fresh.exists())
+        self.assertEqual(sorted(d["deal"] for d in client.get("/api/workspace/deals").json()["deals"]), PUBLIC)
+        self.assertEqual(job.every, 3600)
+
+    def test_an_hourly_tick_runs_the_one_reset_under_the_reset_lock(self):
+        client, job = self.hourly()
+        self.post("/api/deals/noma_journeys/note", {"note": "mine", "entered_by": "Ann"}, client)
+        real = reset_demo.reset
+        started, release = threading.Event(), threading.Event()
+        calls = []
+
+        def slow(*a, **k):
+            calls.append(a)
+            started.set()
+            release.wait(10)
+            return real(*a, **k)
+
+        with mock.patch.object(reset_demo, "reset", slow):
+            t = threading.Thread(target=job.tick)
+            t.start()
+            self.assertTrue(started.wait(10))
+            self.assertEqual(self.post("/api/demo/reset", {}, client).status_code, 409)  # the button meets the same lock
+            job.report = lambda message: None
+            self.assertIsNone(job.tick())  # a second tick while one runs skips, and says why
+            release.set()
+            t.join(30)
+        self.assertEqual(calls, [(self.db,)])  # one reset, on the app's ledger
+        notes = client.get("/api/deals/noma_journeys/register").json()["handover"]["notes"]
+        self.assertFalse({k: v for k, v in notes.items() if v})
+
+    def test_a_failed_hourly_reset_does_not_block_the_next_one_or_the_button(self):
+        client, job = self.hourly()
+        reports = []
+        job.report = reports.append
+        with mock.patch.object(reset_demo, "reset", side_effect=RuntimeError("boom")):
+            self.assertIsNone(job.tick())
+        self.assertTrue(reports and "left as it was" in reports[0])
+        self.assertEqual(job.tick()["deals_restored"], 5)
+        r = self.post("/api/demo/reset", {}, client)  # the lock is free; only the same-second backup name can refuse it
+        self.assertTrue(r.status_code == 200 or "already exists" in r.json()["detail"], r.text)
+
+    def test_public_mode_keeps_the_latest_three_backups_and_local_mode_keeps_all(self):
+        stamps = [f"20261101T00000{i}Z" for i in range(6)]
+        for st in stamps:
+            (self.dir / f"ledger.backup-{st}.sqlite").write_bytes(b"old")
+        names = lambda: sorted(p.name for p in self.dir.glob("ledger.backup-*"))
+        self.assertEqual(self.post("/api/demo/reset", {}).status_code, 200)
+        left = names()
+        self.assertEqual(len(left), 3)
+        self.assertNotIn(f"ledger.backup-{stamps[0]}.sqlite", left)
+        self.assertIn(self.post("/api/demo/reset", {}).status_code, (200, 409))  # same-second 409 is allowed
+        local = self.make(False)
+        for st in stamps:
+            (self.dir / f"ledger.backup-{st}.sqlite").write_bytes(b"old")
+        before = len(names())
+        r = self.post("/api/demo/reset", {}, local)
+        self.assertIn(r.status_code, (200, 409))
+        self.assertGreaterEqual(len(names()), before)
+
+    def test_the_reset_button_still_works_in_public_mode_and_makes_no_model_call(self):
+        self.assertEqual(self.add_sample("noma_journeys", "NJ-09_signed_contract.md").status_code, 200)
+        r = self.post("/api/demo/reset", {})
+        self.assertEqual((r.status_code, r.json()["model_calls"], r.json()["deals_restored"]), (200, 0, 5))
+        self.assertNotEqual(self.client.get("/api/deals/noma_journeys/register").json()["stage"]["current"], "signed")
+
+
+class TestLocalModeIsUnchanged(Case):
+    public = False
+
+    def test_no_banner_no_gate_no_cap_all_deals_and_the_samples_are_not_offered(self):
+        self.assertEqual(self.client.get("/api/demo/config").json()["banner"], None)
+        self.assertEqual(sorted(self.client.get("/api/deals").json()["deals"]), sorted(config.UI_DEALS))
+        r = self.post("/api/deals/noma_journeys/handover/notes", {"role": "sales", "note": "y" * 900, "entered_by": "Ann"})
+        self.assertEqual(r.status_code, 200)
+        self.assertEqual(self.post("/api/user-deals", {"name": "Mine"}).status_code, 200)
+        self.assertEqual(self.client.get("/api/demo/samples", params={"deal": "noma_journeys"}).status_code, 404)
+
+
+if __name__ == "__main__":
+    unittest.main()

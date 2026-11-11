@@ -1,0 +1,24 @@
+# Keep the image small and keep what the app does not need out of it.
+.git
+.claude
+.venv
+.env
+.DS_Store
+__pycache__
+node_modules
+frontend/node_modules
+frontend/dist
+workspace
+tests
+docs
+scratch_*
+*.sqlite*
+# Gold labels are never needed to run the app and do not ship.
+data/*/labels
+# Evaluation output; only the saved v2 readings the demo seeds from, and the reading cache, are kept.
+results/*
+!results/v2_cache
+!results/v2_dev_20261010T083854Z.json
+!results/sealed_v2_atlas_remit_20261010T084453Z.json
+!results/v2_demo_alder_bank_20261016T065312Z.json
+!results/v2_demo_noma_journeys_20261020T091857Z.json

@@ -7,6 +7,8 @@ import Landing from "./Landing.jsx";
 import { WELCOME_HASH, isWelcome, landingSeen, markLandingSeen, showLanding } from "./landing.js";
 import { TAGLINE } from "./brand.js";
 import { readHash } from "./dealpage.js";
+import { DEMO_OFF, DemoContext } from "./demo.js";
+import { DemoBanner } from "./DemoUI.jsx";
 import { TYPE_EFFECT, alsoLine, checkLine, checkUpload, fmtDate, fmtDateTime, guessType, plural, typeFromName, uploadKind } from "./format.js";
 
 const OWNERS = ["Product", "Commercial", "Delivery", "Customer Success", "Support"];
@@ -1008,7 +1010,14 @@ function Workspace({ deal, onDealsChanged }) {
   );
 }
 
+// Public demo mode (10 Nov): the banner sits above every screen; with the mode off nothing is added.
 export default function App() {
+  const [demo, setDemo] = useState(DEMO_OFF);
+  useEffect(() => { api.fetchDemoConfig().then(setDemo, () => {}); }, []);
+  return <DemoContext.Provider value={demo}><DemoBanner /><AppBody /></DemoContext.Provider>;
+}
+
+function AppBody() {
   const [deals, setDeals] = useState(null);
   const [current, setCurrent] = useState(() => (isWelcome(window.location.hash) ? null : readHash(window.location.hash).d)); // #d=<deal>&c=<key>: a reload or a shared link reopens it
   const [landing, setLanding] = useState(() => showLanding(window.location.hash, landingSeen(), readHash(window.location.hash).d)); // first visit, or #welcome

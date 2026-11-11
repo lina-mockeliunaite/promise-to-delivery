@@ -24,6 +24,10 @@ const postJson = (path, body) =>
 const d = (deal) => `/api/deals/${encodeURIComponent(deal)}`;
 
 export const resetDemo = () => postJson("/api/demo/reset"); // 10 Nov: restore the sample deals; the old ledger is kept as a backup
+// Public demo mode (10 Nov): off unless the server says so.
+export const fetchDemoConfig = () => getJson("/api/demo/config");
+export const fetchSamples = (deal) => getJson(`/api/demo/samples?deal=${encodeURIComponent(deal)}`);
+export const fetchSample = (deal, file) => getJson(`/api/demo/sample?deal=${encodeURIComponent(deal)}&file=${encodeURIComponent(file)}`);
 export const fetchDeals = () => getJson("/api/workspace/deals");
 export const createDeal = (name) => postJson("/api/user-deals", { name });
 export const fetchDocuments = (deal) => getJson(`${d(deal)}/documents`);

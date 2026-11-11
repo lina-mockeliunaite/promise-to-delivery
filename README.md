@@ -123,6 +123,10 @@ After the Coral Pay result, detection was rebuilt: one model call proposes each 
 - **Automated tests:** 776 Python tests and 120 front-end tests. They include regression checks on extraction, five resolution scenarios, "a failed check stores nothing", and "no internal key reaches any screen".
 - **Reviewers:** a Head of Growth (6 Oct), a COO (15 Oct) and a Delivery lead (16 Oct), plus one outside UI review. Two reviewers in different roles asked for visibility, not workflow, and the product was rebuilt around that. **Not yet done: an unaided test** with someone who has never seen the product.
 
+## Try it online
+
+A hosted, read-and-try version of Dealshape: **link to be added.** It is shared with other visitors, uses fictional data only, serves two deals (Noma Journeys and Alder Bank), takes its own sample files instead of uploads, never calls the model, and resets every hour (and on each wake-up). Notes are capped at 500 characters, and names and notes are visible to other visitors. Set it up with `DEPLOY.md`; it is switched on by `DEALSHAPE_PUBLIC_DEMO=1`, and without that variable nothing changes locally.
+
 ## Run it locally
 
 ```

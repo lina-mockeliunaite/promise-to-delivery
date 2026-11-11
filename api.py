@@ -23,7 +23,7 @@ import os
 import sqlite3
 import threading
 
-from fastapi import Body, Depends, FastAPI, Header, HTTPException, Query
+from fastapi import Body, Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, Response
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.trustedhost import TrustedHostMiddleware
@@ -37,6 +37,7 @@ import add_check
 import finding_check
 import handoff
 import handover
+import public_demo
 import integrity
 import ledger
 import ledger_fixes
@@ -58,9 +59,9 @@ UPLOAD_PATH = re.compile(r"^/api/deals/([^/]+)/documents$")
 DEAL_PATH = re.compile(r"^/api/deals/([^/]+)/")
 
 
-def require_ui_deal(deal: str) -> str:
-    """Return the deal if the UI may show it, else 404. Exact match, before any filesystem call."""
-    if deal not in config.UI_DEALS:
+def require_ui_deal(deal: str, allowed=None) -> str:
+    """Return the deal if the UI may show it, else 404. Exact match, before any filesystem call. Public mode passes its own, shorter list."""
+    if deal not in (config.UI_DEALS if allowed is None else allowed):
         raise HTTPException(status_code=404, detail=NOT_FOUND)
     return deal
 
@@ -98,17 +99,37 @@ def latest_result_path(deal: str):
     return best[1] if best else None
 
 
-def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
-    app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
+def create_app(dist_dir: Path = DIST_DIR, ledger_path=None, public=None, hourly=False) -> FastAPI:
+    """public=None reads DEALSHAPE_PUBLIC_DEMO (10 Nov). hourly=True (public mode only; the module-level app) builds a missing
+    ledger at startup and resets every hour. Tests leave it off."""
+    public = public_demo.enabled() if public is None else bool(public)
+    ui_deals = list(public_demo.PUBLIC_DEALS) if public else list(config.UI_DEALS)  # public mode serves two deals, on every route
+    lifespan = None
+    if public and hourly:
+        from contextlib import asynccontextmanager
+
+        @asynccontextmanager
+        async def lifespan(_app):
+            target = Path(ledger_path if ledger_path is not None else config.LEDGER_DB_PATH)
+            if not target.exists():
+                run_reset()
+            else:
+                public_demo.prune_backups(target)
+            job = public_demo.HourlyReset(run_reset).start()
+            try:
+                yield
+            finally:
+                job.stop()
+    app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None, lifespan=lifespan)
     app.router.redirect_slashes = False
-    app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS)
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=ALLOWED_HOSTS + (public_demo.extra_hosts() if public else []))
 
     def served_deal(deal: str) -> bool:
         """The deal exists and the app serves it (the same rule as workspace_deal), checked without a request body."""
         path = ledger_path if ledger_path is not None else config.LEDGER_DB_PATH
         if not Path(path).exists():
             return False
-        kind = "development" if deal in config.UI_DEALS else "user" if ledger_fixes.USER_SLUG.fullmatch(deal) else None
+        kind = "development" if deal in ui_deals else "user" if ledger_fixes.USER_SLUG.fullmatch(deal) and not public else None
         if kind is None:
             return False
         conn = ledger.connect(path, check_same_thread=False)
@@ -150,11 +171,11 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
 
     @app.get("/api/deals")
     def list_deals():
-        return {"deals": list(config.UI_DEALS)}
+        return {"deals": list(ui_deals)}
 
     @app.get("/api/deals/{deal}/sources")
     def list_sources(deal: str):
-        require_ui_deal(deal)
+        require_ui_deal(deal, ui_deals)
         manifest = load_json(config.doc_path(deal, "manifest.json"), "Source list")
         entries = manifest.get("documents") if isinstance(manifest, dict) else None
         if not isinstance(entries, list):
@@ -174,7 +195,7 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
 
     @app.get("/api/deals/{deal}/results/latest")
     def latest_results(deal: str):
-        require_ui_deal(deal)
+        require_ui_deal(deal, ui_deals)
         path = latest_result_path(deal)
         if path is None:
             return {"intermediate": True, "deal": deal, "run": None, "documents": [], "statements": []}
@@ -222,28 +243,48 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
             conn.close()
 
     def workspace_deal(deal: str, conn) -> str:
-        if deal in config.UI_DEALS:
+        if deal in ui_deals:
             if conn.execute("SELECT 1 FROM deals WHERE slug = ? AND kind = 'development'", (deal,)).fetchone():
                 return deal
-        elif ledger_fixes.USER_SLUG.fullmatch(deal or ""):
+        elif ledger_fixes.USER_SLUG.fullmatch(deal or "") and not public:
             if conn.execute("SELECT 1 FROM deals WHERE slug = ? AND kind = 'user'", (deal,)).fetchone():
                 return deal
         raise HTTPException(status_code=404, detail=NOT_FOUND)
 
-    def write_guard(x_requested_with: str | None = Header(default=None), content_type: str | None = Header(default=None)):
+    async def write_guard(request: Request, x_requested_with: str | None = Header(default=None), content_type: str | None = Header(default=None)):
         if x_requested_with != "deal-workspace" or not (content_type or "").startswith("application/json"):
             raise HTTPException(status_code=403, detail="Forbidden")
+        if public:  # notes are visible to every visitor: keep them short (a malformed body is the route's own 400)
+            try:
+                body = await request.json()
+            except ValueError:
+                body = None
+            for field in public_demo.NOTE_FIELDS if isinstance(body, dict) else ():
+                value = body.get(field)
+                if isinstance(value, str) and len(value) > public_demo.NOTE_MAX:
+                    raise HTTPException(status_code=400, detail=(
+                        f"Keep this to {public_demo.NOTE_MAX} characters or fewer; it is {len(value)}. "
+                        "The public demo limits note length, because every visitor sees what is written."))
+
+    def refuse_in_public(what: str):
+        if public:
+            raise HTTPException(status_code=403, detail=public_demo.REFUSED[what])
+
+    def no_model(message: str) -> str:
+        return public_demo.NO_MODEL if public and "API key" in message else message
 
     def bad_request(exc):
         return HTTPException(status_code=400, detail=str(exc))
 
     def model_client():
+        if public:  # public mode never calls the model, whatever is in the environment
+            return None
         if not os.environ.get("ANTHROPIC_API_KEY"):  # presence only; the value is never read here or returned
             return None
         import anthropic
         return anthropic.Anthropic()
 
-    def read_upload(body: dict) -> tuple:
+    def read_upload(body: dict, deal: str = "") -> tuple:
         """(filename, text, extra) from an upload body. PDF and Word arrive as base64 inside the JSON body, so the
         preflight protection still applies; Markdown and text arrive as text."""
         filename = str(body.get("filename") or "upload.md")[:200]
@@ -257,6 +298,8 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
                 raw = base64.b64decode(encoded, validate=True)
             except (binascii.Error, ValueError):
                 raise HTTPException(status_code=400, detail="The file could not be read. Upload it again.") from None
+            if public and not public_demo.is_sample(deal, raw):
+                raise HTTPException(status_code=400, detail=public_demo.NOT_A_SAMPLE)
             try:
                 adapted = adapters.adapt(filename, raw)
             except adapters.AdapterError as exc:
@@ -265,15 +308,15 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
         text = body.get("text")
         if not isinstance(text, str) or len(text.encode("utf-8")) > 1_000_000:
             raise HTTPException(status_code=400, detail="Send the document as text, up to 1 MB.")
+        if public and not public_demo.is_sample(deal, text.encode("utf-8")):
+            raise HTTPException(status_code=400, detail=public_demo.NOT_A_SAMPLE)
         return filename, text, {}
 
     reset_lock = threading.Lock()
 
-    @app.post("/api/demo/reset", dependencies=[Depends(write_guard)])
-    def demo_reset():
-        """Restore the sample deals (10 Nov): reset_demo.reset builds the new ledger beside the old one, backs the old one up
-        and swaps with os.replace; each request opens its own connection, so the next request sees the new file. The path
-        is outside /api/deals/, so a locked handover does not block it. No model call, no key."""
+    def run_reset() -> dict:
+        """The one reset: the Reset demo button and the hourly job both come through here, so the lock covers both.
+        reset_demo.reset builds the new ledger beside the old one, backs the old one up and swaps with os.replace."""
         if not reset_lock.acquire(blocking=False):
             raise HTTPException(status_code=409, detail="A reset is already running. Try again in a moment.")
         try:
@@ -284,15 +327,43 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
             raise HTTPException(status_code=500, detail="The reset failed and the current ledger was left as it was.") from None
         finally:
             reset_lock.release()
+        if public:
+            public_demo.prune_backups(done["ledger"])
         return {"deals_restored": len(done["deals"]), "deals": [d["deal"] for d in done["deals"]],
                 "model_calls": done["model_calls"], "backup": done["backup"].name if done["backup"] else None}
 
+    @app.post("/api/demo/reset", dependencies=[Depends(write_guard)])
+    def demo_reset():
+        """Restore the sample deals (10 Nov). The path is outside /api/deals/, so a locked handover does not block it. No model call, no key."""
+        return run_reset()
+
+    @app.get("/api/demo/config")
+    def demo_config():
+        return {"public": public, "banner": public_demo.BANNER if public else None, "note_max": public_demo.NOTE_MAX if public else None}
+
+    @app.get("/api/demo/samples")
+    def demo_samples(deal: str = Query(...)):
+        if not public or deal not in ui_deals:
+            raise HTTPException(status_code=404, detail=NOT_FOUND)
+        return {"deal": deal, "samples": public_demo.samples(deal)}
+
+    @app.get("/api/demo/sample")
+    def demo_sample(file: str = Query(...), deal: str = Query(...)):  # a query value, matched against the catalogue; never a path
+        text = public_demo.sample_text(deal, file) if public and deal in ui_deals else None
+        if text is None:
+            raise HTTPException(status_code=404, detail=NOT_FOUND)
+        return {"deal": deal, "file": file, "text": text}
+
     @app.get("/api/workspace/deals")
     def ws_deals(conn=Depends(db)):
-        return {"deals": handover.deal_rows(conn, workspace.deal_list(conn))}
+        rows = workspace.deal_list(conn)
+        if public:
+            rows = [r for r in rows if r["deal"] in ui_deals]
+        return {"deals": handover.deal_rows(conn, rows)}
 
     @app.post("/api/user-deals", dependencies=[Depends(write_guard)])
     def ws_create_deal(body: dict = Body(...), conn=Depends(db)):
+        refuse_in_public("user_deal")
         try:
             return {"deal": ledger_fixes.create_user_deal(conn, str(body.get("name", "")))}
         except ledger_fixes.FixError as exc:
@@ -307,7 +378,7 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
     @app.post("/api/deals/{deal}/documents", dependencies=[Depends(write_guard)])
     def ws_add_document(deal: str, body: dict = Body(...), conn=Depends(db)):
         workspace_deal(deal, conn)
-        filename, text, extra = read_upload(body)
+        filename, text, extra = read_upload(body, deal)
         try:
             if body.get("source_key"):
                 vid = ledger_fixes.add_source_version(conn, deal, str(body["source_key"]), text, filename,
@@ -326,13 +397,13 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
         """One call for the add-document form (20 Oct): refuse before writing if the model is needed and unavailable; store
         the version and review; if the review fails after storing, set the version aside (add_check.py)."""
         workspace_deal(deal, conn)
-        filename, text, extra = read_upload(body)
+        filename, text, extra = read_upload(body, deal)
         try:
             out = add_check.add_and_check(
                 conn, deal, filename=filename, text=text, source_key=body.get("source_key") or None, name=str(body.get("name") or ""),
                 doc_type=body.get("doc_type") or None, doc_date=body.get("doc_date") or None, client=model_client(), **extra)
         except add_check.AddCheckError as exc:
-            raise HTTPException(status_code=exc.status, detail=str(exc)) from None
+            raise HTTPException(status_code=exc.status, detail=no_model(str(exc))) from None
         except ledger_fixes.FixError as exc:
             raise bad_request(exc) from None
         adapted = extra.get("adapted")
@@ -369,7 +440,7 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
         try:
             result = deal_catalogue.recheck(conn, deal, int(fix_id) if fix_id is not None else None, model_client())
         except extraction_cache.ExtractionFailed:
-            raise HTTPException(status_code=409, detail=(
+            raise HTTPException(status_code=409, detail=no_model(
                 "This review needs the model to read new or changed documents. Restart the server with the API key "
                 "set in its terminal, then review again.")) from None
         except (recheck.RecheckError, ledger_fixes.FixError) as exc:
@@ -438,7 +509,7 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
     @app.post("/api/deals/{deal}/findings/check", dependencies=[Depends(write_guard)])
     def ws_check_finding(deal: str, body: dict = Body(...), conn=Depends(db)):
         workspace_deal(deal, conn)
-        filename, text, extra = read_upload(body)
+        filename, text, extra = read_upload(body, deal)
         try:
             result = finding_check.check(
                 conn, deal, body.get("issue_id"), confirmed_doc_type=body.get("confirmed_doc_type"), filename=filename,
@@ -446,7 +517,7 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
                 name=body.get("name"), doc_date=body.get("doc_date"), signed_off_by=body.get("signed_off_by"),
                 note=body.get("note"), client=model_client())
         except finding_check.CheckError as exc:
-            raise record_error(exc) from None
+            raise HTTPException(status_code=exc.status, detail=no_model(str(exc))) from None
         except (recheck.RecheckError, ledger_fixes.FixError) as exc:
             raise bad_request(exc) from None
         return {"check": result}
@@ -494,6 +565,8 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
         if deal:
             return deal_catalogue.vendor_of(workspace_deal(deal, conn))
         try:
+            if public and vendor not in {deal_catalogue.vendor_of(d) for d in ui_deals}:
+                raise catalogue_store.CatalogueError("Not found", 404)
             return catalogue_store.check_vendor(vendor)
         except catalogue_store.CatalogueError:
             raise HTTPException(status_code=404, detail=NOT_FOUND) from None
@@ -504,6 +577,7 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
 
     @app.post("/api/catalogue/capabilities", dependencies=[Depends(write_guard)])
     def cat_add(body: dict = Body(...), conn=Depends(db)):
+        refuse_in_public("capability")
         try:
             return {"capability": catalogue_store.add_capability(conn, body, body.get("vendor"))}
         except catalogue_store.CatalogueError as exc:
@@ -532,6 +606,7 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
 
     @app.post("/api/deals/{deal}/documents/link", dependencies=[Depends(write_guard)])
     def hv_link(deal: str, body: dict = Body(...), conn=Depends(db)):
+        refuse_in_public("link")
         workspace_deal(deal, conn)
         try:
             return handover.set_link(conn, deal, body.get("source_key"), body.get("url"), body.get("set_by"))
@@ -616,4 +691,4 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None) -> FastAPI:
     return app
 
 
-app = create_app()
+app = create_app(hourly=public_demo.enabled())
