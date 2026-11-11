@@ -165,9 +165,9 @@ test("rows are ordered by their stored id; status, dates and titles never move a
 });
 
 // ---- banner after landing -> Open sample deal -> "All deals"
-test("the banner is above every screen, and a new screen starts at the top (landing, Open sample deal, All deals back)", () => {
+test("the demo bar is above every screen, and a new screen starts at the top (landing, Open sample deal, All deals back)", () => {
   const app = read("App.jsx");
-  assert.match(app, /<DemoContext\.Provider value=\{demo\}><DemoBanner \/><AppBody \/><\/DemoContext\.Provider>/); // one banner above landing, list and deal
+  assert.match(app, /<DemoBar \/><AppBody \/>/); // one bar above landing, list and deal
   assert.match(app, /useEffect\(\(\) => \{ window\.scrollTo\(0, 0\); \}, \[current, landing, classic\]\);/); // the deal page's scroll offset no longer carries to the list
   assert.match(app, /fetchDemoConfig\(\)\.then\(\(r\) => alive && setDemo\(r\), \(\) => \{ if \(alive && left > 0\) setTimeout/); // a failed config answer is asked again
   assert.match(read("Landing.jsx"), /onOpen\(/); // "Open sample deal" and the back link both stay inside the one provider

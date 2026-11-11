@@ -243,7 +243,7 @@ export default function Deals({ deals, onOpen, onCreated, onAbout }) {
           )}
         </footer>
       </section>
-      <footer className="dl-pagefoot">{FICTIONAL}{onAbout && <> <button type="button" className="dl-about" onClick={onAbout}>About Dealshape</button></>} <ResetDemo /></footer>
+      <footer className="dl-pagefoot">{FICTIONAL}{onAbout && <> <button type="button" className="dl-about" onClick={onAbout}>About Dealshape</button></>} {!demo.public && <ResetDemo />}</footer>
     </div>
   );
 }

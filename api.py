@@ -339,7 +339,8 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None, public=None, hourly=
 
     @app.get("/api/demo/config")
     def demo_config():
-        return {"public": public, "banner": public_demo.BANNER if public else None, "note_max": public_demo.NOTE_MAX if public else None}
+        return {"public": public, "banner": public_demo.BANNER if public else None, "note": public_demo.SHARED_NOTE if public else None,
+                "note_max": public_demo.NOTE_MAX if public else None}
 
     @app.get("/api/demo/samples")
     def demo_samples(deal: str = Query(...)):

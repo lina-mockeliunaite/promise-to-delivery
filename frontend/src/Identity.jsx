@@ -6,7 +6,11 @@ import { headerScrolledPast } from "./dealpage.js";
 
 // [attach, past]: attach goes on the header card's ref; past is true while that card is scrolled up beneath the top bar.
 // The bar's height is the CSS variable --topbar-h (DealPage.css), read here so the two cannot drift apart; an explicit value overrides it.
-export const barHeight = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--topbar-h")) || 56;
+// Public mode (11 Nov): the demo bar is sticky above it, so the offset also counts --demo-bar-h (unset, so 0, everywhere else).
+export const barHeight = () => {
+  const style = getComputedStyle(document.documentElement);
+  return (parseFloat(style.getPropertyValue("--topbar-h")) || 56) + (parseFloat(style.getPropertyValue("--demo-bar-h")) || 0);
+};
 export function useScrolledPast(topBarOverride) {
   const [el, setEl] = useState(null);
   const [past, setPast] = useState(false);

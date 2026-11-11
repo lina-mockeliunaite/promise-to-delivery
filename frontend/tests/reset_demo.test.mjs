@@ -75,7 +75,7 @@ test("a failed reset shows the server's message, keeps the confirm open and neit
 
 test("the endpoint is a guarded POST and the footer link is in the page footer", () => {
   assert.match(read("api.js"), /export const resetDemo = \(\) => postJson\("\/api\/demo\/reset"\)/);
-  assert.match(read("Deals.jsx"), /<footer className="dl-pagefoot">[\s\S]*<ResetDemo \/><\/footer>/);
+  assert.match(read("Deals.jsx"), /<footer className="dl-pagefoot">[\s\S]*\{!demo\.public && <ResetDemo \/>\}<\/footer>/); // 11 Nov: public mode has Reset demo in the bar instead
 });
 
 test("the name ('Recording as', ptd.name in localStorage) is never touched by the reset path", () => {

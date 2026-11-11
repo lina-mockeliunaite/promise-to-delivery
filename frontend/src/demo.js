@@ -1,7 +1,7 @@
 // Public demo mode (10 Nov). The server says whether it is on (GET /api/demo/config); everything here is off otherwise.
 import { createContext, useContext } from "react";
 
-export const DEMO_OFF = { public: false, banner: null, note_max: null };
+export const DEMO_OFF = { public: false, banner: null, note: null, note_max: null };
 export const DemoContext = createContext(DEMO_OFF);
 export const useDemo = () => useContext(DemoContext);
 
@@ -124,3 +124,15 @@ export function guideAction(step, commitments) {
   if (step.kind === "note") return { drawer: row ? { type: "note", id: row.id } : null, row: row ? row.id : null, handover: false };
   return { drawer: null, row: null, handover: true };
 }
+
+// The deal page tells the demo bar which step the visitor is on (11 Nov). Two contexts so the page, which only publishes, does not re-render when the
+// bar's copy changes: PUBLISH is a stable setter, STATE is what the bar reads: null (no guide on this page) or
+// { deal, documents, commitments, handoverComplete, onDo }.
+export const GuidePublishContext = createContext(() => {});
+export const GuideStateContext = createContext(null);
+export const BAR_NOTE_FALLBACK = "Shared with other visitors. If a deal has already been worked through, click Reset demo.";
+export const barStepText = (steps) => {
+  const current = steps.find((s) => s.state === "current");
+  return current ? { n: current.n, text: `Step ${current.n} of ${steps.length}: ${current.label}`, step: current } : null;
+};
+export const BAR_DONE = "Done · Reset demo to try again";

@@ -78,7 +78,7 @@ body:has(.dp) { background: #f8fafc; }
 .dp-dot-green { background: var(--green-dot); }
 
 /* Top bar: back link, wordmark and tagline, who is recording, Product catalogue */
-.dp-topbar { position: sticky; top: 0; z-index: 30; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
+.dp-topbar { position: sticky; top: var(--demo-bar-h, 0px); z-index: 30; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 12px;
   height: var(--topbar-h); margin: 0 -24px 12px; padding: 0 24px; background: var(--bar); backdrop-filter: blur(8px); border-bottom: 1px solid var(--hair); font-size: 13px; }
 .dp-topleft { justify-self: start; display: inline-flex; align-items: center; gap: 10px; min-width: 0; }
 .dp-back { justify-self: start; border: 0; background: none; font: inherit; font-weight: 500; color: var(--muted); display: inline-flex; align-items: center; gap: 8px; cursor: pointer; padding: 4px 8px; margin-left: -8px; border-radius: 999px; }
@@ -293,7 +293,7 @@ body:has(.dp) { background: #f8fafc; }
 .dp-change-foot .dp-done { color: var(--accent); font-weight: 600; }
 
 /* Sidebar: Deal journey, the seven stages with their documents */
-.dp-aside { position: sticky; top: calc(var(--topbar-h) + 12px); max-height: calc(100vh - var(--topbar-h) - 24px); overflow-y: auto; }
+.dp-aside { position: sticky; top: calc(var(--demo-bar-h, 0px) + var(--topbar-h) + 12px); max-height: calc(100vh - var(--demo-bar-h, 0px) - var(--topbar-h) - 24px); overflow-y: auto; }
 @media (max-width: 1000px) { .dp-aside { position: static; max-height: none; overflow: visible; } }
 .dp-side { padding: 16px; display: flex; flex-direction: column; gap: 10px; }
 .dp-side-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding-bottom: 4px; }
@@ -343,9 +343,9 @@ body:has(.dp) { background: #f8fafc; }
 .dp-foot strong { color: var(--body); font-weight: 600; }
 
 /* The drawer */
-.dr-backdrop { position: fixed; inset: var(--topbar-h) 0 0 0; background: rgba(15, 23, 42, 0.32); z-index: 39; }
+.dr-backdrop { position: fixed; inset: calc(var(--demo-bar-h, 0px) + var(--topbar-h)) 0 0 0; background: rgba(15, 23, 42, 0.32); z-index: 39; }
 .dr-backdrop.is-flush { inset: 0; }
-.dr { position: fixed; top: var(--topbar-h); right: 0; bottom: 0; width: 520px; max-width: 100%; z-index: 40; background: var(--card); color: var(--body);
+.dr { position: fixed; top: calc(var(--demo-bar-h, 0px) + var(--topbar-h)); right: 0; bottom: 0; width: 520px; max-width: 100%; z-index: 40; background: var(--card); color: var(--body);
   box-shadow: var(--shadow-drawer); display: flex; flex-direction: column; outline: none; animation: dr-in 200ms ease-out; font-family: inherit; }
 .dr.is-flush { top: 0; }
 @keyframes dr-in { from { transform: translateX(100%); } to { transform: translateX(0); } }
@@ -502,7 +502,7 @@ main.home.home-deal { max-width: none; margin: 0; padding: 0; }
 @media (max-width: 760px) { .dp-ident { display: none; } }
 @media (prefers-reduced-motion: reduce) { .dp-ident, .dp-ident.is-on { transition: none; } }
 /* Locked record: a fixed bar that carries only the identity line (no actions) */
-.fr-ident { position: fixed; top: 0; left: 0; right: 0; z-index: 30; height: var(--topbar-h); display: flex; align-items: center; justify-content: center; padding: 0 16px;
+.fr-ident { position: fixed; top: var(--demo-bar-h, 0px); left: 0; right: 0; z-index: 30; height: var(--topbar-h); display: flex; align-items: center; justify-content: center; padding: 0 16px;
   background: var(--bar); backdrop-filter: blur(8px); border-bottom: 1px solid var(--hair); opacity: 0; visibility: hidden; pointer-events: none; transition: opacity 150ms ease, visibility 0s linear 150ms; }
 .fr-ident:has(.dp-ident.is-on) { opacity: 1; visibility: visible; transition: opacity 150ms ease; }
 .fr-ident .dp-ident { width: min(880px, 100%); }

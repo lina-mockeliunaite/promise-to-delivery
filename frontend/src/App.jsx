@@ -7,8 +7,8 @@ import Landing from "./Landing.jsx";
 import { WELCOME_HASH, isWelcome, landingSeen, markLandingSeen, showLanding } from "./landing.js";
 import { TAGLINE } from "./brand.js";
 import { readHash } from "./dealpage.js";
-import { DEMO_OFF, DemoContext } from "./demo.js";
-import { DemoBanner } from "./DemoUI.jsx";
+import { DEMO_OFF, DemoContext, GuidePublishContext, GuideStateContext } from "./demo.js";
+import { DemoBar } from "./DemoUI.jsx";
 import { TYPE_EFFECT, alsoLine, checkLine, checkUpload, fmtDate, fmtDateTime, guessType, plural, typeFromName, uploadKind } from "./format.js";
 
 const OWNERS = ["Product", "Commercial", "Delivery", "Customer Success", "Support"];
@@ -1010,7 +1010,7 @@ function Workspace({ deal, onDealsChanged }) {
   );
 }
 
-// Public demo mode (10 Nov): the banner sits above every screen; with the mode off nothing is added.
+// Public demo mode (10 Nov): the demo bar (11 Nov; it was a banner) sits above every screen; with the mode off nothing is added.
 export default function App() {
   const [demo, setDemo] = useState(DEMO_OFF);
   // Asked again a few times if the first answer fails (a wake-up from sleep can drop one request), so a public page is never left without its banner.
@@ -1020,7 +1020,16 @@ export default function App() {
     ask(4);
     return () => { alive = false; };
   }, []);
-  return <DemoContext.Provider value={demo}><DemoBanner /><AppBody /></DemoContext.Provider>;
+  const [guide, setGuide] = useState(null); // what the deal page tells the bar: which deal, its documents and commitments, and what "Do step N" does
+  return (
+    <DemoContext.Provider value={demo}>
+      <GuidePublishContext.Provider value={setGuide}>
+        <GuideStateContext.Provider value={guide}>
+          <DemoBar /><AppBody />
+        </GuideStateContext.Provider>
+      </GuidePublishContext.Provider>
+    </DemoContext.Provider>
+  );
 }
 
 function AppBody() {

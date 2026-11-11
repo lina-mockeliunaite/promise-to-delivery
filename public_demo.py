@@ -15,7 +15,8 @@ from pathlib import Path
 import config
 
 PUBLIC_DEALS = ["noma_journeys", "alder_bank"]  # also the order the public deal list shows them in: Noma Journeys first
-BANNER = "Public demo · fictional data · shared with other visitors. If this deal has already been worked through, click Reset demo."
+BANNER = "Public demo · fictional data"  # the demo bar's status text (11 Nov: the guide moved into the bar)
+SHARED_NOTE = "Shared with other visitors. If a deal has already been worked through, click Reset demo."  # under "All steps"
 NOTE_MAX = 500
 NOTE_FIELDS = ("note", "reason", "rationale", "evidence")
 BACKUPS_KEPT = 3

@@ -3,7 +3,7 @@
 // deal's shape stay in view. The only way a gap closes is a new document version that the check confirms; notes and "seen"
 // never close anything.
 import { BrandBlock } from "./Logo.jsx";
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useId, useRef, useState } from "react";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-500.css";
 import "@fontsource/inter/latin-600.css";
@@ -20,8 +20,8 @@ import { IdentityLine, useScrolledPast } from "./Identity.jsx";
 import { CardHead, Drawer, DrawerHead, CommitmentView, DocumentView, MismatchSentence, TitleLine, Icon as DIcon, ICON } from "./Drawer.jsx";
 import { FICTIONAL } from "./brand.js";
 import CatalogueModal from "./CatalogueModal.jsx";
-import { DemoNameNote, GuideCard, SamplePicker, UseSampleText } from "./DemoUI.jsx";
-import { NAME_NOTE, REFUSED_FINDINGS, guideAction, handoverSampleFor, noteLimit, noteSampleFor, useDemo } from "./demo.js";
+import { DemoNameNote, SamplePicker, UseSampleText } from "./DemoUI.jsx";
+import { GUIDES, GuidePublishContext, NAME_NOTE, REFUSED_FINDINGS, guideAction, handoverSampleFor, noteLimit, noteSampleFor, useDemo } from "./demo.js";
 import "./DealPage.css";
 
 const Icon = ({ d, size = 15 }) => <DIcon d={d} size={size} />;
@@ -741,6 +741,15 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
     }, 60);
     setTimeout(() => setFlash({ row: null, handover: false }), 2600);
   };
+  // The demo bar (public mode) shows the guide: this page tells it where the visitor is, and "Do step N" in the bar comes back here to doStep.
+  const publishGuide = useContext(GuidePublishContext);
+  const doStepRef = useRef(null);
+  doStepRef.current = doStep;
+  useEffect(() => {
+    if (!demo.public || !GUIDES[deal] || !reg || !docs) return undefined;
+    publishGuide({ deal, documents: docs.documents, commitments: reg.commitments, handoverComplete: !!reg.handover.complete, onDo: (step) => doStepRef.current(step) });
+    return () => publishGuide(null);
+  }, [demo.public, deal, reg, docs, publishGuide]);
   const openCommitment = (c) => { setDrawer({ type: "commitment", id: c.id }); writeHash(c.ref); };
   const closeDrawer = useCallback(() => { setDrawer(null); writeHash(null); }, [writeHash]);
 
@@ -852,8 +861,6 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
 
           {message && <div className={`dp-message is-${message.kind}`} role="status">{message.text}</div>}
           {change && <ChangePanel change={change} titleOf={(n) => reg.commitments.find((c) => c.name === n)?.display_name || n} onClose={() => setChange(null)} />}
-
-          {demo.public && <GuideCard deal={deal} documents={docs.documents} commitments={reg.commitments} onDo={doStep} />}
 
           <section className={`dp-card dp-promises ${openRows.length ? "is-attention" : "is-clear"}`} id="dp-commitments">
             <CardHead eyebrow="Commitments" title="What the customer was promised">

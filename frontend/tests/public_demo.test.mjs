@@ -25,7 +25,7 @@ const file = path.join(dir, "bundle.mjs");
 fs.writeFileSync(file, (Array.isArray(out) ? out[0] : out).output[0].code);
 const m = await import(file);
 
-const BANNER = "Public demo · fictional data · shared with other visitors. If this deal has already been worked through, click Reset demo.";
+const BANNER = "Public demo · fictional data";
 const ON = { public: true, banner: BANNER, note_max: 500 };
 const within = (demo, el) => renderToStaticMarkup(createElement(m.DemoContext.Provider, { value: demo }, el));
 
@@ -34,16 +34,17 @@ const SAMPLES = [
   { file: "NJ-09_signed_contract.md", doc_type: "signed_contract", doc_date: "2026-10-20", title: "Signed contract", summary: "Signed 20 October 2026 by Liam Hart (Aivuna) and Celeste Wong (Noma Journeys)." },
 ];
 
-test("the banner shows the server's text exactly when public mode is on, and nothing when it is off", () => {
-  assert.equal(within(ON, createElement(m.DemoBanner)), `<div class="demo-banner" role="note">${BANNER}</div>`);
-  assert.equal(within(m.DEMO_OFF, createElement(m.DemoBanner)), "");
-  assert.equal(renderToStaticMarkup(createElement(m.DemoBanner)), ""); // no provider at all: off
+test("the demo bar's status is the server's text, shown only when public mode is on (the bar itself is tested in demo_bar.test.mjs)", () => {
+  const html = within(ON, createElement(m.DemoBar));
+  assert.ok(html.includes(`<strong class="demo-bar-status">${BANNER}</strong>`));
+  assert.equal(within(m.DEMO_OFF, createElement(m.DemoBar)), "");
+  assert.equal(renderToStaticMarkup(createElement(m.DemoBar)), ""); // no provider at all: off
   assert.ok(!read("DemoUI.jsx").includes("Public demo ·"), "the wording comes from the server, in one place");
 });
 
-test("the banner sits above every screen: the app wraps its one body in it", () => {
-  assert.match(read("App.jsx"), /<DemoContext\.Provider value=\{demo\}><DemoBanner \/><AppBody \/><\/DemoContext\.Provider>/);
-  assert.match(read("App.css"), /@media print \{ \.demo-banner \{ display: none; \} \}/);
+test("the demo bar sits above every screen: the app wraps its one body in it", () => {
+  assert.match(read("App.jsx"), /<DemoBar \/><AppBody \/>/);
+  assert.match(read("App.css"), /@media print \{ \.demo-bar \{ display: none; \} \}/);
 });
 
 test("the name note says other visitors can see the name and notes, only in public mode, at every place a name is set", () => {
