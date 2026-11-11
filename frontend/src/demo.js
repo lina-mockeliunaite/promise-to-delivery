@@ -57,3 +57,25 @@ export function sampleSteps(samples, documents) {
   return samples.map((s, i) => ({ sample: s, n: i + 1,
     state: next === -1 || i < next ? "done" : i === next ? "next" : "later", after: i })); // "After step N": the step before it
 }
+
+// "Use sample text" (11 Nov, public mode only): the visitor clicks the link, the text fills the box, and the visitor still clicks Save; nothing is saved
+// for them. One note on one commitment per deal (the phone row, the hosting row), and both handover notes.
+export const NOTE_SAMPLES = {
+  noma_journeys: { match: /phone/i, addressed: true, text: "Noma agreed on 19 Oct to launch on chat and email; voice is not offered." },
+  alder_bank: { match: /hosting/i, addressed: true, text: "Customer agreed AWS Sydney on the 14 Oct call." },
+};
+export const HANDOVER_SAMPLES = {
+  noma_journeys: {
+    sales: "Signed. Noma was promised a launch specialist for the first 30 days; it's approved as a named exception at no charge, but it isn't in the contract. Noma expects it: provide it, and get it into writing at kickoff. Noma launches on chat and email; voice isn't offered.",
+    delivery: "Accepted. We start on chat and email as contracted and provide the launch specialist for 30 days as approved; putting it in writing goes on the kickoff agenda.",
+  },
+  alder_bank: {
+    sales: "Signed with coaching-scam detection and the 750,000 daily volume still open; the signed contract incorporates the 9 October SOW. Hosting agreed as AWS Sydney on the 14 Oct call. Raise both open items at kickoff.",
+    delivery: "Accepted. We start on AWS Sydney as contracted; coaching detection and the volume limit go on the kickoff agenda.",
+  },
+};
+export const noteSampleFor = (demo, deal, commitment) => {
+  const s = demo?.public ? NOTE_SAMPLES[deal] : null;
+  return s && s.match.test(`${commitment?.display_name ?? ""} ${commitment?.name ?? ""}`) ? s : null;
+};
+export const handoverSampleFor = (demo, deal, role) => (demo?.public ? HANDOVER_SAMPLES[deal]?.[role] ?? null : null);

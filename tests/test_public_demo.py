@@ -130,6 +130,39 @@ class TestPublicDealOrder(Case):
         self.assertEqual(first, "alder_bank")  # the deal changed last is first, as before
 
 
+class TestRowOrderKeyNeverChanges(Case):
+    """The commitment rows are ordered by their stored id (the order they were first recorded). The id is the one key a check cannot change:
+    run all three Noma samples and the phone-row note, and every commitment keeps its id; none is re-created, renamed to a new id or reordered."""
+
+    def ids(self, deal):
+        return {c["name"]: c["id"] for c in self.client.get(f"/api/deals/{deal}/register").json()["commitments"]}
+
+    def test_all_three_noma_samples_and_the_note_leave_every_commitments_id_and_so_the_order_unchanged(self):
+        first = self.ids("noma_journeys")
+        self.assertEqual(len(first), 3)
+        self.assertEqual(len(set(first.values())), 3)
+        order = sorted(first, key=first.get)
+        reg = lambda: self.client.get("/api/deals/noma_journeys/register").json()
+        for file in ("NJ-05_v2_named_exception.md", "NJ-07_v2_languages_aligned.md", "NJ-09_signed_contract.md"):
+            self.assertEqual(self.add_sample("noma_journeys", file).status_code, 200, file)
+            now = self.ids("noma_journeys")
+            self.assertEqual(now, first, file)  # same names, same ids
+            self.assertEqual(sorted(now, key=now.get), order, file)
+        phone = next(c for c in reg()["commitments"] if "phone" in c["name"].lower())
+        open_ids = [i["id"] for i in phone["issues"] if i["state"] != "Resolved"]
+        r = self.post("/api/deals/noma_journeys/resolve-note", {"issue_ids": open_ids, "resolved_by": "Visitor", "reason": "Noma agreed on 19 Oct to launch on chat and email; voice is not offered."})
+        self.assertEqual(r.status_code, 200, r.text)
+        after = self.ids("noma_journeys")
+        self.assertEqual(after, first)
+        self.assertEqual(sorted(after, key=after.get), order)
+
+    def test_the_sample_text_rows_exist_exactly_once_in_each_public_deal(self):
+        import re
+        for deal, pattern in (("noma_journeys", r"phone"), ("alder_bank", r"hosting")):
+            names = [c["name"] for c in self.client.get(f"/api/deals/{deal}/register").json()["commitments"]]
+            self.assertEqual(len([n for n in names if re.search(pattern, n, re.I)]), 1, (deal, names))
+
+
 class TestConfigAndHosts(Case):
     def test_the_banner_and_note_cap_are_reported_only_in_public_mode(self):
         on = self.client.get("/api/demo/config").json()

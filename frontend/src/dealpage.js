@@ -117,7 +117,7 @@ export function changeView(change, titleOf = (n) => n, acted = null) {
     const bits = [];
     if (g.closed.length) bits.push(`${g.closed.length} closed`);
     if (g.opened.length) bits.push(`${n(g.opened.length, "new gap", "new gaps")}, ${g.opened.map((x) => label(x.finding)).join(" and ")}`);
-    if (g.reopened.length) bits.push(`reopened, ${g.reopened.map((x) => label(x.finding)).join(" and ")}`);
+    if (g.reopened.length) bits.push(`reopened, ${g.reopened.map((x) => lowerFirst(reopenedTitle(x.finding))).join(" and ")}`);
     return `${g.title}: ${bits.join("; ")}`;
   });
   return { headline, elsewhere: elsewhere.length ? `Elsewhere: ${elsewhere.join(" · ")}.` : "", groups };
@@ -282,6 +282,27 @@ const CLOSED_PHRASE = {
 // A closed gap is named by what is now true, not by the finding it was (11 Nov): "Approval found", not "No approval found".
 export const closedTitle = (finding) => CLOSED_PHRASE[finding] ?? `${FINDING_SHORT[finding] ?? finding}: closed`;
 
+// A fix the signed contract confirmed, or found missing (11 Nov), is also named by what is now true, never by the original finding.
+// Confirmed: "Contract wording matches · confirmed in the signed contract". Reopened: "Contract wording not in the signed contract" (with the Reopened chip).
+const CONFIRMED_PHRASE = {
+  "No approval recorded": "Approval found",
+  "Missing from contract": "Contract wording found",
+  "Contract says something different": "Contract wording matches",
+  "Needs evidence": "Evidence found",
+  "A condition was dropped": "Condition restored",
+  "Not offered": "Promise changed",
+};
+const REOPENED_PHRASE = {
+  "No approval recorded": "Approval not shown for the signed contract",
+  "Missing from contract": "Contract wording missing from the signed contract",
+  "Contract says something different": "Contract wording not in the signed contract",
+  "Needs evidence": "Evidence not found in the signed contract",
+  "A condition was dropped": "Condition missing from the signed contract",
+  "Not offered": "Promise unchanged in the signed contract",
+};
+export const confirmedTitle = (finding) => CONFIRMED_PHRASE[finding] ?? `${FINDING_SHORT[finding] ?? finding}: confirmed`;
+export const reopenedTitle = (finding) => REOPENED_PHRASE[finding] ?? `${FINDING_SHORT[finding] ?? finding}: not in the signed contract`;
+
 // "1 of 2 gaps closed", shown beside a row's status when some of its gaps are closed and others are not (11 Nov). Empty otherwise.
 export function gapProgress(issues) {
   const all = issues ?? [];
@@ -289,14 +310,10 @@ export function gapProgress(issues) {
   return closed > 0 && closed < all.length ? `${closed} of ${all.length} gaps closed` : "";
 }
 
-// One stable order for the commitment rows (11 Nov), from the data alone: the date the promise was first made (the server's first_found,
-// else the earliest statement's date), then the title. A row with no date comes last. Status does not move a row, so a check never
-// re-sorts the list, and every visitor sees the same order, after a reset too.
-export const firstPromisedDate = (c) => c.first_found?.date
-  || (c.statements ?? []).map((s) => s.date).filter(Boolean).sort()[0] || "";
-export const orderPromises = (rows) => [...rows].sort((a, b) =>
-  (firstPromisedDate(a.c) || "9999").localeCompare(firstPromisedDate(b.c) || "9999")
-  || rowTitle(a.c).toLowerCase().localeCompare(rowTitle(b.c).toLowerCase()));
+// One stable order for the commitment rows (11 Nov): the order the commitments were first recorded in the deal, which is their stored id (a
+// commitment keeps its id through every later review). Nothing that a check can change (status, dates, findings) moves a row, so the list never
+// re-sorts, and every visitor sees the same order, after a reset too. (A first version sorted by first-promised date, which can move after a check.)
+export const orderPromises = (rows) => [...rows].sort((a, b) => a.c.id - b.c.id);
 const OPEN_NOUN = {
   "No approval recorded": "the approval gap",
   "Missing from contract": "the contract gap",

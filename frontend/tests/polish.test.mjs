@@ -9,7 +9,7 @@ import { build } from "vite";
 import react from "@vitejs/plugin-react";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
-import { alsoIn, changeResult, changeView, closedTitle, firstPromisedDate, gapProgress, orderPromises, toldQuotesWithDocs, whatChanged } from "../src/dealpage.js";
+import { alsoIn, changeResult, changeView, closedTitle, gapProgress, orderPromises, toldQuotesWithDocs, whatChanged } from "../src/dealpage.js";
 import { FILTERS, counts, visibleDeals } from "../src/deals.js";
 import { sampleSteps } from "../src/demo.js";
 
@@ -149,22 +149,19 @@ test("a row shows '1 of 2 gaps closed' only when some gaps are closed and others
   assert.ok(!none.includes("dp-prow-progress"));
 });
 
-// ---- 11. stable order from the data
-test("rows are ordered by first-promised date, then title; status never moves a row; the same list gives the same order", () => {
-  const row = (name, date, status, extra = {}) => ({ status, c: { name, first_found: date ? { date, doc_type_label: "RFP response" } : null, statements: [], ...extra } });
-  const rows = [row("Phone calls", "2026-09-28", "open"), row("Languages", "2026-09-28", "closed"), row("Specialist", "2026-09-14", "noted"),
-    row("Zebra", null, "open"), row("Alpha", null, "open", { statements: [{ date: "2026-10-05" }] }), row("Titled", "2026-09-28", "open", { display_name: "Aardvark" })];
-  const names = (rs) => rs.map((r) => r.c.display_name || r.c.name);
-  const expected = ["Specialist", "Aardvark", "Languages", "Phone calls", "Alpha", "Zebra"];
-  assert.deepEqual(names(orderPromises(rows)), expected);
-  assert.deepEqual(names(orderPromises([...rows].reverse())), expected); // input order does not matter: same for every visitor
-  // a check flips statuses (open to closed and back); the order does not change
-  const flipped = rows.map((r) => ({ ...r, status: r.status === "open" ? "closed" : "open" }));
-  assert.deepEqual(names(orderPromises(flipped)), expected);
-  assert.equal(firstPromisedDate({ first_found: { date: "2026-09-28" }, statements: [{ date: "2026-09-01" }] }), "2026-09-28"); // the server's rule wins
-  assert.equal(firstPromisedDate({ statements: [{ date: "2026-10-05" }, { date: "2026-09-20" }] }), "2026-09-20");
+// ---- 11. stable order (revised 11 Nov, later: by stored id, the order the commitments were first recorded)
+test("rows are ordered by their stored id; status, dates and titles never move a row", () => {
+  const row = (id, name, status, extra = {}) => ({ status, c: { id, name, first_found: { date: "2026-09-28" }, statements: [], ...extra } });
+  const rows = [row(30, "Alpha", "open"), row(10, "Zebra", "closed"), row(20, "Middle", "noted", { first_found: null, display_name: "Aardvark" })];
+  const ids = (rs) => rs.map((r) => r.c.id);
+  assert.deepEqual(ids(orderPromises(rows)), [10, 20, 30]);
+  assert.deepEqual(ids(orderPromises([...rows].reverse())), [10, 20, 30]); // input order does not matter: the same for every visitor
+  const flipped = rows.map((r) => ({ ...r, status: r.status === "open" ? "closed" : "open", c: { ...r.c, first_found: { date: "2027-01-01" }, name: "renamed", display_name: "Q" } }));
+  assert.deepEqual(ids(orderPromises(flipped)), [10, 20, 30]); // a check flips status, dates and wording; the order does not change
   assert.match(read("DealPage.jsx"), /const promiseRows = orderPromises\(\[/);
-  assert.ok(!/localStorage|useRef\([^)]*order/i.test(read("dealpage.js").slice(read("dealpage.js").indexOf("export const orderPromises"))), "no remembered order");
+  const src = read("dealpage.js");
+  assert.ok(!/localStorage|useRef\(/.test(src.slice(src.indexOf("export const orderPromises"), src.indexOf("export const orderPromises") + 200)), "no remembered order");
+  assert.ok(!src.includes("firstPromisedDate"), "the movable first-promised date is not a sort key any more");
 });
 
 // ---- banner after landing -> Open sample deal -> "All deals"

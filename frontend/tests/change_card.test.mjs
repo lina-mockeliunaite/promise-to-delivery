@@ -43,7 +43,7 @@ test("a signed contract that confirms an earlier fix says so, once, and is not '
   assert.ok(!v.headline.includes("Nothing closed"));
   const html = renderToStaticMarkup(createElement(ChangePanel, { change: { ...c, doc: "Signed contract, 20 Oct", acted: null, modelCalls: 0 }, titleOf, onClose() {} }));
   assert.equal(html.split("earlier fix confirmed in the signed contract").length - 1, 1); // heading line only; the box says "Confirmed in the signed contract"
-  assert.ok(html.includes("Confirmed in the signed contract") && !html.includes("Nothing closed"));
+  assert.ok(html.includes("confirmed in the signed contract") && !html.includes("Nothing closed"));
 });
 
 test("a fix the signed contract does not contain is reopened, not a new gap, and its reason is shown", () => {

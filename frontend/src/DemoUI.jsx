@@ -12,6 +12,11 @@ export function DemoNameNote() {
   return useDemo().public ? <p className="dp-faint dp-small demo-name-note">{NAME_NOTE}</p> : null;
 }
 
+// A quiet link under a note box (public mode only): it fills the box; the visitor still saves.
+export function UseSampleText({ onUse }) {
+  return <button type="button" className="dp-link-btn dp-brand demo-sample-text" onClick={onUse}>Use sample text</button>;
+}
+
 export function SamplePicker({ deal, documents, labels, onDone, onClose, initialSamples = null }) {
   const [samples, setSamples] = useState(initialSamples);
   const [busy, setBusy] = useState(null);

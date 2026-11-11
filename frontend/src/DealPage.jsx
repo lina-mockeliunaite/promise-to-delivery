@@ -11,7 +11,7 @@ import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
 import { addReady, fmtDate, fmtDateTime, mismatchNotice, newDocumentNotice, uploadKind } from "./format.js";
 import {
-  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, closedTitle, coverageLine, docCount, gapProgress, orderPromises, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
+  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, closedTitle, confirmedTitle, reopenedTitle, coverageLine, docCount, gapProgress, orderPromises, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
   mismatchParts, promiseLabels, missingForHandover, handoverChecklist, handoverOpen, changeView, changeDocLabel, datePrefill, plainName, readHash, recordedBy, rowTitle, toldParts, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
@@ -20,8 +20,8 @@ import { IdentityLine, useScrolledPast } from "./Identity.jsx";
 import { CardHead, Drawer, DrawerHead, CommitmentView, DocumentView, MismatchSentence, TitleLine, Icon as DIcon, ICON } from "./Drawer.jsx";
 import { FICTIONAL } from "./brand.js";
 import CatalogueModal from "./CatalogueModal.jsx";
-import { DemoNameNote, SamplePicker } from "./DemoUI.jsx";
-import { NAME_NOTE, REFUSED_FINDINGS, noteLimit, useDemo } from "./demo.js";
+import { DemoNameNote, SamplePicker, UseSampleText } from "./DemoUI.jsx";
+import { NAME_NOTE, REFUSED_FINDINGS, handoverSampleFor, noteLimit, noteSampleFor, useDemo } from "./demo.js";
 import "./DealPage.css";
 
 const Icon = ({ d, size = 15 }) => <DIcon d={d} size={size} />;
@@ -156,8 +156,9 @@ function NameField({ stored, draft, onDraft }) {
 
 // One handover note slot. Empty: the role, the note's name and an "Add note" link. Written: the note as a quote, who recorded it
 // and when, and an "Update note" link.
-function NotePanel({ role, label, who, note, name, setName, onSave }) {
+function NotePanel({ deal, role, label, who, note, name, setName, onSave }) {
   const demo = useDemo();
+  const sample = handoverSampleFor(demo, deal, role);
   const [editing, setEditing] = useState(false);
   const [text, setText] = useState("");
   const [draft, setDraft] = useState("");
@@ -188,6 +189,7 @@ function NotePanel({ role, label, who, note, name, setName, onSave }) {
         <form onSubmit={save} className="dp-note-form">
           <textarea value={text} onChange={(e) => setText(e.target.value)} rows={3} maxLength={noteLimit(demo)} autoFocus
                     placeholder={role === "sales" ? "What Delivery should know: commitments needing attention, side promises, people to talk to" : "What you accept, what you need before kick-off"} />
+          {sample && <UseSampleText onUse={() => setText(sample)} />}
           <NameField stored={name} draft={draft} onDraft={setDraft} />
           <div className="dp-row">
             <button type="submit" className="dp-btn dp-btn-dark" disabled={!text.trim() || !author}>Save note</button>
@@ -242,8 +244,8 @@ export function ChangePanel({ change, titleOf, onClose }) {
                   <span className="dp-change-mark"><Icon d={I.check} size={13} /></span>
                   <div>
                     <div className="dp-change-line">
-                      <strong>{short(x.finding)}: earlier fix confirmed</strong>
-                      <span className="dp-chip dp-chip-green"><span className="dp-dot dp-dot-green" />Confirmed in the signed contract</span>
+                      <strong>{confirmedTitle(x.finding)}</strong>
+                      <span className="dp-change-closed"> · confirmed in the signed contract</span>
                     </div>
                   </div>
                 </div>
@@ -253,7 +255,7 @@ export function ChangePanel({ change, titleOf, onClose }) {
                   <span className="dp-change-mark"><Icon d={I.alert} size={13} /></span>
                   <div>
                     <div className="dp-change-line">
-                      <strong>{short(x.finding)}: earlier fix not found in the signed contract</strong>
+                      <strong>{reopenedTitle(x.finding)}</strong>
                       <span className="dp-chip dp-chip-amber"><span className="dp-dot" />Reopened</span>
                     </div>
                     {x.reason && <p>{x.reason}</p>}
@@ -317,6 +319,7 @@ function Modal({ title, sub, dot, onClose, children }) {
 // Record a note, in the drawer. Keep it open (default) or mark as addressed by note; the name is asked for only if none is stored.
 function NoteForm({ deal, c, titleId, name, setName, canDecide, freshnessLabel, message, checking, onCheckAgain, onNoted, onBack, onClose }) {
   const demo = useDemo();
+  const sample = noteSampleFor(demo, deal, c);
   const open = c.issues.filter((i) => i.state !== "Resolved");
   const [how, setHow] = useState("keep"); // keep: stays Needs attention, note shown in the row; addressed: settled without a document
   const [note, setNote] = useState("");
@@ -362,6 +365,7 @@ function NoteForm({ deal, c, titleId, name, setName, canDecide, freshnessLabel, 
         <label className="dp-field">
           <span>Note or recorded agreement</span>
           <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={5} maxLength={noteLimit(demo)} autoFocus />
+          {sample && <UseSampleText onUse={() => { setNote(sample.text); if (sample.addressed) setHow("addressed"); }} />}
         </label>
         <div className="dp-author">
           {!name.trim() || changing ? (
@@ -771,7 +775,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   if (reg.handover.complete) return <FrozenRecord deal={deal} onBack={onBack} />;
   const byId = (id) => reg.commitments.find((c) => c.id === id);
   const openRows = reg.open_rows.map(byId);
-  // One list in one stable order (11 Nov): earliest first-promised date, then title; a check changes a row's status, never its place.
+  // One list in one stable order (11 Nov): the order the commitments were first recorded (their stored id); a check changes a row's status, never its place.
   const closedIds = [...new Set(reg.resolved_findings.map((r) => r.commitment_id))]
     .filter((id) => !reg.open_rows.includes(id) && !(reg.noted_rows || []).includes(id));
   const promiseRows = orderPromises([
@@ -852,9 +856,9 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
                           onToggle={() => setHandoverManual({ stage: reg.stage.current, open: !handoverIsOpen })} />
             <div className="dp-handover-body" id={handoverBodyId} hidden={!handoverIsOpen}>
               <div className="dp-notes">
-                <NotePanel role="sales" label="Deal owner's handoff note" who="Sales" note={notes.sales} name={name} setName={setName}
+                <NotePanel deal={deal} role="sales" label="Deal owner's handoff note" who="Sales" note={notes.sales} name={name} setName={setName}
                            onSave={(role, text, by) => api.saveHandoverNote(deal, { role, note: text, entered_by: by }).then(() => { load(); onDealsChanged?.(); })} />
-                <NotePanel role="delivery" label="Delivery acceptance note" who="Delivery" note={notes.delivery} name={name} setName={setName}
+                <NotePanel deal={deal} role="delivery" label="Delivery acceptance note" who="Delivery" note={notes.delivery} name={name} setName={setName}
                            onSave={(role, text, by) => api.saveHandoverNote(deal, { role, note: text, entered_by: by }).then(() => { load(); onDealsChanged?.(); })} />
               </div>
               <ul className="dp-checklist" aria-label="Before the handover can be completed">
