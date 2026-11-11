@@ -6,9 +6,9 @@ import { useEffect, useMemo, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
 import {
-  STATUS_CHIP, attentionText, coverageLine, frozenView, hashFor, plainName, readHash, recordedBy, short, verdictLine,
+  STATUS_CHIP, coverageLine, byDocumentDate, frozenView, hashFor, plainName, readHash, recordLines, recordedBy,
 } from "./dealpage.js";
-import { CardHead, Drawer, CommitmentView, DocumentView, MismatchSentence, TitleLine, Icon, ICON } from "./Drawer.jsx";
+import { Drawer, CommitmentView, DocumentView, TitleLine, Icon, ICON } from "./Drawer.jsx";
 import BriefCard from "./BriefCard.jsx";
 import { appendixEntries, hasStoredText, shortHash } from "./docHash.js";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
@@ -26,21 +26,17 @@ const Check = () => (
        strokeLinecap="round" strokeLinejoin="round" style={{ flex: "none" }}><path d="M20 6 9 17l-5-5" /></svg>
 );
 
-// One row per commitment, the same list and wording as the live deal page, read-only. Click opens the drawer (no actions).
-// In print every commitment is written out inline instead, since the drawer is not printed.
-function FrozenRow({ v, active, onOpen }) {
+// One commitment in the record (11 Nov): its title and status, then the compact detail, the same on screen and in print. The row still opens the drawer
+// (the full evidence, with the AI summary, labelled). The detail is the same for every reader: what the customer was told, what the contract says, the gap
+// lines that matter, and how it was settled.
+function FrozenRow({ v, documents, active, onOpen }) {
   const st = STATUS_CHIP[v.status];
   return (
     <li className={`dp-prow is-${v.status} ${active ? "is-active" : ""}`}>
       <div className="dp-prow-head" onClick={onOpen} role="button" tabIndex={0} aria-haspopup="dialog" aria-expanded={active}
            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen())}>
         <span className="dp-prow-main">
-          <TitleLine title={v.title} labels={v.status !== "closed" ? v.badges : []} />
-          <MismatchSentence parts={v.toldLine} />
-          {v.status !== "closed" && <MismatchSentence parts={v.mismatch} />}
-          {v.status === "closed" && v.closedLines.map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
-          {v.status === "closed" && v.signedLines.map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
-          {v.status !== "closed" && v.reopenedLines.map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
+          <TitleLine title={v.title} labels={[]} />
         </span>
         <span className={`dp-chip dp-chip-${st.tone}`} title={st.title}>
           <span className={`dp-dot ${v.status === "noted" ? "dp-dot-grey" : v.status === "closed" ? "dp-dot-green" : ""}`} />
@@ -48,28 +44,68 @@ function FrozenRow({ v, active, onOpen }) {
         </span>
         <span className="dp-chevron fr-noprint" aria-hidden="true"><Icon d={ICON.chevron} size={16} /></span>
       </div>
-      <PrintDetail v={v} />
+      <RecordDetail v={v} documents={documents} />
     </li>
   );
 }
 
-// The commitment written out for print: the plain mismatch line, what the customer was told, the contract, what was found.
-function PrintDetail({ v }) {
+export function RecordDetail({ v, documents }) {
+  const r = recordLines(v, documents);
   return (
-    <div className="fr-print">
-      {v.plain && <p>{v.plain}</p>}
-      {v.extracted && <p className="dp-muted-line">Extracted as: {v.extracted}</p>}
-      <p><strong>Customer was told:</strong>{" "}
-        {v.told.length ? v.told.map((t) => `“${t.quote}” (${t.label}${t.date ? `, ${short(t.date)}` : ""})`).join(" ") : v.toldFallback}</p>
-      <p><strong>Contract says:</strong>{v.contract.text ? ` ${v.contract.text}` : ""}{v.contract.quote ? ` “${v.contract.quote.quote}” (${v.contract.quote.label})` : ""}
-        {v.contract.now ? ` Contract wording containing “${v.contract.now.target}”: “${v.contract.now.quote}” (${v.contract.now.label}), a lookup in the current documents.` : ""}</p>
-      {v.found.map((f) => <p key={f.label}><strong>{f.label}</strong>{f.fact ? ` ${f.fact}` : ""}</p>)}
-      {v.closed.map((c) => <p key={c.label}><strong>{c.gap.headline}</strong>{c.gap.notes.length ? ` ${c.gap.notes.map((n) => `${n}.`).join(" ")}` : ""}</p>)}
-      {v.closed.length > 0 && v.signedLines?.length > 0 && <p>{v.signedLines.join(" ")}</p>}
-      {v.reopenedLines?.length > 0 && <p><strong>Signed paperwork:</strong> {v.reopenedLines.join(" ")}</p>}
-      {v.ai.length > 0 && <p><em>AI-written summary · quotes checked against the supplied documents:</em> {v.ai.join(" ")}</p>}
-      {v.notes.map((n) => <p key={`${n.by}|${n.text}`}><strong>{recordedBy(n.by, n.at, fmtDate)}:</strong> “{n.text}”</p>)}
+    <div className="fr-detail">
+      {r.told.length > 0 && <div><strong>Customer was told:</strong>{r.told.map((t) => <p key={t} className="fr-quote">{t}</p>)}</div>}
+      {r.contract && <p><strong>Contract says:</strong> {r.contract}</p>}
+      {r.gaps.map((g) => <p key={g} className="fr-gap">{g}</p>)}
+      {r.settled.map((l) => <p key={l} className={`fr-settled${l.endsWith(": still open") ? " is-open" : ""}`}>{l}</p>)} {/* a gap still open reads in the "needs attention" amber */}
     </div>
+  );
+}
+
+// "Documents at handover" (each with its SHA-256) and the record fingerprint. On screen they sit in the folded "Record details"; the same block is also
+// rendered once more for print only, outside the fold, so a printed record always carries them whether or not the fold is open (11 Nov).
+export function RecordBody({ s, hv, interactive, setDrawer, copy, copied }) {
+  return (
+    <div className="fr-record-body">
+          <div>
+            <span className="dp-side-title">Documents at handover</span>
+            <ul className="dp-docs">
+              {byDocumentDate(s.documents).map((d) => {
+                const name = `${d.name}${d.version > 1 ? ` · v${d.version}` : ""}`;
+                const stored = hasStoredText(d);
+                return (
+                  <li key={`${d.name}|${d.version}`}>
+                    <div className="dp-doc-row">
+                      {stored && interactive
+                        ? <button type="button" className="dp-doc-name dp-link-btn" onClick={() => setDrawer({ type: "record-doc", id: d.source_version_id })}
+                                  aria-haspopup="dialog" title="Opens the exact text read at handover">{name}</button>
+                        : d.link
+                          ? <a className="dp-doc-name" href={d.link} target="_blank" rel="noopener noreferrer">{name} ↗</a>
+                          : <span className="dp-doc-name fr-plain">{name}</span>}
+                      <span className="dp-mono">{shortDate(d.version_date || d.date)}</span>
+                    </div>
+                    {stored && (
+                      <div className="dp-doc-row fr-doc-hash">
+                        <code className="fr-hash" title={d.sha256}>SHA-256 <span className="fr-h-short">{shortHash(d.sha256)}</span><span className="fr-h-full">{d.sha256}</span></code>
+                        {d.link && <a className="fr-noprint" href={d.link} target="_blank" rel="noopener noreferrer">Open in Drive ↗</a>}
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+          {hv.fingerprint && (
+            <div>
+              <span className="dp-side-title"><Lock /> Record fingerprint</span>
+              <code className="fr-hash" title={hv.fingerprint}><span className="fr-h-short">{hv.fingerprint.slice(0, 12)}…{hv.fingerprint.slice(-4)}</span><span className="fr-h-full">{hv.fingerprint}</span></code>
+              <span className="dp-faint dp-small">
+                SHA-256 of the saved record. If anyone edited the record, this would change. It shows the record is unchanged;
+                it is not a signature.
+              </span>
+              <button type="button" className="dp-link-btn fr-noprint" onClick={copy}>{copied ? "Copied" : "Copy full fingerprint"}</button>
+            </div>
+          )}
+        </div>
   );
 }
 
@@ -167,9 +203,8 @@ export default function FrozenRecord({ deal, onBack }) {
           {s.brief?.go_live && <span className="dp-meta-strong">Target go-live: {fmtDate(s.brief.go_live)}</span>}
           {hv.owner && <span className="dp-meta-strong">Deal owner: {plainName(hv.owner)}</span>}
         </div>
-        <p className="dp-faint dp-small fr-checked">Checked {s.documents.length} documents and the product catalogue · {s.scope_note}</p>
+        <p className="dp-faint dp-small fr-checked">Checked {s.documents.length} documents and the product catalogue</p>
         <div className={`fr-verdict ${open.length ? "is-open" : "is-clear"}`}>
-          <strong>{verdictLine(counts)}</strong>
           <div className="fr-chips">
             <span className="dp-chip dp-chip-amber"><span className="dp-dot" />{counts.open} needing attention</span>
             <span className="dp-chip dp-chip-note"><span className="dp-dot dp-dot-grey" />{counts.noted} addressed by note</span>
@@ -178,24 +213,19 @@ export default function FrozenRecord({ deal, onBack }) {
         </div>
       </section>
 
+      <BriefCard brief={s.brief} />
+
       <section className={`dp-card dp-promises ${counts.open ? "is-attention" : "is-clear"}`}>
-        <CardHead eyebrow="Commitments" title="At handover">
-          <span className={`dp-chip ${counts.open ? "dp-chip-amber" : "dp-chip-grey"}`}>
-            <span className={`dp-dot ${counts.open ? "" : "dp-dot-grey"}`} />
-            {attentionText(counts.open, counts.noted)}
-          </span>
-        </CardHead>
+        <div className="dp-sec-head"><h2>Commitments</h2></div>
         {coverageLine(s.check_coverage?.rejected) && <p className="dp-coverage">{coverageLine(s.check_coverage.rejected)}</p>}
         {views.length === 0 && <p className="dp-faint dp-pad">No commitment had a gap on the documents checked.</p>}
         <ul className="dp-plist">
           {views.map((v) => (
-            <FrozenRow key={v.key} v={v} active={active?.key === v.key}
+            <FrozenRow key={v.key} v={v} documents={documents} active={active?.key === v.key}
                        onOpen={() => { setDrawer({ type: "commitment", key: v.key }); writeHash(v.key); }} />
           ))}
         </ul>
       </section>
-
-      <BriefCard brief={s.brief} />
 
       <section className="dp-card">
         <div className="dp-sec-head"><h2>Handover notes</h2><span className="dp-chip dp-chip-grey"><Lock size={11} /> Locked</span></div>
@@ -221,50 +251,13 @@ export default function FrozenRecord({ deal, onBack }) {
 
       <details className="dp-card fr-record" open={record} onToggle={(e) => setRecord(e.currentTarget.open)}>
         <summary>Record details · {s.documents.length} documents at handover and the record fingerprint</summary>
-        <div className="fr-record-body">
-          <div>
-            <span className="dp-side-title">Documents at handover</span>
-            <ul className="dp-docs">
-              {s.documents.map((d) => {
-                const name = `${d.name}${d.version > 1 ? ` · v${d.version}` : ""}`;
-                const stored = hasStoredText(d);
-                return (
-                  <li key={`${d.name}|${d.version}`}>
-                    <div className="dp-doc-row">
-                      {stored
-                        ? <button type="button" className="dp-doc-name dp-link-btn" onClick={() => setDrawer({ type: "record-doc", id: d.source_version_id })}
-                                  aria-haspopup="dialog" title="Opens the exact text read at handover">{name}</button>
-                        : d.link
-                          ? <a className="dp-doc-name" href={d.link} target="_blank" rel="noopener noreferrer">{name} ↗</a>
-                          : <span className="dp-doc-name fr-plain">{name}</span>}
-                      <span className="dp-mono">{shortDate(d.version_date || d.date)}</span>
-                    </div>
-                    {stored && (
-                      <div className="dp-doc-row fr-doc-hash">
-                        <code className="fr-hash" title={d.sha256}>SHA-256 <span className="fr-h-short">{shortHash(d.sha256)}</span><span className="fr-h-full">{d.sha256}</span></code>
-                        {d.link && <a className="fr-noprint" href={d.link} target="_blank" rel="noopener noreferrer">Open in Drive ↗</a>}
-                      </div>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-          {hv.fingerprint && (
-            <div>
-              <span className="dp-side-title"><Lock /> Record fingerprint</span>
-              <code className="fr-hash" title={hv.fingerprint}><span className="fr-h-short">{hv.fingerprint.slice(0, 12)}…{hv.fingerprint.slice(-4)}</span><span className="fr-h-full">{hv.fingerprint}</span></code>
-              <span className="dp-faint dp-small">
-                SHA-256 of the saved record. If anyone edited the record, this would change. It shows the record is unchanged;
-                it is not a signature.
-              </span>
-              <button type="button" className="dp-link-btn fr-noprint" onClick={copy}>{copied ? "Copied" : "Copy full fingerprint"}</button>
-            </div>
-          )}
-        </div>
+        <RecordBody s={s} hv={hv} interactive setDrawer={setDrawer} copy={copy} copied={copied} />
       </details>
+      <section className="dp-card fr-print-record" aria-hidden="true">
+        <RecordBody s={s} hv={hv} interactive={false} setDrawer={setDrawer} copy={copy} copied={copied} />
+      </section>
 
-      <footer className="dp-foot">Lists commitments where the customer's expectation, the contract and what we can sell don't line up. {FICTIONAL}</footer>
+      <footer className="dp-foot">{FICTIONAL}</footer>
 
       {appendix.length > 0 && (
         <div className="fr-appendix" data-testid="appendix">

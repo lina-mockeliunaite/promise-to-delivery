@@ -30,14 +30,14 @@ test("CardHead: the eyebrow above the heading, the chip beside the heading", () 
   assert.equal(html, '<div class="dp-sec-head"><span class="dp-eyebrow">Commitments</span><div class="dp-sec-title"><h2>What the customer was promised</h2><span class="dp-chip">3 need attention</span></div></div>');
 });
 
-test("the live page says COMMITMENTS / What the customer was promised and the locked record COMMITMENTS / At handover; the old single headings are gone", () => {
+test("the live page says COMMITMENTS / What the customer was promised and the locked record just 'Commitments'; the old headings are gone", () => {
   const live = read("DealPage.jsx"), locked = read("FrozenRecord.jsx");
   assert.match(live, /<CardHead eyebrow="Commitments" title="What the customer was promised">\s*<AttentionChip /);
-  assert.match(locked, /<CardHead eyebrow="Commitments" title="At handover">\s*<span className=\{`dp-chip \$\{counts\.open/);
+  assert.match(locked, /<div className="dp-sec-head"><h2>Commitments<\/h2><\/div>/); // 11 Nov: no "At handover", no attention chip
   assert.ok(!live.includes("<h2>Commitments needing attention</h2>") && !live.includes("Needing attention\">") && !locked.includes("<h2>Commitments at handover</h2>"));
   // the "N need attention" chip and the coverage line are as before, in the same place under the heading
   assert.match(live, /<\/CardHead>\s*\{!demo\.public && coverageLine\(reg\.check_coverage\?\.rejected\) && <p className="dp-coverage">/);
-  assert.match(locked, /<\/CardHead>\s*\{coverageLine\(s\.check_coverage\?\.rejected\) && <p className="dp-coverage">/);
+  assert.match(locked, /<h2>Commitments<\/h2><\/div>\s*\{coverageLine\(s\.check_coverage\?\.rejected\) && <p className="dp-coverage">/);
   // the brief card keeps its own header markup, and the eyebrow is the same class
   assert.match(read("BriefCard.jsx"), /<span className="dp-eyebrow">Deal brief<\/span>\s*<h2>What we're delivering<\/h2>/);
 });

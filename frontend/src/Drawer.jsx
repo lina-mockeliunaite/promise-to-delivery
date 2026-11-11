@@ -144,6 +144,7 @@ export function CommitmentView({ v, titleId, readOnly, me = "", guide = null, on
             <div key={f.label} className="dr-row">
               <strong>{f.label}</strong>
               {f.fact && <span>{f.fact}</span>}
+              {f.sub?.map((l) => <span key={l} className="dr-sub">{l}</span>)}
             </div>
           ))}
           {v.earlier?.map((l) => <p key={l} className="dr-muted">{l}</p>)}
@@ -170,7 +171,6 @@ export function CommitmentView({ v, titleId, readOnly, me = "", guide = null, on
               {v.ai.map((t) => <p key={t}>{t}</p>)}
             </div>
           )}
-          {v.extracted && <p className="dr-muted">Extracted as: {v.extracted}</p>}
         </section>
 
         <section className="dr-sec">

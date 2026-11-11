@@ -614,7 +614,10 @@ test("no sentence appears in both 'Contract says' and the finding card, for ever
     for (const [where, v] of [["live", live], ["locked", locked]]) {
       const said = new Set(contractSaid(v.contract).map(key));
       for (const f of v.found) for (const s of split(f.fact)) assert.ok(!said.has(key(s)), `${name} (${where}): "${s}" is said in both`);
-      assert.deepEqual(v.found.map((f) => f.label).length, issues.length, `${name} (${where}): every finding keeps its title`);
+      // every finding keeps its title: its own box, or (11 Nov) a line beneath the not-offered box that groups the overlapping findings
+      const titles = v.found.flatMap((f) => [f.label, ...(f.sub ?? [])]);
+      assert.equal(titles.length, issues.length, `${name} (${where}): every finding keeps its title`);
+      if (issues.some((e) => e.finding === "Not offered") && issues.length > 1) assert.equal(v.found.length, 1, `${name} (${where}): one not-offered box`);
     }
   }
 });

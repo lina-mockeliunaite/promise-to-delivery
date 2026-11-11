@@ -418,11 +418,17 @@ body:has(.dp) { background: #f8fafc; }
 .fr-verdict { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; border-radius: 12px; background: var(--soft); }
 .fr-verdict > strong { font-size: 14px; font-weight: 600; color: var(--ink); line-height: 1.45; }
 .fr-chips { display: flex; flex-wrap: wrap; gap: 8px; }
-.fr-print { display: none; }
+.fr-detail { padding: 0 20px 12px; font-size: 13px; color: var(--body); display: flex; flex-direction: column; gap: 4px; }
+.fr-detail p { margin: 0; }
+.fr-detail .fr-quote { margin: 2px 0 0 12px; color: var(--ink); }
+.fr-detail .fr-settled { color: var(--muted); font-size: 12.5px; }
+.fr-detail .fr-settled.is-open { color: var(--amber-text); font-weight: 400; } /* a gap still open: the amber of "needs attention", normal weight; closed lines stay muted */
+.dr-sub { display: block; margin-top: 4px; font-size: 12px; color: var(--muted); }
 .fr-seen { display: inline-flex; align-items: center; gap: 4px; padding: 1px 9px; border-radius: 999px; background: var(--hair); color: var(--ink); font-size: 12px; }
 .fr-plain { cursor: default; }
 .fr-hash { font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 13px; color: var(--ink); background: var(--soft); border-radius: 8px; padding: 6px 10px; align-self: flex-start; }
 .fr-record { padding: 0; }
+.fr-print-record { display: none; }
 .fr-record > summary { cursor: pointer; padding: 14px 20px; font-size: 13px; font-weight: 600; color: var(--body); }
 .fr-record-body { display: flex; flex-direction: column; gap: 16px; padding: 4px 20px 20px; }
 .fr-record-body > div { display: flex; flex-direction: column; gap: 8px; }
@@ -449,9 +455,13 @@ body:has(.dp) { background: #f8fafc; }
   .fr .fr-doc-hash .fr-hash { font-size: 11.5px; padding: 1px 8px; }
   .fr .dp-docs { margin-top: 2px; gap: 0; }
   .fr .dp-docs li, .fr .fr-record-body > div:last-child { break-inside: avoid; }
-  .fr .fr-print { display: block; padding: 0 20px 10px; font-size: 12px; color: #1e293b; }
-  .fr .fr-print p { margin: 2px 0; }
+  .fr .fr-detail { padding: 0 20px 8px; font-size: 12px; color: #1e293b; }
+  .fr .fr-detail .fr-settled.is-open { color: var(--amber-text); }
   .fr-record > summary { display: none; }
+  /* The record's documents and fingerprint always print, whatever the on-screen fold is doing: the folded copy is hidden, the print-only copy shown (11 Nov). */
+  .fr .fr-record { display: none; }
+  .fr .fr-print-record { display: block; padding: 8px 0 0; }
+  .fr .fr-print-record::before { content: "Record details"; display: block; padding: 0 20px 4px; font-size: 13px; font-weight: 600; color: var(--body); }
   .fr .fr-appendix { display: block; }
   .fr .fr-appendix-doc { break-before: page; page-break-before: always; }
 }
