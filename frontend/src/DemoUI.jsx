@@ -2,7 +2,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import * as api from "./api.js";
 import ResetDemo from "./ResetDemo.jsx";
-import { ALL_ADDED, BAR_DONE, BAR_NOTE_FALLBACK, GUIDES, GuideStateContext, NAME_NOTE, NO_SAMPLES, TOUR_KEYS, addSample, barStepText, filingLine, guideSteps, markTourDone, sampleSteps, tourCaptions, tourDone, useDemo } from "./demo.js";
+import { ALL_ADDED, BAR_DONE, BAR_NOTE_FALLBACK, DemoNavContext, GUIDES, GuideStateContext, START_LABEL, NAME_NOTE, NO_SAMPLES, TOUR_KEYS, addSample, barStepText, filingLine, guideSteps, markTourDone, sampleSteps, startGuidedDemo, tourCaptions, tourDone, useDemo } from "./demo.js";
 
 export function DemoNameNote() {
   return useDemo().public ? <p className="dp-faint dp-small demo-name-note">{NAME_NOTE}</p> : null;
@@ -15,6 +15,7 @@ export function DemoNameNote() {
 export function DemoBar({ initialSamples = null, initialOpen = false, initialTour = null, toured = null }) {
   const demo = useDemo();
   const guide = useContext(GuideStateContext);
+  const nav = useContext(DemoNavContext);
   const [samples, setSamples] = useState(initialSamples);
   const [open, setOpen] = useState(initialOpen);
   const [tour, setTour] = useState(initialTour); // null, or the part (0-2) of the "Get the picture" tour being shown in the bar
@@ -56,8 +57,9 @@ export function DemoBar({ initialSamples = null, initialOpen = false, initialTou
   return (
     <div className="demo-bar" ref={bar} role="region" aria-label="Public demo">
       <div className="demo-bar-row">
-        <span className="demo-bar-pill">Demo guide</span>
+        {steps && <span className="demo-bar-pill">Demo guide</span>}
         {!steps && <strong className="demo-bar-status">{demo.banner}</strong>}
+        {!steps && <button type="button" className="demo-bar-do" onClick={() => startGuidedDemo(nav)}>{START_LABEL}</button>}
         {steps && (
           <span className="demo-bar-stepblock" role="status">
             <span className="demo-bar-meta">

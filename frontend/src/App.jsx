@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
 import * as api from "./api.js";
 import Handoff from "./Handoff.jsx";
 import Deals from "./Deals.jsx";
@@ -7,7 +7,7 @@ import Landing from "./Landing.jsx";
 import { WELCOME_HASH, isWelcome, landingSeen, markLandingSeen, showLanding } from "./landing.js";
 import { TAGLINE } from "./brand.js";
 import { readHash } from "./dealpage.js";
-import { DEMO_OFF, DemoContext, GuidePublishContext, GuideStateContext, useDemo } from "./demo.js";
+import { DEMO_OFF, DemoContext, DemoNavContext, GuidePublishContext, GuideStateContext, useDemo } from "./demo.js";
 import { DemoBar } from "./DemoUI.jsx";
 import { TYPE_EFFECT, alsoLine, checkLine, checkUpload, fmtDate, fmtDateTime, guessType, plural, typeFromName, uploadKind } from "./format.js";
 
@@ -1020,12 +1020,15 @@ export default function App() {
     ask(4);
     return () => { alive = false; };
   }, []);
+  const navRef = useRef(null); // the app's openDeal, for the bar's "Start the guided demo"
   const [guide, setGuide] = useState(null); // what the deal page tells the bar: which deal, its documents and commitments, and what "Do step N" does
   return (
     <DemoContext.Provider value={demo}>
       <GuidePublishContext.Provider value={setGuide}>
         <GuideStateContext.Provider value={guide}>
-          <DemoBar /><AppBody />
+          <DemoNavContext.Provider value={navRef}>
+            <DemoBar /><AppBody />
+          </DemoNavContext.Provider>
         </GuideStateContext.Provider>
       </GuidePublishContext.Provider>
     </DemoContext.Provider>
@@ -1034,6 +1037,7 @@ export default function App() {
 
 function AppBody() {
   const demo = useDemo();
+  const demoNav = useContext(DemoNavContext);
   const [deals, setDeals] = useState(null);
   const [current, setCurrent] = useState(() => (isWelcome(window.location.hash) ? null : readHash(window.location.hash).d)); // #d=<deal>&c=<key>: a reload or a shared link reopens it
   const [landing, setLanding] = useState(() => showLanding(window.location.hash, landingSeen(), readHash(window.location.hash).d)); // first visit, or #welcome
@@ -1058,6 +1062,11 @@ function AppBody() {
     bareAtLoad.current = false;
     setCurrent(null); setClassic(false); setLanding(true);
   }, [demo.public]);
+  // The demo bar's "Start the guided demo →" (public mode) opens a deal from the landing page or the deal list.
+  useEffect(() => {
+    demoNav.current = (slug) => { markLandingSeen(); if (isWelcome(window.location.hash)) clearHash(); setLanding(false); setClassic(false); setCurrent(slug); };
+    return () => { demoNav.current = null; };
+  });
   // 11 Nov: a new screen starts at the top. Going back to the deal list from a scrolled deal page used to keep the offset, which left the
   // public banner above the window.
   useEffect(() => { window.scrollTo(0, 0); }, [current, landing, classic]);

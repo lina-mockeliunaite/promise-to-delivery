@@ -211,7 +211,11 @@ test("on every other page the bar is the status and Reset demo only", () => {
   const html = bar(null);
   assert.ok(html.includes("Public demo · fictional data") && html.includes(">Reset demo<"));
   assert.ok(!html.includes("All steps") && !html.includes("Do step") && !html.includes("demo-bar-step"));
-  assert.ok(html.includes('<span class="demo-bar-pill">Demo guide</span>') && html.includes('<strong class="demo-bar-status">Public demo · fictional data</strong>')); // landing and the deal list: the pill, the status, Reset demo
+  // landing and the deal list: no pill; the status, the Start button and Reset demo
+  assert.ok(!html.includes("demo-bar-pill"));
+  assert.ok(html.includes('<strong class="demo-bar-status">Public demo · fictional data</strong>'));
+  assert.ok(html.includes('<button type="button" class="demo-bar-do">Start the guided demo →</button>'));
+  assert.ok(html.indexOf("demo-bar-status") < html.indexOf("Start the guided demo") && html.indexOf("Start the guided demo") < html.indexOf(">Reset demo<"));
   const other = bar({ deal: "harbour_bank", documents: [], commitments: [], handoverComplete: false, onDo() {} }, { samples: [] });
   assert.ok(!other.includes("All steps") && !other.includes("demo-bar-step"));
 });
@@ -365,4 +369,33 @@ test("the bare URL opens the landing page in public mode; local mode and deal li
   assert.equal(showLanding("", false, null), true);  // first visit: the landing page
   assert.equal(showLanding("#welcome", true, null), true);
   assert.equal(showLanding("#d=noma_journeys", false, "noma_journeys"), false); // a deal link opens the deal
+});
+
+test("the pill is for deal pages only; 'Start the guided demo →' is for pages without steps only", () => {
+  const deal = bar(guideFor("noma_journeys", 0), { samples: SAMPLES.noma_journeys, toured: false });
+  assert.ok(deal.includes("demo-bar-pill") && !deal.includes("Start the guided demo"));
+  const done = bar(guideFor("noma_journeys", 3, true, { handoverComplete: true }), { samples: [], toured: false });
+  assert.ok(done.includes("demo-bar-pill") && !done.includes("Start the guided demo")); // the locked record is a deal page too
+  const none = bar(null);
+  assert.ok(!none.includes("demo-bar-pill") && none.includes("Start the guided demo →"));
+  assert.equal(bar(null, { demo: m.DEMO_OFF }), ""); // local mode: no bar, no button
+});
+
+test("'Start the guided demo →' opens Noma Journeys at step 1: it forgets the tour mark and opens the deal", () => {
+  const calls = [];
+  const nav = { current: (slug) => calls.push(["open", slug]) };
+  const store = (() => { const mm = new Map([["ptd.tour.noma_journeys", "1"], ["ptd.tour.alder_bank", "1"]]); return { getItem: (k) => mm.get(k) ?? null, setItem: (k, v) => mm.set(k, v), removeItem: (k) => mm.delete(k), mm }; })();
+  m.startGuidedDemo(nav, store);
+  assert.deepEqual(calls, [["open", "noma_journeys"]]);
+  assert.equal(m.tourDone("noma_journeys", store), false); // so the deal opens on "Get the picture", step 1
+  assert.equal(m.FIRST_DEAL, "noma_journeys"); assert.equal(m.START_LABEL, "Start the guided demo →");
+  assert.doesNotThrow(() => m.startGuidedDemo({ current: null }, store)); // before the app has registered: nothing happens
+  // the step the deal then shows is step 1: nothing worked yet, tour not done
+  const s = state("noma_journeys", 0);
+  assert.equal(m.guideSteps("noma_journeys", SAMPLES.noma_journeys, s.documents, s.commitments, false, m.tourDone("noma_journeys", store))[0].state, "current");
+  // the app registers openDeal for the bar, and it leaves the landing page and the list
+  const app = read("App.jsx");
+  assert.match(app, /<DemoNavContext\.Provider value=\{navRef\}>\s*<DemoBar \/><AppBody \/>/);
+  assert.match(app, /demoNav\.current = \(slug\) => \{ markLandingSeen\(\); if \(isWelcome\(window\.location\.hash\)\) clearHash\(\); setLanding\(false\); setClassic\(false\); setCurrent\(slug\); \};/);
+  assert.match(read("DemoUI.jsx"), /onClick=\{\(\) => startGuidedDemo\(nav\)\}>\{START_LABEL\}/);
 });

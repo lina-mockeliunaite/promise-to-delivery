@@ -186,3 +186,13 @@ export const barStepText = (steps) => {
   return current ? { n: current.n, total: steps.length, label: `Step ${current.n} of ${steps.length}`, text: current.label, step: current } : null;
 };
 export const BAR_DONE = "Done · Reset demo to try again";
+
+// "Start the guided demo →" on the landing page and the deal list (public mode): open Noma Journeys at step 1. The tour's browser-only done mark is cleared, so the
+// deal opens on "Get the picture"; every other step is read from the deal itself.
+export const FIRST_DEAL = "noma_journeys";
+export const START_LABEL = "Start the guided demo \u2192";
+export const DemoNavContext = createContext({ current: null }); // .current is set by the app to openDeal(slug)
+export function startGuidedDemo(nav, storage = globalThis.sessionStorage) {
+  clearTourDone(storage);
+  nav?.current?.(FIRST_DEAL);
+}
