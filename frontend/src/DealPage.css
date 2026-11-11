@@ -543,3 +543,11 @@ main.home.home-deal { max-width: none; margin: 0; padding: 0; }
   .dp-prow-state { flex-direction: column; align-items: flex-end; gap: 4px; }
   .dp-prow-progress { white-space: normal; text-align: right; }
 }
+
+/* The demo bar's "Get the picture" tour (11 Nov, public mode): the section being described is outlined; the attribute is absent otherwise, so nothing changes in local mode. */
+.dp-grid[data-tour="brief"] .dp-brief-card, .dp-grid[data-tour="commitments"] #dp-commitments, .dp-grid[data-tour="journey"] .dp-aside > * { outline: 3px solid #f59e0b; outline-offset: -3px; box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.25); transition: box-shadow 0.2s; }
+.dp-grid[data-tour] .dp-brief-card, .dp-grid[data-tour] #dp-commitments, .dp-grid[data-tour] .dp-aside { scroll-margin-top: calc(var(--demo-bar-h, 0px) + var(--topbar-h) + 12px); }
+/* A guided drawer: one hint line above the buttons, and the button to click is highlighted. */
+.dr-guide-hint { margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--tint); color: var(--ink); font-size: 13px; line-height: 1.45; }
+.dr-actions .dp-btn.is-guided { box-shadow: 0 0 0 3px #f59e0b; animation: demo-guided 1.4s ease-in-out 3; }
+@keyframes demo-guided { 0%, 100% { box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.95); } 50% { box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.35); } }

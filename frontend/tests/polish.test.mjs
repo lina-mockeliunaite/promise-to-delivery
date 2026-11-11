@@ -109,7 +109,7 @@ const doc = (key, version, type = "proposal") => ({ source_key: key, version, do
 const states = (docs) => sampleSteps(SAMPLES, docs).map((x) => x.state);
 test("the next sample is derived from what is already in the deal; later ones wait", () => {
   assert.deepEqual(states([doc("NJ-05", 1), doc("NJ-07", 1)]), ["next", "later", "later"]);
-  assert.deepEqual(sampleSteps(SAMPLES, [doc("NJ-05", 1), doc("NJ-07", 1)]).map((x) => x.after), [0, 1, 2]); // "After step 1" on the second, "After step 2" on the third
+  assert.deepEqual(sampleSteps(SAMPLES, [doc("NJ-05", 1), doc("NJ-07", 1)]).map((x) => x.after), [1, 2, 3]); // the samples are steps 2-4 of the guide: "After step 2" on the second, "After step 3" on the third
   assert.deepEqual(states([doc("NJ-05", 2), doc("NJ-07", 1)]), ["done", "next", "later"]);
   assert.deepEqual(states([doc("NJ-05", 2), doc("NJ-07", 2)]), ["done", "done", "next"]);
   assert.deepEqual(states([doc("NJ-05", 2), doc("NJ-07", 2), doc("S", 1, "signed_contract")]), ["done", "done", "done"]);
@@ -120,7 +120,7 @@ const within = (el) => renderToStaticMarkup(createElement(m.DemoContext.Provider
 test("only the next sample has an active 'Add and check'; the later ones are disabled with 'After step N'", () => {
   const html = within(createElement(m.SamplePicker, { deal: "noma_journeys", documents: [doc("NJ-05", 2), doc("NJ-07", 1)], labels: { signed_contract: "Signed contract" }, onDone() {}, onClose() {}, initialSamples: SAMPLES }));
   assert.equal((html.match(/>Add and check</g) || []).length, 1);
-  assert.equal((html.match(/disabled="">After step 2</g) || []).length, 1);
+  assert.equal((html.match(/disabled="">After step 3</g) || []).length, 1);
   assert.equal((html.match(/class="demo-sample-done">Added</g) || []).length, 1);
   assert.ok(!html.includes("All samples added"));
   assert.match(html, /<li class="is-done">/); assert.match(html, /<li class="is-next">/); assert.match(html, /<li class="is-later">/);

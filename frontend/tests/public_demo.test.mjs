@@ -91,14 +91,14 @@ test("the sample list is numbered in story order: title, one line of who did wha
   const html = within(ON, createElement(m.SamplePicker, { deal: "noma_journeys", documents: docs, labels, onDone() {}, onClose() {}, initialSamples: SAMPLES }));
   assert.ok(html.includes("Use a sample file"));
   assert.match(html, /<ol class="demo-sample-list">/);
-  assert.match(html, /demo-sample-n"[^>]*>1<\/span><div><strong>Approval for the launch specialist<\/strong>/);
-  assert.match(html, /demo-sample-n"[^>]*>2<\/span><div><strong>Signed contract<\/strong>/);
+  assert.match(html, /demo-sample-n"[^>]*>2<\/span><div><strong>Approval for the launch specialist<\/strong>/);
+  assert.match(html, /demo-sample-n"[^>]*>3<\/span><div><strong>Signed contract<\/strong>/);
   for (const s of SAMPLES) assert.ok(html.includes(s.title) && html.includes(s.summary));
   assert.ok(!html.includes("NJ-05_v2_named_exception.md")); // the file name is not the heading any more
   assert.ok(html.includes("Filed as a new version of: Internal approvals note<"));
   assert.ok(html.includes("Filed as a new document, type Signed contract<"));
   assert.ok(!html.includes("currently v") && !/Filed as[^<]*\d{4}/.test(html)); // no version number, no date in a filing line
-  assert.equal((html.match(/Add and check/g) || []).length, 1); // only the next step is active; the other waits ("After step 1")
+  assert.equal((html.match(/Add and check/g) || []).length, 1); // only the next step is active; the other waits ("After step 2"); the samples are guide steps 2-4
   assert.ok(!html.includes('type="file"') && !html.includes("browse files"));
   const none = within(ON, createElement(m.SamplePicker, { deal: "x", documents: [], labels: {}, onDone() {}, onClose() {}, initialSamples: [] }));
   assert.ok(none.includes("This deal has no sample files in the public demo."));
@@ -111,7 +111,7 @@ test("filingLine: a version names the document it replaces, a new document its t
 
 test("the add-document form shows the sample list only in public mode; off, the upload form is as it was", () => {
   const page = read("DealPage.jsx");
-  assert.match(page, /if \(demo\.public\) return <SamplePicker deal=\{deal\} documents=\{documents\} labels=\{labels\} onDone=\{onDone\} onClose=\{onClose\} \/>;/);
+  assert.match(page, /if \(demo\.public\) return <SamplePicker deal=\{deal\} documents=\{documents\} labels=\{labels\} hint=\{hint\} onDone=\{onDone\} onClose=\{onClose\} \/>;/);
   assert.ok(page.includes("Drop file here or <u>browse files</u>")); // the upload form is still there
   assert.match(read("api.js"), /export const fetchDemoConfig = \(\) => getJson\("\/api\/demo\/config"\)/);
 });

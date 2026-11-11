@@ -407,7 +407,9 @@ main.home { max-width: 1440px; }
 @media (max-width: 639px) {
   .demo-bar-row { flex-wrap: wrap; gap: 4px 10px; }
   .demo-bar-step { flex: 1 1 150px; white-space: normal; overflow: visible; } /* beside the status when it fits, wrapping rather than clipping */
-  .demo-bar-do { order: 3; }
+  .demo-bar-do, .demo-bar-tourn, .demo-bar-row > .demo-bar-link { order: 3; }
   .demo-bar-right { order: 4; }
   .demo-bar-menu, .demo-bar-reset { left: 16px; right: 16px; width: auto; }
 }
+.demo-bar-tourn { flex: none; font-size: 11px; opacity: 0.85; white-space: nowrap; }
+.demo-hint { margin: 8px 0 0; padding: 8px 10px; border-radius: 8px; background: var(--tint, #eef2ff); color: var(--ink, #0f172a); font-size: 13px; }

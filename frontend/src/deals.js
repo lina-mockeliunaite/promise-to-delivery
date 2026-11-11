@@ -95,13 +95,15 @@ export function resetNext(state, event, message = "") {
 }
 // Calls the endpoint; on success sets #welcome and reloads the whole page, so no screen keeps stale state. The name
 // ("Recording as", in localStorage) is not touched here and survives the reload. On failure returns the server's message.
-export async function runReset(resetApi, { setHash, reload }) {
+export async function runReset(resetApi, nav) {
+  const { setHash, reload } = nav;
   try {
     await resetApi();
   } catch (err) {
     return { ok: false, message: err?.message || "The reset failed." };
   }
   setHash("#welcome");
+  nav.beforeReload?.(); // public mode: forget the browser-only "Get the picture" tour state
   reload();
   return { ok: true, message: "" };
 }

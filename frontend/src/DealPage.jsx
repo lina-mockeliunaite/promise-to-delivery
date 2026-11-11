@@ -399,14 +399,14 @@ function NoteForm({ deal, c, titleId, name, setName, canDecide, freshnessLabel, 
 }
 
 // Add updated document, in the drawer: the existing form, as it was.
-function AddPanel({ deal, c, titleId, documents, docTypes, onDone, onBack, onClose }) {
+function AddPanel({ deal, c, titleId, documents, docTypes, hint = "", onDone, onBack, onClose }) {
   const open = c ? c.issues.filter((i) => i.state !== "Resolved") : [];
   return (
     <>
       <DrawerHead id={titleId} title={c ? "Add updated document" : "Add a document"} sub={c ? rowTitle(c) : "A new document, or a new version of one already in the deal"}
                   backLabel={c ? "Back to commitment" : null} onBack={onBack} onClose={onClose} />
       <div className="dr-body dr-form">
-        <AddDocument deal={deal} documents={documents} docTypes={docTypes} preset={c ? suggestFix(open, documents) : undefined}
+        <AddDocument deal={deal} documents={documents} docTypes={docTypes} hint={hint} preset={c ? suggestFix(open, documents) : undefined}
                      onDone={onDone} onClose={c ? onBack : onClose} />
       </div>
     </>
@@ -447,7 +447,7 @@ function ClosingHelp({ onClose }) {
 }
 
 
-function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
+function AddDocument({ deal, documents, docTypes, hint = "", onDone, onClose, preset }) {
   const demo = useDemo();
   // No silent default type (20 Oct): a document opened from a commitment is pre-selected by what usually closes that gap; from the
   // sidebar nothing is chosen until the person chooses, or accepts the suggestion made from the file.
@@ -480,7 +480,7 @@ function AddDocument({ deal, documents, docTypes, onDone, onClose, preset }) {
   const revision = form.file && !form.source_key && !notice
     ? newDocumentNotice({ fileName: form.file.name, head, documents, docType: form.doc_type, today: fmtDate(form.doc_date) }) : null;
   const ready = addReady({ file: form.file, source_key: form.source_key, doc_type: form.doc_type });
-  if (demo.public) return <SamplePicker deal={deal} documents={documents} labels={labels} onDone={onDone} onClose={onClose} />; // no uploads in public mode
+  if (demo.public) return <SamplePicker deal={deal} documents={documents} labels={labels} hint={hint} onDone={onDone} onClose={onClose} />; // no uploads in public mode
   const submit = async (e) => {
     e?.preventDefault();
     setBusy(true);
@@ -688,7 +688,8 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   const [change, setChange] = useState(null); // the "What changed" card after a document or a recheck
   const [askName, setAskName] = useState(null); // { fn, initial }: the name prompt, only for actions that have no form of their own
   const [help, setHelp] = useState(false);
-  const [flash, setFlash] = useState({ row: null, handover: false }); // the guide card's target, highlighted for a moment
+  const [flash, setFlash] = useState({ row: null, handover: false }); // the demo bar's target, highlighted for a moment
+  const [tourKey, setTourKey] = useState(null); // the section the bar's "Get the picture" tour is showing: "brief", "journey" or "commitments"
   const [handoverManual, setHandoverManual] = useState(null); // { stage, open }: a person's choice for the Handover card, kept until the stage changes or the page reloads
   const handoverBodyId = useId();
   // The drawer: { type: "commitment", id } | { type: "doc", docKey, quote, fromId } | { type: "add", fromId } | { type: "note", id }
@@ -732,6 +733,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   const doStep = (step) => {
     const a = guideAction(step, reg.commitments);
     if (a.drawer) setDrawer(a.drawer);
+    if (a.drawer?.type === "commitment") writeHash(byId(a.drawer.id)?.ref ?? null);
     if (a.handover) setHandoverManual({ stage: reg.stage.current, open: true });
     setFlash({ row: a.row, handover: a.handover });
     setTimeout(() => {
@@ -745,9 +747,16 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   const publishGuide = useContext(GuidePublishContext);
   const doStepRef = useRef(null);
   doStepRef.current = doStep;
+  const tourRef = useRef(null);
+  tourRef.current = (key) => { // show one section of the page for the tour: highlight it and bring it into view (key null: stop)
+    setTourKey(key);
+    if (key) setTimeout(() => document.querySelector(key === "brief" ? ".dp-brief-card" : key === "journey" ? ".dp-aside" : "#dp-commitments")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+  };
   useEffect(() => {
     if (!demo.public || !GUIDES[deal] || !reg || !docs) return undefined;
-    publishGuide({ deal, documents: docs.documents, commitments: reg.commitments, handoverComplete: !!reg.handover.complete, onDo: (step) => doStepRef.current(step) });
+    publishGuide({ deal, documents: docs.documents, commitments: reg.commitments, handoverComplete: !!reg.handover.complete,
+      facts: { goLive: reg.brief?.go_live, stage: reg.stage.current, stageLabel: reg.stage.current_label, open: reg.open_rows.length },
+      onDo: (step) => doStepRef.current(step), onTour: (key) => tourRef.current(key) });
     return () => publishGuide(null);
   }, [demo.public, deal, reg, docs, publishGuide]);
   const openCommitment = (c) => { setDrawer({ type: "commitment", id: c.id }); writeHash(c.ref); };
@@ -841,7 +850,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
         </span>
       </div>
 
-      <div className="dp-grid">
+      <div className="dp-grid" data-tour={tourKey || undefined}>
         <div className="dp-main">
           <section className="dp-card dp-head" ref={headRef}>
             <div className="dp-title-row">
@@ -935,7 +944,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
       {drawer && (
         <Drawer labelledBy="dr-title" onClose={closeDrawer} focusKey={`${drawer.type}:${drawer.id ?? drawer.docKey ?? ""}`}>
           {drawer.type === "commitment" && drawerC && (
-            <CommitmentView v={commitmentView(drawerC, statusOf(drawerC.id), docs.documents)} titleId="dr-title" me={name}
+            <CommitmentView v={commitmentView(drawerC, statusOf(drawerC.id), docs.documents)} titleId="dr-title" me={name} guide={drawer.guide}
                             onClose={closeDrawer} onCatalogue={setCatFocus}
                             onOpenDoc={(doc, quote) => doc && setDrawer({ type: "doc", docKey: doc.source_key, quote, fromId: drawerC.id })}
                             onSeen={() => withName((who) => act(async () => { for (const i of seenIssues(drawerC)) await api.markSeen(deal, { issue_id: i.id, seen_by: who }); }))}
@@ -947,7 +956,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
                           backLabel={drawer.fromId != null ? "Back to commitment" : null} onBack={toCommitment} onClose={closeDrawer} />
           )}
           {drawer.type === "add" && (
-            <AddPanel deal={deal} c={drawerC} titleId="dr-title" documents={docs.documents} docTypes={docs.doc_types}
+            <AddPanel deal={deal} c={drawerC} titleId="dr-title" documents={docs.documents} docTypes={docs.doc_types} hint={drawer.hint}
                       onDone={docDone} onBack={drawerC ? toCommitment : closeDrawer} onClose={closeDrawer} />
           )}
           {drawer.type === "note" && drawerC && (

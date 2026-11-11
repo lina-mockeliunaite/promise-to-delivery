@@ -49,13 +49,15 @@ export const ALL_ADDED = {
 };
 
 // The guided path through a deal's samples (11 Nov): which are already in the deal, which one is next, which wait. A new-version sample is in the
-// deal once its document is past version 1; a new-document sample once a document of its type is there. "later" says which step it waits for.
+// deal once its document is past version 1; a new-document sample once a document of its type is there. The samples are steps 2, 3 and 4 of the
+// guide (step 1 is "Get the picture"), so n is the guide's step number and "later" says which step it waits for ("After step N").
+export const FIRST_SAMPLE_STEP = 2;
 export function sampleSteps(samples, documents) {
   const docs = documents ?? [];
   const used = (s) => (s.version_of ? docs.some((d) => d.source_key === s.version_of && d.version > 1) : docs.some((d) => d.doc_type === s.doc_type));
   const next = samples.findIndex((s) => !used(s));
-  return samples.map((s, i) => ({ sample: s, n: i + 1,
-    state: next === -1 || i < next ? "done" : i === next ? "next" : "later", after: i })); // "After step N": the step before it
+  return samples.map((s, i) => ({ sample: s, n: i + FIRST_SAMPLE_STEP,
+    state: next === -1 || i < next ? "done" : i === next ? "next" : "later", after: i + FIRST_SAMPLE_STEP - 1 })); // the step before it
 }
 
 // "Use sample text" (11 Nov, public mode only): the visitor clicks the link, the text fills the box, and the visitor still clicks Save; nothing is saved
@@ -83,31 +85,75 @@ export const handoverSampleFor = (demo, deal, role) => (demo?.public ? HANDOVER_
 // The guide card, "Try it in 5 steps" (11 Nov, public mode, Noma and Alder). Step numbers are the sample panel's numbers (1-3), so "After step N" there
 // refers to the card. A step is done when the deal shows it: a sample is in the deal (the same test the sample list uses), a note is recorded on
 // its row, or the handover is complete. The current step is the first one not done.
-export const GUIDE_TITLE = "Try it in 5 steps";
-export const GUIDE_DONE = "Done. Reset demo to try again.";
+// Step 1 is a tour of the page; 2-4 add the sample documents; 5 records the note; 6 completes the handover. Each action step opens its commitment's drawer
+// on the evidence with one hint line (a fact about the findings: tests/test_guide_facts.py checks each against the deal's data).
 export const GUIDES = {
   noma_journeys: [
-    { label: "Launch specialist: add the approval", kind: "sample", sample: 0, row: /launch specialist/i },
-    { label: "Support in 12 languages: add the revised contract", kind: "sample", sample: 1, row: /12 languages/i },
-    { label: "Add the signed contract", kind: "sample", sample: 2, row: null },
-    { label: "Phone calls: record the customer's agreement as a note", kind: "note", row: /phone/i },
+    { label: "Get the picture", kind: "tour", row: null },
+    { label: "Launch specialist: add the approval", kind: "sample", sample: 0, row: /launch specialist/i, highlight: "add",
+      hint: "Promised in the RFP and again in the proposal, never approved, not in the contract. Add the approval and see what closes." },
+    { label: "Support in 12 languages: add the revised contract", kind: "sample", sample: 1, row: /12 languages/i, highlight: "add",
+      hint: "Told 12 languages; the draft contract says four. Add the revised contract." },
+    { label: "Add the signed contract", kind: "sample", sample: 2, row: null,
+      hint: "The signed contract decides what Delivery inherits. Add it and see which fixes survive." },
+    { label: "Phone calls: record the customer's agreement as a note", kind: "note", row: /phone/i, highlight: "note",
+      hint: "Aivuna doesn't offer voice, so no document can fix this. Noma agreed on a call: record it as a note." },
     { label: "Complete the handover", kind: "handover", row: null },
   ],
   alder_bank: [
-    { label: "Coaching-scam detection: add the BioCatch connector approval", kind: "sample", sample: 0, row: /coaching/i },
-    { label: "Coaching-scam detection: add the revised SOW", kind: "sample", sample: 1, row: /coaching/i },
-    { label: "Add the signed contract", kind: "sample", sample: 2, row: null },
-    { label: "Hosting on Microsoft Azure: record the customer's agreement as a note", kind: "note", row: /hosting/i },
+    { label: "Get the picture", kind: "tour", row: null },
+    { label: "Coaching-scam detection: add the BioCatch connector approval", kind: "sample", sample: 0, row: /coaching/i, highlight: "add",
+      hint: "Coaching detection depends on the BioCatch connector, which is in beta and needs a named approval; the SOW doesn't mention it. Add the approval and see what closes." },
+    { label: "Coaching-scam detection: add the revised SOW", kind: "sample", sample: 1, row: /coaching/i, highlight: "add",
+      hint: "The approval closed one gap, but the SOW still doesn't mention coaching detection. Add the revised SOW." },
+    { label: "Add the signed contract", kind: "sample", sample: 2, row: null,
+      hint: "The signed contract decides what Delivery inherits. Add it and see which fixes survive." },
+    { label: "Hosting on Microsoft Azure: record the customer's agreement as a note", kind: "note", row: /hosting/i, highlight: "note",
+      hint: "Elva doesn't offer Azure hosting, so no document can fix this. The customer agreed AWS Sydney on a call: record it as a note." },
     { label: "Complete the handover", kind: "handover", row: null },
   ],
 };
 export const findGuideRow = (commitments, re) => (re ? (commitments ?? []).find((c) => re.test(`${c.display_name ?? ""} ${c.name ?? ""}`)) ?? null : null);
 
-export function guideSteps(deal, samples, documents, commitments, handoverComplete = false) {
+// "Get the picture" (11 Nov): a 3-part tour in the bar. Its done state is the browser's only (sessionStorage), never the server's; Reset demo clears it.
+export const TOUR_KEYS = ["brief", "journey", "commitments"];
+const TOUR_STORE = "ptd.tour.";
+export function tourDone(deal, storage = globalThis.sessionStorage) {
+  try { return storage?.getItem(`${TOUR_STORE}${deal}`) === "1"; } catch { return false; }
+}
+export function markTourDone(deal, storage = globalThis.sessionStorage) {
+  try { storage?.setItem(`${TOUR_STORE}${deal}`, "1"); } catch { /* private window: the tour is offered again on a reload */ }
+}
+export function clearTourDone(storage = globalThis.sessionStorage) {
+  try { for (const deal of Object.keys(GUIDES)) storage?.removeItem(`${TOUR_STORE}${deal}`); } catch { /* nothing stored */ }
+}
+// Who the deal is with and who the go-live was promised to: the documents say it (Noma's discovery call: "We have already told our leadership that date";
+// Alder's: "We've told our board that date"). The date, the stage and the count come from the deal itself.
+export const TOUR_FACTS = {
+  noma_journeys: { vendor: "Aivuna", customer: "Noma", audience: "its leadership" },
+  alder_bank: { vendor: "Elva", customer: "Alder Bank", audience: "its board" },
+};
+const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const NUMBER_WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+export const dayMonth = (iso) => { const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso ?? ""); return m ? `${+m[3]} ${MONTHS[+m[2] - 1]}` : ""; };
+export const needAttention = (n) => (n === 0 ? "Nothing needs attention." : `${NUMBER_WORDS[n] ?? n} ${n === 1 ? "needs" : "need"} attention.`);
+// The three captions, in order. facts: { goLive: "2027-02-01", stage: "contracting", stageLabel: "Contracting", open: 3 }.
+export function tourCaptions(deal, facts) {
+  const t = TOUR_FACTS[deal];
+  const when = dayMonth(facts?.goLive);
+  return [
+    `What ${t.vendor} is delivering, and the ${when ? `${when} ` : ""}go-live ${t.customer} has promised ${t.audience}.`,
+    `Every document so far, by stage. We're at ${facts?.stageLabel}${facts?.stage === "contracting" ? ": the last point to fix gaps cheaply" : ""}.`,
+    `What the customer was told that the contract or catalogue doesn't back up. ${needAttention(facts?.open ?? 0)}`,
+  ];
+}
+
+export function guideSteps(deal, samples, documents, commitments, handoverComplete = false, toured = false) {
   const list = GUIDES[deal] ?? [];
   const added = sampleSteps(samples ?? [], documents);
-  const done = list.map((g, i) => {
+  const done = list.map((g) => {
     if (handoverComplete) return true;
+    if (g.kind === "tour") return toured;
     if (g.kind === "sample") return added[g.sample]?.state === "done";
     if (g.kind === "note") return (findGuideRow(commitments, g.row)?.noted_count ?? 0) > 0;
     return false; // "Complete the handover" is done only when the record is locked
@@ -116,18 +162,21 @@ export function guideSteps(deal, samples, documents, commitments, handoverComple
   return list.map((g, i) => ({ ...g, n: i + 1, state: done[i] ? "done" : i === current ? "current" : "later" }));
 }
 
-// Where "Do step N" goes: the drawer to open (the sample panel from that commitment, the sample panel from + Add, or that row's note form),
-// the row to scroll to and highlight, or the Handover card to expand and scroll to.
+// Where "Do step N" goes. The tour runs in the bar. The document steps and the note step open that commitment's drawer on its evidence, with one hint
+// line above the buttons and the right button highlighted ("Add updated document", or "Record a note"); the visitor clicks it. The signed contract
+// has no single commitment, so it opens the sample panel from + Add, with its hint. The handover step expands and scrolls to Handover.
 export function guideAction(step, commitments) {
   const row = findGuideRow(commitments, step.row);
-  if (step.kind === "sample") return { drawer: { type: "add", fromId: row ? row.id : null }, row: row ? row.id : null, handover: false };
-  if (step.kind === "note") return { drawer: row ? { type: "note", id: row.id } : null, row: row ? row.id : null, handover: false };
-  return { drawer: null, row: null, handover: true };
+  const rowId = row ? row.id : null;
+  if (step.kind === "tour") return { tour: true, drawer: null, row: null, handover: false };
+  if (step.kind === "sample" && !step.row) return { drawer: { type: "add", fromId: null, hint: step.hint }, row: null, handover: false };
+  if (step.kind === "handover") return { drawer: null, row: null, handover: true };
+  return { drawer: row ? { type: "commitment", id: row.id, guide: { hint: step.hint, highlight: step.highlight } } : null, row: rowId, handover: false };
 }
 
 // The deal page tells the demo bar which step the visitor is on (11 Nov). Two contexts so the page, which only publishes, does not re-render when the
 // bar's copy changes: PUBLISH is a stable setter, STATE is what the bar reads: null (no guide on this page) or
-// { deal, documents, commitments, handoverComplete, onDo }.
+// { deal, documents, commitments, handoverComplete, facts, onDo, onTour }.
 export const GuidePublishContext = createContext(() => {});
 export const GuideStateContext = createContext(null);
 export const BAR_NOTE_FALLBACK = "Shared with other visitors. If a deal has already been worked through, click Reset demo.";

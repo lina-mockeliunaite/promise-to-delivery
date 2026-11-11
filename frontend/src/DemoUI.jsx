@@ -2,7 +2,7 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import * as api from "./api.js";
 import ResetDemo from "./ResetDemo.jsx";
-import { ALL_ADDED, BAR_DONE, BAR_NOTE_FALLBACK, GUIDES, GuideStateContext, NAME_NOTE, NO_SAMPLES, addSample, barStepText, filingLine, guideSteps, sampleSteps, useDemo } from "./demo.js";
+import { ALL_ADDED, BAR_DONE, BAR_NOTE_FALLBACK, GUIDES, GuideStateContext, NAME_NOTE, NO_SAMPLES, TOUR_KEYS, addSample, barStepText, filingLine, guideSteps, markTourDone, sampleSteps, tourCaptions, tourDone, useDemo } from "./demo.js";
 
 export function DemoNameNote() {
   return useDemo().public ? <p className="dp-faint dp-small demo-name-note">{NAME_NOTE}</p> : null;
@@ -12,11 +12,13 @@ export function DemoNameNote() {
 // + "Do step N" | "All steps ▾" and "Reset demo". Other pages: the status and "Reset demo". "All steps" opens a small dropdown under the bar with the
 // five steps (done, current, later) and the shared-demo note. With all five done the step reads "Done · Reset demo to try again". The step logic
 // (which step is current, where "Do step N" goes) is the same as before the guide moved here: guideSteps and guideAction, with the deal page's doStep.
-export function DemoBar({ initialSamples = null, initialOpen = false }) {
+export function DemoBar({ initialSamples = null, initialOpen = false, initialTour = null, toured = null }) {
   const demo = useDemo();
   const guide = useContext(GuideStateContext);
   const [samples, setSamples] = useState(initialSamples);
   const [open, setOpen] = useState(initialOpen);
+  const [tour, setTour] = useState(initialTour); // null, or the part (0-2) of the "Get the picture" tour being shown in the bar
+  const [, setToured] = useState(0); // a re-render when the tour is marked done
   const bar = useRef(null);
   const deal = guide?.deal;
   useEffect(() => {
@@ -25,7 +27,9 @@ export function DemoBar({ initialSamples = null, initialOpen = false }) {
     api.fetchSamples(deal).then((r) => alive && setSamples(r.samples), () => alive && setSamples([]));
     return () => { alive = false; };
   }, [demo.public, deal, guide?.handoverComplete, initialSamples]);
-  useEffect(() => { setOpen(false); }, [deal]);
+  useEffect(() => { setOpen(false); setTour(null); }, [deal]);
+  const stopTour = (finished) => { setTour(null); guide?.onTour?.(null); if (finished) { markTourDone(deal); setToured((n) => n + 1); } };
+  const goTour = (part) => { setOpen(false); setTour(part); guide?.onTour?.(TOUR_KEYS[part]); };
   // The page's own sticky bars and drawers sit below this bar: tell them how tall it is (0 when there is none, so local mode is as it was).
   useEffect(() => {
     const root = document.documentElement;
@@ -45,15 +49,19 @@ export function DemoBar({ initialSamples = null, initialOpen = false }) {
     return () => { window.removeEventListener("keydown", onKey); window.removeEventListener("mousedown", onDown); };
   }, [open]);
   if (!demo.public) return null;
-  const steps = guide && GUIDES[deal] && (guide.handoverComplete || samples) ? guideSteps(deal, samples, guide.documents, guide.commitments, guide.handoverComplete) : null;
+  const steps = guide && GUIDES[deal] && (guide.handoverComplete || samples) ? guideSteps(deal, samples, guide.documents, guide.commitments, guide.handoverComplete, toured ?? tourDone(deal)) : null;
   const allDone = !!steps && steps.every((s) => s.state === "done");
   const now = steps && !allDone ? barStepText(steps) : null;
+  const captions = steps && tour != null ? tourCaptions(deal, guide.facts) : null; // while the tour runs, the bar's text is the caption
   return (
     <div className="demo-bar" ref={bar} role="region" aria-label="Public demo">
       <div className="demo-bar-row">
         <strong className="demo-bar-status">{demo.banner}</strong>
-        {steps && <span className="demo-bar-step" role="status">{allDone ? BAR_DONE : now.text}</span>}
-        {now && <button type="button" className="demo-bar-do" onClick={() => { setOpen(false); guide.onDo(now.step); }}>Do step {now.n}</button>}
+        {steps && <span className="demo-bar-step" role="status">{captions ? captions[tour] : allDone ? BAR_DONE : now.text}</span>}
+        {captions && <span className="demo-bar-tourn">{tour + 1} of {captions.length}</span>}
+        {captions && <button type="button" className="demo-bar-do" onClick={() => (tour < captions.length - 1 ? goTour(tour + 1) : stopTour(true))}>{tour < captions.length - 1 ? "Next" : "Finish"}</button>}
+        {captions && <button type="button" className="demo-bar-link" onClick={() => stopTour(true)}>Skip tour</button>}
+        {!captions && now && <button type="button" className="demo-bar-do" onClick={() => { setOpen(false); if (now.step.kind === "tour") goTour(0); else guide.onDo(now.step); }}>{now.step.kind === "tour" ? "Show me" : `Do step ${now.n}`}</button>}
         <span className="demo-bar-right">
           {steps && <button type="button" className="demo-bar-link" aria-expanded={open} aria-haspopup="true" onClick={() => setOpen(!open)}>All steps ▾</button>}
           <ResetDemo variant="bar" />
@@ -81,7 +89,7 @@ export function UseSampleText({ onUse }) {
   return <button type="button" className="dp-link-btn dp-brand demo-sample-text" onClick={onUse}>Use sample text</button>;
 }
 
-export function SamplePicker({ deal, documents, labels, onDone, onClose, initialSamples = null }) {
+export function SamplePicker({ deal, documents, labels, onDone, onClose, initialSamples = null, hint = "" }) {
   const [samples, setSamples] = useState(initialSamples);
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState(null);
@@ -101,6 +109,7 @@ export function SamplePicker({ deal, documents, labels, onDone, onClose, initial
   return (
     <div className="dp-add demo-samples">
       <span className="dp-field-label">Use a sample file</span>
+      {hint && <p className="demo-hint" role="note">{hint}</p>}
       <p className="dp-faint dp-small">This public demo takes its own sample files, not uploads.</p>
       {samples && samples.length === 0 && !error && <p className="dp-faint dp-small">{NO_SAMPLES}</p>}
       {samples && samples.length > 0 && sampleSteps(samples, documents).every((x) => x.state === "done") && <p className="demo-all-added" role="status">{ALL_ADDED[deal] ?? ""}</p>}

@@ -102,7 +102,8 @@ function Source({ label, date, doc, onOpen, also }) {
 }
 
 // A commitment, read from the view built in dealpage.js (live register or locked snapshot). readOnly: no footer, no actions.
-export function CommitmentView({ v, titleId, readOnly, me = "", onOpenDoc, onSeen, onNote, onAddDoc, onCatalogue, onClose }) {
+// guide (public demo): { hint, highlight: "add" | "note" } from the demo bar's "Do step N": one hint line above the buttons, and the button to click highlighted.
+export function CommitmentView({ v, titleId, readOnly, me = "", guide = null, onOpenDoc, onSeen, onNote, onAddDoc, onCatalogue, onClose }) {
   const seenByMe = v.seen.some((x) => x.by === me.trim());
   return (
     <>
@@ -194,9 +195,10 @@ export function CommitmentView({ v, titleId, readOnly, me = "", onOpenDoc, onSee
             {" · "}
             {seenByMe ? <span>Seen by you</span> : <button type="button" className="dr-textlink" onClick={onSeen} title="Records that you have looked at this. It does not close or change anything.">Mark as seen</button>}
           </p>
+          {guide?.hint && <p className="dr-guide-hint" role="note">{guide.hint}</p>}
           <div className="dr-actions">
-            <button type="button" className="dp-btn" onClick={onNote}>Record a note</button>
-            <button type="button" className="dp-btn dp-btn-dark" onClick={onAddDoc}>Add updated document</button>
+            <button type="button" className={`dp-btn${guide?.highlight === "note" ? " is-guided" : ""}`} onClick={onNote}>Record a note</button>
+            <button type="button" className={`dp-btn dp-btn-dark${guide?.highlight === "add" ? " is-guided" : ""}`} onClick={onAddDoc}>Add updated document</button>
           </div>
         </footer>
       )}

@@ -2,9 +2,9 @@
 import { useState } from "react";
 import * as api from "./api.js";
 import { RESET_IDLE, RESET_QUESTION, resetNext, runReset } from "./deals.js";
-import { RESET_QUESTION_PUBLIC, useDemo } from "./demo.js";
+import { RESET_QUESTION_PUBLIC, clearTourDone, useDemo } from "./demo.js";
 
-const browser = { setHash: (h) => { window.location.hash = h; }, reload: () => window.location.reload() };
+const browser = { setHash: (h) => { window.location.hash = h; }, reload: () => window.location.reload(), beforeReload: () => clearTourDone() };
 
 // variant "bar": the demo bar's own "Reset demo" (11 Nov); the confirm then opens as a panel under the bar. The same confirm, the same call, the same reload.
 export default function ResetDemo({ resetApi = api.resetDemo, nav = browser, initial = RESET_IDLE, variant = "footer" }) {
