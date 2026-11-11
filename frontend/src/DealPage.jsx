@@ -411,15 +411,17 @@ function NoteForm({ deal, c, titleId, name, setName, canDecide, freshnessLabel, 
 }
 
 // Add updated document, in the drawer: the existing form, as it was.
-function AddPanel({ deal, c, titleId, documents, docTypes, hint = "", onDone, onBack, onClose }) {
+// The sample preview (public mode) is held here so the drawer's one back link can be "Back to samples" while a sample is open (11 Nov).
+export function AddPanel({ deal, c, titleId, documents, docTypes, hint = "", initialPreview = null, onDone, onBack, onClose }) {
   const open = c ? c.issues.filter((i) => i.state !== "Resolved") : [];
+  const [preview, setPreview] = useState(initialPreview);
   return (
     <>
       <DrawerHead id={titleId} title={c ? "Add updated document" : "Add a document"} sub={c ? rowTitle(c) : "A new document, or a new version of one already in the deal"}
-                  backLabel={c ? "Back to commitment" : null} onBack={onBack} onClose={onClose} />
+                  backLabel={preview ? "Back to samples" : c ? "Back to commitment" : null} onBack={preview ? () => setPreview(null) : onBack} onClose={onClose} />
       <div className="dr-body dr-form">
         <AddDocument deal={deal} documents={documents} docTypes={docTypes} hint={hint} preset={c ? suggestFix(open, documents) : undefined}
-                     onDone={onDone} onClose={c ? onBack : onClose} />
+                     preview={preview} onPreview={setPreview} onDone={onDone} onClose={c ? onBack : onClose} />
       </div>
     </>
   );
@@ -459,7 +461,7 @@ function ClosingHelp({ onClose }) {
 }
 
 
-function AddDocument({ deal, documents, docTypes, hint = "", onDone, onClose, preset }) {
+function AddDocument({ deal, documents, docTypes, hint = "", preview, onPreview, onDone, onClose, preset }) {
   const demo = useDemo();
   // No silent default type (20 Oct): a document opened from a commitment is pre-selected by what usually closes that gap; from the
   // sidebar nothing is chosen until the person chooses, or accepts the suggestion made from the file.
@@ -492,7 +494,7 @@ function AddDocument({ deal, documents, docTypes, hint = "", onDone, onClose, pr
   const revision = form.file && !form.source_key && !notice
     ? newDocumentNotice({ fileName: form.file.name, head, documents, docType: form.doc_type, today: fmtDate(form.doc_date) }) : null;
   const ready = addReady({ file: form.file, source_key: form.source_key, doc_type: form.doc_type });
-  if (demo.public) return <SamplePicker deal={deal} documents={documents} labels={labels} hint={hint} onDone={onDone} onClose={onClose} />; // no uploads in public mode
+  if (demo.public) return <SamplePicker deal={deal} documents={documents} labels={labels} hint={hint} preview={preview} onPreview={onPreview} onDone={onDone} onClose={onClose} />; // no uploads in public mode
   const submit = async (e) => {
     e?.preventDefault();
     setBusy(true);

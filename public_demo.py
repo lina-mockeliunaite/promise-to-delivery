@@ -33,19 +33,19 @@ REFUSED = {
 # document carries its type, its name and the date the file states about itself (the form pre-fills the same date).
 SAMPLES = {
     "noma_journeys": [
-        {"file": "NJ-05_v2_named_exception.md", "version_of": "NJ-05", "title": "Approval for the launch specialist",
+        {"file": "NJ-05_v2_named_exception.md", "version_of": "NJ-05", "title": "Approval for the launch specialist", "key": ["Named exception approved by Omar Haddad"],
          "summary": "Omar Haddad, Head of Customer Success, approves a named exception: first 30 days, no extra charge (18 October 2026)."},
-        {"file": "NJ-07_v2_languages_aligned.md", "version_of": "NJ-07", "title": "Revised draft contract",
+        {"file": "NJ-07_v2_languages_aligned.md", "version_of": "NJ-07", "title": "Revised draft contract", "key": ["Clause 4. Languages."],
          "summary": "The languages clause now says 12 languages (19 October 2026)."},
-        {"file": "NJ-09_signed_contract.md", "doc_type": "signed_contract", "doc_date": "2026-10-20", "title": "Signed contract",
+        {"file": "NJ-09_signed_contract.md", "doc_type": "signed_contract", "doc_date": "2026-10-20", "title": "Signed contract", "key_from": "## Signatures",
          "summary": "Signed 20 October 2026 by Liam Hart (Aivuna) and Celeste Wong (Noma Journeys)."},
     ],
     "alder_bank": [
-        {"file": "AB-05_v2_named_exception.md", "version_of": "AB-05", "title": "Approval for the BioCatch connector (coaching detection)",
+        {"file": "AB-05_v2_named_exception.md", "version_of": "AB-05", "title": "Approval for the BioCatch connector (coaching detection)", "key": ["Named exception approved by Arjun Rao"],
          "summary": "Arjun Rao, Head of Product, approves the BioCatch connector (beta) as a named exception for the 1 February 2027 launch (16 October 2026)."},
-        {"file": "AB-06_v2_coaching_added.md", "version_of": "AB-06", "title": "Revised statement of work",
+        {"file": "AB-06_v2_coaching_added.md", "version_of": "AB-06", "title": "Revised statement of work", "key": ["## 5. Scam coaching detection", "Through its connector to BioCatch"],
          "summary": "Scam coaching detection is added as section 5 (16 October 2026)."},
-        {"file": "AB-09_signed_contract.md", "doc_type": "signed_contract", "doc_date": "2026-10-12", "title": "Signed contract",
+        {"file": "AB-09_signed_contract.md", "doc_type": "signed_contract", "doc_date": "2026-10-12", "title": "Signed contract", "key_from": "## Signatures",
          "summary": "Signed 20 October 2026 by Tom Fraser (Elva) and Priya Nair (Alder Bank); it incorporates the SOW dated 9 October."},
     ],
 }
@@ -76,6 +76,21 @@ def sample_text(deal: str, file: str):
     """The sample's text, or None when this deal has no such sample. The name is matched against the catalogue, never used as a path."""
     s = find_sample(deal, file)
     return sample_path(s["file"]).read_text(encoding="utf-8") if s else None
+
+
+def key_lines(deal: str, file: str) -> list:
+    """The 0-based line numbers of a sample's text that the check uses, found from the sample's own text by the markers in SAMPLES ("key": lines containing
+    a phrase; "key_from": a heading through to the end, less the closing fictional line). The files are only read; nothing is edited or stored."""
+    s = find_sample(deal, file)
+    if not s:
+        return []
+    lines = sample_path(s["file"]).read_text(encoding="utf-8").split("\n")
+    out = {i for i, line in enumerate(lines) if any(k in line for k in s.get("key", []))}
+    if s.get("key_from"):
+        start = next((i for i, line in enumerate(lines) if line.strip() == s["key_from"]), None)
+        if start is not None:
+            out |= {i for i in range(start, len(lines)) if lines[i].strip() and not lines[i].startswith("All companies")}
+    return sorted(out)
 
 
 def sample_hashes(deal: str) -> set:

@@ -163,6 +163,60 @@ class TestRowOrderKeyNeverChanges(Case):
             self.assertEqual(len([n for n in names if re.search(pattern, n, re.I)]), 1, (deal, names))
 
 
+class TestSamplePreview(Case):
+    """Preview (11 Nov): the sample text route also says which lines the check uses, found from the file's own text; nothing is stored."""
+
+    def route(self, deal, file, client=None):
+        return (client or self.client).get("/api/demo/sample", params={"deal": deal, "file": file}).json()
+
+    def lines(self, deal, file):
+        r = self.route(deal, file)
+        text = r["text"].split("\n")
+        return text, r["key_lines"]
+
+    def test_the_key_lines_are_the_ones_the_check_uses_for_every_sample(self):
+        expect = {("noma_journeys", "NJ-05_v2_named_exception.md"): ["Named exception approved by Omar Haddad"],
+                  ("noma_journeys", "NJ-07_v2_languages_aligned.md"): ["12 languages"],
+                  ("alder_bank", "AB-05_v2_named_exception.md"): ["Named exception approved by Arjun Rao"],
+                  ("alder_bank", "AB-06_v2_coaching_added.md"): ["Scam coaching detection", "BioCatch"]}
+        for (deal, file), phrases in expect.items():
+            text, key = self.lines(deal, file)
+            self.assertTrue(key, file)
+            for phrase in phrases:
+                self.assertTrue(any(phrase in text[i] for i in key), (file, phrase))
+        for deal, file, names in (("noma_journeys", "NJ-09_signed_contract.md", ["Liam Hart", "Celeste Wong"]), ("alder_bank", "AB-09_signed_contract.md", ["Tom Fraser", "Priya Nair"])):
+            text, key = self.lines(deal, file)
+            block = "\n".join(text[i] for i in key)
+            self.assertIn("## Signatures", block)
+            for n in names:
+                self.assertIn(n, block, file)
+            self.assertNotIn("Clause 4", block)  # only the signature block
+            self.assertFalse(any(text[i].startswith("All companies") for i in key))
+
+    def test_every_marker_matches_and_the_files_are_only_read(self):
+        import hashlib
+        before = {s["file"]: hashlib.sha256(config.scenario_path(s["file"]).read_bytes()).hexdigest() for items in public_demo.SAMPLES.values() for s in items}
+        for deal, items in public_demo.SAMPLES.items():
+            for s in items:
+                self.assertTrue(public_demo.key_lines(deal, s["file"]), s["file"])
+                for phrase in s.get("key", []):
+                    self.assertTrue(any(phrase in line for line in config.scenario_path(s["file"]).read_text(encoding="utf-8").split("\n")), (s["file"], phrase))
+        self.assertEqual(public_demo.key_lines("noma_journeys", "AB-05_v2_named_exception.md"), [])  # not a sample of that deal
+        after = {f: hashlib.sha256(config.scenario_path(f).read_bytes()).hexdigest() for f in before}
+        self.assertEqual(before, after)
+
+    def test_a_preview_stores_nothing_and_is_not_offered_in_local_mode(self):
+        import hashlib
+        digest = lambda: hashlib.sha256(self.db.read_bytes()).hexdigest()
+        before = digest()
+        for deal, items in public_demo.SAMPLES.items():
+            for s in items:
+                self.assertEqual(self.client.get("/api/demo/sample", params={"deal": deal, "file": s["file"]}).status_code, 200)
+        self.assertEqual(digest(), before)
+        local = self.make(False)
+        self.assertEqual(local.get("/api/demo/sample", params={"deal": "noma_journeys", "file": "NJ-05_v2_named_exception.md"}).status_code, 404)
+
+
 class TestConfigAndHosts(Case):
     def test_the_banner_and_note_cap_are_reported_only_in_public_mode(self):
         on = self.client.get("/api/demo/config").json()

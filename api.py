@@ -353,7 +353,7 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None, public=None, hourly=
         text = public_demo.sample_text(deal, file) if public and deal in ui_deals else None
         if text is None:
             raise HTTPException(status_code=404, detail=NOT_FOUND)
-        return {"deal": deal, "file": file, "text": text}
+        return {"deal": deal, "file": file, "text": text, "key_lines": public_demo.key_lines(deal, file)}
 
     @app.get("/api/workspace/deals")
     def ws_deals(conn=Depends(db)):

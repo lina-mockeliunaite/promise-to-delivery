@@ -111,7 +111,7 @@ test("filingLine: a version names the document it replaces, a new document its t
 
 test("the add-document form shows the sample list only in public mode; off, the upload form is as it was", () => {
   const page = read("DealPage.jsx");
-  assert.match(page, /if \(demo\.public\) return <SamplePicker deal=\{deal\} documents=\{documents\} labels=\{labels\} hint=\{hint\} onDone=\{onDone\} onClose=\{onClose\} \/>;/);
+  assert.match(page, /if \(demo\.public\) return <SamplePicker deal=\{deal\} documents=\{documents\} labels=\{labels\} hint=\{hint\} preview=\{preview\} onPreview=\{onPreview\} onDone=\{onDone\} onClose=\{onClose\} \/>;/);
   assert.ok(page.includes("Drop file here or <u>browse files</u>")); // the upload form is still there
   assert.match(read("api.js"), /export const fetchDemoConfig = \(\) => getJson\("\/api\/demo\/config"\)/);
 });

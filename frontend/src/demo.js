@@ -196,3 +196,7 @@ export function startGuidedDemo(nav, storage = globalThis.sessionStorage) {
   clearTourDone(storage);
   nav?.current?.(FIRST_DEAL);
 }
+
+// Scroll position that puts an element in the middle of its scroll container (the sample preview opens centred on its first highlighted line).
+export const centeredScrollTop = ({ scrollTop, containerTop, containerHeight, elTop, elHeight }) =>
+  Math.max(0, Math.round(scrollTop + (elTop - containerTop) - (containerHeight - elHeight) / 2));

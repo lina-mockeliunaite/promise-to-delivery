@@ -6,7 +6,7 @@
 import { splitQuote } from "./dealpage.js";
 
 // Inline: **bold**, *italic*, `code`. An unmatched marker stays as the literal character.
-function inline(str, base) {
+export function inline(str, base) {
   const out = [];
   let buf = "";
   let bufAt = base;

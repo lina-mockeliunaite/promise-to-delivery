@@ -2,7 +2,8 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import * as api from "./api.js";
 import ResetDemo from "./ResetDemo.jsx";
-import { ALL_ADDED, BAR_DONE, BAR_NOTE_FALLBACK, DemoNavContext, GUIDES, GuideStateContext, START_LABEL, NAME_NOTE, NO_SAMPLES, TOUR_KEYS, addSample, barStepText, filingLine, guideSteps, markTourDone, sampleSteps, startGuidedDemo, tourCaptions, tourDone, useDemo } from "./demo.js";
+import { blockLines, parsePreview } from "./preview.js";
+import { ALL_ADDED, BAR_DONE, BAR_NOTE_FALLBACK, DemoNavContext, GUIDES, GuideStateContext, START_LABEL, NAME_NOTE, NO_SAMPLES, TOUR_KEYS, addSample, barStepText, centeredScrollTop, filingLine, guideSteps, markTourDone, sampleSteps, startGuidedDemo, tourCaptions, tourDone, useDemo } from "./demo.js";
 
 export function DemoNameNote() {
   return useDemo().public ? <p className="dp-faint dp-small demo-name-note">{NAME_NOTE}</p> : null;
@@ -103,11 +104,51 @@ export function UseSampleText({ onUse }) {
   return <button type="button" className="dp-link-btn dp-brand demo-sample-text" onClick={onUse}>Use sample text</button>;
 }
 
-export function SamplePicker({ deal, documents, labels, onDone, onClose, initialSamples = null, hint = "" }) {
+// The sample as a formatted document, read-only (11 Nov): headings, paragraphs, bullet lists and tables from its Markdown, the lines the check uses
+// highlighted (a highlighted table row for the pricing notes). `key` is the list of source line numbers from the sample route.
+function Inline({ nodes }) {
+  return nodes.map((n, k) => (n.t === "strong" ? <strong key={k}><Inline nodes={n.children} /></strong> : n.t === "em" ? <em key={k}><Inline nodes={n.children} /></em>
+    : n.t === "code" ? <code key={k}>{n.text}</code> : n.text));
+}
+
+export function PreviewDoc({ text, keyLines = [] }) {
+  const key = new Set(keyLines);
+  const hit = (b) => blockLines(b).some((l) => key.has(l));
+  return parsePreview(text).map((b, i) => {
+    const cls = hit(b) && b.t !== "table" && b.t !== "p" ? " is-key" : "";
+    if (b.t === "h") { const H = `h${Math.min(b.level + 2, 6)}`; return <H key={i} className={`demo-doc-h${cls}`}><Inline nodes={b.nodes} /></H>; }
+    if (b.t === "hr") return <hr key={i} />;
+    if (b.t === "ul") return <ul key={i}>{b.items.map((it, k) => <li key={k} className={key.has(it.line) ? "is-key" : ""}><Inline nodes={it.nodes} /></li>)}</ul>;
+    if (b.t === "table") {
+      return (
+        <table key={i} className="demo-doc-table">
+          {b.head && <thead><tr>{b.head.cells.map((c, k) => <th key={k}><Inline nodes={c} /></th>)}</tr></thead>}
+          <tbody>{b.rows.map((r, k) => <tr key={k} className={key.has(r.line) ? "is-key" : ""}>{r.cells.map((c, j) => <td key={j}><Inline nodes={c} /></td>)}</tr>)}</tbody>
+        </table>
+      );
+    }
+    return <p key={i}>{b.lines.map((l, k) => <span key={k} className={`demo-doc-ln${key.has(l.line) ? " is-key" : ""}`}><Inline nodes={l.nodes} />{k < b.lines.length - 1 && <br />}</span>)}</p>;
+  });
+}
+
+// preview/onPreview: the preview can be held by the panel around this list (so the drawer's one back link can say "Back to samples"); without them it is held here.
+export function SamplePicker({ deal, documents, labels, onDone, onClose, initialSamples = null, hint = "", initialPreview = null, preview: controlled, onPreview }) {
   const [samples, setSamples] = useState(initialSamples);
   const [busy, setBusy] = useState(null);
   const [error, setError] = useState(null);
+  const [own, setOwn] = useState(initialPreview); // { sample, text, key: [line numbers] }: a sample read-only in this panel, before adding it
+  const preview = onPreview ? controlled : own;
+  const setPreview = onPreview ?? setOwn;
+  const doc = useRef(null);
   useEffect(() => { api.fetchSamples(deal).then((r) => setSamples(r.samples), (e) => { setSamples([]); setError(e.message); }); }, [deal]);
+  // On open the first highlighted line is brought to the middle of the preview.
+  useEffect(() => {
+    const c = doc.current;
+    const el = c?.querySelector(".is-key");
+    if (!c || !el) return;
+    const cr = c.getBoundingClientRect(), er = el.getBoundingClientRect();
+    c.scrollTop = centeredScrollTop({ scrollTop: c.scrollTop, containerTop: cr.top, containerHeight: c.clientHeight, elTop: er.top, elHeight: er.height });
+  }, [preview]);
   const add = async (s) => {
     setBusy(s.file);
     setError(null);
@@ -120,15 +161,48 @@ export function SamplePicker({ deal, documents, labels, onDone, onClose, initial
       setBusy(null);
     }
   };
+  // Preview: the existing sample text route, nothing stored; the route also says which lines the check uses.
+  const show = async (s) => {
+    setBusy(s.file);
+    setError(null);
+    try {
+      const r = await api.fetchSample(deal, s.file);
+      setPreview({ sample: s, text: r.text, key: r.key_lines ?? [] });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setBusy(null);
+    }
+  };
+  const steps = sampleSteps(samples ?? [], documents);
+  if (preview) {
+    const step = steps.find((x) => x.sample.file === preview.sample.file);
+    return (
+      <div className="dp-add demo-samples demo-preview">
+        <h3 className="demo-preview-title">{step ? `${step.n}. ` : ""}{preview.sample.title}</h3>
+        <p className="dp-faint dp-small">{filingLine(preview.sample, documents, labels)}</p>
+        {preview.key.length > 0 && <p className="dp-small demo-preview-legend"><mark>Highlighted</mark>: the lines the check will use.</p>}
+        <div className="demo-preview-text demo-doc" ref={doc} role="document" aria-label={`${preview.sample.title}, read-only`}>
+          <PreviewDoc text={preview.text} keyLines={preview.key} />
+        </div>
+        {error && <p className="dp-error" role="alert">{error}</p>}
+        {step?.state === "next" && (
+          <div className="demo-preview-foot">
+            <button type="button" className="dp-btn dp-btn-dark" disabled={!!busy} onClick={() => add(preview.sample)}>{busy === preview.sample.file ? "Checking…" : "Add and check"}</button>
+          </div>
+        )}
+      </div>
+    );
+  }
   return (
     <div className="dp-add demo-samples">
       <span className="dp-field-label">Use a sample file</span>
       {hint && <p className="demo-hint" role="note">{hint}</p>}
       <p className="dp-faint dp-small">This public demo takes its own sample files, not uploads.</p>
       {samples && samples.length === 0 && !error && <p className="dp-faint dp-small">{NO_SAMPLES}</p>}
-      {samples && samples.length > 0 && sampleSteps(samples, documents).every((x) => x.state === "done") && <p className="demo-all-added" role="status">{ALL_ADDED[deal] ?? ""}</p>}
+      {samples && samples.length > 0 && steps.every((x) => x.state === "done") && <p className="demo-all-added" role="status">{ALL_ADDED[deal] ?? ""}</p>}
       <ol className="demo-sample-list">
-        {sampleSteps(samples ?? [], documents).map(({ sample: s, n, state, after }) => (
+        {steps.map(({ sample: s, n, state, after }) => (
           <li key={s.file} className={`is-${state}`}>
             <span className="demo-sample-n" aria-hidden="true">{n}</span>
             <div>
@@ -136,9 +210,12 @@ export function SamplePicker({ deal, documents, labels, onDone, onClose, initial
               <span className="dp-small dp-block">{s.summary}</span>
               <span className="dp-faint dp-small dp-block">{filingLine(s, documents, labels)}</span>
             </div>
-            {state === "next" && <button type="button" className="dp-btn dp-btn-dark" disabled={!!busy} onClick={() => add(s)}>{busy === s.file ? "Checking…" : "Add and check"}</button>}
-            {state === "later" && <button type="button" className="dp-btn dp-btn-dark" disabled>After step {after}</button>}
-            {state === "done" && <span className="demo-sample-done">Added</span>}
+            <span className="demo-sample-actions">
+              {state === "next" && <button type="button" className="dp-btn dp-btn-dark" disabled={!!busy} onClick={() => add(s)}>{busy === s.file ? "Checking…" : "Add and check"}</button>}
+              {state === "later" && <button type="button" className="dp-btn dp-btn-dark" disabled>After step {after}</button>}
+              {state === "done" && <span className="demo-sample-done">Added</span>}
+              <button type="button" className="dp-link-btn dp-brand demo-sample-preview" disabled={!!busy} onClick={() => show(s)}>Preview</button>
+            </span>
           </li>
         ))}
       </ol>
