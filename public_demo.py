@@ -14,7 +14,7 @@ from pathlib import Path
 
 import config
 
-PUBLIC_DEALS = ["alder_bank", "noma_journeys"]
+PUBLIC_DEALS = ["noma_journeys", "alder_bank"]  # also the order the public deal list shows them in: Noma Journeys first
 BANNER = "Public demo · fictional data · shared with other visitors. If this deal has already been worked through, click Reset demo."
 NOTE_MAX = 500
 NOTE_FIELDS = ("note", "reason", "rationale", "evidence")

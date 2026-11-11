@@ -359,7 +359,10 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None, public=None, hourly=
         rows = workspace.deal_list(conn)
         if public:
             rows = [r for r in rows if r["deal"] in ui_deals]
-        return {"deals": handover.deal_rows(conn, rows)}
+        out = handover.deal_rows(conn, rows)
+        if public:  # a fixed order, whoever changed what last: Noma Journeys, then Alder Bank
+            out.sort(key=lambda d: ui_deals.index(d["deal"]))
+        return {"deals": out}
 
     @app.post("/api/user-deals", dependencies=[Depends(write_guard)])
     def ws_create_deal(body: dict = Body(...), conn=Depends(db)):

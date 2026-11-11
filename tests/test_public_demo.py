@@ -111,6 +111,25 @@ class TestOnlyTwoDealsInPublicMode(Case):
             self.assertEqual(local.get(f"/api/deals/{deal}/register").status_code, 200, deal)
 
 
+class TestPublicDealOrder(Case):
+    def test_the_public_deal_list_is_always_noma_journeys_then_alder_bank(self):
+        order = lambda c: [d["deal"] for d in c.get("/api/workspace/deals").json()["deals"]]
+        self.assertEqual(self.client.get("/api/deals").json()["deals"], ["noma_journeys", "alder_bank"])
+        self.assertEqual(order(self.client), ["noma_journeys", "alder_bank"])
+        # whoever changed what last does not move them: a change on Noma makes it newest, then one on Alder makes Alder newest
+        self.assertEqual(self.add_sample("noma_journeys", "NJ-05_v2_named_exception.md").status_code, 200)
+        self.assertEqual(self.add_sample("alder_bank", "AB-05_v2_named_exception.md").status_code, 200)
+        self.assertEqual(order(self.client), ["noma_journeys", "alder_bank"])
+        self.post("/api/demo/reset", {})
+        self.assertEqual(order(self.client), ["noma_journeys", "alder_bank"])  # and after a reset
+
+    def test_local_mode_keeps_its_own_order_newest_first(self):
+        local = self.make(False)
+        self.assertEqual(self.add_sample("alder_bank", "AB-05_v2_named_exception.md").status_code, 200)
+        first = local.get("/api/workspace/deals").json()["deals"][0]["deal"]
+        self.assertEqual(first, "alder_bank")  # the deal changed last is first, as before
+
+
 class TestConfigAndHosts(Case):
     def test_the_banner_and_note_cap_are_reported_only_in_public_mode(self):
         on = self.client.get("/api/demo/config").json()

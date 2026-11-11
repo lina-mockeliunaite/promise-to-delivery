@@ -107,7 +107,8 @@ export default function Deals({ deals, onOpen, onCreated, onAbout }) {
   const vendors = useMemo(() => vendorsOf(deals), [deals]);
   const open = (d) => { if (d.vendor) rememberVendor(d.vendor); onOpen(d.deal); }; // the catalogue switch opens on the vendor of the deal opened last
   const n = useMemo(() => counts(deals), [deals]);
-  const rows = useMemo(() => visibleDeals(deals, { filter, query, sort }), [deals, filter, query, sort]);
+  // Public mode keeps the server's fixed order (Noma Journeys, then Alder Bank); otherwise the chosen filter, search and sort apply.
+  const rows = useMemo(() => (demo.public ? deals : visibleDeals(deals, { filter, query, sort })), [deals, filter, query, sort, demo.public]);
   const shown = page(rows, pageNo);
   const sortLabel = SORTS.find((s) => s.key === sort)?.label.toLowerCase();
 
@@ -209,6 +210,23 @@ export default function Deals({ deals, onOpen, onCreated, onAbout }) {
             </tbody>
           </table>
         </div>
+        {/* Below 640px (11 Nov) the table gives way to one stacked card per deal: the whole card opens the deal. */}
+        <ul className="dl-cards" aria-label="Deals">
+          {shown.rows.map((d) => (
+            <li key={d.deal}>
+              <button type="button" className={`dl-card ${d.handover_complete ? "is-frozen" : ""}`} onClick={() => open(d)}>
+                <span className="dl-tile" aria-hidden="true">{initials(d.name)}</span>
+                <span className="dl-card-body">
+                  <span className="dl-deal-name">{d.name}{d.kind === "user" && <span className="dl-tag">Uploaded</span>}</span>
+                  {d.scope && <span className="dl-scope-line">{d.scope}</span>}
+                  <span className="dl-card-pills"><StagePill deal={d} /><GapPill deal={d} /></span>
+                </span>
+                <span className="dl-card-go" aria-hidden="true"><Icon d={ICONS.arrow} size={16} /></span>
+              </button>
+            </li>
+          ))}
+          {shown.rows.length === 0 && <li className="dl-cards-empty">{query ? "No deals match that search." : "No deals here yet."}</li>}
+        </ul>
         <footer className="dl-foot">
           {!demo.public && (
             <span>

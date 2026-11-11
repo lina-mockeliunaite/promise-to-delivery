@@ -89,6 +89,21 @@ body:has(.dl) { background: #f8fafc; }
   .dl-sort select { flex: 1; min-width: 0; width: 100%; text-overflow: ellipsis; }
 }
 
+/* Narrow screens (11 Nov): the table is replaced by one stacked card per deal, the whole card tappable. Desktop keeps the table. */
+.dl-cards { display: none; list-style: none; margin: 0; padding: 0; }
+@media (max-width: 639px) {
+  .dl-scroll { display: none; }
+  .dl-cards { display: block; }
+  .dl-cards > li { border-top: 1px solid var(--dl-hair); }
+  .dl-card { display: flex; align-items: flex-start; gap: 12px; width: 100%; box-sizing: border-box; padding: 14px 16px; border: 0; background: transparent; font: inherit; text-align: left; color: inherit; cursor: pointer; }
+  .dl-card:hover, .dl-card:active { background: var(--dl-soft); }
+  .dl-card:focus-visible { outline: 2px solid var(--dl-accent); outline-offset: -2px; }
+  .dl-card-body { flex: 1; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+  .dl-card-pills { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin-top: 2px; }
+  .dl-card-go { flex: none; align-self: center; color: var(--dl-muted); display: inline-flex; }
+  .dl-cards-empty { padding: 28px 16px; text-align: center; color: var(--dl-faint); }
+}
+
 /* One list card: hairline rows, quiet uppercase column labels */
 .dl-table-card { background: var(--dl-card); border-radius: 14px; box-shadow: var(--dl-shadow); overflow: hidden; }
 .dl-scroll { overflow-x: auto; position: relative; } /* 11 Nov: the hidden "Action" header text is positioned, so it stays inside the scroller and no longer widens the page at 390px */
