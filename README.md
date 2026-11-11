@@ -125,7 +125,9 @@ After the Coral Pay result, detection was rebuilt: one model call proposes each 
 
 ## Try it online
 
-A hosted, read-and-try version of Dealshape: **link to be added.** It is shared with other visitors, uses fictional data only, serves two deals (Noma Journeys and Alder Bank), takes its own sample files instead of uploads, never calls the model, and resets every hour (and on each wake-up). Notes are capped at 500 characters, and names and notes are visible to other visitors. Set it up with `DEPLOY.md`; it is switched on by `DEALSHAPE_PUBLIC_DEMO=1`, and without that variable nothing changes locally.
+A hosted, read-and-try version of Dealshape: **https://dealshape-demo.onrender.com**. It is shared with other visitors, uses fictional data only, serves two deals (Noma Journeys and Alder Bank), takes its own sample files instead of uploads, never calls the model, and resets every hour (and on each wake-up). Notes are capped at 500 characters, and names and notes are visible to other visitors. Set it up with `DEPLOY.md`; it is switched on by `DEALSHAPE_PUBLIC_DEMO=1`, and without that variable nothing changes locally.
+
+Free hosting sleeps when idle, so the first load can take up to a minute. It is a shared demo with sample files only.
 
 ## Run it locally
 

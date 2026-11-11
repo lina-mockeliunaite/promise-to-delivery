@@ -30,8 +30,8 @@ const ON = { public: true, banner: BANNER, note_max: 500 };
 const within = (demo, el) => renderToStaticMarkup(createElement(m.DemoContext.Provider, { value: demo }, el));
 
 const SAMPLES = [
-  { file: "NJ-05_v2_named_exception.md", version_of: "NJ-05", description: "Internal approvals note, new version." },
-  { file: "NJ-09_signed_contract.md", doc_type: "signed_contract", doc_date: "2026-10-20", description: "Signed contract." },
+  { file: "NJ-05_v2_named_exception.md", version_of: "NJ-05", title: "Approval for the launch specialist", summary: "Omar Haddad, Head of Customer Success, approves a named exception: first 30 days, no extra charge (18 October 2026)." },
+  { file: "NJ-09_signed_contract.md", doc_type: "signed_contract", doc_date: "2026-10-20", title: "Signed contract", summary: "Signed 20 October 2026 by Liam Hart (Aivuna) and Celeste Wong (Noma Journeys)." },
 ];
 
 test("the banner shows the server's text exactly when public mode is on, and nothing when it is off", () => {
@@ -84,14 +84,28 @@ test("choosing a sample fetches its text and calls the existing add-and-check on
   await assert.rejects(m.addSample({ ...client, addDocumentAndCheck: async () => { throw new Error("nope"); } }, "noma_journeys", SAMPLES[0], [], {}), /nope/);
 });
 
-test("the sample list shows each file with its one-line description, and says so when a deal has none; there is no upload", () => {
-  const html = within(ON, createElement(m.SamplePicker, { deal: "noma_journeys", documents: [], labels: {}, onDone() {}, onClose() {}, initialSamples: SAMPLES }));
+test("the sample list is numbered in story order: title, one line of who did what, and the filing in plain words with no dates; there is no upload", () => {
+  const docs = [{ source_key: "NJ-05", name: "Internal approvals note", version: 1 }];
+  const labels = { signed_contract: "Signed contract" };
+  const html = within(ON, createElement(m.SamplePicker, { deal: "noma_journeys", documents: docs, labels, onDone() {}, onClose() {}, initialSamples: SAMPLES }));
   assert.ok(html.includes("Use a sample file"));
-  for (const s of SAMPLES) assert.ok(html.includes(s.file) && html.includes(s.description));
+  assert.match(html, /<ol class="demo-sample-list">/);
+  assert.match(html, /demo-sample-n"[^>]*>1<\/span><div><strong>Approval for the launch specialist<\/strong>/);
+  assert.match(html, /demo-sample-n"[^>]*>2<\/span><div><strong>Signed contract<\/strong>/);
+  for (const s of SAMPLES) assert.ok(html.includes(s.title) && html.includes(s.summary));
+  assert.ok(!html.includes("NJ-05_v2_named_exception.md")); // the file name is not the heading any more
+  assert.ok(html.includes("Filed as a new version of: Internal approvals note<"));
+  assert.ok(html.includes("Filed as a new document, type Signed contract<"));
+  assert.ok(!html.includes("currently v") && !/Filed as[^<]*\d{4}/.test(html)); // no version number, no date in a filing line
   assert.equal((html.match(/Add and check/g) || []).length, 2);
   assert.ok(!html.includes('type="file"') && !html.includes("browse files"));
   const none = within(ON, createElement(m.SamplePicker, { deal: "x", documents: [], labels: {}, onDone() {}, onClose() {}, initialSamples: [] }));
   assert.ok(none.includes("This deal has no sample files in the public demo."));
+});
+
+test("filingLine: a version names the document it replaces, a new document its type; neither carries a date or a version number", () => {
+  assert.equal(m.filingLine(SAMPLES[0], [{ source_key: "NJ-05", name: "Internal approvals note", version: 3 }], {}), "Filed as a new version of: Internal approvals note");
+  assert.equal(m.filingLine(SAMPLES[1], [], { signed_contract: "Signed contract" }), "Filed as a new document, type Signed contract");
 });
 
 test("the add-document form shows the sample list only in public mode; off, the upload form is as it was", () => {

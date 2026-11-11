@@ -14,6 +14,7 @@ Dealshape catches deal surprises before signing. It reads a B2B deal's paper tra
 - Notes that stay visibly different from documentary proof; a signed-contract check that reopens a fix the signed paperwork dropped.
 - A locked handover record with per-document SHA-256 hashes, checked in the browser.
 - Two vendors' catalogues through one pipeline (Elva and Aivuna).
+- A public demo (11 Nov): https://dealshape-demo.onrender.com. Noma Journeys and Alder Bank only, shared by every visitor, with sample files instead of uploads, no API key, and a reset every hour and on wake-up (free hosting sleeps when idle).
 - 781 Python and 176 front-end tests passing at the last commit (31 Oct).
 
 ## Results

@@ -1,7 +1,7 @@
 // Public demo pieces (10 Nov): the banner, the note under a name field, and the sample-file list that replaces uploading.
 import { useEffect, useState } from "react";
 import * as api from "./api.js";
-import { NAME_NOTE, NO_SAMPLES, addSample, useDemo } from "./demo.js";
+import { NAME_NOTE, NO_SAMPLES, addSample, filingLine, useDemo } from "./demo.js";
 
 export function DemoBanner() {
   const demo = useDemo();
@@ -34,14 +34,19 @@ export function SamplePicker({ deal, documents, labels, onDone, onClose, initial
       <span className="dp-field-label">Use a sample file</span>
       <p className="dp-faint dp-small">This public demo takes its own sample files, not uploads.</p>
       {samples && samples.length === 0 && !error && <p className="dp-faint dp-small">{NO_SAMPLES}</p>}
-      <ul className="demo-sample-list">
-        {(samples ?? []).map((s) => (
+      <ol className="demo-sample-list">
+        {(samples ?? []).map((s, i) => (
           <li key={s.file}>
-            <div><strong>{s.file}</strong><br /><span className="dp-faint dp-small">{s.description}</span></div>
+            <span className="demo-sample-n" aria-hidden="true">{i + 1}</span>
+            <div>
+              <strong>{s.title}</strong>
+              <span className="dp-small dp-block">{s.summary}</span>
+              <span className="dp-faint dp-small dp-block">{filingLine(s, documents, labels)}</span>
+            </div>
             <button type="button" className="dp-btn dp-btn-dark" disabled={!!busy} onClick={() => add(s)}>{busy === s.file ? "Checking…" : "Add and check"}</button>
           </li>
         ))}
-      </ul>
+      </ol>
       <div className="dp-actions">
         {error && <span className="dp-error" role="alert">{error}</span>}
         <button type="button" className="dp-btn dp-btn-ghost" onClick={onClose} disabled={!!busy}>Cancel</button>

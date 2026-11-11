@@ -194,7 +194,7 @@ class TestRefusals(Case):
     def test_the_sample_routes_exist_only_in_public_mode_and_only_for_the_served_deals(self):
         listing = self.client.get("/api/demo/samples", params={"deal": "noma_journeys"}).json()["samples"]
         self.assertEqual([s["file"] for s in listing], ["NJ-05_v2_named_exception.md", "NJ-07_v2_languages_aligned.md", "NJ-09_signed_contract.md"])
-        self.assertTrue(all(s["description"] for s in listing))
+        self.assertTrue(all(s["title"] and s["summary"] and "description" not in s for s in listing))
         alder = self.client.get("/api/demo/samples", params={"deal": "alder_bank"}).json()["samples"]
         self.assertEqual([s["file"] for s in alder], ["AB-05_v2_named_exception.md", "AB-06_v2_coaching_added.md", "AB-09_signed_contract.md"])
         self.assertEqual(self.client.get("/api/demo/samples", params={"deal": "harbour_bank"}).status_code, 404)
@@ -203,6 +203,33 @@ class TestRefusals(Case):
         local = self.make(False)
         self.assertEqual(local.get("/api/demo/samples", params={"deal": "noma_journeys"}).status_code, 404)
         self.assertEqual(local.get("/api/demo/sample", params={"deal": "noma_journeys", "file": "NJ-09_signed_contract.md"}).status_code, 404)
+
+    def test_the_samples_are_worded_as_a_story_and_say_only_what_their_files_say(self):
+        wording = {
+            "noma_journeys": [
+                ("Approval for the launch specialist", "Omar Haddad, Head of Customer Success, approves a named exception: first 30 days, no extra charge (18 October 2026).",
+                 ["Omar Haddad", "Head of Customer Success", "18 October 2026", "first 30 days", "no extra charge"]),
+                ("Revised draft contract", "The languages clause now says 12 languages (19 October 2026).", ["12 languages", "19 October 2026"]),
+                ("Signed contract", "Signed 20 October 2026 by Liam Hart (Aivuna) and Celeste Wong (Noma Journeys).",
+                 ["Liam Hart", "Celeste Wong", "20 October 2026", "Aivuna", "Noma Journeys"])],
+            "alder_bank": [
+                ("Approval for the BioCatch connector (coaching detection)", "Arjun Rao, Head of Product, approves the BioCatch connector (beta) as a named exception for the 1 February 2027 launch (16 October 2026).",
+                 ["Arjun Rao", "Head of Product", "BioCatch", "16 October 2026", "1 February 2027"]),
+                ("Revised statement of work", "Scam coaching detection is added as section 5 (16 October 2026).",
+                 ["5. Scam coaching detection", "16 October 2026"]),
+                ("Signed contract", "Signed 20 October 2026 by Tom Fraser (Elva) and Priya Nair (Alder Bank); it incorporates the SOW dated 9 October.",
+                 ["Tom Fraser", "Priya Nair", "20 October 2026", "Elva", "Alder Bank", "dated 9 October"])],
+        }
+        for deal, expected in wording.items():
+            listing = self.client.get("/api/demo/samples", params={"deal": deal}).json()["samples"]
+            self.assertEqual([(s["title"], s["summary"]) for s in listing], [(t, line) for t, line, _ in expected], deal)
+            for s, (_, line, facts) in zip(listing, expected):
+                text = config.scenario_path(s["file"]).read_text(encoding="utf-8")
+                for fact in facts:
+                    self.assertIn(fact, text, (s["file"], fact))  # nothing the file does not state
+                    if fact[0].isupper() and fact[0] != "5":
+                        self.assertIn(fact, line, (s["file"], fact))
+        self.assertNotIn("four", " ".join(s["summary"] for s in self.client.get("/api/demo/samples", params={"deal": "noma_journeys"}).json()["samples"]))
 
     def test_every_sample_on_offer_is_a_real_file_with_a_known_filing(self):
         for deal, items in public_demo.SAMPLES.items():

@@ -4,7 +4,7 @@ DEALSHAPE_PUBLIC_DEMO=1 turns it on; off by default, and with it off nothing her
 accepts only the bundled sample files, never calls the model, refuses what would let a visitor plant content other
 visitors would see (user deals, catalogue capabilities, document links), caps note length, and resets the shared ledger
 every hour with the same reset_demo.reset() the Reset demo button uses. No key is read. Data files are never edited:
-the sample descriptions and filing details live here.
+the sample titles, summaries and filing details live here.
 """
 
 import hashlib
@@ -28,24 +28,24 @@ REFUSED = {
     "link": "The public demo doesn't take document links, because other visitors would see them.",
 }
 
-# file, one plain line, and how it is filed (what the add-document form would set). "version_of" is a source key; a new
+# file, a short title, one line of who did what and when (names and dates only as the file states them), and how it is filed (what the add-document form would set). "version_of" is a source key; a new
 # document carries its type, its name and the date the file states about itself (the form pre-fills the same date).
 SAMPLES = {
     "noma_journeys": [
-        {"file": "NJ-05_v2_named_exception.md", "version_of": "NJ-05",
-         "description": "Internal approvals note, new version: an exception is approved for the launch specialist."},
-        {"file": "NJ-07_v2_languages_aligned.md", "version_of": "NJ-07",
-         "description": "Draft contract, new version: the languages clause now says 12 languages, as promised."},
-        {"file": "NJ-09_signed_contract.md", "doc_type": "signed_contract", "doc_date": "2026-10-20",
-         "description": "Signed contract: the deal moves to Signed and earlier fixes are checked against the signed text."},
+        {"file": "NJ-05_v2_named_exception.md", "version_of": "NJ-05", "title": "Approval for the launch specialist",
+         "summary": "Omar Haddad, Head of Customer Success, approves a named exception: first 30 days, no extra charge (18 October 2026)."},
+        {"file": "NJ-07_v2_languages_aligned.md", "version_of": "NJ-07", "title": "Revised draft contract",
+         "summary": "The languages clause now says 12 languages (19 October 2026)."},
+        {"file": "NJ-09_signed_contract.md", "doc_type": "signed_contract", "doc_date": "2026-10-20", "title": "Signed contract",
+         "summary": "Signed 20 October 2026 by Liam Hart (Aivuna) and Celeste Wong (Noma Journeys)."},
     ],
     "alder_bank": [
-        {"file": "AB-05_v2_named_exception.md", "version_of": "AB-05",
-         "description": "Internal approvals note, new version: Product approves a named exception for the beta capability."},
-        {"file": "AB-06_v2_coaching_added.md", "version_of": "AB-06",
-         "description": "Draft SOW, new version: coaching-scam detection is now written into the statement of work."},
-        {"file": "AB-09_signed_contract.md", "doc_type": "signed_contract", "doc_date": "2026-10-12",
-         "description": "Signed contract: it incorporates the earlier SOW, so a fix made only in the later draft is reopened."},
+        {"file": "AB-05_v2_named_exception.md", "version_of": "AB-05", "title": "Approval for the BioCatch connector (coaching detection)",
+         "summary": "Arjun Rao, Head of Product, approves the BioCatch connector (beta) as a named exception for the 1 February 2027 launch (16 October 2026)."},
+        {"file": "AB-06_v2_coaching_added.md", "version_of": "AB-06", "title": "Revised statement of work",
+         "summary": "Scam coaching detection is added as section 5 (16 October 2026)."},
+        {"file": "AB-09_signed_contract.md", "doc_type": "signed_contract", "doc_date": "2026-10-12", "title": "Signed contract",
+         "summary": "Signed 20 October 2026 by Tom Fraser (Elva) and Priya Nair (Alder Bank); it incorporates the SOW dated 9 October."},
     ],
 }
 

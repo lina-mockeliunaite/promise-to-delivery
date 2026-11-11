@@ -30,3 +30,12 @@ export async function addSample(client, deal, sample, documents, labels) {
   const r = await client.addDocumentAndCheck(deal, sampleBody(sample, text));
   return { review: r.review, added: sampleDone(sample, documents, labels) };
 }
+
+// How the form would file a sample, in plain words, with no dates: a new version of a named document, or a new document of a type.
+export function filingLine(sample, documents, labels) {
+  if (sample.version_of) {
+    const existing = documents.find((d) => d.source_key === sample.version_of);
+    return `Filed as a new version of: ${existing ? existing.name : sample.version_of}`;
+  }
+  return `Filed as a new document, type ${labels[sample.doc_type] ?? sample.doc_type}`;
+}

@@ -366,4 +366,6 @@ main.home { max-width: 1440px; }
 @media print { .demo-banner { display: none; } }
 .demo-name-note { margin: 4px 0 0; }
 .demo-sample-list { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 10px; }
-.demo-sample-list li { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--dl-line, #e2e8f0); border-radius: 8px; }
+.demo-sample-n { flex: none; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; background: var(--dl-btn-soft, #f1f5f9); }
+.demo-sample-list li > div { flex: 1; }
+.demo-sample-list li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--dl-line, #e2e8f0); border-radius: 8px; }
