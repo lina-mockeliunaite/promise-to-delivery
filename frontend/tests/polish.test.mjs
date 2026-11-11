@@ -179,3 +179,7 @@ test("the deal list's table scrolls inside its card: the scroller is positioned,
   assert.match(read("Deals.css"), /\.dl-scroll \{ overflow-x: auto; position: relative; \}/);
   assert.match(read("Deals.css"), /\.dl-sr \{ position: absolute;/);
 });
+
+test("at 390px the row's gap progress stacks above the status chip, so the title keeps its width", () => {
+  assert.match(read("DealPage.css"), /@media \(max-width: 639px\) \{\s*\.dp-prow-state \{ flex-direction: column; align-items: flex-end; gap: 4px; \}\s*\.dp-prow-progress \{ white-space: normal; text-align: right; \}/);
+});

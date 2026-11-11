@@ -1,7 +1,7 @@
 // Public demo pieces (10 Nov): the banner, the note under a name field, and the sample-file list that replaces uploading.
 import { useEffect, useState } from "react";
 import * as api from "./api.js";
-import { ALL_ADDED, NAME_NOTE, NO_SAMPLES, addSample, filingLine, sampleSteps, useDemo } from "./demo.js";
+import { ALL_ADDED, GUIDES, GUIDE_DONE, GUIDE_TITLE, NAME_NOTE, NO_SAMPLES, addSample, filingLine, guideSteps, sampleSteps, useDemo } from "./demo.js";
 
 export function DemoBanner() {
   const demo = useDemo();
@@ -10,6 +10,37 @@ export function DemoBanner() {
 
 export function DemoNameNote() {
   return useDemo().public ? <p className="dp-faint dp-small demo-name-note">{NAME_NOTE}</p> : null;
+}
+
+// "Try it in 5 steps": above the commitments card on the public Noma and Alder deal pages. Done steps are ticked, the current one is highlighted
+// with a "Do step N" button, later ones are plain. The card can be collapsed. With the handover complete (the locked record) it says it is done.
+export function GuideCard({ deal, documents, commitments, onDo, handoverComplete = false, initialSamples = null, initialCollapsed = false }) {
+  const [samples, setSamples] = useState(initialSamples);
+  const [collapsed, setCollapsed] = useState(initialCollapsed);
+  useEffect(() => { if (!handoverComplete && !initialSamples) api.fetchSamples(deal).then((r) => setSamples(r.samples), () => setSamples([])); }, [deal, handoverComplete, initialSamples]);
+  if (!GUIDES[deal] || (!handoverComplete && !samples)) return null;
+  const steps = guideSteps(deal, samples, documents, commitments, handoverComplete);
+  const allDone = steps.every((s) => s.state === "done");
+  return (
+    <section className="dp-card demo-guide" aria-label={GUIDE_TITLE}>
+      <div className="demo-guide-head">
+        <h2>{GUIDE_TITLE}</h2>
+        <button type="button" className="dp-link-btn dp-brand" aria-expanded={!collapsed} onClick={() => setCollapsed(!collapsed)}>{collapsed ? "Show" : "Hide"}</button>
+      </div>
+      {!collapsed && allDone && <p className="demo-guide-done" role="status">{GUIDE_DONE}</p>}
+      {!collapsed && !allDone && (
+        <ol className="demo-guide-list">
+          {steps.map((s) => (
+            <li key={s.n} className={`is-${s.state}`}>
+              <span className="demo-guide-n" aria-hidden="true">{s.state === "done" ? "✓" : s.n}</span>
+              <span className="demo-guide-label">{s.label}<span className="dp-sr">{s.state === "done" ? " (done)" : ""}</span></span>
+              {s.state === "current" && <button type="button" className="dp-btn dp-btn-dark" onClick={() => onDo(s)}>Do step {s.n}</button>}
+            </li>
+          ))}
+        </ol>
+      )}
+    </section>
+  );
 }
 
 // A quiet link under a note box (public mode only): it fills the box; the visitor still saves.

@@ -79,3 +79,48 @@ export const noteSampleFor = (demo, deal, commitment) => {
   return s && s.match.test(`${commitment?.display_name ?? ""} ${commitment?.name ?? ""}`) ? s : null;
 };
 export const handoverSampleFor = (demo, deal, role) => (demo?.public ? HANDOVER_SAMPLES[deal]?.[role] ?? null : null);
+
+// The guide card, "Try it in 5 steps" (11 Nov, public mode, Noma and Alder). Step numbers are the sample panel's numbers (1-3), so "After step N" there
+// refers to the card. A step is done when the deal shows it: a sample is in the deal (the same test the sample list uses), a note is recorded on
+// its row, or the handover is complete. The current step is the first one not done.
+export const GUIDE_TITLE = "Try it in 5 steps";
+export const GUIDE_DONE = "Done. Reset demo to try again.";
+export const GUIDES = {
+  noma_journeys: [
+    { label: "Launch specialist: add the approval", kind: "sample", sample: 0, row: /launch specialist/i },
+    { label: "Support in 12 languages: add the revised contract", kind: "sample", sample: 1, row: /12 languages/i },
+    { label: "Add the signed contract", kind: "sample", sample: 2, row: null },
+    { label: "Phone calls: record the customer's agreement as a note", kind: "note", row: /phone/i },
+    { label: "Complete the handover", kind: "handover", row: null },
+  ],
+  alder_bank: [
+    { label: "Coaching-scam detection: add the BioCatch connector approval", kind: "sample", sample: 0, row: /coaching/i },
+    { label: "Coaching-scam detection: add the revised SOW", kind: "sample", sample: 1, row: /coaching/i },
+    { label: "Add the signed contract", kind: "sample", sample: 2, row: null },
+    { label: "Hosting on Microsoft Azure: record the customer's agreement as a note", kind: "note", row: /hosting/i },
+    { label: "Complete the handover", kind: "handover", row: null },
+  ],
+};
+export const findGuideRow = (commitments, re) => (re ? (commitments ?? []).find((c) => re.test(`${c.display_name ?? ""} ${c.name ?? ""}`)) ?? null : null);
+
+export function guideSteps(deal, samples, documents, commitments, handoverComplete = false) {
+  const list = GUIDES[deal] ?? [];
+  const added = sampleSteps(samples ?? [], documents);
+  const done = list.map((g, i) => {
+    if (handoverComplete) return true;
+    if (g.kind === "sample") return added[g.sample]?.state === "done";
+    if (g.kind === "note") return (findGuideRow(commitments, g.row)?.noted_count ?? 0) > 0;
+    return false; // "Complete the handover" is done only when the record is locked
+  });
+  const current = done.indexOf(false);
+  return list.map((g, i) => ({ ...g, n: i + 1, state: done[i] ? "done" : i === current ? "current" : "later" }));
+}
+
+// Where "Do step N" goes: the drawer to open (the sample panel from that commitment, the sample panel from + Add, or that row's note form),
+// the row to scroll to and highlight, or the Handover card to expand and scroll to.
+export function guideAction(step, commitments) {
+  const row = findGuideRow(commitments, step.row);
+  if (step.kind === "sample") return { drawer: { type: "add", fromId: row ? row.id : null }, row: row ? row.id : null, handover: false };
+  if (step.kind === "note") return { drawer: row ? { type: "note", id: row.id } : null, row: row ? row.id : null, handover: false };
+  return { drawer: null, row: null, handover: true };
+}

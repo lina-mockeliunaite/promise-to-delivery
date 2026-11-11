@@ -13,6 +13,8 @@ import BriefCard from "./BriefCard.jsx";
 import { appendixEntries, hasStoredText, shortHash } from "./docHash.js";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
 import { FICTIONAL } from "./brand.js";
+import { GuideCard } from "./DemoUI.jsx";
+import { useDemo } from "./demo.js";
 import "./DealPage.css";
 
 const Lock = ({ size = 14 }) => (
@@ -74,6 +76,7 @@ function PrintDetail({ v }) {
 }
 
 export default function FrozenRecord({ deal, onBack }) {
+  const demo = useDemo();
   const [hv, setHv] = useState(null);
   const [error, setError] = useState(null);
   const [copied, setCopied] = useState(false);
@@ -154,6 +157,8 @@ export default function FrozenRecord({ deal, onBack }) {
           <button type="button" className="dp-btn" onClick={printAll} disabled={withText && appendix.some((a) => a.text === null)}>Print or save as PDF</button>
         </span>
       </div>
+
+      {demo.public && <div className="fr-noprint"><GuideCard deal={deal} documents={[]} commitments={[]} handoverComplete /></div>}
 
       <div className="fr-bar">
         <Lock size={14} /> <span>Handover complete · locked on <strong>{fmtDate(hv.completed_at)}</strong> by <strong>{plainName(hv.completed_by)}</strong></span>

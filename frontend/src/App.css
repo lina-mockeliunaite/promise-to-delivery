@@ -375,3 +375,25 @@ main.home { max-width: 1440px; }
 .demo-all-added { margin: 8px 0 0; padding: 10px 12px; border-radius: 8px; background: #f0fdf4; color: #166534; font-size: 13px; }
 @media (prefers-color-scheme: dark) { .demo-all-added { background: #0f2a1a; color: #86efac; } }
 .demo-sample-text { display: block; margin-top: 4px; text-align: left; font-size: 12px; }
+
+/* The guide card (11 Nov, public mode): done steps ticked, the current step highlighted with its button, later steps plain. */
+.demo-guide { padding: 16px 20px; }
+.demo-guide-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+.demo-guide-head h2 { margin: 0; font-size: 17px; }
+.demo-guide-list { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 4px; }
+.demo-guide-list li { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border-radius: 8px; }
+.demo-guide-list li.is-current { background: var(--tint, #eef2ff); }
+.demo-guide-list li.is-current .demo-guide-label { font-weight: 600; }
+.demo-guide-list li.is-later { color: var(--muted, #64748b); }
+.demo-guide-list li.is-done { color: var(--muted, #64748b); }
+.demo-guide-n { flex: none; width: 22px; height: 22px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 600; background: var(--dl-btn-soft, #f1f5f9); }
+.demo-guide-list li.is-done .demo-guide-n { background: #dcfce7; color: #166534; }
+.demo-guide-list li.is-current .demo-guide-n { background: #4f46e5; color: #fff; }
+.demo-guide-label { flex: 1; min-width: 0; }
+.demo-guide-done { margin: 8px 0 0; padding: 10px 12px; border-radius: 8px; background: #f0fdf4; color: #166534; font-size: 14px; }
+@media (prefers-color-scheme: dark) { .demo-guide-done { background: #0f2a1a; color: #86efac; } .demo-guide-list li.is-current { background: #1e2547; } }
+@media (max-width: 639px) { .demo-guide-list li { flex-wrap: wrap; } .demo-guide-list li .dp-btn { margin-left: 34px; } }
+@keyframes demo-flash { 0%, 55% { background: #fde68a; box-shadow: 0 0 0 2px #f59e0b; } 100% { background: transparent; box-shadow: none; } }
+.dp-prow.is-flash .dp-prow-head { animation: demo-flash 2.4s ease-out; }
+.dp-handover.is-flash { animation: demo-flash 2.4s ease-out; }
+@media print { .demo-guide { display: none; } }

@@ -20,8 +20,8 @@ import { IdentityLine, useScrolledPast } from "./Identity.jsx";
 import { CardHead, Drawer, DrawerHead, CommitmentView, DocumentView, MismatchSentence, TitleLine, Icon as DIcon, ICON } from "./Drawer.jsx";
 import { FICTIONAL } from "./brand.js";
 import CatalogueModal from "./CatalogueModal.jsx";
-import { DemoNameNote, SamplePicker, UseSampleText } from "./DemoUI.jsx";
-import { NAME_NOTE, REFUSED_FINDINGS, handoverSampleFor, noteLimit, noteSampleFor, useDemo } from "./demo.js";
+import { DemoNameNote, GuideCard, SamplePicker, UseSampleText } from "./DemoUI.jsx";
+import { NAME_NOTE, REFUSED_FINDINGS, guideAction, handoverSampleFor, noteLimit, noteSampleFor, useDemo } from "./demo.js";
 import "./DealPage.css";
 
 const Icon = ({ d, size = 15 }) => <DIcon d={d} size={size} />;
@@ -110,12 +110,12 @@ function AttentionChip({ open, noted }) {
 
 // One row of the list: title, the sentence-style mismatch line, where it was first promised, the status, a chevron. Click opens
 // the drawer; the row takes a soft accent tint while its commitment is open there.
-export function CommitRow({ c, status, active, onOpen }) {
+export function CommitRow({ c, status, active, onOpen, flash = false }) {
   const unresolved = c.issues.filter((i) => i.state !== "Resolved");
   const st = STATUS_CHIP[status];
   const noteRes = unresolved.find((i) => i.note_resolution)?.note_resolution;
   return (
-    <li className={`dp-prow is-${status} ${active ? "is-active" : ""}`}>
+    <li className={`dp-prow is-${status} ${active ? "is-active" : ""}${flash ? " is-flash" : ""}`}>
       <div className="dp-prow-head" onClick={onOpen} role="button" tabIndex={0} aria-haspopup="dialog" aria-expanded={active}
            onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && (e.preventDefault(), onOpen())}>
         <span className="dp-prow-main">
@@ -688,6 +688,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   const [change, setChange] = useState(null); // the "What changed" card after a document or a recheck
   const [askName, setAskName] = useState(null); // { fn, initial }: the name prompt, only for actions that have no form of their own
   const [help, setHelp] = useState(false);
+  const [flash, setFlash] = useState({ row: null, handover: false }); // the guide card's target, highlighted for a moment
   const [handoverManual, setHandoverManual] = useState(null); // { stage, open }: a person's choice for the Handover card, kept until the stage changes or the page reloads
   const handoverBodyId = useId();
   // The drawer: { type: "commitment", id } | { type: "doc", docKey, quote, fromId } | { type: "add", fromId } | { type: "note", id }
@@ -727,6 +728,19 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
     return () => window.removeEventListener("hashchange", onHash);
   }, [reg]);
 
+  // The guide card's "Do step N" (public mode): open the right place, scroll to it and highlight it briefly.
+  const doStep = (step) => {
+    const a = guideAction(step, reg.commitments);
+    if (a.drawer) setDrawer(a.drawer);
+    if (a.handover) setHandoverManual({ stage: reg.stage.current, open: true });
+    setFlash({ row: a.row, handover: a.handover });
+    setTimeout(() => {
+      const at = a.row != null ? promiseRowIds.indexOf(a.row) : -1; // the row's place in the list; the row markup itself carries no id
+      const target = a.handover ? document.getElementById("dp-handover") : at >= 0 ? document.querySelectorAll("#dp-commitments .dp-plist > li")[at] : document.getElementById("dp-commitments");
+      target?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 60);
+    setTimeout(() => setFlash({ row: null, handover: false }), 2600);
+  };
   const openCommitment = (c) => { setDrawer({ type: "commitment", id: c.id }); writeHash(c.ref); };
   const closeDrawer = useCallback(() => { setDrawer(null); writeHash(null); }, [writeHash]);
 
@@ -784,6 +798,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
     ...closedIds.map((id) => ({ c: byId(id), status: "closed" })),
   ].filter((r) => r.c));
   const statusOf = (id) => promiseRows.find((r) => r.c.id === id)?.status ?? "open";
+  const promiseRowIds = promiseRows.map((r) => r.c.id);
   const notes = reg.handover.notes;
   const STAGE_ORDER = ["discovery", "evaluation", "proposal", "shortlisted", "contracting", "signed", "handover"];
   const isSigned = STAGE_ORDER.indexOf(reg.stage.current) >= STAGE_ORDER.indexOf("signed"); // from the documents only
@@ -838,6 +853,8 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
           {message && <div className={`dp-message is-${message.kind}`} role="status">{message.text}</div>}
           {change && <ChangePanel change={change} titleOf={(n) => reg.commitments.find((c) => c.name === n)?.display_name || n} onClose={() => setChange(null)} />}
 
+          {demo.public && <GuideCard deal={deal} documents={docs.documents} commitments={reg.commitments} onDo={doStep} />}
+
           <section className={`dp-card dp-promises ${openRows.length ? "is-attention" : "is-clear"}`} id="dp-commitments">
             <CardHead eyebrow="Commitments" title="What the customer was promised">
               <AttentionChip open={openRows.length} noted={(reg.noted_rows || []).length} />
@@ -846,12 +863,12 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
             {promiseRows.length === 0 && <p className="dp-faint dp-pad">No commitments with gaps on the current documents.</p>}
             <ul className="dp-plist">
               {promiseRows.map(({ c, status }) => (
-                <CommitRow key={c.id} c={c} status={status} active={fromId === c.id} onOpen={() => openCommitment(c)} />
+                <CommitRow key={c.id} c={c} status={status} active={fromId === c.id} flash={flash.row === c.id} onOpen={() => openCommitment(c)} />
               ))}
             </ul>
           </section>
 
-          <section className="dp-card dp-handover">
+          <section className={`dp-card dp-handover ${flash.handover ? "is-flash" : ""}`.trim()} id="dp-handover">
             <HandoverHead checklist={checklist} missing={missing} open={handoverIsOpen} bodyId={handoverBodyId}
                           onToggle={() => setHandoverManual({ stage: reg.stage.current, open: !handoverIsOpen })} />
             <div className="dp-handover-body" id={handoverBodyId} hidden={!handoverIsOpen}>

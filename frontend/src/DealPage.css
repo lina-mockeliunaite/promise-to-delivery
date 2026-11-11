@@ -538,3 +538,8 @@ main.home.home-deal { max-width: none; margin: 0; padding: 0; }
 .dp-prow-state { display: inline-flex; align-items: center; gap: 10px; flex: none; }
 .dp-prow-progress { font-size: 12px; color: var(--muted); white-space: nowrap; }
 .dr-also { color: var(--muted); }
+/* Narrow screens: the gap progress sits above the status chip instead of beside it, so it cannot squeeze the row's title into a column of letters. */
+@media (max-width: 639px) {
+  .dp-prow-state { flex-direction: column; align-items: flex-end; gap: 4px; }
+  .dp-prow-progress { white-space: normal; text-align: right; }
+}
