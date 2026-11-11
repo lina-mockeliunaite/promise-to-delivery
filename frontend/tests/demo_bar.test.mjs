@@ -269,12 +269,12 @@ test("the page wires the tour and the guided drawer; the card is gone and local 
   assert.match(page, /facts: \{ goLive: reg\.brief\?\.go_live, stage: reg\.stage\.current, stageLabel: reg\.stage\.current_label, open: reg\.open_rows\.length \}/);
   assert.match(page, /guide=\{drawer\.guide\}/); assert.match(page, /hint=\{drawer\.hint\}/);
   assert.ok(!page.includes("GuideCard") && !page.includes("Try it in"));
-  assert.match(page, /\{change && <ChangePanel [^\n]*\/>\}\s*<section className=\{`dp-card dp-promises/);
+  assert.match(page, /\{message && <div className=\{`dp-message is-\$\{message\.kind\}`\} role="status">\{message\.text\}<\/div>\}\s*<section className=\{`dp-card dp-promises/); // nothing sits between the brief and the commitments card
   const ui = read("DemoUI.jsx");
   assert.match(ui, /guide\?\.onTour\?\.\(TOUR_KEYS\[part\]\)/);
   assert.match(ui, /if \(finished\) \{ markTourDone\(deal\);/);
   const css = read("DealPage.css");
-  assert.match(css, /\.dp-grid\[data-tour="brief"\] \.dp-brief-card, \.dp-grid\[data-tour="commitments"\] #dp-commitments, \.dp-grid\[data-tour="journey"\] \.dp-aside > \* \{ outline: 3px solid #f59e0b;/);
+  assert.match(css, /\.dp-grid\[data-tour="brief"\] \.dp-brief-card, \.dp-grid\[data-tour="commitments"\] #dp-commitments, \.dp-grid\[data-tour="journey"\] \.dp-aside > \* \{ outline: 3px solid var\(--accent\);/); // the brand indigo (the primary button's colour), not amber
   assert.match(css, /\.dr-actions \.dp-btn\.is-guided \{/);
 });
 

@@ -140,6 +140,17 @@ export const datePrefill = (head, today) => statedDate(head) ?? today;
 export const changeDocLabel = ({ name, existing, version, date }) =>
   existing ? `${name}, new version (v${version}, ${short(date)})` : `${name}, ${short(date)}`;
 
+// The result dialog's title (11 Nov): "Rechecked after adding Internal approvals note v2 (18 Oct)" for a new version, "... Signed contract (20 Oct)" for a new document.
+export const changeTitle = ({ name, existing, version, date }) =>
+  existing ? `Rechecked after adding ${name} v${version} (${short(date)})` : `Rechecked after adding ${name} (${short(date)})`;
+
+// The commitments a recheck changed (closed, confirmed, reopened or newly opened a gap on), in the order the dialog lists them: "Got it" highlights their rows.
+export function changedPromises(change, titleOf = (n) => n, acted = null) {
+  return changeView(change, titleOf, acted).groups
+    .filter((g) => g.closed.length || g.confirmed.length || g.reopened.length || g.opened.length)
+    .map((g) => g.promise);
+}
+
 // Which document usually resolves a gap: the pricing note for an approval, the SOW for the contract, the promise itself
 // when the product doesn't offer it. A suggestion only; the person can pick any document.
 export function suggestFix(open, documents) {

@@ -24,7 +24,7 @@ const dir = fileURLToPath(new URL("../node_modules/.cache/change-card-test/", im
 fs.mkdirSync(dir, { recursive: true });
 const file = path.join(dir, "dealpage.mjs");
 fs.writeFileSync(file, (Array.isArray(out) ? out[0] : out).output[0].code);
-const { ChangePanel } = await import(file);
+const { ChangeDialog } = await import(file);
 
 const LANG = "Support in 12 languages at launch", PHONE = "AI answers customers' phone calls at launch", SPEC = "Dedicated launch specialist";
 const iss = (id, finding, state, extra = {}) => ({ id, finding, state, ...extra });
@@ -41,8 +41,8 @@ test("a signed contract that confirms an earlier fix says so, once, and is not '
   const v = changeView(c, titleOf, null);
   assert.equal(v.headline, `1 earlier fix confirmed in the signed contract: ${LANG}.`);
   assert.ok(!v.headline.includes("Nothing closed"));
-  const html = renderToStaticMarkup(createElement(ChangePanel, { change: { ...c, doc: "Signed contract, 20 Oct", acted: null, modelCalls: 0 }, titleOf, onClose() {} }));
-  assert.equal(html.split("earlier fix confirmed in the signed contract").length - 1, 1); // heading line only; the box says "Confirmed in the signed contract"
+  const html = renderToStaticMarkup(createElement(ChangeDialog, { change: { ...c, doc: "Signed contract, 20 Oct", acted: null, modelCalls: 0 }, titleOf, onClose() {} }));
+  assert.equal(html.split("earlier fix confirmed in the signed contract").length - 1, 0); // the dialog has no headline sentence: the row says it once ("· confirmed in the signed contract")
   assert.ok(html.includes("confirmed in the signed contract") && !html.includes("Nothing closed"));
 });
 
@@ -55,13 +55,13 @@ test("a fix the signed contract does not contain is reopened, not a new gap, and
   const v = changeView(c, titleOf, null);
   assert.equal(v.headline, `1 earlier fix not found in the signed contract, reopened: ${LANG}.`);
   assert.ok(!/new gap/.test(v.headline));
-  const html = renderToStaticMarkup(createElement(ChangePanel, { change: { ...c, doc: "Signed contract, 20 Oct", acted: null, modelCalls: 0 }, titleOf, onClose() {} }));
+  const html = renderToStaticMarkup(createElement(ChangeDialog, { change: { ...c, doc: "Signed contract, 20 Oct", acted: null, modelCalls: 0 }, titleOf, onClose() {} }));
   assert.ok(html.includes("The fix in Draft SOW, version 2 was not found in the signed contract.") && html.includes("Reopened"));
 });
 
 test("nothing changed: the sentence appears once, in the heading line only", () => {
   const c = whatChanged(reg([LANG, [iss(1, "Missing from contract", "Needs action")]]), reg([LANG, [iss(1, "Missing from contract", "Needs action")]]));
-  const html = renderToStaticMarkup(createElement(ChangePanel, { change: { ...c, doc: "Draft SOW, new version (v2, 19 Oct)", acted: null, modelCalls: 0 }, titleOf, onClose() {} }));
+  const html = renderToStaticMarkup(createElement(ChangeDialog, { change: { ...c, doc: "Draft SOW, new version (v2, 19 Oct)", acted: null, modelCalls: 0 }, titleOf, onClose() {} }));
   assert.equal(html.split("Nothing closed and nothing new").length - 1, 1);
 });
 
@@ -81,10 +81,10 @@ test("the headline is the change on the commitment the document was added from; 
 });
 
 test("the detail boxes are grouped per commitment, the acted-on one first, with no commitment title repeated inside a box", () => {
-  const html = renderToStaticMarkup(createElement(ChangePanel, { change: { ...revised(), doc: "Draft contract, new version (v2, 19 Oct)", acted: LANG, modelCalls: 0 }, titleOf, onClose() {} }));
+  const html = renderToStaticMarkup(createElement(ChangeDialog, { change: { ...revised(), doc: "Draft contract, new version (v2, 19 Oct)", acted: LANG, modelCalls: 0 }, titleOf, onClose() {} }));
   const titles = [...html.matchAll(/<h3 class="dp-change-title">([^<]*)<\/h3>/g)].map((m) => m[1].replace(/&#x27;/g, "'"));
   assert.deepEqual(titles, [LANG, PHONE]);
-  assert.ok(html.indexOf("Closed by documents") < html.indexOf("New"));
+  assert.ok(html.indexOf("closed by documents") > -1 && html.indexOf("closed by documents") < html.indexOf(">New<"));
   assert.ok(!html.includes("Still needs attention")); // the phone commitment's unchanged gaps are not repeated
   assert.equal(html.split("<strong>" + PHONE).length - 1, 0);
 });
@@ -156,7 +156,7 @@ test("a commitment the person did not act on keeps no still-open item, even with
 });
 
 test("the footer count and the model line are unchanged by what the card hides", () => {
-  const html = renderToStaticMarkup(createElement(ChangePanel, { change: { ...revised(), openPromises: 2, doc: "Draft contract, new version (v2, 19 Oct)", acted: LANG, modelCalls: 0 }, titleOf, onClose() {} }));
-  assert.ok(html.includes("2 commitments still need attention.") && !html.includes("View commitments below") && html.includes(">Done<")); // 11 Nov: one control, Done
+  const html = renderToStaticMarkup(createElement(ChangeDialog, { change: { ...revised(), openPromises: 2, doc: "Draft contract, new version (v2, 19 Oct)", acted: LANG, modelCalls: 0 }, titleOf, onClose() {} }));
+  assert.ok(html.includes("2 commitments still need attention.") && !html.includes("View commitments below") && !html.includes(">Done<") && html.includes(">Got it<")); // 11 Nov: a dialog with one button, Got it
   assert.ok(html.includes("No model call was needed: code checked every finding again."));
 });

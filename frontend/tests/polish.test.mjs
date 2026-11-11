@@ -19,7 +19,7 @@ const dir = fileURLToPath(new URL("../node_modules/.cache/polish-test/", import.
 fs.mkdirSync(dir, { recursive: true });
 const entry = path.join(dir, "entry.jsx");
 const abs = (f) => JSON.stringify(fileURLToPath(new URL(f, SRC)));
-fs.writeFileSync(entry, `export { ChangePanel, CommitRow } from ${abs("DealPage.jsx")};\nexport * from ${abs("DemoUI.jsx")};\nexport * from ${abs("demo.js")};\n`);
+fs.writeFileSync(entry, `export { ChangeDialog, CommitRow } from ${abs("DealPage.jsx")};\nexport * from ${abs("DemoUI.jsx")};\nexport * from ${abs("demo.js")};\n`);
 const out = await build({
   configFile: false, logLevel: "silent", root: fileURLToPath(new URL("..", import.meta.url)), plugins: [react()],
   build: { write: false, minify: false, lib: { entry, formats: ["es"], fileName: "entry" },
@@ -51,7 +51,7 @@ test("closed gaps are named by what is now true: the full before/after list", ()
 
 test("the card's closed row reads 'Approval found · closed by documents', with no problem-named title and no second chip", () => {
   const change = { closed: [{ promise: "P", finding: "No approval recorded", why: "A named approval is recorded.", by: "" }], opened: [], reopened: [], confirmed: [], stillOpen: [] };
-  const html = renderToStaticMarkup(createElement(m.ChangePanel, { change: { ...change, openPromises: 0, doc: "Internal approvals note, new version (v2, 18 Oct)", acted: "P", modelCalls: 0 }, titleOf: (n) => n, onClose() {} }));
+  const html = renderToStaticMarkup(createElement(m.ChangeDialog, { change: { ...change, openPromises: 0, doc: "Internal approvals note, new version (v2, 18 Oct)", acted: "P", modelCalls: 0 }, titleOf: (n) => n, onClose() {} }));
   assert.ok(html.includes("<strong>Approval found</strong>") && html.includes("· closed by documents"));
   assert.ok(!html.includes("No approval found") && !html.includes("dp-chip-green"));
 });

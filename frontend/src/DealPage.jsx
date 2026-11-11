@@ -11,7 +11,7 @@ import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
 import { addReady, fmtDate, fmtDateTime, mismatchNotice, newDocumentNotice, uploadKind } from "./format.js";
 import {
-  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, closedTitle, confirmedTitle, reopenedTitle, coverageLine, docCount, gapProgress, orderPromises, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
+  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, changeTitle, changedPromises, closedTitle, confirmedTitle, reopenedTitle, coverageLine, docCount, gapProgress, orderPromises, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
   mismatchParts, promiseLabels, missingForHandover, handoverChecklist, handoverOpen, changeView, changeDocLabel, datePrefill, plainName, readHash, recordedBy, rowTitle, toldParts, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
@@ -210,19 +210,33 @@ function NotePanel({ deal, role, label, who, note, name, setName, onSave }) {
   );
 }
 
-export function ChangePanel({ change, titleOf, onClose }) {
+// The result of a recheck, as a centred dialog over the dimmed page (11 Nov; it was an inline card above the commitments). It opens after "Add and check"
+// (and after a signed contract). One line per change, grouped by commitment: a green tick for a gap closed by documents or confirmed in the signed contract,
+// amber for a gap still open or reopened, a "New" tag for a new gap. "Got it" closes it and highlights the rows that changed; Escape, the X and a click on the
+// dimmed page close it without. Below 640px it is a full-width sheet from the bottom, scrollable, with "Got it" always visible.
+export function ChangeDialog({ change, titleOf, onClose, onGotIt }) {
   const { openPromises } = change;
   const short = (f) => FINDING_SHORT[f] ?? f;
   const view = changeView(change, titleOf, change.acted);
+  const rows = view.groups.some((g) => g.closed.length || g.confirmed.length || g.reopened.length || g.stillOpen.length || g.opened.length);
+  const titleId = useId();
+  const gotIt = useRef(null);
+  useEffect(() => {
+    const before = document.activeElement;
+    gotIt.current?.focus();
+    const onKey = (e) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => { window.removeEventListener("keydown", onKey); before?.focus?.(); };
+  }, [onClose]);
   return (
-    <section className="dp-card dp-change" role="status" aria-live="polite">
-      <div className="dp-change-body">
-        <div className="dp-change-head">
-          <h2><Icon d={I.sync} size={18} /> After adding {change.doc}</h2>
-          <p className="dp-change-result">{view.headline}</p>
-          {view.elsewhere && <p className="dp-change-else">{view.elsewhere}</p>}
+    <div className="dp-cd" onClick={onClose}>
+      <div className="dp-cd-panel" role="dialog" aria-modal="true" aria-labelledby={titleId} onClick={(e) => e.stopPropagation()}>
+        <div className="dp-cd-head">
+          <h2 id={titleId}>{change.title ?? `Rechecked after adding ${change.doc}`}</h2>
+          <button type="button" className="dp-x" onClick={onClose} aria-label="Close"><Icon d={I.close} size={16} /></button>
         </div>
-        <div className="dp-change-rows">
+        <div className="dp-cd-body">
+          {!rows && <p className="dp-change-result">{view.headline}</p>}
           {view.groups.map((g) => (
             <div key={g.promise} className="dp-change-group">
               <h3 className="dp-change-title">{g.title}</h3>
@@ -234,7 +248,6 @@ export function ChangePanel({ change, titleOf, onClose }) {
                       <strong>{closedTitle(x.finding)}</strong>
                       <span className="dp-change-closed"> · closed by documents</span>
                     </div>
-                    <p>{x.why}</p>
                     {x.by && <p className="dp-change-by">{closedBy(x.by)}</p>}
                   </div>
                 </div>
@@ -265,7 +278,7 @@ export function ChangePanel({ change, titleOf, onClose }) {
               {g.stillOpen.map((x) => (
                 <div key={`s|${x.finding}`} className="dp-change-row is-open">
                   <span className="dp-change-mark"><Icon d={I.alert} size={13} /></span>
-                  <div><div className="dp-change-line"><strong>Still needs attention: {short(x.finding)}</strong></div></div>
+                  <div><div className="dp-change-line"><strong>{short(x.finding)}</strong><span className="dp-change-still"> · still open</span></div></div>
                 </div>
               ))}
               {g.opened.map((x) => (
@@ -281,18 +294,17 @@ export function ChangePanel({ change, titleOf, onClose }) {
               ))}
             </div>
           ))}
+          {view.elsewhere && <p className="dp-change-else">{view.elsewhere}</p>}
+          <p className="dp-change-count">{openPromises} {openPromises === 1 ? "commitment still needs" : "commitments still need"} attention.</p>
         </div>
-        <div className="dp-change-foot">
-          <span className="dp-change-count">{openPromises} {openPromises === 1 ? "commitment still needs" : "commitments still need"} attention.</span>
-          <span className="dp-row">
-            <button type="button" className="dp-link-btn dp-done" onClick={onClose}>Done</button>
-          </span>
+        <div className="dp-cd-foot">
+          <p className="dp-change-model">
+            {change.modelCalls ? "The model read the new document; code checked every finding again." : "No model call was needed: code checked every finding again."}
+          </p>
+          <button type="button" className="dp-btn dp-btn-dark" ref={gotIt} onClick={onGotIt ?? onClose}>Got it</button>
         </div>
-        <p className="dp-change-model">
-          {change.modelCalls ? "The model read the new document; code checked every finding again." : "No model call was needed: code checked every finding again."}
-        </p>
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -688,7 +700,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   const [change, setChange] = useState(null); // the "What changed" card after a document or a recheck
   const [askName, setAskName] = useState(null); // { fn, initial }: the name prompt, only for actions that have no form of their own
   const [help, setHelp] = useState(false);
-  const [flash, setFlash] = useState({ row: null, handover: false }); // the demo bar's target, highlighted for a moment
+  const [flash, setFlash] = useState({ row: null, handover: false, rows: [] }); // what to highlight for a moment: the demo bar's target row or Handover, or the rows a recheck changed
   const [tourKey, setTourKey] = useState(null); // the section the bar's "Get the picture" tour is showing: "brief", "journey" or "commitments"
   const [handoverManual, setHandoverManual] = useState(null); // { stage, open }: a person's choice for the Handover card, kept until the stage changes or the page reloads
   const handoverBodyId = useId();
@@ -735,13 +747,13 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
     if (a.drawer) setDrawer(a.drawer);
     if (a.drawer?.type === "commitment") writeHash(byId(a.drawer.id)?.ref ?? null);
     if (a.handover) setHandoverManual({ stage: reg.stage.current, open: true });
-    setFlash({ row: a.row, handover: a.handover });
+    setFlash({ row: a.row, handover: a.handover, rows: [] });
     setTimeout(() => {
       const at = a.row != null ? promiseRowIds.indexOf(a.row) : -1; // the row's place in the list; the row markup itself carries no id
       const target = a.handover ? document.getElementById("dp-handover") : at >= 0 ? document.querySelectorAll("#dp-commitments .dp-plist > li")[at] : document.getElementById("dp-commitments");
       target?.scrollIntoView({ behavior: "smooth", block: "center" });
     }, 60);
-    setTimeout(() => setFlash({ row: null, handover: false }), 2600);
+    setTimeout(() => setFlash({ row: null, handover: false, rows: [] }), 2600);
   };
   // The demo bar (public mode) shows the guide: this page tells it where the visitor is, and "Do step N" in the bar comes back here to doStep.
   const publishGuide = useContext(GuidePublishContext);
@@ -790,15 +802,19 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
     const after = await api.fetchRegister(deal);
     // The card names the document by its plain name and date, never the file name (31 Oct); a new version's date is the one the server shows.
     let label = changeDocLabel({ name: added.name, existing: false, date: added.date });
+    let title = changeTitle({ name: added.name, existing: false, date: added.date });
     if (added.source_key) {
       const d = (await api.fetchDocuments(deal)).documents.find((x) => x.source_key === added.source_key);
-      if (d) label = changeDocLabel({ name: d.name, existing: true, version: d.version, date: d.version_date || d.date });
+      if (d) {
+        label = changeDocLabel({ name: d.name, existing: true, version: d.version, date: d.version_date || d.date });
+        title = changeTitle({ name: d.name, existing: true, version: d.version, date: d.version_date || d.date });
+      }
     }
-    setChange({ ...whatChanged(reg, after), doc: label, acted, modelCalls: review.model_calls });
+    setChange({ ...whatChanged(reg, after), doc: label, title, acted, modelCalls: review.model_calls }); // opens the result dialog over the page
     load();
     onDealsChanged?.();
-    window.scrollTo({ top: 0, behavior: "smooth" });
   };
+  const closeChange = useCallback(() => setChange(null), []);
 
   if (error) return <div className="dp"><p className="dp-error">{error}</p></div>;
   if (!reg || !docs) return <div className="dp"><p className="dp-faint">Loading…</p></div>;
@@ -817,6 +833,17 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   ].filter((r) => r.c));
   const statusOf = (id) => promiseRows.find((r) => r.c.id === id)?.status ?? "open";
   const promiseRowIds = promiseRows.map((r) => r.c.id);
+  const titleOfChange = (n) => reg.commitments.find((c) => c.name === n)?.display_name || n;
+  // "Got it": close the dialog, then highlight the rows the recheck changed for about two seconds and scroll to the first of them.
+  const gotIt = () => {
+    const ids = change ? changedPromises(change, titleOfChange, change.acted).map((n) => reg.commitments.find((c) => c.name === n)?.id).filter((id) => id != null) : [];
+    setChange(null);
+    if (!ids.length) return;
+    setFlash({ row: null, handover: false, rows: ids });
+    const first = Math.min(...ids.map((id) => promiseRowIds.indexOf(id)).filter((i) => i >= 0));
+    setTimeout(() => document.querySelectorAll("#dp-commitments .dp-plist > li")[first]?.scrollIntoView({ behavior: "smooth", block: "center" }), 60);
+    setTimeout(() => setFlash({ row: null, handover: false, rows: [] }), 2200);
+  };
   const notes = reg.handover.notes;
   const STAGE_ORDER = ["discovery", "evaluation", "proposal", "shortlisted", "contracting", "signed", "handover"];
   const isSigned = STAGE_ORDER.indexOf(reg.stage.current) >= STAGE_ORDER.indexOf("signed"); // from the documents only
@@ -869,7 +896,6 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
           <BriefCard brief={reg.brief} collapsible />
 
           {message && <div className={`dp-message is-${message.kind}`} role="status">{message.text}</div>}
-          {change && <ChangePanel change={change} titleOf={(n) => reg.commitments.find((c) => c.name === n)?.display_name || n} onClose={() => setChange(null)} />}
 
           <section className={`dp-card dp-promises ${openRows.length ? "is-attention" : "is-clear"}`} id="dp-commitments">
             <CardHead eyebrow="Commitments" title="What the customer was promised">
@@ -879,7 +905,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
             {promiseRows.length === 0 && <p className="dp-faint dp-pad">No commitments with gaps on the current documents.</p>}
             <ul className="dp-plist">
               {promiseRows.map(({ c, status }) => (
-                <CommitRow key={c.id} c={c} status={status} active={fromId === c.id} flash={flash.row === c.id} onOpen={() => openCommitment(c)} />
+                <CommitRow key={c.id} c={c} status={status} active={fromId === c.id} flash={flash.row === c.id || flash.rows.includes(c.id)} onOpen={() => openCommitment(c)} />
               ))}
             </ul>
           </section>
@@ -935,6 +961,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
         </aside>
       </div>
 
+      {change && <ChangeDialog change={change} titleOf={titleOfChange} onClose={closeChange} onGotIt={gotIt} />}
       {catFocus !== null && <CatalogueModal focus={catFocus} deal={deal} onClose={() => setCatFocus(null)} onChanged={load} />}
       {help && <ClosingHelp onClose={() => setHelp(false)} />}
       {askName && (

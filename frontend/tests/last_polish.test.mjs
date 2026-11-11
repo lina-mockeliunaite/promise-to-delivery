@@ -17,7 +17,7 @@ const dir = fileURLToPath(new URL("../node_modules/.cache/last-polish-test/", im
 fs.mkdirSync(dir, { recursive: true });
 const entry = path.join(dir, "entry.jsx");
 const abs = (f) => JSON.stringify(fileURLToPath(new URL(f, SRC)));
-fs.writeFileSync(entry, `export { ChangePanel } from ${abs("DealPage.jsx")};\nexport * from ${abs("DemoUI.jsx")};\n`);
+fs.writeFileSync(entry, `export { ChangeDialog } from ${abs("DealPage.jsx")};\nexport * from ${abs("DemoUI.jsx")};\n`);
 const out = await build({
   configFile: false, logLevel: "silent", root: fileURLToPath(new URL("..", import.meta.url)), plugins: [react()],
   build: { write: false, minify: false, lib: { entry, formats: ["es"], fileName: "entry" },
@@ -53,7 +53,7 @@ test("the card's confirmed row reads 'Contract wording matches · confirmed in t
   const after = reg([LANG, [iss(1, "Contract says something different", "Resolved", { signed_check: { status: "confirmed" } })]],
     ["Phone", [iss(2, "Missing from contract", "Needs action", { signed_check: { status: "not_found", reason: "Not found in the signed contract." } })]]);
   const change = whatChanged(before, after);
-  const html = renderToStaticMarkup(createElement(m.ChangePanel, { change: { ...change, doc: "Signed contract, 20 Oct", acted: null, modelCalls: 0 }, titleOf: (n) => n, onClose() {} }));
+  const html = renderToStaticMarkup(createElement(m.ChangeDialog, { change: { ...change, doc: "Signed contract, 20 Oct", acted: null, modelCalls: 0 }, titleOf: (n) => n, onClose() {} }));
   assert.ok(html.includes('<strong>Contract wording matches</strong><span class="dp-change-closed"> · confirmed in the signed contract</span>'));
   assert.ok(html.includes("<strong>Contract wording missing from the signed contract</strong>") && html.includes("Reopened"));
   assert.ok(!html.includes("earlier fix confirmed</strong>") && !html.includes("earlier fix not found in the signed contract</strong>"));
