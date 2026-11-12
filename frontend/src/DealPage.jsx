@@ -11,7 +11,7 @@ import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
 import { addReady, fmtDate, fmtDateTime, mismatchNotice, newDocumentNotice, uploadKind } from "./format.js";
 import {
-  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, changeTitle, signedDatesLabel, changedPromises, closedTitle, confirmedTitle, reopenedTitle, coverageLine, docCount, gapProgress, orderPromises, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
+  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, closedSettled, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, changeTitle, signedDatesLabel, changedPromises, closedTitle, confirmedTitle, reopenedTitle, coverageLine, docCount, gapProgress, orderPromises, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
   mismatchParts, promiseLabels, missingForHandover, handoverChecklist, handoverOpen, changeView, changeDocLabel, datePrefill, plainName, readHash, recordedBy, rowTitle, toldParts, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
@@ -110,7 +110,7 @@ function AttentionChip({ open, noted }) {
 
 // One row of the list: title, the sentence-style mismatch line, where it was first promised, the status, a chevron. Click opens
 // the drawer; the row takes a soft accent tint while its commitment is open there.
-export function CommitRow({ c, status, active, onOpen, flash = false }) {
+export function CommitRow({ c, status, active, onOpen, flash = false, documents = [] }) {
   const unresolved = c.issues.filter((i) => i.state !== "Resolved");
   const st = STATUS_CHIP[status];
   const noteRes = unresolved.find((i) => i.note_resolution)?.note_resolution;
@@ -122,9 +122,8 @@ export function CommitRow({ c, status, active, onOpen, flash = false }) {
           <TitleLine title={rowTitle(c)} labels={status !== "closed" ? promiseLabels(unresolved) : []} />
           <MismatchSentence parts={toldParts(status === "closed" ? [] : unresolved, c.statements, c.first_found)} />
           {status !== "closed" && <MismatchSentence parts={mismatchParts(unresolved, c.contract)} />}
-          {status === "closed" && closedLines(c.issues.filter((i) => i.state === "Resolved").map((i) => i.resolved_by?.text))
-            .map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
-          {status === "closed" && signedConfirmations(c.issues.filter((i) => i.state === "Resolved").map((i) => i.signed_check))
+          {/* 12 Nov: a closed row says it as the drawer and the record do: "Closed by Draft contract v2 (19 Oct) · confirmed in the signed contract (20 Oct)". */}
+          {status === "closed" && closedSettled(commitmentView(c, status, documents), documents)
             .map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
           {status !== "closed" && reopenedLines(c.issues).map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
           {status === "noted" && noteRes && <span className="dp-prow-note">{recordedBy(noteRes.by, noteRes.at, fmtDate)}</span>}
@@ -745,17 +744,21 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   }, [reg]);
 
   // The guide card's "Do step N" (public mode): open the right place, scroll to it and highlight it briefly.
+  // 12 Nov: a step's target can sit behind an open drawer or the result dialog (Handover, a row, a section of the tour). Close what the step does not
+  // replace first, so the target is not covered, then scroll once the page has settled.
+  const clearOverlays = (keepDrawer) => { setChange(null); if (!keepDrawer) { setDrawer(null); writeHash(null); } };
+  const scrollWhenSettled = (find) => setTimeout(() => requestAnimationFrame(() => find()?.scrollIntoView({ behavior: "smooth", block: "center" })), 80);
   const doStep = (step) => {
     const a = guideAction(step, reg.commitments);
+    clearOverlays(!!a.drawer);
     if (a.drawer) setDrawer(a.drawer);
     if (a.drawer?.type === "commitment") writeHash(byId(a.drawer.id)?.ref ?? null);
     if (a.handover) setHandoverManual({ stage: reg.stage.current, open: true });
     setFlash({ row: a.row, handover: a.handover, rows: [] });
-    setTimeout(() => {
+    scrollWhenSettled(() => {
       const at = a.row != null ? promiseRowIds.indexOf(a.row) : -1; // the row's place in the list; the row markup itself carries no id
-      const target = a.handover ? document.getElementById("dp-handover") : at >= 0 ? document.querySelectorAll("#dp-commitments .dp-plist > li")[at] : document.getElementById("dp-commitments");
-      target?.scrollIntoView({ behavior: "smooth", block: "center" });
-    }, 60);
+      return a.handover ? document.getElementById("dp-handover") : at >= 0 ? document.querySelectorAll("#dp-commitments .dp-plist > li")[at] : document.getElementById("dp-commitments");
+    });
     setTimeout(() => setFlash({ row: null, handover: false, rows: [] }), 2600);
   };
   // The demo bar (public mode) shows the guide: this page tells it where the visitor is, and "Do step N" in the bar comes back here to doStep.
@@ -765,7 +768,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   const tourRef = useRef(null);
   tourRef.current = (key) => { // show one section of the page for the tour: highlight it and bring it into view (key null: stop)
     setTourKey(key);
-    if (key) setTimeout(() => document.querySelector(key === "brief" ? ".dp-brief-card" : key === "journey" ? ".dp-aside" : "#dp-commitments")?.scrollIntoView({ behavior: "smooth", block: "start" }), 60);
+    if (key) { clearOverlays(false); setTimeout(() => requestAnimationFrame(() => document.querySelector(key === "brief" ? ".dp-brief-card" : key === "journey" ? ".dp-aside" : "#dp-commitments")?.scrollIntoView({ behavior: "smooth", block: "start" })), 80); }
   };
   useEffect(() => {
     if (!demo.public || !GUIDES[deal] || !reg || !docs) return undefined;
@@ -908,7 +911,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
             {promiseRows.length === 0 && <p className="dp-faint dp-pad">No commitments with gaps on the current documents.</p>}
             <ul className="dp-plist">
               {promiseRows.map(({ c, status }) => (
-                <CommitRow key={c.id} c={c} status={status} active={fromId === c.id} flash={flash.row === c.id || flash.rows.includes(c.id)} onOpen={() => openCommitment(c)} />
+                <CommitRow key={c.id} c={c} status={status} documents={docs.documents} active={fromId === c.id} flash={flash.row === c.id || flash.rows.includes(c.id)} onOpen={() => openCommitment(c)} />
               ))}
             </ul>
           </section>

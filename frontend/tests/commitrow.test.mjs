@@ -75,3 +75,19 @@ test("the row markup is unchanged: the same title line, badges and lines in the 
   const html = row("open");
   assert.match(html, /<li class="dp-prow is-open "><div class="dp-prow-head"[^>]*><span class="dp-prow-main"><span class="dp-titleline"><span class="dp-prow-title">/);
 });
+
+// 12 Nov: a closed row reads like the drawer and the record: one closing line, no "unchanged" bookkeeping, no check date.
+test("a closed row says 'Closed by Draft contract v2 (19 Oct) · confirmed in the signed contract (20 Oct)', not the stored bookkeeping", () => {
+  const closedC = { ...c, issues: c.issues.map((i) => ({ ...i, state: "Resolved",
+    resolved_by: { text: "Resolved by Draft contract, version 2 · Draft SOW, version 1 unchanged · 12 Nov 2026" },
+    signed_check: { status: "confirmed", text: "Confirmed in the signed contract (Signed contract, 20 Oct)" } })) };
+  const docs = [{ name: "Draft contract", version: 2, version_date: "2026-10-19" }];
+  const html = renderToStaticMarkup(createElement(CommitRow, { c: closedC, status: "closed", active: false, onOpen() {}, documents: docs }));
+  assert.match(html, /<span class="dp-prow-note">Closed by Draft contract v2 \(19 Oct\) · confirmed in the signed contract \(20 Oct\)<\/span>/);
+  assert.ok(!/unchanged|checked 12 Nov|Draft SOW, version 1|Confirmed in the signed contract \(Signed contract/.test(html));
+  assert.equal(html.split("dp-prow-note").length - 1, 1); // one line, said once
+  // without a signed check it is the closing document alone; the page passes the documents (source guard)
+  const plain = renderToStaticMarkup(createElement(CommitRow, { c: { ...closedC, issues: closedC.issues.map((i) => ({ ...i, signed_check: null })) }, status: "closed", active: false, onOpen() {}, documents: docs }));
+  assert.match(plain, /<span class="dp-prow-note">Closed by Draft contract v2 \(19 Oct\)<\/span>/);
+  assert.match(read("DealPage.jsx"), /<CommitRow key=\{c\.id\} c=\{c\} status=\{status\} documents=\{docs\.documents\}/);
+});

@@ -395,7 +395,7 @@ test("'Start the guided demo →' opens Noma Journeys at step 1: it forgets the 
   assert.equal(m.guideSteps("noma_journeys", SAMPLES.noma_journeys, s.documents, s.commitments, false, m.tourDone("noma_journeys", store))[0].state, "current");
   // the app registers openDeal for the bar, and it leaves the landing page and the list
   const app = read("App.jsx");
-  assert.match(app, /<DemoNavContext\.Provider value=\{navRef\}>\s*<DemoBar \/><AppBody \/>/);
+  assert.match(app, /<DemoNavContext\.Provider value=\{navRef\}>[\s\S]*?<DemoBar \/><AppBody \/>/); // 12 Nov: the landing contexts sit inside
   assert.match(app, /demoNav\.current = \(slug\) => \{ markLandingSeen\(\); if \(isWelcome\(window\.location\.hash\)\) clearHash\(\); setLanding\(false\); setClassic\(false\); setCurrent\(slug\); \};/);
   assert.match(read("DemoUI.jsx"), /onClick=\{\(\) => startGuidedDemo\(nav\)\}>\{START_LABEL\}/);
 });

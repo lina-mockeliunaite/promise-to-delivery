@@ -191,6 +191,9 @@ export const BAR_DONE = "Done · Reset demo to try again";
 // deal opens on "Get the picture"; every other step is read from the deal itself.
 export const FIRST_DEAL = "noma_journeys";
 export const START_LABEL = "Start the guided demo \u2192";
+// 12 Nov: the landing page has its own "Start the guided demo" button, so the bar drops its own there. The landing tells the app it is on screen.
+export const LandingPublishContext = createContext(() => {});
+export const LandingStateContext = createContext(false);
 export const DemoNavContext = createContext({ current: null }); // .current is set by the app to openDeal(slug)
 export function startGuidedDemo(nav, storage = globalThis.sessionStorage) {
   clearTourDone(storage);

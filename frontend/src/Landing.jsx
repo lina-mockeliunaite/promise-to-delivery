@@ -2,10 +2,11 @@
 // each with one concrete mismatch read from that deal's own stored data. No log-in (there are no accounts); uploading belongs to
 // "+ New deal". The full deal list stays one click away.
 import Logo from "./Logo.jsx";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import * as api from "./api.js";
 import { AUDIENCE_ITEMS, CARDS_LABEL, DESCRIPTION, FICTIONAL, SUBHEAD, TAGLINE } from "./brand.js";
 import { MismatchSentence, TitleLine } from "./Drawer.jsx";
+import { DemoNavContext, LandingPublishContext, START_LABEL, startGuidedDemo, useDemo } from "./demo.js";
 import { availableSamples, pickMismatches } from "./landing.js";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-500.css";
@@ -15,6 +16,11 @@ import "./DealPage.css";
 import "./Landing.css";
 
 export default function Landing({ deals, unavailable = false, onOpen, onList }) {
+  const demo = useDemo();
+  const nav = useContext(DemoNavContext);
+  const publishLanding = useContext(LandingPublishContext);
+  const guided = !!demo.public; // public mode: "Start the guided demo" is the primary action and the cards' buttons are secondary
+  useEffect(() => { publishLanding(guided); return () => publishLanding(false); }, [guided, publishLanding]);
   const samples = availableSamples(deals);
   const [registers, setRegisters] = useState({}); // deal -> its register; absent until it loads, and when it cannot be read
   const key = samples.map((s) => s.deal).join(",");
@@ -39,6 +45,7 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
             {AUDIENCE_ITEMS.map(([role, phrase]) => <li key={role}><strong>{role}</strong> {phrase}</li>)}
           </ul>
           <div className="land-actions">
+            {guided && <button type="button" className="land-start" onClick={() => startGuidedDemo(nav)}>{START_LABEL}</button>}
             <button type="button" className="dp-link-btn dp-brand" onClick={onList}>See all deal reviews</button>
           </div>
           {unavailable && <p className="land-quiet" role="status">The sample deal can't be loaded right now. Check that the server is running.</p>}
@@ -53,7 +60,7 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
                 <TitleLine title={found[s.deal].title} labels={found[s.deal].badges} stacked />
                 <MismatchSentence parts={found[s.deal].told} />
                 <MismatchSentence parts={found[s.deal].parts} />
-                <button type="button" className="dp-btn dp-btn-dark land-open" onClick={() => onOpen(s.deal)}>Open sample deal</button>
+                <button type="button" className={`dp-btn land-open ${guided ? "land-open-secondary" : "dp-btn-dark"}`} onClick={() => onOpen(s.deal)}>Open sample deal</button>
               </article>
             ))}
           </div>

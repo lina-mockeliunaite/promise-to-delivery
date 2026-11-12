@@ -7,7 +7,7 @@ import Landing from "./Landing.jsx";
 import { WELCOME_HASH, isWelcome, landingSeen, markLandingSeen, showLanding } from "./landing.js";
 import { TAGLINE } from "./brand.js";
 import { readHash } from "./dealpage.js";
-import { DEMO_OFF, DemoContext, DemoNavContext, GuidePublishContext, GuideStateContext, useDemo } from "./demo.js";
+import { DEMO_OFF, DemoContext, DemoNavContext, GuidePublishContext, GuideStateContext, LandingPublishContext, LandingStateContext, useDemo } from "./demo.js";
 import { DemoBar } from "./DemoUI.jsx";
 import { TYPE_EFFECT, alsoLine, checkLine, checkUpload, fmtDate, fmtDateTime, guessType, plural, typeFromName, uploadKind } from "./format.js";
 
@@ -1022,12 +1022,17 @@ export default function App() {
   }, []);
   const navRef = useRef(null); // the app's openDeal, for the bar's "Start the guided demo"
   const [guide, setGuide] = useState(null); // what the deal page tells the bar: which deal, its documents and commitments, and what "Do step N" does
+  const [onLanding, setOnLanding] = useState(false); // the landing page is on screen: it carries the guided-demo button, so the bar does not
   return (
     <DemoContext.Provider value={demo}>
       <GuidePublishContext.Provider value={setGuide}>
         <GuideStateContext.Provider value={guide}>
           <DemoNavContext.Provider value={navRef}>
-            <DemoBar /><AppBody />
+            <LandingPublishContext.Provider value={setOnLanding}>
+              <LandingStateContext.Provider value={onLanding}>
+                <DemoBar /><AppBody />
+              </LandingStateContext.Provider>
+            </LandingPublishContext.Provider>
           </DemoNavContext.Provider>
         </GuideStateContext.Provider>
       </GuidePublishContext.Provider>

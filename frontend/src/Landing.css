@@ -13,6 +13,11 @@
 .land-cards-label { margin: 0 0 -4px; }
 .land-quiet { margin: 0; font-size: 13px; color: var(--muted); }
 .land-actions { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; margin-top: 8px; }
+.land-start { flex: none; min-height: 44px; padding: 0 22px; font: inherit; font-size: 15px; font-weight: 600; line-height: 1; border: 1px solid #a5b4fc; border-radius: 999px; background: #4f46e5; color: #ffffff; cursor: pointer; white-space: nowrap; } /* the same indigo primary as the bar's "Do step N" */
+.land-start:hover { background: #4338ca; }
+.land-start:focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }
+.dp .land-open-secondary { background: transparent; color: #4f46e5; border: 1px solid #a5b4fc; }
+.dp .land-open-secondary:hover:not(:disabled) { background: rgba(79, 70, 229, 0.08); }
 .land-primary { padding: 10px 18px; font-size: 14px; }
 .land-cards { display: flex; flex-direction: column; gap: 16px; }
 .land-parties { font-size: 12px; color: var(--muted); }

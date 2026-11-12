@@ -3,7 +3,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import * as api from "./api.js";
 import ResetDemo from "./ResetDemo.jsx";
 import { blockLines, parsePreview } from "./preview.js";
-import { ALL_ADDED, BAR_DONE, BAR_NOTE_FALLBACK, DemoNavContext, GUIDES, GuideStateContext, START_LABEL, NAME_NOTE, NO_SAMPLES, TOUR_KEYS, addSample, barStepText, centeredScrollTop, filingLine, guideSteps, markTourDone, sampleSteps, startGuidedDemo, tourCaptions, tourDone, useDemo } from "./demo.js";
+import { ALL_ADDED, BAR_DONE, BAR_NOTE_FALLBACK, DemoNavContext, GUIDES, GuideStateContext, LandingStateContext, START_LABEL, NAME_NOTE, NO_SAMPLES, TOUR_KEYS, addSample, barStepText, centeredScrollTop, filingLine, guideSteps, markTourDone, sampleSteps, startGuidedDemo, tourCaptions, tourDone, useDemo } from "./demo.js";
 
 export function DemoNameNote() {
   return useDemo().public ? <p className="dp-faint dp-small demo-name-note">{NAME_NOTE}</p> : null;
@@ -17,6 +17,7 @@ export function DemoBar({ initialSamples = null, initialOpen = false, initialTou
   const demo = useDemo();
   const guide = useContext(GuideStateContext);
   const nav = useContext(DemoNavContext);
+  const onLanding = useContext(LandingStateContext);
   const [samples, setSamples] = useState(initialSamples);
   const [open, setOpen] = useState(initialOpen);
   const [tour, setTour] = useState(initialTour); // null, or the part (0-2) of the "Get the picture" tour being shown in the bar
@@ -60,7 +61,7 @@ export function DemoBar({ initialSamples = null, initialOpen = false, initialTou
       <div className="demo-bar-row">
         {steps && <span className="demo-bar-pill">Demo guide</span>}
         {!steps && <strong className="demo-bar-status">{demo.banner}</strong>}
-        {!steps && <button type="button" className="demo-bar-do" onClick={() => startGuidedDemo(nav)}>{START_LABEL}</button>}
+        {!steps && !onLanding && <button type="button" className="demo-bar-do" onClick={() => startGuidedDemo(nav)}>{START_LABEL}</button>}
         {steps && (
           <span className="demo-bar-stepblock" role="status">
             <span className="demo-bar-meta">
