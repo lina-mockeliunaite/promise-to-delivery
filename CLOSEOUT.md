@@ -52,6 +52,7 @@ Read straight: v2 matched a good prompt on detection on one unseen deal. Its val
 2. A promise inventory in the model output, then a third sealed deal from a different writer.
 3. A vendor-neutral prompt and a fresh sealed check.
 4. A Drive connector, then post-signature tracking against the locked record.
+5. Show when a revision itself introduced a gap: the wording the check looked for (or the conflicting wording) was in the previous version of a changed document and is gone in the new one, with the changed wording and the document version. Today a gap opened by a recheck is labelled "Additional finding" when its commitment was already flagged and "New" when it was not, and nothing says whether the revision caused it (Noma's phone-support finding after the revised contract is another reading of unchanged wording, not a change in it).
 
 ## What carries into the next build (Waterline)
 

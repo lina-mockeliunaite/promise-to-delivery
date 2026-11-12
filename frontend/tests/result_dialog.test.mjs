@@ -67,14 +67,16 @@ test("one line per change, grouped by commitment: a green closed line with its m
   assert.match(read("DealPage.css"), /\.dp-change-row p\.dp-change-by \{ font-size: 11\.5px; color: var\(--muted\); \}/);
 });
 
-test("a new gap carries the New tag; confirmed and reopened read as before", () => {
+test("an opened gap is an 'Additional finding' on a commitment that already had gaps and 'New' only on one with none; confirmed and reopened read as before", () => {
   const before = reg([LANG, [iss(1, "Contract says something different", "Resolved")]], [PHONE, [iss(2, "Missing from contract", "Resolved")]]);
   const after = reg([LANG, [iss(1, "Contract says something different", "Resolved", { signed_check: { status: "confirmed" } }), iss(3, "Missing from contract", "Needs action")]],
-    [PHONE, [iss(2, "Missing from contract", "Needs action", { signed_check: { status: "not_found", reason: "Not found in the signed contract." } })]]);
-  const html = dialog({ ...whatChanged(before, after), title: "Rechecked after adding Signed contract (20 Oct)", acted: null, modelCalls: 0, openPromises: 2 });
+    [PHONE, [iss(2, "Missing from contract", "Needs action", { signed_check: { status: "not_found", reason: "Not found in the signed contract." } })]],
+    ["A brand-new commitment", [iss(9, "Not offered", "Needs action")]]);
+  const html = dialog({ ...whatChanged(before, after), title: "Rechecked after adding Signed contract (20 Oct)", acted: null, modelCalls: 0, openPromises: 3 });
   assert.ok(html.includes('<strong>Contract wording matches</strong><span class="dp-change-closed"> · confirmed in the signed contract</span>'));
   assert.ok(html.includes("<strong>Contract wording missing from the signed contract</strong>") && html.includes("Reopened"));
-  assert.match(html, /<strong>Not in the contract<\/strong><span class="dp-chip dp-chip-amber"><span class="dp-dot"><\/span>New<\/span>/);
+  assert.match(html, /<strong>Not in the contract<\/strong><span class="dp-chip dp-chip-amber"><span class="dp-dot"><\/span>Additional finding<\/span>/); // the commitment already had a (closed) gap
+  assert.match(html, /<strong>Not offered<\/strong><span class="dp-chip dp-chip-amber"><span class="dp-dot"><\/span>New<\/span>/); // a commitment with none before
 });
 
 test("with nothing changed the single line says so (the headline is only for an empty result); the model line and Got it sit at the bottom", () => {

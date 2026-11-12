@@ -1,0 +1,293 @@
+{
+ "alder_bank/bare": {
+  "_steps": [
+   [
+    "AB-05_v2_named_exception.md",
+    200
+   ],
+   [
+    "AB-06_v2_coaching_added.md",
+    200
+   ],
+   [
+    "signed",
+    200
+   ]
+  ],
+  "v2-6e5a9364550eece7 | contract_gap": {
+   "closed_by": "Draft SOW, version 2",
+   "date": null,
+   "earlier": "Resolved by Draft SOW, version 2 \u00b7 Draft contract, version 1 unchanged \u00b7 11 Nov 2026",
+   "kind": "signed contract",
+   "reason": "The signed contract doesn't contain the wording that closed this gap, so the fix can't be confirmed.",
+   "sentence": "Through its connector to BioCatch, Provider will use behavioural signals from the Customer's mobile and internet banking to flag customers who appear to be coached by a scammer, from the 1 February 2027 launch, subject to the beta terms agreed in the pricing schedule.",
+   "signed": null,
+   "status": "not_found",
+   "text": "Closed earlier by Draft SOW, version 2, but not found in the signed contract"
+  }
+ },
+ "alder_bank/full": {
+  "_steps": [
+   [
+    "AB-05_v2_named_exception.md",
+    200
+   ],
+   [
+    "AB-06_v2_coaching_added.md",
+    200
+   ],
+   [
+    "signed",
+    200
+   ]
+  ],
+  "v2-6e5a9364550eece7 | contract_gap": {
+   "closed_by": "Draft SOW, version 2",
+   "date": "2026-10-20",
+   "earlier": "Resolved by Draft SOW, version 2 \u00b7 Draft contract, version 1 unchanged \u00b7 11 Nov 2026",
+   "kind": "signed contract",
+   "reason": null,
+   "sentence": "Through its connector to BioCatch, Provider will use behavioural signals from the Customer's mobile and internet banking to flag customers who appear to be coached by a scammer, from the 1 February 2027 launch, subject to the beta terms agreed in the pricing schedule.",
+   "signed": "Signed contract",
+   "status": "confirmed",
+   "text": "Confirmed in the signed contract (Signed contract, 20 Oct)"
+  }
+ },
+ "alder_bank/shipped": {
+  "_steps": [
+   [
+    "AB-05_v2_named_exception.md",
+    200
+   ],
+   [
+    "AB-06_v2_coaching_added.md",
+    200
+   ],
+   [
+    "signed",
+    200
+   ]
+  ],
+  "v2-6e5a9364550eece7 | contract_gap": {
+   "closed_by": "Draft SOW, version 2",
+   "date": null,
+   "earlier": "Resolved by Draft SOW, version 2 \u00b7 Draft contract, version 1 unchanged \u00b7 11 Nov 2026",
+   "kind": "signed contract",
+   "reason": "The signed contract doesn't contain the wording that closed this gap, so the fix can't be confirmed.",
+   "sentence": "Through its connector to BioCatch, Provider will use behavioural signals from the Customer's mobile and internet banking to flag customers who appear to be coached by a scammer, from the 1 February 2027 launch, subject to the beta terms agreed in the pricing schedule.",
+   "signed": null,
+   "status": "not_found",
+   "text": "Closed earlier by Draft SOW, version 2, but not found in the signed contract"
+  }
+ },
+ "atlas_remit/bare": {
+  "_steps": [
+   [
+    "signed",
+    200
+   ]
+  ]
+ },
+ "atlas_remit/full": {
+  "_steps": [
+   [
+    "signed",
+    200
+   ]
+  ]
+ },
+ "atlas_remit/shipped": {
+  "_steps": [
+   [
+    "signed",
+    200
+   ]
+  ]
+ },
+ "coral_pay/bare": {
+  "_steps": [
+   [
+    "signed",
+    200
+   ]
+  ]
+ },
+ "coral_pay/full": {
+  "_steps": [
+   [
+    "signed",
+    200
+   ]
+  ]
+ },
+ "coral_pay/shipped": {
+  "_steps": [
+   [
+    "signed",
+    200
+   ]
+  ]
+ },
+ "harbour_bank/bare": {
+  "_steps": [
+   [
+    "HB-05_v2_named_exception.md",
+    200
+   ],
+   [
+    "HB-06_v2_annex_aligned.md",
+    200
+   ],
+   [
+    "signed",
+    200
+   ]
+  ],
+  "v2-924c831e58093a4d | conflicting_terms": {
+   "closed_by": "Draft SOW, version 2",
+   "date": null,
+   "earlier": "Resolved by Draft SOW, version 2 \u00b7 Draft contract, version 1 unchanged \u00b7 11 Nov 2026",
+   "kind": "signed contract",
+   "reason": null,
+   "sentence": null,
+   "signed": null,
+   "status": "not_confirmed",
+   "text": "Not confirmed against the signed contract"
+  }
+ },
+ "harbour_bank/full": {
+  "_steps": [
+   [
+    "HB-05_v2_named_exception.md",
+    200
+   ],
+   [
+    "HB-06_v2_annex_aligned.md",
+    200
+   ],
+   [
+    "signed",
+    200
+   ]
+  ],
+  "v2-924c831e58093a4d | conflicting_terms": {
+   "closed_by": "Draft SOW, version 2",
+   "date": null,
+   "earlier": "Resolved by Draft SOW, version 2 \u00b7 Draft contract, version 1 unchanged \u00b7 11 Nov 2026",
+   "kind": "signed contract",
+   "reason": null,
+   "sentence": null,
+   "signed": null,
+   "status": "not_confirmed",
+   "text": "Not confirmed against the signed contract"
+  }
+ },
+ "harbour_bank/shipped": {
+  "_steps": [
+   [
+    "HB-05_v2_named_exception.md",
+    200
+   ],
+   [
+    "HB-06_v2_annex_aligned.md",
+    200
+   ],
+   [
+    "signed",
+    200
+   ]
+  ],
+  "v2-924c831e58093a4d | conflicting_terms": {
+   "closed_by": "Draft SOW, version 2",
+   "date": null,
+   "earlier": "Resolved by Draft SOW, version 2 \u00b7 Draft contract, version 1 unchanged \u00b7 11 Nov 2026",
+   "kind": "signed contract",
+   "reason": null,
+   "sentence": null,
+   "signed": null,
+   "status": "not_confirmed",
+   "text": "Not confirmed against the signed contract"
+  }
+ },
+ "noma_journeys/bare": {
+  "_steps": [
+   [
+    "NJ-05_v2_named_exception.md",
+    200
+   ],
+   [
+    "NJ-07_v2_languages_aligned.md",
+    200
+   ],
+   [
+    "signed",
+    200
+   ]
+  ],
+  "v2-0630aebaebf7bfb9 | conflicting_terms": {
+   "closed_by": "Draft contract, version 2",
+   "date": null,
+   "earlier": "Resolved by Draft contract, version 2 \u00b7 Draft SOW, version 1 unchanged \u00b7 11 Nov 2026",
+   "kind": "signed contract",
+   "reason": "The signed contract doesn't contain the wording that closed this gap, so the fix can't be confirmed.",
+   "sentence": "The Assistant will respond to Guest enquiries in 12 languages, listed in Schedule 1.",
+   "signed": null,
+   "status": "not_found",
+   "text": "Closed earlier by Draft contract, version 2, but not found in the signed contract"
+  }
+ },
+ "noma_journeys/full": {
+  "_steps": [
+   [
+    "NJ-05_v2_named_exception.md",
+    200
+   ],
+   [
+    "NJ-07_v2_languages_aligned.md",
+    200
+   ],
+   [
+    "signed",
+    200
+   ]
+  ],
+  "v2-0630aebaebf7bfb9 | conflicting_terms": {
+   "closed_by": "Draft contract, version 2",
+   "date": "2026-10-20",
+   "earlier": "Resolved by Draft contract, version 2 \u00b7 Draft SOW, version 1 unchanged \u00b7 11 Nov 2026",
+   "kind": "signed contract",
+   "reason": null,
+   "sentence": "The Assistant will respond to Guest enquiries in 12 languages, listed in Schedule 1.",
+   "signed": "Signed contract",
+   "status": "confirmed",
+   "text": "Confirmed in the signed contract (Signed contract, 20 Oct)"
+  }
+ },
+ "noma_journeys/shipped": {
+  "_steps": [
+   [
+    "NJ-05_v2_named_exception.md",
+    200
+   ],
+   [
+    "NJ-07_v2_languages_aligned.md",
+    200
+   ],
+   [
+    "signed",
+    200
+   ]
+  ],
+  "v2-0630aebaebf7bfb9 | conflicting_terms": {
+   "closed_by": "Draft contract, version 2",
+   "date": "2026-10-20",
+   "earlier": "Resolved by Draft contract, version 2 \u00b7 Draft SOW, version 1 unchanged \u00b7 11 Nov 2026",
+   "kind": "signed contract",
+   "reason": null,
+   "sentence": "The Assistant will respond to Guest enquiries in 12 languages, listed in Schedule 1.",
+   "signed": "Signed contract",
+   "status": "confirmed",
+   "text": "Confirmed in the signed contract (Signed contract, 20 Oct)"
+  }
+ }
+}

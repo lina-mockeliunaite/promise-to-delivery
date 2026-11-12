@@ -72,7 +72,7 @@ export const HANDOVER_SAMPLES = {
     delivery: "Accepted. We start on chat and email as contracted and provide the launch specialist for 30 days as approved; putting it in writing goes on the kickoff agenda.",
   },
   alder_bank: {
-    sales: "Signed with coaching-scam detection and the 750,000 daily volume still open; the signed contract incorporates the 9 October SOW. Hosting agreed as AWS Sydney on the 14 Oct call. Raise both open items at kickoff.",
+    sales: "Signed with coaching-scam detection still open: Alder was promised it at launch. Confirm the launch scope with Alder before kickoff. Hosting agreed as AWS Sydney on the 14 Oct call.",
     delivery: "Accepted. We start on AWS Sydney as contracted; coaching detection and the volume limit go on the kickoff agenda.",
   },
 };
@@ -107,7 +107,7 @@ export const GUIDES = {
     { label: "Coaching-scam detection: add the revised SOW", kind: "sample", sample: 1, row: /coaching/i, highlight: "add",
       hint: "The approval closed one gap, but the SOW still doesn't mention coaching detection. Add the revised SOW." },
     { label: "Add the signed contract", kind: "sample", sample: 2, row: null,
-      hint: "The signed contract decides what Delivery inherits. Add it and see which fixes survive." },
+      hint: "The signed contract decides what Delivery inherits. Add it and see which fixes survive. A fix only counts if the signed contract contains it." },
     { label: "Hosting on Microsoft Azure: record the customer's agreement as a note", kind: "note", row: /hosting/i, highlight: "note",
       hint: "Elva doesn't offer Azure hosting, so no document can fix this. The customer agreed AWS Sydney on a call: record it as a note." },
     { label: "Complete the handover", kind: "handover", row: null },

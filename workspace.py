@@ -191,6 +191,24 @@ def stated_date(text: str) -> str | None:
         return None
 
 
+SIGNATURE_DATE = re.compile(r"^\W*Date\W*:\s*(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})\s*$", re.I | re.M)
+
+
+def signature_date(text: str) -> str | None:
+    """The date the signature block states ('Date: 20 October 2026' under '## Signatures'), as YYYY-MM-DD: the latest when several sign. None when the
+    text has no signature block or no date in it. Read-time only: used to show "Agreement dated 12 Oct · signed 20 Oct" beside a signed document."""
+    head, sep, block = (text or "").partition("## Signatures")
+    if not sep:
+        return None
+    found = []
+    for d, mo, y in SIGNATURE_DATE.findall(block):
+        try:
+            found.append(f"{int(y):04d}-{FULL_MONTHS[mo.lower()]:02d}-{int(d):02d}")
+        except KeyError:
+            continue
+    return max(found) if found else None
+
+
 def version_date(version_no: int, doc_date: str, prev_doc_date: str | None, text: str, added_at: str | None) -> str:
     """The date to show for one version (20 Oct). Version 1 keeps its recorded date. A later version shows its own: a date
     someone set on it (differs from the version before it); else the date it states about itself; else the day it was added.
@@ -223,6 +241,9 @@ def documents(conn, slug: str) -> list:
             "doc_type": doc_type, "doc_type_label": DOC_TYPE_LABELS.get(doc_type, doc_type), "date": date,
             "version_date": version_date(version_no, date, prev_date, canonical, added_at),
             "included": bool(included), "link": links.get(key), "stage": stage_of.get(key),
+            # signed paperwork states two dates: the agreement's own (its header) and when it was signed (its signatures); display only, never stored or hashed
+            "agreement_date": stated_date(canonical) if doc_type in config.SIGNED_DOC_TYPES else None,
+            "signed_on": signature_date(canonical) if doc_type in config.SIGNED_DOC_TYPES else None,
             "role": ("Read for promises" if doc_type in config.EXTRACTABLE_DOC_TYPES
                      else "Approval evidence" if doc_type == "pricing_services_note" else "Reference only"),
         })

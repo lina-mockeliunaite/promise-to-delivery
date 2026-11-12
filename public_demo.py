@@ -45,8 +45,8 @@ SAMPLES = {
          "summary": "Arjun Rao, Head of Product, approves the BioCatch connector (beta) as a named exception for the 1 February 2027 launch (16 October 2026)."},
         {"file": "AB-06_v2_coaching_added.md", "version_of": "AB-06", "title": "Revised statement of work", "key": ["## 5. Scam coaching detection", "Through its connector to BioCatch"],
          "summary": "Scam coaching detection is added as section 5 (16 October 2026)."},
-        {"file": "AB-09_signed_contract.md", "doc_type": "signed_contract", "doc_date": "2026-10-12", "title": "Signed contract", "key_from": "## Signatures",
-         "summary": "Signed 20 October 2026 by Tom Fraser (Elva) and Priya Nair (Alder Bank); it incorporates the SOW dated 9 October."},
+        {"file": "AB-09_signed_contract.md", "doc_type": "signed_contract", "doc_date": "2026-10-20", "title": "Signed contract", "key_from": "## Signatures",
+         "summary": "Signed 20 October 2026 by Tom Fraser (Elva) and Priya Nair (Alder Bank). The agreement is dated 12 October."},
     ],
 }
 

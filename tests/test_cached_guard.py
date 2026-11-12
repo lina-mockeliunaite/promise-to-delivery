@@ -163,11 +163,11 @@ class TestTheOfflineReplayThroughTheRoute(unittest.TestCase):
         self.assertEqual(languages["signed"][0]["text"], "Confirmed in the signed contract (Signed contract, 20 Oct)")
 
     def test_the_alder_flow_offline_ends_with_the_coaching_fix_reopened(self):
-        # the revised SOW needs the model once; the signed contract incorporates the 9 October SOW, so the coaching fix is not in it
+        # the revised SOW needs the model once; the signed contract does not contain the sentence that closed the coaching gap (the check reads the signed text itself, not which SOW it names)
         snap = self.replay("alder_bank", alder_steps(), clean(ALDER), 1, (2, 1, 1))
         coaching = next(i for i in snap["open_items"] if "coach" in i["promise"].lower())
         reopened = next(f for f in coaching["findings"] if f["finding"] == "Missing from contract")
-        self.assertEqual(reopened["signed_check"]["reason"], "The fix in Draft SOW, version 2 was not found in the signed contract.")
+        self.assertEqual(reopened["signed_check"]["reason"], "The signed contract doesn't contain the wording that closed this gap, so the fix can't be confirmed.")
 
     def test_a_changed_document_with_no_key_and_no_cache_is_still_refused_and_nothing_is_added(self):
         with tempfile.TemporaryDirectory() as tmp, mock.patch.object(config, "V2_CACHE_DIR", Path(tmp) / "cache"), \

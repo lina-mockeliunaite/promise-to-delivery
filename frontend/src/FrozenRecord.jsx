@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
 import {
-  STATUS_CHIP, coverageLine, byDocumentDate, frozenView, hashFor, plainName, readHash, recordLines, recordedBy,
+  STATUS_CHIP, coverageLine, byDocumentDate, frozenView, hashFor, signedDatesLabel, plainName, readHash, recordLines, recordedBy,
 } from "./dealpage.js";
 import { Drawer, CommitmentView, DocumentView, TitleLine, Icon, ICON } from "./Drawer.jsx";
 import BriefCard from "./BriefCard.jsx";
@@ -29,7 +29,7 @@ const Check = () => (
 // One commitment in the record (11 Nov): its title and status, then the compact detail, the same on screen and in print. The row still opens the drawer
 // (the full evidence, with the AI summary, labelled). The detail is the same for every reader: what the customer was told, what the contract says, the gap
 // lines that matter, and how it was settled.
-function FrozenRow({ v, documents, active, onOpen }) {
+function FrozenRow({ v, documents, active, onOpen, onOpenDoc }) {
   const st = STATUS_CHIP[v.status];
   return (
     <li className={`dp-prow is-${v.status} ${active ? "is-active" : ""}`}>
@@ -44,17 +44,21 @@ function FrozenRow({ v, documents, active, onOpen }) {
         </span>
         <span className="dp-chevron fr-noprint" aria-hidden="true"><Icon d={ICON.chevron} size={16} /></span>
       </div>
-      <RecordDetail v={v} documents={documents} />
+      <RecordDetail v={v} documents={documents} onOpenDoc={onOpenDoc} />
     </li>
   );
 }
 
-export function RecordDetail({ v, documents }) {
+export function RecordDetail({ v, documents, onOpenDoc }) {
   const r = recordLines(v, documents);
   return (
     <div className="fr-detail">
       {r.told.length > 0 && <div><strong>Customer was told:</strong>{r.told.map((t) => <p key={t} className="fr-quote">{t}</p>)}</div>}
-      {r.contract && <p><strong>Contract says:</strong> {r.contract}</p>}
+      {r.contract && (
+        <p><strong>Contract says:</strong> {r.contract}
+          {v.signed?.doc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(v.signed.doc, v.signed.quote); }}>Open the signed clause</button></>}
+        </p>
+      )}
       {r.gaps.map((g) => <p key={g} className="fr-gap">{g}</p>)}
       {r.settled.map((l) => <p key={l} className={`fr-settled${l.endsWith(": still open") ? " is-open" : ""}`}>{l}</p>)} {/* a gap still open reads in the "needs attention" amber */}
     </div>
@@ -63,7 +67,7 @@ export function RecordDetail({ v, documents }) {
 
 // "Documents at handover" (each with its SHA-256) and the record fingerprint. On screen they sit in the folded "Record details"; the same block is also
 // rendered once more for print only, outside the fold, so a printed record always carries them whether or not the fold is open (11 Nov).
-export function RecordBody({ s, hv, interactive, setDrawer, copy, copied }) {
+export function RecordBody({ s, hv, interactive, setDrawer, copy, copied, signedLabels = {} }) {
   return (
     <div className="fr-record-body">
           <div>
@@ -83,6 +87,7 @@ export function RecordBody({ s, hv, interactive, setDrawer, copy, copied }) {
                           : <span className="dp-doc-name fr-plain">{name}</span>}
                       <span className="dp-mono">{shortDate(d.version_date || d.date)}</span>
                     </div>
+                    {signedLabels[d.source_version_id] && <div className="dp-doc-row fr-signed-dates">{signedLabels[d.source_version_id]}</div>}
                     {stored && (
                       <div className="dp-doc-row fr-doc-hash">
                         <code className="fr-hash" title={d.sha256}>SHA-256 <span className="fr-h-short">{shortHash(d.sha256)}</span><span className="fr-h-full">{d.sha256}</span></code>
@@ -128,6 +133,9 @@ export default function FrozenRecord({ deal, onBack }) {
     }
   }, [withText, snapDocs, deal]);
   useEffect(() => { api.fetchDocuments(deal).then((r) => setDocuments(r.documents), () => setDocuments([])); }, [deal]);
+  // The live register, for the signed check's full output (the saved record keeps it only in part); a locked deal cannot change, so it is the same deal.
+  const [liveRegister, setLiveRegister] = useState(null);
+  useEffect(() => { api.fetchRegister(deal).then(setLiveRegister, () => setLiveRegister(null)); }, [deal]);
   useEffect(() => {
     const { c } = readHash(window.location.hash);
     if (c) setDrawer({ type: "commitment", key: c });
@@ -155,13 +163,17 @@ export default function FrozenRecord({ deal, onBack }) {
   const closedFor = (promise) => resolved.filter((r) => r.promise === promise);
   const elsewhere = new Set([...open.map((x) => x.promise), ...noted.map((x) => x.promise)]);
   const closedOnly = [...new Set(resolved.map((r) => r.promise))].filter((p) => !elsewhere.has(p));
+  const liveOf = (promise) => liveRegister?.commitments?.find((c) => c.name === promise) ?? null;
+  const common = { documents, titles, snapshotDocs: s.documents }; // what was searched is named from the documents captured in the handover
   const views = [
-    ...open.map((item) => frozenView({ item, status: "open", closedFindings: closedFor(item.promise), documents, titles })),
-    ...noted.map((item) => frozenView({ item, status: "noted", closedFindings: closedFor(item.promise), documents, titles })),
-    ...closedOnly.map((p) => frozenView({ item: { promise: p, findings: [], ...(s.closed_items ?? []).find((x) => x.promise === p) }, status: "closed", closedFindings: closedFor(p), documents, titles })),
+    ...open.map((item) => frozenView({ item, status: "open", closedFindings: closedFor(item.promise), live: liveOf(item.promise), ...common })),
+    ...noted.map((item) => frozenView({ item, status: "noted", closedFindings: closedFor(item.promise), live: liveOf(item.promise), ...common })),
+    ...closedOnly.map((p) => frozenView({ item: { promise: p, findings: [], ...(s.closed_items ?? []).find((x) => x.promise === p) }, status: "closed", closedFindings: closedFor(p), live: liveOf(p), ...common })),
   ];
   const active = drawer ? views.find((v) => v.key === (drawer.key ?? drawer.fromKey)) : null;
   const appendix = withText ? appendixEntries(s.documents, texts) : [];
+  // The live documents know both dates of each signed document (the saved record does not, and is not changed): shown beside it, display only.
+  const signedLabels = Object.fromEntries(documents.filter((d) => signedDatesLabel(d)).map((d) => [d.source_version_id, signedDatesLabel(d)]));
   const printAll = () => { setRecord(true); setTimeout(() => window.print(), 80); };
   const copy = async () => {
     try {
@@ -221,7 +233,7 @@ export default function FrozenRecord({ deal, onBack }) {
         {views.length === 0 && <p className="dp-faint dp-pad">No commitment had a gap on the documents checked.</p>}
         <ul className="dp-plist">
           {views.map((v) => (
-            <FrozenRow key={v.key} v={v} documents={documents} active={active?.key === v.key}
+            <FrozenRow key={v.key} v={v} documents={documents} onOpenDoc={(doc, quote) => doc && setDrawer({ type: "doc", docKey: doc.source_key, quote, fromKey: v.key })} active={active?.key === v.key}
                        onOpen={() => { setDrawer({ type: "commitment", key: v.key }); writeHash(v.key); }} />
           ))}
         </ul>
@@ -251,10 +263,10 @@ export default function FrozenRecord({ deal, onBack }) {
 
       <details className="dp-card fr-record" open={record} onToggle={(e) => setRecord(e.currentTarget.open)}>
         <summary>Record details · {s.documents.length} documents at handover and the record fingerprint</summary>
-        <RecordBody s={s} hv={hv} interactive setDrawer={setDrawer} copy={copy} copied={copied} />
+        <RecordBody s={s} hv={hv} interactive setDrawer={setDrawer} copy={copy} copied={copied} signedLabels={signedLabels} />
       </details>
       <section className="dp-card fr-print-record" aria-hidden="true">
-        <RecordBody s={s} hv={hv} interactive={false} setDrawer={setDrawer} copy={copy} copied={copied} />
+        <RecordBody s={s} hv={hv} interactive={false} setDrawer={setDrawer} copy={copy} copied={copied} signedLabels={signedLabels} />
       </section>
 
       <footer className="dp-foot">{FICTIONAL}</footer>
@@ -274,7 +286,7 @@ export default function FrozenRecord({ deal, onBack }) {
       {drawer && (
         <Drawer labelledBy="dr-title" flush onClose={() => { setDrawer(null); writeHash(null); }} focusKey={`${drawer.type}:${drawer.key ?? drawer.docKey ?? ""}`}>
           {drawer.type === "commitment" && active && (
-            <CommitmentView v={active} titleId="dr-title" readOnly onClose={() => { setDrawer(null); writeHash(null); }}
+            <CommitmentView v={active} documents={s.documents} titleId="dr-title" readOnly onClose={() => { setDrawer(null); writeHash(null); }}
                             onOpenDoc={(doc, quote) => doc && setDrawer({ type: "doc", docKey: doc.source_key, quote, fromKey: active.key })} />
           )}
           {drawer.type === "record-doc" && s.documents.find((d) => d.source_version_id === drawer.id) && (

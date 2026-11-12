@@ -573,3 +573,21 @@ main.home.home-deal { max-width: none; margin: 0; padding: 0; }
   .dp-cd-foot .dp-btn { width: 100%; }
 }
 @media print { .dp-cd { display: none; } }
+
+/* Signed documents state two dates (11 Nov): "Agreement dated 12 Oct · signed 20 Oct", under the document's name. */
+.dp-signed-dates { display: block; font-size: 12px; color: var(--body); margin-top: 2px; }
+.fr-signed-dates { font-size: 11.5px; color: var(--muted); }
+
+/* Evidence in the drawer (11 Nov): where it stands first; the signed clause with its confirmation; history and the AI reading collapsed at the end. */
+.dr-stands .dr-plain { margin: 0 0 6px; }
+.dr-signed { display: flex; flex-direction: column; gap: 6px; }
+.dr-confirmed { font-size: 13px; font-weight: 600; color: var(--green-text); }
+.dr-searched { margin: 6px 0 0; font-size: 12px; }
+.dr-history { margin: 0 0 4px; }
+.dr-history summary { cursor: pointer; margin-bottom: 6px; }
+.dr-history p { margin: 0 0 6px; }
+.dr-evidence { margin: 0 0 8px; padding: 8px 10px; border-radius: 8px; background: var(--soft); font-size: 13px; color: var(--ink); }
+.dr-ai-details > summary { cursor: pointer; font-size: 13px; font-weight: 600; color: var(--body); margin-bottom: 6px; }
+
+/* The record's "Open the signed clause" link sits in the line of text it belongs to (12 Nov). */
+.fr-detail .dr-linkbtn { font-size: inherit; line-height: inherit; min-height: 0; padding: 0; font-weight: 400; border: 0; }

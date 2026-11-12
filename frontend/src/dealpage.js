@@ -74,7 +74,9 @@ export function whatChanged(before, after) {
   const confirmed = now.filter((i) => i.signed_check?.status === "confirmed" && beforeById.get(i.id)?.signed_check?.status !== "confirmed")
     .map((i) => ({ promise: i.promise, finding: i.finding }));
   const reopenedIds = new Set(now.filter((i) => i.state !== "Resolved" && !wasOpen.has(i.id) && i.signed_check?.status === "not_found").map((i) => i.id));
-  const opened = now.filter((i) => i.state !== "Resolved" && !wasOpen.has(i.id) && !reopenedIds.has(i.id)).map((i) => ({ promise: i.promise, finding: i.finding }));
+  // 11 Nov: a gap opened on a commitment that already had gaps is an "additional finding" (another reason on a commitment already flagged); "new" is for a commitment with none.
+  const hadGaps = new Set(rows(before).map((i) => i.promise));
+  const opened = now.filter((i) => i.state !== "Resolved" && !wasOpen.has(i.id) && !reopenedIds.has(i.id)).map((i) => ({ promise: i.promise, finding: i.finding, additional: hadGaps.has(i.promise) }));
   const touched = new Set([...closed, ...opened, ...reopened, ...confirmed].map((x) => x.promise));
   const stillOpen = now.filter((i) => i.state !== "Resolved" && touched.has(i.promise) && wasOpen.has(i.id))
     .map((i) => ({ promise: i.promise, finding: i.finding }));
@@ -117,7 +119,7 @@ export function changeView(change, titleOf = (n) => n, acted = null) {
     const g = groups.find((x) => x.promise === p);
     const bits = [];
     if (g.closed.length) bits.push(`${g.closed.length} closed`);
-    if (g.opened.length) bits.push(`${n(g.opened.length, "new gap", "new gaps")}, ${g.opened.map((x) => label(x.finding)).join(" and ")}`);
+    if (g.opened.length) bits.push(`${openedPhrase(g.opened)}, ${g.opened.map((x) => label(x.finding)).join(" and ")}`);
     if (g.reopened.length) bits.push(`reopened, ${g.reopened.map((x) => lowerFirst(reopenedTitle(x.finding))).join(" and ")}`);
     return `${g.title}: ${bits.join("; ")}`;
   });
@@ -140,6 +142,13 @@ export const datePrefill = (head, today) => statedDate(head) ?? today;
 // What the "What changed" card calls the document just added: its plain name and date, never the file name.
 export const changeDocLabel = ({ name, existing, version, date }) =>
   existing ? `${name}, new version (v${version}, ${short(date)})` : `${name}, ${short(date)}`;
+
+// A signed document states two dates: the agreement's own (its header) and when it was signed (its signatures). When they differ both are shown, labelled
+// (11 Nov); when they are the same, or either is unknown, there is nothing extra to say. Display only; the document's filing date is the signature date.
+export function signedDatesLabel(d) {
+  if (!d?.agreement_date || !d?.signed_on || d.agreement_date === d.signed_on) return "";
+  return `Agreement dated ${short(d.agreement_date)} \u00B7 signed ${short(d.signed_on)}`;
+}
 
 // The result dialog's title (11 Nov): "Rechecked after adding Internal approvals note v2 (18 Oct)" for a new version, "... Signed contract (20 Oct)" for a new document.
 export const changeTitle = ({ name, existing, version, date }) =>
@@ -273,7 +282,7 @@ export function handoverChecklist({ isSigned, notes }) {
 export function changeHeadline({ closed, opened, stillOpen }) {
   const parts = [];
   if (closed.length) parts.push(`${closed.length} ${closed.length === 1 ? "gap" : "gaps"} closed`);
-  if (opened.length) parts.push(`${opened.length} new ${opened.length === 1 ? "gap" : "gaps"} found`);
+  if (opened.length) parts.push(`${openedPhrase(opened)} found`);
   if (!parts.length) return "Nothing closed and nothing new.";
   const tail = stillOpen.length
     ? ` This promise still has ${stillOpen.length} open ${stillOpen.length === 1 ? "gap" : "gaps"}.`
@@ -283,6 +292,10 @@ export function changeHeadline({ closed, opened, stillOpen }) {
 
 // "What changed" leads with the result (20 Oct): what was found, then what is still open on the commitment. Built from the
 // finding labels only. A closed gap is never worded as "resolved"; the check found wording or an approval.
+export const openedPhrase = (list) => {
+  const add = list.filter((x) => x.additional).length, fresh = list.length - add;
+  return [fresh && `${fresh} new ${fresh === 1 ? "gap" : "gaps"}`, add && `${add} additional ${add === 1 ? "gap" : "gaps"}`].filter(Boolean).join(" and ");
+};
 const CLOSED_PHRASE = {
   "No approval recorded": "Approval found",
   "Missing from contract": "Contract wording found",
@@ -342,7 +355,7 @@ export function changeResult({ closed = [], opened = [], stillOpen = [] }) {
     parts.push(promises > 1 ? `${list} ${nouns.length > 1 ? "are" : "is"} still open on ${promises} commitments`
       : `${list} on this commitment ${nouns.length > 1 ? "are" : "is"} still open`);
   }
-  if (opened.length) parts.push(`${opened.length} new ${opened.length === 1 ? "gap" : "gaps"} found`);
+  if (opened.length) parts.push(`${openedPhrase(opened)} found`);
   if (!parts.length) return "Nothing closed and nothing new: the document did not change any gap.";
   return `${parts.join(" · ")}${done.length && !nouns.length && !opened.length ? "" : "."}`;
 }
@@ -690,6 +703,88 @@ export function withoutRepeats(found, contract) {
   return found.map((f) => ({ ...f, fact: sentencesOf(f.fact).filter((s) => !said.has(sentenceKey(s))).join(" ") }));
 }
 
+// ---- Evidence in the drawer and the record (11 Nov) ---------------------------------------------------------------------------------------------------
+export const EVIDENCE_LINE = "No matching wording found in the reviewed draft contract or statement of work.";
+
+// "Draft SOW, version 2" as "Draft SOW v2 (16 Oct)": the document's own date from the deal's documents when it is known.
+function docRef(by, documents) {
+  return String(by ?? "").split(";").map((d) => d.trim()).filter(Boolean).map((d) => {
+    const m = /^(.*), version (\d+)$/.exec(d);
+    if (!m) return d;
+    const doc = (documents ?? []).find((x) => x.name === m[1] && x.version === Number(m[2]));
+    return `${m[1]} v${m[2]}${doc ? ` (${short(doc.version_date || doc.date)})` : ""}`;
+  }).join(" and ");
+}
+
+// The signed clause that confirmed a closed gap: the signed text's own wording, the signed document and its date, and the document to link to (the viewer opens on
+// that wording). From the signed check's output fields; nothing here decides anything.
+export function signedClauseOf(issues, documents) {
+  const hit = (issues ?? []).map((i) => i.signed_check).find((sc) => sc?.status === "confirmed" && sc.signed_sentence);
+  if (!hit) return null;
+  const doc = (documents ?? []).find((d) => d.source_version_id === hit.signed_version_id) ?? (documents ?? []).find((d) => d.source_key === hit.signed_key) ?? null;
+  return { quote: hit.signed_sentence, label: hit.signed, date: hit.date, status: hit.text, doc, draftQuote: hit.sentence, closedBy: hit.closed_by };
+}
+
+// The history of a finding: what closed it earlier, and (for a reopened gap) what reopened it. Closed by <document> v<N> (<date>), then reopened by the signed contract (<date>).
+export function historyLines(issues, documents) {
+  const out = [];
+  for (const i of issues ?? []) {
+    const sc = i.signed_check;
+    if (sc?.status === "not_found" && sc.closed_by) {
+      out.push(`Closed by ${docRef(sc.closed_by, documents)}${sc.signed_label ? `, then reopened by the ${sc.signed_label.toLowerCase()}${sc.signed_date ? ` (${short(sc.signed_date)})` : ""}` : ", then reopened by the signed paperwork"}.`);
+      if (sc.sentence) out.push(`Draft wording that closed it: \u201C${sc.sentence}\u201D, in ${docRef(sc.closed_by, documents) || "the draft"}.`);
+    }
+    if (sc?.status === "confirmed" && sc.sentence) {
+      out.push(`Draft wording that closed it: \u201C${sc.sentence}\u201D, in ${docRef(sc.closed_by, documents) || "the draft"}.`);
+    }
+  }
+  return [...new Set(out)];
+}
+
+// Which documents a finding was searched in, labelled draft or signed (11 Nov), from the versions of the documents in hand (the live deal, or the documents captured in
+// the locked handover). The checks read the drafts; signed paperwork is only used to confirm earlier fixes.
+export function searchedLines(issues, docs) {
+  const kindOf = (d) => {
+    const t = `${d.doc_type ?? ""} ${d.type ?? ""} ${d.name ?? ""}`;
+    return /signed_|^\s*Signed /i.test(t) || /Signed (contract|SOW)/.test(d.type ?? d.name ?? "") ? "signed"
+      : /draft_|Draft (contract|SOW)/.test(t) ? "draft" : /pricing_services_note|approvals note|Pricing/i.test(t) ? "approval" : "other";
+  };
+  const list = (docs ?? []).filter((d) => d.included !== false);
+  const kinds = new Set((issues ?? []).map((i) => i.finding));
+  const lines = [];
+  const contractKinds = ["Missing from contract", "Contract says something different"];
+  if (contractKinds.some((k) => kinds.has(k))) {
+    const drafts = list.filter((d) => kindOf(d) === "draft");
+    if (drafts.length) lines.push(`Searched: ${drafts.map((d) => `${d.name} v${d.version} (draft)`).join(", ")}.`);
+    const signed = list.filter((d) => kindOf(d) === "signed");
+    if (signed.length) lines.push(`${signed.map((d) => d.name).join(", ")}: checked only for earlier fixes.`);
+  }
+  if (kinds.has("No approval recorded")) {
+    const notes = list.filter((d) => kindOf(d) === "approval");
+    if (notes.length) lines.push(`Searched: ${notes.map((d) => `${d.name} v${d.version}`).join(", ")}.`);
+  }
+  return lines;
+}
+
+// "Needs attention · 1 of 2 gaps closed": where it stands, for the top of the drawer.
+export function statusText(status, closed, total) {
+  const label = STATUS_CHIP[status]?.label ?? status;
+  return closed > 0 && closed < total ? `${label} \u00B7 ${closed} of ${total} gaps closed` : label;
+}
+
+// What both views add (11 Nov): where it stands, the signed clause, the history, what was searched, and whether the code-generated Evidence line applies.
+function evidenceFields({ status, issues, unresolved, closedIssues, documents, searchDocs }) {
+  const signed = signedClauseOf(closedIssues, documents);
+  return {
+    stands: statusText(status, closedIssues.length, issues.length),
+    signed,
+    history: historyLines([...unresolved, ...closedIssues], documents),
+    searched: status === "closed" ? [] : searchedLines(unresolved, searchDocs),
+    // The code's own line, shown above the collapsed AI reading only when the code verified a missing-from-contract finding (never edits, never labelled AI)
+    evidence: status !== "closed" && unresolved.some((i) => i.finding === "Missing from contract") ? EVIDENCE_LINE : "",
+  };
+}
+
 // A "Not offered" commitment carries overlapping findings: the catalogue has no such option, the contract says something different, the wording is not in the
 // contract. They are one fact, so the drawer shows one box: the not-offered finding, with the others listed beneath it (11 Nov). `found` lines up with `issues`.
 export function groupNotOffered(found, issues) {
@@ -705,7 +800,9 @@ export function commitmentView(c, status, documents) {
   const shown = status === "closed" ? closedIssues : unresolved;
   const noteRes = unresolved.find((i) => i.note_resolution)?.note_resolution ?? null;
   const side = contractSide(unresolved, c.contract); // a closed commitment has no open contract finding: its short term stands alone
-  const contract = contractView(c.contract, side, documents, c.contract_now, missingPhrases(unresolved));
+  // A gap the signed contract reopened no longer has contract wording that closes it: the draft wording that closed it earlier is in the history, not under "Contract says" (11 Nov).
+  const reopenedBySignedPaper = unresolved.some((i) => i.signed_check?.status === "not_found");
+  const contract = contractView(c.contract, side, documents, reopenedBySignedPaper ? null : c.contract_now, missingPhrases(unresolved));
   const notes = [];
   if (noteRes) notes.push({ by: noteRes.by, at: noteRes.at, text: noteRes.reason, kind: status === "noted" ? "addressed" : "reopened" });
   for (const d of new Map(unresolved.filter((i) => i.decision && i.decision.status !== "none").map((i) => [`${i.decision.by}|${i.decision.reason}`, i.decision])).values()) {
@@ -722,12 +819,13 @@ export function commitmentView(c, status, documents) {
     signedLines: signedConfirmations(closedIssues.map((i) => i.signed_check)),
     reopenedLines: reopenedLines(unresolved),
     closedLines: closedLines(closedIssues.map((i) => i.resolved_by?.text)),
-    closed: closedIssues.map((i) => ({ label: FINDING_SHORT[i.finding] ?? i.finding, by: closedBy(i.resolved_by?.text) || (status === "closed" ? "Closed in the documents" : ""),
+    closed: closedIssues.map((i) => ({ finding: i.finding, label: FINDING_SHORT[i.finding] ?? i.finding, by: closedBy(i.resolved_by?.text) || (status === "closed" ? "Closed in the documents" : ""),
       gap: gapClosed(i.finding, i.resolved_by?.text) })),
     catalogue: status === "closed" ? [] : uniq(unresolved.map((i) => i.catalogue_path)),
     ai: status === "closed" ? [] : uniq(shown.filter((i) => i.signed_check?.status !== "not_found").map((i) => cleanReason(i.reason))),
     notes, seen: [...new Map(unresolved.flatMap((i) => i.seen || []).map((s) => [s.by, s])).values()],
     issueIds: unresolved.map((i) => i.id),
+    ...evidenceFields({ status, issues: c.issues, unresolved, closedIssues, documents, searchDocs: documents }),
   };
 }
 
@@ -771,13 +869,18 @@ function contractView(term, side, documents, now = null, searched = []) {
 
 // A commitment in the locked record, as the same view. The snapshot holds less than the live register, so what it lacks is
 // left out, never invented. item: an open or addressed-by-note entry, or { promise } for one whose gaps all closed.
-export function frozenView({ item, status, closedFindings = [], documents = [], titles = {} }) {
+// live: the same commitment as the live register has it (a locked deal cannot change, so it is the same); it carries the signed check's full output, which the saved record
+// keeps only in part. snapshotDocs: the documents captured in the locked handover, for "what was searched".
+export function frozenView({ item, status, closedFindings = [], documents = [], titles = {}, live = null, snapshotDocs = null }) {
   const name = item.promise;
   const findings = item.findings ?? [];
   const quoted = (item.quotes ?? []).filter((q) => q.quote);
   const statements = quoted.length ? quoted.map((q) => ({ doc_type_label: q.source, date: q.date, quote: q.quote }))
     : (item.told_in ?? []).map(([label, date]) => ({ doc_type_label: label, date }));
-  const issues = findings.map((f) => ({ finding: f.finding, evidence: f.evidence, catalogue_path: f.catalogue_path, signed_check: f.signed_check }));
+  const liveOpen = (live?.issues ?? []).filter((i) => i.state !== "Resolved");
+  const liveClosed = (live?.issues ?? []).filter((i) => i.state === "Resolved");
+  const issues = findings.map((f) => ({ finding: f.finding, evidence: f.evidence, catalogue_path: f.catalogue_path,
+    signed_check: liveOpen.find((l) => l.finding === f.finding)?.signed_check ?? f.signed_check }));
   const side = contractSide(findings, item.contract);
   const notes = [];
   for (const n of new Map(findings.filter((f) => f.note).map((f) => [`${f.note.by}|${f.note.reason}`, f.note])).values()) {
@@ -786,7 +889,7 @@ export function frozenView({ item, status, closedFindings = [], documents = [], 
   const addressed = findings.find((f) => f.resolved_by_note)?.resolved_by_note;
   if (addressed) notes.push({ by: addressed.by, at: addressed.at, text: addressed.reason, kind: "addressed" });
   const seenAll = findings.flatMap((f) => f.seen ?? []);
-  const contract = contractView(item.contract, side, documents, item.contract_now, missingPhrases(findings));
+  const contract = contractView(item.contract, side, documents, issues.some((i) => i.signed_check?.status === "not_found") ? null : item.contract_now, missingPhrases(findings));
   const title = titles[name] || name;
   return {
     key: name, title, extracted: titles[name] && titles[name] !== name ? name : "", status,
@@ -807,6 +910,8 @@ export function frozenView({ item, status, closedFindings = [], documents = [], 
     catalogue: uniq(issues.map((i) => i.catalogue_path)),
     ai: status === "closed" ? [] : uniq(findings.filter((f) => f.signed_check?.status !== "not_found").map((f) => cleanReason(f.why))),
     notes, seen: [...new Map(seenAll.map((s) => [s.by, s])).values()], issueIds: [],
+    ...evidenceFields({ status, issues: [...issues, ...(liveClosed.length ? liveClosed : closedFindings)], unresolved: issues, closedIssues: liveClosed.length ? liveClosed : closedFindings.map((r) => ({ finding: r.finding })),
+      documents, searchDocs: snapshotDocs ?? documents }),
   };
 }
 
@@ -817,32 +922,10 @@ export const headerScrolledPast = (isIntersecting, bottom, rootTop = 0) => !isIn
 // record's fingerprint is shown as saved.
 export const byDocumentDate = (docs) => [...(docs ?? [])].sort((a, b) => (a.version_date || a.date || "").localeCompare(b.version_date || b.date || "") || String(a.name).localeCompare(String(b.name)));
 
-// The locked record's compact view of one commitment (11 Nov), the same on screen and in print: what the customer was told, what the contract says, the
-// gap lines that matter, and how it was settled. Nothing is repeated: the "Extracted as" line, the AI summary, the plain mismatch line and the
-// closing bookkeeping ("unchanged, checked with it", "Check on …") are not in it. `v` is a frozenView; `documents` gives each document's date.
-export function recordLines(v, documents = []) {
-  const quoteLine = (q, label, date) => `\u201C${q}\u201D (${label}${date ? `, ${short(date)}` : ""})`;
-  const told = v.told.length ? v.told.map((t) => quoteLine(t.quote, t.label, t.date)) : v.toldFallback ? [v.toldFallback] : [];
-  let contract = "";
-  if (v.contract.now?.quote) contract = quoteLine(v.contract.now.quote, v.contract.now.label);
-  else if (v.contract.quote) contract = quoteLine(v.contract.quote.quote, v.contract.quote.label);
-  else if (v.contract.text && !/^No gap found/.test(v.contract.text)) contract = v.contract.text;
-  // A commitment with some gaps closed and others open says both, per gap ("Approval: closed by Internal approvals note v2 (18 Oct)", "Not in the contract: still open"),
-  // so a closed line next to "Needs attention" is never read as resolved. A commitment with nothing closed shows its gap lines; one with everything closed
-  // reads "Closed by <document> v<N> (<date>) · confirmed in the signed contract (<date>)".
+// How the closed gaps of a commitment read, in the record and in the drawer's "What closed it": "Closed by Draft contract v2 (19 Oct) \u00B7 confirmed in the
+// signed contract (20 Oct)". Partly closed commitments say it per gap. No check dates, no "unchanged, checked with it" bookkeeping (12 Nov).
+export function closedSettled(v, documents = []) {
   const partly = v.status !== "closed" && v.closed.length > 0;
-  const gaps = [];
-  if (v.status !== "closed" && !partly) {
-    if (v.notOffered) {
-      const cap = v.notOffered.capability ? `the catalogue has no ${v.notOffered.capability} option` : "the catalogue has no such option";
-      gaps.push(`Not offered: ${cap}${v.notOffered.wording ? `; the contract says ${v.notOffered.wording}` : ""}`);
-    } else {
-      for (const f of v.found) {
-        const line = `${f.label}${f.fact ? ` ${f.fact}` : ""}`.trim();
-        if (line && !gaps.includes(line)) gaps.push(line);
-      }
-    }
-  }
   const settled = [];
   const label = (d) => {
     const m = /^(.*), version (\d+)$/.exec(d);
@@ -861,12 +944,44 @@ export function recordLines(v, documents = []) {
       const line = `${noun[c.finding] ?? c.label}: closed${docs ? ` by ${docs}` : " by the documents"}${signed.length ? ` \u00B7 ${signed[0]}` : ""}`;
       if (!seen.has(line)) { seen.add(line); settled.push(line); }
     }
-    for (const g of v.openGaps) settled.push(`${g}: still open`);
   } else {
     const changed = [...new Set(v.closed.flatMap((c) => changedBy(c.by)))];
     if (changed.length) settled.push(`Closed by ${changed.map(label).join(" and ")}${signed.length ? ` \u00B7 ${signed[0]}` : ""}`);
     else if (signed.length) settled.push(signed[0].replace(/^./, (c) => c.toUpperCase()));
   }
+  return settled;
+}
+
+// The locked record's compact view of one commitment (11 Nov), the same on screen and in print: what the customer was told, what the contract says, the
+// gap lines that matter, and how it was settled. Nothing is repeated: the "Extracted as" line, the AI summary, the plain mismatch line and the
+// closing bookkeeping ("unchanged, checked with it", "Check on …") are not in it. `v` is a frozenView; `documents` gives each document's date.
+export function recordLines(v, documents = []) {
+  const quoteLine = (q, label, date) => `\u201C${q}\u201D (${label}${date ? `, ${short(date)}` : ""})`;
+  const told = v.told.length ? v.told.map((t) => quoteLine(t.quote, t.label, t.date)) : v.toldFallback ? [v.toldFallback] : [];
+  let contract = "";
+  // A commitment confirmed in the signed contract shows the signed clause, attributed to the signed contract with its date; the draft attribution goes (12 Nov).
+  if (v.signed?.quote) contract = quoteLine(v.signed.quote, v.signed.label, v.signed.date);
+  else if (v.contract.now?.quote) contract = quoteLine(v.contract.now.quote, v.contract.now.label);
+  else if (v.contract.quote) contract = quoteLine(v.contract.quote.quote, v.contract.quote.label);
+  else if (v.contract.text && !/^No gap found/.test(v.contract.text)) contract = v.contract.text;
+  // A commitment with some gaps closed and others open says both, per gap ("Approval: closed by Internal approvals note v2 (18 Oct)", "Not in the contract: still open"),
+  // so a closed line next to "Needs attention" is never read as resolved. A commitment with nothing closed shows its gap lines; one with everything closed
+  // reads "Closed by <document> v<N> (<date>) · confirmed in the signed contract (<date>)".
+  const partly = v.status !== "closed" && v.closed.length > 0;
+  const gaps = [];
+  if (v.status !== "closed" && !partly) {
+    if (v.notOffered) {
+      const cap = v.notOffered.capability ? `the catalogue has no ${v.notOffered.capability} option` : "the catalogue has no such option";
+      gaps.push(`Not offered: ${cap}${v.notOffered.wording ? `; the contract says ${v.notOffered.wording}` : ""}`);
+    } else {
+      for (const f of v.found) {
+        const line = `${f.label}${f.fact ? ` ${f.fact}` : ""}`.trim();
+        if (line && !gaps.includes(line)) gaps.push(line);
+      }
+    }
+  }
+  const settled = closedSettled(v, documents);
+  if (partly) for (const g of v.openGaps) settled.push(`${g}: still open`);
   for (const n of v.notes) settled.push(`${recordedBy(n.by, n.at, fmtDate)}: \u201C${n.text}\u201D`);
   return { told, contract, gaps, settled };
 }

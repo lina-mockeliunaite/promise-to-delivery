@@ -323,8 +323,8 @@ class TestRefusals(Case):
                  ["Arjun Rao", "Head of Product", "BioCatch", "16 October 2026", "1 February 2027"]),
                 ("Revised statement of work", "Scam coaching detection is added as section 5 (16 October 2026).",
                  ["5. Scam coaching detection", "16 October 2026"]),
-                ("Signed contract", "Signed 20 October 2026 by Tom Fraser (Elva) and Priya Nair (Alder Bank); it incorporates the SOW dated 9 October.",
-                 ["Tom Fraser", "Priya Nair", "20 October 2026", "Elva", "Alder Bank", "dated 9 October"])],
+                ("Signed contract", "Signed 20 October 2026 by Tom Fraser (Elva) and Priya Nair (Alder Bank). The agreement is dated 12 October.",
+                 ["Tom Fraser", "Priya Nair", "20 October 2026", "Elva", "Alder Bank", "12 October"])],
         }
         for deal, expected in wording.items():
             listing = self.client.get("/api/demo/samples", params={"deal": deal}).json()["samples"]

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
-import { STAGE_LABELS, STATUS_CHIP, alsoIn, plainName, recordedBy, short } from "./dealpage.js";
+import { STAGE_LABELS, STATUS_CHIP, alsoIn, closedSettled, plainName, recordedBy, short } from "./dealpage.js";
 import { renderDocument } from "./markdown.js";
 import { shortHash, verifyText } from "./docHash.js";
 
@@ -103,12 +103,29 @@ function Source({ label, date, doc, onOpen, also }) {
 
 // A commitment, read from the view built in dealpage.js (live register or locked snapshot). readOnly: no footer, no actions.
 // guide (public demo): { hint, highlight: "add" | "note" } from the demo bar's "Do step N": one hint line above the buttons, and the button to click highlighted.
-export function CommitmentView({ v, titleId, readOnly, me = "", guide = null, onOpenDoc, onSeen, onNote, onAddDoc, onCatalogue, onClose }) {
+export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", guide = null, onOpenDoc, onSeen, onNote, onAddDoc, onCatalogue, onClose }) {
   const seenByMe = v.seen.some((x) => x.by === me.trim());
   return (
     <>
       <DrawerHead id={titleId} title={v.title} chip={v.status} onClose={onClose} />
       <div className="dr-body">
+        {/* Where it stands first (11 Nov): the current status and any recorded note. The AI reading is last, collapsed. */}
+        <section className="dr-sec dr-stands">
+          <h3 className="dr-label">Where it stands</h3>
+          <p className="dr-plain"><strong>{v.stands}</strong></p>
+          {v.notes.length === 0 && <p className="dr-muted">No notes yet</p>}
+          {v.notes.map((n) => (
+            <div key={`${n.by}|${n.text}`} className={`dr-note ${n.kind === "reconfirm" || n.kind === "reopened" ? "is-stale" : ""}`}>
+              <span className="dr-note-by">{recordedBy(n.by, n.at, fmtDate)}</span>
+              <p>“{n.text}”</p>
+              {NOTE_KIND[n.kind] && <span className="dr-muted">{NOTE_KIND[n.kind]}</span>}
+            </div>
+          ))}
+          {readOnly && v.status === "open" && (
+            <p className="dr-muted">Seen before handover by: {v.seen.length ? v.seen.map((s) => plainName(s.by)).join(" · ") : "nobody"}</p>
+          )}
+        </section>
+
         <section className="dr-sec">
           <h3 className="dr-label">Customer was told</h3>
           {v.told.map((t) => (
@@ -122,19 +139,29 @@ export function CommitmentView({ v, titleId, readOnly, me = "", guide = null, on
 
         <section className="dr-sec">
           <h3 className="dr-label">Contract says</h3>
-          {v.contract.text && <p className="dr-plain">{v.contract.text}</p>}
-          {v.contract.quote && (
-            <div className="dr-block">
-              <blockquote className="dr-quote">{v.contract.quote.quote}</blockquote>
-              <Source label={v.contract.quote.label} doc={v.contract.quote.doc} onOpen={() => onOpenDoc?.(v.contract.quote.doc, v.contract.quote.quote)} />
+          {v.signed ? (
+            <div className="dr-block dr-signed">
+              <span className="dr-confirmed">{v.signed.status}</span>
+              <blockquote className="dr-quote">{v.signed.quote}</blockquote>
+              <Source label={v.signed.label} date={v.signed.date} doc={v.signed.doc} onOpen={() => onOpenDoc?.(v.signed.doc, v.signed.quote)} />
             </div>
-          )}
-          {v.contract.now && (
-            <div className="dr-block">
-              <span className="dr-muted">Contract wording containing “{v.contract.now.target}” (a lookup in the current documents):</span>
-              <blockquote className="dr-quote">{v.contract.now.quote}</blockquote>
-              <Source label={v.contract.now.label} doc={v.contract.now.doc} onOpen={() => onOpenDoc?.(v.contract.now.doc, v.contract.now.quote)} />
-            </div>
+          ) : (
+            <>
+              {v.contract.text && <p className="dr-plain">{v.contract.text}</p>}
+              {v.contract.quote && (
+                <div className="dr-block">
+                  <blockquote className="dr-quote">{v.contract.quote.quote}</blockquote>
+                  <Source label={v.contract.quote.label} doc={v.contract.quote.doc} onOpen={() => onOpenDoc?.(v.contract.quote.doc, v.contract.quote.quote)} />
+                </div>
+              )}
+              {v.contract.now && (
+                <div className="dr-block">
+                  <span className="dr-muted">Contract wording containing “{v.contract.now.target}” (a lookup in the current documents):</span>
+                  <blockquote className="dr-quote">{v.contract.now.quote}</blockquote>
+                  <Source label={v.contract.now.label} doc={v.contract.now.doc} onOpen={() => onOpenDoc?.(v.contract.now.doc, v.contract.now.quote)} />
+                </div>
+              )}
+            </>
           )}
         </section>
 
@@ -147,7 +174,7 @@ export function CommitmentView({ v, titleId, readOnly, me = "", guide = null, on
               {f.sub?.map((l) => <span key={l} className="dr-sub">{l}</span>)}
             </div>
           ))}
-          {v.earlier?.map((l) => <p key={l} className="dr-muted">{l}</p>)}
+          {v.searched?.map((l) => <p key={l} className="dr-muted dr-searched">{l}</p>)}
           {v.catalogue.map((p) => (
             <button key={p} type="button" className="cat-open" onClick={() => onCatalogue?.(p)} title="Open the product catalogue at this entry">
               Catalogue: {p.split("/").slice(0, 2).join(" · ")}{p.split("/").length > 2 ? ` · ${p.split("/").slice(2).join(" ").replace(/_/g, " ")}` : ""}
@@ -156,37 +183,30 @@ export function CommitmentView({ v, titleId, readOnly, me = "", guide = null, on
           {v.closed.length > 0 && (
             <div className="dr-closed">
               {v.status !== "closed" && <span className="dr-label">Already closed by the documents</span>}
-              {v.closed.map((c) => (
-                <div key={c.label} className="dr-gap">
-                  <p><strong>{c.gap.headline}</strong></p>
-                  {c.gap.notes.map((n) => <p key={n} className="dr-muted">{n}</p>)}
-                </div>
-              ))}
-              {v.signedLines?.map((l) => <p key={l} className="dr-muted">{l}</p>)}
-            </div>
-          )}
-          {v.ai.length > 0 && (
-            <div className="dr-ai">
-              <span className="dr-ailabel">AI-written summary · quotes checked against the supplied documents</span>
-              {v.ai.map((t) => <p key={t}>{t}</p>)}
+              {closedSettled(v, documents).map((l) => <div key={l} className="dr-gap"><p><strong>{l}</strong></p></div>)}
             </div>
           )}
         </section>
 
-        <section className="dr-sec">
-          <h3 className="dr-label">Notes</h3>
-          {v.notes.length === 0 && <p className="dr-muted">No notes yet</p>}
-          {v.notes.map((n) => (
-            <div key={`${n.by}|${n.text}`} className={`dr-note ${n.kind === "reconfirm" || n.kind === "reopened" ? "is-stale" : ""}`}>
-              <span className="dr-note-by">{recordedBy(n.by, n.at, fmtDate)}</span>
-              <p>“{n.text}”</p>
-              {NOTE_KIND[n.kind] && <span className="dr-muted">{NOTE_KIND[n.kind]}</span>}
-            </div>
-          ))}
-          {readOnly && v.status === "open" && (
-            <p className="dr-muted">Seen before handover by: {v.seen.length ? v.seen.map((s) => plainName(s.by)).join(" · ") : "nobody"}</p>
-          )}
-        </section>
+        {v.history?.length > 0 && (
+          <details className="dr-history" open={v.status !== "closed"}>
+            <summary className="dr-label">History</summary>
+            {v.history.map((l) => <p key={l} className="dr-muted">{l}</p>)}
+          </details>
+        )}
+
+        {v.ai.length > 0 && (
+          <section className="dr-sec dr-ai-sec">
+            {v.evidence && <p className="dr-evidence"><strong>Evidence</strong> {v.evidence}</p>}
+            <details className="dr-ai-details">
+              <summary>Initial AI reading</summary>
+              <div className="dr-ai">
+                <span className="dr-ailabel">AI-written summary · quotes checked against the supplied documents</span>
+                {v.ai.map((t) => <p key={t}>{t}</p>)}
+              </div>
+            </details>
+          </section>
+        )}
       </div>
       {!readOnly && v.status === "open" && (
         <footer className="dr-foot">

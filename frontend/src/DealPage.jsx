@@ -11,7 +11,7 @@ import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
 import { addReady, fmtDate, fmtDateTime, mismatchNotice, newDocumentNotice, uploadKind } from "./format.js";
 import {
-  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, changeTitle, changedPromises, closedTitle, confirmedTitle, reopenedTitle, coverageLine, docCount, gapProgress, orderPromises, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
+  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, changeTitle, signedDatesLabel, changedPromises, closedTitle, confirmedTitle, reopenedTitle, coverageLine, docCount, gapProgress, orderPromises, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
   mismatchParts, promiseLabels, missingForHandover, handoverChecklist, handoverOpen, changeView, changeDocLabel, datePrefill, plainName, readHash, recordedBy, rowTitle, toldParts, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
@@ -287,7 +287,7 @@ export function ChangeDialog({ change, titleOf, onClose, onGotIt }) {
                   <div>
                     <div className="dp-change-line">
                       <strong>{short(x.finding)}</strong>
-                      <span className="dp-chip dp-chip-amber"><span className="dp-dot" />New</span>
+                      <span className="dp-chip dp-chip-amber"><span className="dp-dot" />{x.additional ? "Additional finding" : "New"}</span>
                     </div>
                   </div>
                 </div>
@@ -626,6 +626,7 @@ export function DocumentList({ deal, stages, documents, name, setName, onChanged
           </button>
         </span>
       </div>
+      {isSignedDoc(d.doc_type) && signedDatesLabel(d) && <span className="dp-signed-dates">{signedDatesLabel(d)}</span>}
       {isSignedDoc(d.doc_type) && <span className="dp-signed-note">{SIGNED_NOTE}</span>}
       {linking === d.source_key && (
         <form className="dp-link-form" onSubmit={saveLink}>
@@ -973,7 +974,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
       {drawer && (
         <Drawer labelledBy="dr-title" onClose={closeDrawer} focusKey={`${drawer.type}:${drawer.id ?? drawer.docKey ?? ""}`}>
           {drawer.type === "commitment" && drawerC && (
-            <CommitmentView v={commitmentView(drawerC, statusOf(drawerC.id), docs.documents)} titleId="dr-title" me={name} guide={drawer.guide}
+            <CommitmentView v={commitmentView(drawerC, statusOf(drawerC.id), docs.documents)} documents={docs.documents} titleId="dr-title" me={name} guide={drawer.guide}
                             onClose={closeDrawer} onCatalogue={setCatFocus}
                             onOpenDoc={(doc, quote) => doc && setDrawer({ type: "doc", docKey: doc.source_key, quote, fromId: drawerC.id })}
                             onSeen={() => withName((who) => act(async () => { for (const i of seenIssues(drawerC)) await api.markSeen(deal, { issue_id: i.id, seen_by: who }); }))}

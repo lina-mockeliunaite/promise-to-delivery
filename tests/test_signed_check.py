@@ -31,7 +31,7 @@ NJ9 = (SCEN / "NJ-09_signed_contract.md").read_text(encoding="utf-8")
 # A signed contract that went back to four languages: the fix in the draft never reached the signed agreement.
 NJ9_FOUR = NJ9.replace("The Assistant will respond to Guest enquiries in 12 languages, listed in Schedule 1.",
                        "The Assistant will respond to Guest enquiries in four languages: English, Mandarin Chinese, Japanese and Korean.")
-EXACT_REASON = "The fix in Draft contract, version 2 was not found in the signed contract."
+EXACT_REASON = "The signed contract doesn't contain the wording that closed this gap, so the fix can't be confirmed."
 
 
 class Replay(unittest.TestCase):
@@ -158,7 +158,8 @@ class TestAlder(Replay):
         ov = self.ov()
         c, gap = self.issue("coaching", "Missing from contract", ov)
         self.assertEqual(gap["state"], "Needs action")
-        self.assertEqual(gap["signed_check"]["reason"], "The fix in Draft SOW, version 2 was not found in the signed contract.")
+        self.assertEqual(gap["signed_check"]["reason"], "The signed contract doesn't contain the wording that closed this gap, so the fix can't be confirmed.")
+        self.assertIn("Draft SOW, version 2", gap["signed_check"]["earlier"])  # the closing document is named beneath
         _, approval = self.issue("coaching", "No approval recorded", ov)
         self.assertEqual((approval["state"], approval["signed_check"]), ("Resolved", None))  # the pricing-note fix is untouched
         # the predicted locked-record verdict: nothing is closed by documents any more

@@ -13,7 +13,8 @@ contract" or a "contract says something different" finding closed by a draft). I
 Outcomes, per closed gap:
   confirmed      the sentence is in a signed document: "Confirmed in the signed contract (Signed contract, 20 Oct)"
   not_found      it is in no signed document: the closure is no longer supported by the paperwork that counts, so the screens show the
-                 commitment as Needs attention with "The fix in <closing document> was not found in the signed contract." The earlier
+                 commitment as Needs attention with "The signed contract doesn't contain the wording that closed this gap, so the fix can't be confirmed." (11 Nov;
+                 it said "The fix in <closing document> was not found…"), the closing document named on the line beneath. The earlier
                  closure stays visible
   not_confirmed  the closure has no lookup sentence to look for (for example a conflict that closed because the old clause vanished):
                  a neutral "Not confirmed against the signed contract"
@@ -83,14 +84,26 @@ def contains(text, sentence) -> bool:
     return bool(needle) and f" {needle} " in f" {normalise(text)} "
 
 
+def locate(text: str, sentence: str) -> str:
+    """The signed text's own wording of a sentence the check matched (11 Nov): the stretch of `text` that runs through the sentence's words in order, with whatever
+    punctuation or markup sits between them, so the drawer can show the signed clause as the signed document has it and link to it. Falls back to the sentence."""
+    words = re.findall(r"[A-Za-z0-9]+", sentence or "")
+    m = re.search(r"\W+".join(re.escape(w) for w in words), text or "", re.I) if words else None
+    if not m:
+        return sentence
+    end = m.end() + 1 if (text or "")[m.end():m.end() + 1] in (".", "!", "?") else m.end()
+    return text[m.start():end]
+
+
 def signed_documents(conn, did: int, slug: str) -> list:
-    """The signed paperwork in the deal: [{label, date, type, text}] for each included signed contract or SOW."""
+    """The signed paperwork in the deal: [{label, date, type, text, key, version_id}] for each included signed contract or SOW."""
     out = []
     for d in workspace.documents(conn, slug):
         if not d["included"] or d["doc_type"] not in SIGNED_TYPES:
             continue
         (text,) = conn.execute("SELECT canonical_text FROM source_versions WHERE id = ?", (d["source_version_id"],)).fetchone()
-        out.append({"label": d["name"], "date": d["version_date"] or d["date"], "type": d["doc_type"], "text": text or ""})
+        out.append({"label": d["name"], "date": d["version_date"] or d["date"], "type": d["doc_type"], "text": text or "",
+                    "key": d["source_key"], "version_id": d["source_version_id"]})
     return out
 
 
@@ -142,11 +155,15 @@ def evaluate(conn, did: int, slug: str) -> dict:
         if hit:
             when = workspace.short_date(hit["date"], year=False)
             results[iid] = {**base, "status": "confirmed", "sentence": lookup["quote"], "signed": hit["label"], "date": hit["date"],
-                            "text": f"Confirmed in the {_kind([hit])} ({hit['label']}{', ' + when if when else ''})"}
+                            "text": f"Confirmed in the {_kind([hit])} ({hit['label']}{', ' + when if when else ''})",
+                            # 11 Nov, output fields only: the signed text's own wording, and which document and version it is in, so the screens can show and link it
+                            "signed_sentence": locate(hit["text"], lookup["quote"]), "signed_key": hit["key"], "signed_version_id": hit["version_id"]}
         else:
             results[iid] = {**base, "status": "not_found", "sentence": lookup["quote"],
-                            "reason": f"The fix in {by} was not found in the {kind}.",
-                            "text": f"Closed earlier by {by}, but not found in the {kind}"}
+                            "reason": f"The {kind} doesn't contain the wording that closed this gap, so the fix can't be confirmed.",  # the closing document is named by "earlier"
+                            "text": f"Closed earlier by {by}, but not found in the {kind}",
+                            # 11 Nov, output fields only: which signed document was searched, for the history line
+                            "signed_label": signed[0]["label"], "signed_date": signed[0]["date"], "signed_key": signed[0]["key"], "signed_version_id": signed[0]["version_id"]}
     return results
 
 

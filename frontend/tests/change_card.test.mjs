@@ -77,14 +77,14 @@ test("the headline is the change on the commitment the document was added from; 
   const v = changeView(revised(), titleOf, LANG);
   assert.equal(v.headline, "Contract wording now matches the promise.");
   assert.ok(!/not-offered|phone/i.test(v.headline)); // nothing from the other commitment in the headline
-  assert.equal(v.elsewhere, `Elsewhere: ${PHONE}: 1 new gap, not in the contract.`); // its unchanged gaps (not offered, contract differs) are in the list below, not here
+  assert.equal(v.elsewhere, `Elsewhere: ${PHONE}: 1 additional gap, not in the contract.`); // its unchanged gaps (not offered, contract differs) are in the list below, not here
 });
 
 test("the detail boxes are grouped per commitment, the acted-on one first, with no commitment title repeated inside a box", () => {
   const html = renderToStaticMarkup(createElement(ChangeDialog, { change: { ...revised(), doc: "Draft contract, new version (v2, 19 Oct)", acted: LANG, modelCalls: 0 }, titleOf, onClose() {} }));
   const titles = [...html.matchAll(/<h3 class="dp-change-title">([^<]*)<\/h3>/g)].map((m) => m[1].replace(/&#x27;/g, "'"));
   assert.deepEqual(titles, [LANG, PHONE]);
-  assert.ok(html.indexOf("closed by documents") > -1 && html.indexOf("closed by documents") < html.indexOf(">New<"));
+  assert.ok(html.indexOf("closed by documents") > -1 && html.indexOf("closed by documents") < html.indexOf(">Additional finding<"));
   assert.ok(!html.includes("Still needs attention")); // the phone commitment's unchanged gaps are not repeated
   assert.equal(html.split("<strong>" + PHONE).length - 1, 0);
 });
