@@ -103,6 +103,13 @@ class TestAlderHints(unittest.TestCase):
         approval = (config.SCENARIOS_DIR / "AB-05_v2_named_exception.md").read_text(encoding="utf-8")
         self.assertIn("Named exception approved", approval)
 
+    def test_the_signed_step_names_the_later_date_the_shipped_signed_contract_sets_and_does_not_describe_the_check_as_comparing_dates(self):
+        signed = (config.SCENARIOS_DIR / "AB-09_signed_contract.md").read_text(encoding="utf-8")
+        self.assertIn("will be enabled from 1 May 2027", signed)  # the date the hint and the summary name
+        self.assertEqual(signed.lower().count("biocatch"), 1)
+        for text in (js_text("demo.js"), (config.ROOT / "public_demo.py").read_text(encoding="utf-8")):
+            self.assertNotRegex(text.lower(), r"compar\w* (the )?(dates?|terms)")
+
     def test_azure_is_not_a_supported_cloud_the_sow_says_aws_sydney_and_the_note_is_the_fix(self):
         c = row("alder_bank", "hosting")
         self.assertIn(("approval", True), types(c))

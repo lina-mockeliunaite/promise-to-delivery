@@ -163,6 +163,13 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
               )}
             </>
           )}
+          {v.related && (
+            <div className="dr-block dr-related">
+              <span className="dr-muted">Related clause in the {v.related.in}</span>
+              <blockquote className="dr-quote">{v.related.quote}</blockquote>
+              <Source label={v.related.label} date={v.related.date} doc={v.related.doc} onOpen={() => onOpenDoc?.(v.related.doc, v.related.quote)} />
+            </div>
+          )}
         </section>
 
         <section className="dr-sec">

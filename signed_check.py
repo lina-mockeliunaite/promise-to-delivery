@@ -95,6 +95,73 @@ def locate(text: str, sentence: str) -> str:
     return text[m.start():end]
 
 
+_SENTENCES = re.compile(r"(?<=[.!?])\s+")
+_BOLD_LEAD = re.compile(r"^\s*(?:[-*]\s+)?\*\*[^*]+\*\*\s*")
+_SOW_HEADING = re.compile(r"statement of work|\bsow\b", re.I)
+
+
+def related_clause(claim: dict, signed: list):
+    """A clause of the signed text that bears on a gap the check could not confirm (12 Nov). Display only: it decides nothing and never changes a verdict.
+    Among the signed sentences, the one containing the most of the finding's own searched phrases (the claim's missing phrases, or its promised value),
+    counted with the verifier's normalisation; ties go to the first sentence, in document order. None when no sentence contains any of them.
+    Returns {"sentence", "key", "version_id", "label", "in"}: the signed text's own wording, the document, and "signed SOW" when the clause sits under a
+    Statement of Work heading (or the document is a signed SOW), else "signed contract"."""
+    import detect_v2
+    kind = claim.get("kind")
+    targets = [claim.get("promised_value")] if kind == "conflicting_terms" else list(claim.get("missing_phrases") or []) if kind == "contract_gap" else []
+    targets = [t for t in targets if t and t.strip()]
+    best = None  # (count, sentence, document, heading)
+    for doc in signed:
+        heading = ""
+        for line in doc["text"].splitlines():
+            if re.match(r"^\s*#+\s", line):
+                heading = line
+                continue
+            for sentence in _SENTENCES.split(_BOLD_LEAD.sub("", line).strip()):
+                n = sum(1 for t in targets if detect_v2._contains(sentence, t)) if sentence.strip() else 0
+                if n and (best is None or n > best[0]):
+                    lead = re.match(r"^\s*(?:[-*]\s+)?\*\*([^*]+)\*\*", line)
+                    best = (n, sentence.strip(), doc, f"{heading} {lead.group(1) if lead else ''}")  # the section it sits in: the last heading, and the line's own bold lead
+    if best is None:
+        return None
+    _, sentence, doc, heading = best
+    is_sow = doc["type"] == "signed_sow" or bool(_SOW_HEADING.search(heading))
+    return {"sentence": locate(doc["text"], sentence), "key": doc["key"], "version_id": doc["version_id"], "label": doc["label"],
+            "in": "signed SOW" if is_sow else "signed contract"}
+
+
+_RECORD_KINDS = {"Missing from contract": "contract_gap", "Contract says something different": "conflicting_terms"}
+
+
+def related_for_record(conn, snapshot: dict) -> dict:
+    """The related clause for each reopened gap of a locked record, found now from the signed document text the record already holds (12 Nov). Display only, read
+    at request time: nothing is added to the saved snapshot, so its fingerprint cannot move. A signed document counts only when its stored text still hashes to the
+    SHA-256 the record saved for it. {"<promise>|<finding>": {sentence, key, version_id, label, in, date}}; {} when nothing applies."""
+    signed = []
+    for d in snapshot.get("documents") or []:
+        if not d.get("source_version_id") or not d.get("sha256"):
+            continue  # a record locked before the hashes were stored: no best-effort matching
+        row = conn.execute("SELECT v.doc_type, v.canonical_text, v.canonical_sha256, s.source_key FROM source_versions v JOIN sources s ON s.id = v.source_id"
+                           " WHERE v.id = ?", (d["source_version_id"],)).fetchone()
+        if row and row[0] in SIGNED_TYPES and row[2] == d["sha256"]:
+            signed.append({"text": row[1] or "", "type": row[0], "key": row[3], "version_id": d["source_version_id"], "label": d["name"],
+                           "date": d.get("version_date") or d.get("date")})
+    out = {}
+    if not signed:
+        return out
+    for item in [*(snapshot.get("open_items") or []), *(snapshot.get("resolved_by_note") or [])]:
+        for f in item.get("findings") or []:
+            kind = _RECORD_KINDS.get(f.get("finding"))
+            if kind is None or (f.get("signed_check") or {}).get("status") != "not_found":
+                continue
+            ev = f.get("evidence") or {}
+            near = related_clause({"kind": kind, "missing_phrases": ev.get("missing_phrases"), "promised_value": ev.get("promised_value")}, signed)
+            if near:
+                near["date"] = next((d["date"] for d in signed if d["version_id"] == near["version_id"]), None)
+                out[f"{item['promise']}|{f['finding']}"] = near
+    return out
+
+
 def signed_documents(conn, did: int, slug: str) -> list:
     """The signed paperwork in the deal: [{label, date, type, text, key, version_id}] for each included signed contract or SOW."""
     out = []
@@ -164,6 +231,9 @@ def evaluate(conn, did: int, slug: str) -> dict:
                             "text": f"Closed earlier by {by}, but not found in the {kind}",
                             # 11 Nov, output fields only: which signed document was searched, for the history line
                             "signed_label": signed[0]["label"], "signed_date": signed[0]["date"], "signed_key": signed[0]["key"], "signed_version_id": signed[0]["version_id"]}
+            near = related_clause(claim, signed)  # 12 Nov, output field only: the signed clause that bears on the gap, for the screens; the verdict above is already decided
+            if near:
+                results[iid]["related"] = near
     return results
 
 

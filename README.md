@@ -36,7 +36,7 @@ It also says what it could not check: if the model proposed findings that failed
 
 ## A second scenario: a draft fix that didn't survive signing (Alder Bank)
 
-**Alder Bank** (fictional) is buying scam protection for outbound instant payments from **Elva** (fictional), live from 1 February 2027. Here a fix to the draft SOW does not survive into the signed contract, so Dealshape reopens it.
+**Alder Bank** (fictional) is buying scam protection for outbound instant payments from **Elva** (fictional), live from 1 February 2027. Here a fix to the draft SOW does not survive into the signed contract: the signed SOW, attached as an appendix, enables coaching-scam detection from 1 May 2027, and the sentence that closed the gap isn't in it. Dealshape can't confirm the fix, so it reopens the gap, keeps the earlier closure in its history and shows the related clause from the signed SOW beside what the customer was told.
 
 | Commitment | What the customer was told | What the paperwork says |
 | --- | --- | --- |

@@ -62,7 +62,7 @@ const HINTS = {
     "Told 12 languages; the draft contract says four. Add the revised contract.", "The signed contract decides what Delivery inherits. Add it and see which fixes survive.",
     "Aivuna doesn't offer voice, so no document can fix this. Noma agreed on a call: record it as a note.", null],
   alder_bank: [null, "Coaching detection depends on the BioCatch connector, which is in beta and needs a named approval; the SOW doesn't mention it. Add the approval and see what closes.",
-    "The approval closed one gap, but the SOW still doesn't mention coaching detection. Add the revised SOW.", "The signed contract decides what Delivery inherits. Add it and see which fixes survive. A fix only counts if the signed contract contains it.",
+    "The approval closed one gap, but the SOW still doesn't mention coaching detection. Add the revised SOW.", "The signed contract decides what Delivery inherits. Add it and see which fixes survive. Its Statement of Work sets a later date for coaching detection (1 May 2027), and the wording that closed the gap isn't in it, so the fix can't be confirmed and the gap reopens.",
     "Elva doesn't offer Azure hosting, so no document can fix this. The customer agreed AWS Sydney on a call: record it as a note.", null],
 };
 const decode = (t) => String(t).replace(/&#x27;/g, "'");

@@ -128,7 +128,7 @@ test("C5: a reopened finding explains itself in the rule's words and its history
 
 test("the drawer's pieces are shared by the live drawer and the locked record, and the saved record is not changed", () => {
   const fr = read("FrozenRecord.jsx");
-  assert.match(fr, /const common = \{ documents, titles, snapshotDocs: s\.documents \};/);
+  assert.match(fr, /const common = \{ documents, titles, snapshotDocs: s\.documents, relatedMap: hv\.related_clauses \?\? \{\} \};/); // 12 Nov: the related clause comes beside the snapshot
   assert.match(fr, /api\.fetchRegister\(deal\)\.then\(setLiveRegister/);
   assert.ok(!/signed_sentence|signed_label/.test(fr)); // nothing here writes into the saved record
   assert.match(read("dealpage.js"), /signed_check: liveOpen\.find\(\(l\) => l\.finding === f\.finding\)\?\.signed_check \?\? f\.signed_check/);
@@ -151,3 +151,74 @@ test("12 Nov: the drawer's What closed it reads like the record, without the che
   const noSigned = { ...LANGS, issues: [{ ...LANGS.issues[0], signed_check: undefined }] };
   assert.ok(drawer(commitmentView(noSigned, "closed", DOCS)).includes("Closed by Draft contract v2 (19 Oct)"));
 });
+
+// ---- 12 Nov: the related clause for a reopened gap -------------------------------------------------------------------------------------------------------------------
+const ONE_MAY = "Coaching-scam detection via BioCatch will be enabled from 1 May 2027.";
+const withRelated = (related) => ({ ...REOPENED, issues: [{ ...REOPENED.issues[0], signed_check: { ...REOPENED.issues[0].signed_check, ...(related ? { related } : {}) } }] });
+const RELATED = { sentence: ONE_MAY, key: "AB-09", version_id: 9, label: "Signed contract", in: "signed SOW" };
+
+test("12 Nov: a reopened gap shows the exact related clause for Alder under Contract says, labelled 'Related clause in the signed SOW', with a source link", () => {
+  const v = commitmentView(withRelated(RELATED), "open", ALDER_DOCS);
+  assert.deepEqual({ ...v.related, doc: !!v.related.doc }, { quote: ONE_MAY, label: "Signed contract", date: "2026-10-20", in: "signed SOW", doc: true });
+  const html = drawer(v);
+  assert.ok(html.includes(`<span class="dr-muted">Related clause in the signed SOW</span><blockquote class="dr-quote">${ONE_MAY}</blockquote>`)); // the exact clause
+  assert.match(html, /Related clause in the signed SOW[\s\S]*?Source:[\s\S]*?<button type="button" class="dr-linkbtn">Signed contract, 20 Oct<\/button>/); // a link, which opens the viewer on the clause
+  // it sits inside "Contract says", after the customer quote's section, before "What we found"
+  assert.ok(html.indexOf("Customer was told") < html.indexOf("Contract says") && html.indexOf("Contract says") < html.indexOf("Related clause") && html.indexOf("Related clause") < html.indexOf("What we found"));
+  assert.ok(html.includes("Customer was told")); // the heading is kept
+  assert.ok(html.includes("The signed contract doesn't contain the wording that closed this gap, so the fix can't be confirmed.")); // the reopen reason stays the generic sentence
+  assert.ok(!html.includes("Related clause in the signed contract"));
+});
+
+test("12 Nov: the label follows the server's word, and without a related clause nothing extra is shown", () => {
+  assert.ok(drawer(commitmentView(withRelated({ ...RELATED, in: "signed contract" }), "open", ALDER_DOCS)).includes("Related clause in the signed contract"));
+  assert.equal(commitmentView(withRelated(null), "open", ALDER_DOCS).related, null);
+  assert.ok(!drawer(commitmentView(withRelated(null), "open", ALDER_DOCS)).includes("Related clause"));
+  // a confirmed or closed commitment has no related clause
+  assert.equal(commitmentView(LANGS, "closed", DOCS).related, null);
+  // the document viewer is opened on the clause through the same call the confirmed clause uses
+  assert.match(fs.readFileSync(new URL("../src/Drawer.jsx", import.meta.url), "utf8"), /onOpen=\{\(\) => onOpenDoc\?\.\(v\.related\.doc, v\.related\.quote\)\}/);
+});
+
+// ---- 12 Nov, follow-ups: Contract says for a reopened gap, the row's history line, and the clause in the locked record ------------------------------------------------
+import { REOPENED_CONTRACT_LINE, earlierLine, reopenedLines, relatedFromRecord } from "../src/dealpage.js";
+
+test("12 Nov: a reopened gap's Contract says reads 'The signed contract doesn't contain the wording that closed this gap.', with the related clause beneath", () => {
+  assert.equal(REOPENED_CONTRACT_LINE, "The signed contract doesn't contain the wording that closed this gap.");
+  const v = commitmentView(withRelated(RELATED), "open", ALDER_DOCS);
+  assert.equal(v.contract.text, REOPENED_CONTRACT_LINE);
+  const html = drawer(v);
+  assert.ok(!html.includes("No matching wording found in the draft contract or SOW"));
+  assert.ok(html.indexOf(REOPENED_CONTRACT_LINE) < html.indexOf("Related clause in the signed SOW")); // the clause is shown beneath it
+  // a gap that was never closed keeps the draft wording: the revised draft did not contain it
+  const never = commitmentView({ ...REOPENED, issues: [{ ...REOPENED.issues[0], signed_check: null }] }, "open", ALDER_DOCS);
+  assert.equal(never.contract.text, "No matching wording found in the draft contract or SOW");
+});
+
+test("12 Nov: the row's history line for a reopened gap: closing document with its date, then the signed document that reopened it; no unchanged or check date", () => {
+  const sc = { status: "not_found", reason: "r", closed_by: "Draft SOW, version 2", earlier: "Resolved by Draft SOW, version 2 · Draft contract, version 1 unchanged · 11 Nov 2026", signed_label: "Signed contract", signed_date: "2026-10-20" };
+  assert.equal(earlierLine(sc, ALDER_DOCS), "Earlier closed by Draft SOW v2 (16 Oct) · reopened by the signed contract (20 Oct)");
+  assert.deepEqual(reopenedLines([{ signed_check: sc }], ALDER_DOCS), ["r", "Earlier closed by Draft SOW v2 (16 Oct) · reopened by the signed contract (20 Oct)"]);
+  assert.ok(!/unchanged|checked/.test(earlierLine(sc, ALDER_DOCS)));
+  // a saved record keeps four fields: it says what it has
+  assert.equal(earlierLine({ status: "not_found", earlier: sc.earlier }, []), "Earlier closed by Draft SOW v2 · reopened by the signed contract");
+  assert.equal(earlierLine({ status: "not_found" }, []), "");
+});
+
+test("12 Nov: the locked record shows the related clause for a reopened gap, from the record's own map, on screen and in print (one markup), without the link in print", () => {
+  const map = { "BioCatch-based coaching detection|Missing from contract": { sentence: ONE_MAY, key: "AB-09", version_id: 9, label: "Signed contract", in: "signed SOW", date: "2026-10-20" } };
+  const item = { promise: "BioCatch-based coaching detection", contract: "Not included", quotes: [], findings: [{ finding: "Missing from contract", evidence: { missing_phrases: ["BioCatch"] }, signed_check: { status: "not_found", reason: REASON_SENTENCE, earlier: "Resolved by Draft SOW, version 2 · 11 Nov 2026" } }] };
+  const v = frozenView({ item, status: "open", documents: ALDER_DOCS, titles: {}, live: null, snapshotDocs: null, relatedMap: map });
+  assert.deepEqual({ ...v.related, doc: !!v.related.doc }, { quote: ONE_MAY, label: "Signed contract", date: "2026-10-20", in: "signed SOW", doc: true });
+  assert.equal(v.contract.text, REOPENED_CONTRACT_LINE);
+  const r = recordLines(v, ALDER_DOCS);
+  assert.equal(r.related.text, `“${ONE_MAY}” (Signed contract, 20 Oct)`);
+  assert.equal(r.contract, REOPENED_CONTRACT_LINE);
+  // no map entry (an older record, or a text that no longer matches): nothing extra
+  assert.equal(frozenView({ item, status: "open", documents: ALDER_DOCS, titles: {}, relatedMap: {} }).related, null);
+  assert.equal(relatedFromRecord(null, "x", [], []), null);
+  const fr = read("FrozenRecord.jsx");
+  assert.match(fr, /<p className="fr-related"><strong>Related clause in the \{r\.related\.in\}:<\/strong> \{r\.related\.text\}/);
+  assert.match(fr, /className="dr-linkbtn fr-noprint"[\s\S]*?>Open the clause<\/button>/); // the link is screen-only; the clause text prints
+});
+const REASON_SENTENCE = "The signed contract doesn't contain the wording that closed this gap, so the fix can't be confirmed.";

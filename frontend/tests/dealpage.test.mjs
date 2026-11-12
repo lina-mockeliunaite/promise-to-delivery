@@ -558,9 +558,9 @@ test("signed lines: confirmed and not-confirmed under a closed commitment, once 
 });
 
 test("a reopened gap says why and keeps the earlier closure visible", () => {
-  assert.equal(earlierLine(NOT_FOUND), "Earlier closed by Draft contract, version 2 · Draft SOW, version 1 unchanged · checked 20 Oct 2026");
+  assert.equal(earlierLine(NOT_FOUND), "Earlier closed by Draft contract v2 · reopened by the signed contract");
   assert.deepEqual(reopenedLines([{ signed_check: NOT_FOUND }, { signed_check: CONFIRMED }, {}]),
-    [NOT_FOUND.reason, "Earlier closed by Draft contract, version 2 · Draft SOW, version 1 unchanged · checked 20 Oct 2026"]);
+    [NOT_FOUND.reason, "Earlier closed by Draft contract v2 · reopened by the signed contract"]);
   assert.equal(reopenedBySigned([{ signed_check: NOT_FOUND }, { signed_check: CONFIRMED }]).length, 1);
   assert.equal(earlierLine(null), "");
 });
@@ -572,7 +572,7 @@ test("the drawer's view of a reopened commitment: the reason in 'What we found',
   ] };
   const v = commitmentView(c, "open", DOCS);
   assert.equal(v.found[0].fact, NOT_FOUND.reason);
-  assert.deepEqual(v.earlier, ["Earlier closed by Draft contract, version 2 · Draft SOW, version 1 unchanged · checked 20 Oct 2026"]);
+  assert.deepEqual(v.earlier, ["Earlier closed by Draft contract v2 · reopened by the signed contract"]);
   assert.deepEqual(v.ai, []); // the deterministic reason is not an AI-written summary
   assert.deepEqual(v.reopenedLines, [NOT_FOUND.reason, v.earlier[0]]);
 });

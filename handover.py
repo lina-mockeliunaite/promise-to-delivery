@@ -302,6 +302,7 @@ def complete(conn, slug: str, completed_by) -> dict:
 
 def handover(conn, slug: str) -> dict:
     """The handover panel: complete or not, both notes, and the frozen snapshot once complete."""
+    import signed_check  # local: signed_check imports workspace, which imports this module
     did = ledger_fixes.deal_id(conn, slug)
     done = completion(conn, did)
     snap = fingerprint = None
@@ -315,6 +316,8 @@ def handover(conn, slug: str) -> dict:
             "completed_at": done["at"] if done else None, "notes": notes(conn, did), "snapshot": snap,
             "fingerprint": fingerprint, "signature": signature(conn, did),
             "display_names": _display_names(conn, did, slug) if snap else {},
+            # 12 Nov: the related clause of each reopened gap, found now from the signed text the record holds; not in the snapshot, so the fingerprint is untouched
+            "related_clauses": signed_check.related_for_record(conn, snap) if snap else {},
             # 19 Oct: the deal owner, read now (profile, else the Sales note's author), as the deal list shows it; not in the snapshot
             "owner": deal_stage.load_profile(slug).get("owner") or ((notes(conn, did)["sales"] or {}).get("by"))}
 

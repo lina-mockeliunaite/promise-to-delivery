@@ -125,7 +125,7 @@ export function CommitRow({ c, status, active, onOpen, flash = false, documents 
           {/* 12 Nov: a closed row says it as the drawer and the record do: "Closed by Draft contract v2 (19 Oct) · confirmed in the signed contract (20 Oct)". */}
           {status === "closed" && closedSettled(commitmentView(c, status, documents), documents)
             .map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
-          {status !== "closed" && reopenedLines(c.issues).map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
+          {status !== "closed" && reopenedLines(c.issues, documents).map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
           {status === "noted" && noteRes && <span className="dp-prow-note">{recordedBy(noteRes.by, noteRes.at, fmtDate)}</span>}
         </span>
         <span className="dp-prow-state">

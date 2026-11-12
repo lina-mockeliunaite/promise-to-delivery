@@ -59,6 +59,11 @@ export function RecordDetail({ v, documents, onOpenDoc }) {
           {v.signed?.doc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(v.signed.doc, v.signed.quote); }}>Open the signed clause</button></>}
         </p>
       )}
+      {r.related && (
+        <p className="fr-related"><strong>Related clause in the {r.related.in}:</strong> {r.related.text}
+          {r.related.doc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(r.related.doc, r.related.quote); }}>Open the clause</button></>}
+        </p>
+      )}
       {r.gaps.map((g) => <p key={g} className="fr-gap">{g}</p>)}
       {r.settled.map((l) => <p key={l} className={`fr-settled${l.endsWith(": still open") ? " is-open" : ""}`}>{l}</p>)} {/* a gap still open reads in the "needs attention" amber */}
     </div>
@@ -164,7 +169,7 @@ export default function FrozenRecord({ deal, onBack }) {
   const elsewhere = new Set([...open.map((x) => x.promise), ...noted.map((x) => x.promise)]);
   const closedOnly = [...new Set(resolved.map((r) => r.promise))].filter((p) => !elsewhere.has(p));
   const liveOf = (promise) => liveRegister?.commitments?.find((c) => c.name === promise) ?? null;
-  const common = { documents, titles, snapshotDocs: s.documents }; // what was searched is named from the documents captured in the handover
+  const common = { documents, titles, snapshotDocs: s.documents, relatedMap: hv.related_clauses ?? {} }; // what was searched is named from the documents captured in the handover
   const views = [
     ...open.map((item) => frozenView({ item, status: "open", closedFindings: closedFor(item.promise), live: liveOf(item.promise), ...common })),
     ...noted.map((item) => frozenView({ item, status: "noted", closedFindings: closedFor(item.promise), live: liveOf(item.promise), ...common })),

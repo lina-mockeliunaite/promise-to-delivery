@@ -9,6 +9,7 @@ Part B: the signed document's filing date feeds no reading-cache key and no revi
 changes only what is displayed and stored as the document's date.
 """
 
+import json
 import os
 import sys
 import tempfile
@@ -32,6 +33,9 @@ import workspace
 H = {"X-Requested-With": "deal-workspace"}
 SC = config.SCENARIOS_DIR
 REASON = "The signed contract doesn't contain the wording that closed this gap, so the fix can't be confirmed."
+NEW_CLAUSE = "Coaching-scam detection via BioCatch will be enabled from 1 May 2027."
+DRAFT_SENTENCE = ("Through its connector to BioCatch, Provider will use behavioural signals from the Customer's mobile and internet banking to flag customers who appear to be "
+                  "coached by a scammer, from the 1 February 2027 launch, subject to the beta terms agreed in the pricing schedule.")
 
 
 class AlderCase(unittest.TestCase):
@@ -72,32 +76,70 @@ class TestWhyCoachingReopens(AlderCase):
         coaching = next(c for c in client.get("/api/deals/alder_bank/register").json()["commitments"] if "BioCatch" in c["name"])
         self.assertEqual({i["finding"]: i["state"] for i in coaching["issues"]}, {"No approval recorded": "Resolved", "Missing from contract": "Resolved"})
 
-    def test_both_signed_texts_reopen_with_the_same_closing_sentence_looked_up_in_the_draft_sow(self):
+    def run_signed(self, text, sub):
+        db, client = self.alder_with_revised_sow(sub)
+        self.add_signed(client, text)
+        conn, did, res = self.evaluate(db)
+        return db, client, conn, did, res
+
+    def test_run_a_an_appendix_that_repeats_the_revised_sow_sentence_confirms_it(self):
+        """Run A (12 Nov): the scratch appendix repeats the revised SOW's coaching sentence word for word (1 February)."""
         shipped = (SC / "AB-09_signed_contract.md").read_text(encoding="utf-8")
-        copy = shipped.replace("Statement of Work dated 9 October 2026", "Statement of Work dated 16 October 2026")
-        self.assertNotEqual(shipped, copy)
-        self.assertEqual(len([1 for a, b in zip(shipped.splitlines(), copy.splitlines()) if a != b]), 1)  # the one line naming the SOW date
-        seen = []
-        for n, text in enumerate((shipped, copy)):
-            db, client = self.alder_with_revised_sow(str(n))
-            self.add_signed(client, text)
-            conn, did, res = self.evaluate(db)
-            self.assertEqual([v["status"] for v in res.values()], ["not_found"], n)
-            [v] = res.values()
-            self.assertEqual(v["closed_by"], "Draft SOW, version 2")
-            self.assertEqual(v["reason"], REASON)
-            self.assertIn("coached by a scammer", v["sentence"])
-            signed = signed_check.signed_documents(conn, did, "alder_bank")
-            self.assertEqual(len(signed), 1)
-            self.assertFalse(signed_check.contains(signed[0]["text"], v["sentence"]))  # the sentence is not in the signed text
-            self.assertNotIn("biocatch", signed[0]["text"].lower())
-            seen.append((v["sentence"], v["closed_by"], v["status"]))
-            reg = client.get("/api/deals/alder_bank/register").json()
-            coaching = next(c for c in reg["commitments"] if "BioCatch" in c["name"])
-            gap = next(i for i in coaching["issues"] if i["finding"] == "Missing from contract")
-            self.assertEqual(gap["signed_check"]["reason"], REASON)
-            self.assertIn("Draft SOW, version 2", gap["signed_check"]["earlier"])  # the closing document, named beneath
-        self.assertEqual(seen[0], seen[1])  # the SOW date the contract names changes nothing
+        scratch = shipped.replace(NEW_CLAUSE, DRAFT_SENTENCE)
+        self.assertNotEqual(scratch, shipped)
+        self.assertIn(DRAFT_SENTENCE, (SC / "AB-06_v2_coaching_added.md").read_text(encoding="utf-8"))
+        db, client, conn, did, res = self.run_signed(scratch, "a")
+        [v] = res.values()
+        self.assertEqual((v["status"], v["closed_by"], v["sentence"]), ("confirmed", "Draft SOW, version 2", DRAFT_SENTENCE))  # searched for the closing sentence
+        self.assertEqual(v["signed_sentence"], DRAFT_SENTENCE)  # found, word for word, in the signed text
+        self.assertEqual(v["text"], "Confirmed in the signed contract (Signed contract, 20 Oct)")
+        self.assertNotIn("related", v)  # a confirmed gap has nothing to relate
+        coaching = next(c for c in client.get("/api/deals/alder_bank/register").json()["commitments"] if "BioCatch" in c["name"])
+        self.assertEqual({i["finding"]: i["state"] for i in coaching["issues"]}, {"No approval recorded": "Resolved", "Missing from contract": "Resolved"})
+
+    def test_run_b_the_shipped_ab09_with_1_may_reopens_the_gap_and_keeps_the_earlier_closure(self):
+        """Run B (12 Nov): the shipped AB-09's appendix enables coaching detection from 1 May 2027; the closing sentence is not in it."""
+        shipped = (SC / "AB-09_signed_contract.md").read_text(encoding="utf-8")
+        db, client, conn, did, res = self.run_signed(shipped, "b")
+        [v] = res.values()
+        self.assertEqual((v["status"], v["closed_by"], v["reason"]), ("not_found", "Draft SOW, version 2", REASON))
+        self.assertEqual(v["sentence"], DRAFT_SENTENCE)  # what it searched for: the sentence that closed the gap, looked up in the draft SOW
+        [signed] = signed_check.signed_documents(conn, did, "alder_bank")
+        self.assertFalse(signed_check.contains(signed["text"], DRAFT_SENTENCE))  # not in the signed text
+        reg = client.get("/api/deals/alder_bank/register").json()
+        coaching = next(c for c in reg["commitments"] if "BioCatch" in c["name"])
+        gap = next(i for i in coaching["issues"] if i["finding"] == "Missing from contract")
+        self.assertEqual(gap["state"], "Needs action")  # reopened
+        self.assertEqual(gap["signed_check"]["reason"], REASON)  # the reason stays the generic sentence
+        self.assertIn("Draft SOW, version 2", gap["signed_check"]["earlier"])  # the earlier closure, kept
+        self.assertEqual(next(i for i in coaching["issues"] if i["finding"] == "No approval recorded")["state"], "Resolved")
+
+    def test_the_exact_clause_shown_for_alder_is_the_one_1_may_sentence(self):
+        shipped = (SC / "AB-09_signed_contract.md").read_text(encoding="utf-8")
+        db, client, conn, did, res = self.run_signed(shipped, "c")
+        [v] = res.values()
+        self.assertEqual(v["related"]["sentence"], "Coaching-scam detection via BioCatch will be enabled from 1 May 2027.")
+        self.assertEqual((v["related"]["label"], v["related"]["in"], v["related"]["key"]), ("Signed contract", "signed SOW", v["signed_key"]))
+        self.assertEqual(v["related"]["version_id"], v["signed_version_id"])
+        coaching = next(c for c in client.get("/api/deals/alder_bank/register").json()["commitments"] if "BioCatch" in c["name"])
+        gap = next(i for i in coaching["issues"] if i["finding"] == "Missing from contract")
+        self.assertEqual(gap["signed_check"]["related"], v["related"])  # the register carries it to both modes
+        # the verdict is the one it was: related is an added key and the status, reason and sentence are as before
+        self.assertEqual((v["status"], v["reason"]), ("not_found", REASON))
+
+    def test_ab09_mentions_biocatch_in_exactly_one_sentence_and_no_other_signed_sentence_matches(self):
+        shipped = (SC / "AB-09_signed_contract.md").read_text(encoding="utf-8")
+        self.assertEqual(shipped.lower().count("biocatch"), 1)
+        self.assertNotIn("coached by a scammer", shipped.lower())
+        phrases = ["BioCatch", "coached by a scammer"]  # the finding's searched phrases, as stored
+        import detect_v2
+        hits = [x for line in shipped.splitlines() for x in signed_check._SENTENCES.split(signed_check._BOLD_LEAD.sub("", line).strip())
+                if x.strip() and any(detect_v2._contains(x, p) for p in phrases)]
+        self.assertEqual(hits, ["Coaching-scam detection via BioCatch will be enabled from 1 May 2027."])
+        self.assertNotIn("9 October", shipped)  # the 9 October SOW reference is gone
+        self.assertIn("1 February 2027", shipped)  # platform launch stays
+        self.assertIn("Appendix 1", shipped)
+        self.assertIn("Date: 20 October 2026", shipped)  # both signature dates stay
 
     def test_the_reason_is_the_generic_sentence_for_every_deal(self):
         self.assertIn("doesn't contain the wording that closed this gap, so the fix can't be confirmed", Path(signed_check.__file__).read_text(encoding="utf-8"))
@@ -148,6 +190,126 @@ class TestSignedCheckOutputFields(AlderCase):
     def test_the_saved_handover_record_keeps_only_its_old_fields(self):
         src = (Path(signed_check.__file__).parent / "handover.py").read_text(encoding="utf-8")
         self.assertIn('for k in ("status", "text", "reason", "earlier") if k in sc', src)  # the snapshot copies four fields: new fields never enter the saved record
+
+
+class TestRelatedClause(unittest.TestCase):
+    """signed_check.related_clause (12 Nov): display only. The signed sentence that contains the most of the finding's searched phrases; ties go to the first."""
+
+    def doc(self, text, type_="signed_contract"):
+        return {"text": text, "type": type_, "key": "D-09", "version_id": 7, "label": "Signed contract"}
+
+    CLAIM = {"kind": "contract_gap", "missing_phrases": ["BioCatch", "coached by a scammer"]}
+
+    def test_the_sentence_with_the_most_phrases_wins_and_ties_go_to_the_first(self):
+        text = "Alpha uses BioCatch here. Beta uses BioCatch and flags customers coached by a scammer. Gamma uses BioCatch too."
+        self.assertEqual(signed_check.related_clause(self.CLAIM, [self.doc(text)])["sentence"], "Beta uses BioCatch and flags customers coached by a scammer.")
+        tie = "Alpha uses BioCatch here. Beta also uses BioCatch."
+        self.assertEqual(signed_check.related_clause(self.CLAIM, [self.doc(tie)])["sentence"], "Alpha uses BioCatch here.")
+        two_docs = [self.doc("One BioCatch."), self.doc("Two BioCatch.")]
+        self.assertEqual(signed_check.related_clause(self.CLAIM, two_docs)["sentence"], "One BioCatch.")
+
+    def test_no_sentence_with_a_searched_phrase_means_nothing_is_returned(self):
+        self.assertIsNone(signed_check.related_clause(self.CLAIM, [self.doc("The term is three years. Disputes go to New South Wales.")]))
+        self.assertIsNone(signed_check.related_clause({"kind": "contract_gap", "missing_phrases": []}, [self.doc("BioCatch.")]))
+        self.assertIsNone(signed_check.related_clause(self.CLAIM, []))
+
+    def test_a_conflict_uses_its_promised_value(self):
+        claim = {"kind": "conflicting_terms", "promised_value": "12 languages"}
+        r = signed_check.related_clause(claim, [self.doc("Support is offered in four languages. Later it covers 12 languages.")])
+        self.assertEqual(r["sentence"], "Later it covers 12 languages.")
+
+    def test_the_label_says_signed_sow_under_a_statement_of_work_heading_and_otherwise_signed_contract(self):
+        under = "## Appendix 1 — Statement of Work\n\n**2. Coaching.** BioCatch is enabled later.\n"
+        self.assertEqual(signed_check.related_clause(self.CLAIM, [self.doc(under)])["in"], "signed SOW")
+        body = "**Clause 3. Services.** BioCatch is described in the Statement of Work.\n"  # a clause that merely mentions the SOW stays a contract clause
+        self.assertEqual(signed_check.related_clause(self.CLAIM, [self.doc(body)])["in"], "signed contract")
+        after = "## Appendix 1 — Statement of Work\n\nA.\n\n## Signatures\n\nBioCatch signed.\n"
+        self.assertEqual(signed_check.related_clause(self.CLAIM, [self.doc(after)])["in"], "signed contract")
+        self.assertEqual(signed_check.related_clause(self.CLAIM, [self.doc("BioCatch.", "signed_sow")])["in"], "signed SOW")
+
+    def test_it_is_returned_in_the_signed_texts_own_wording(self):
+        text = "**2. Scam coaching.** Coaching-scam detection via BioCatch will be enabled from 1 May 2027.\n"
+        self.assertEqual(signed_check.related_clause(self.CLAIM, [self.doc(text)])["sentence"], "Coaching-scam detection via BioCatch will be enabled from 1 May 2027.")
+
+
+class TestLockedRecordRelatedClause(AlderCase):
+    """12 Nov: the locked record shows the related clause, found at display time from the signed text the record holds. Nothing is added to the snapshot and the fingerprint
+    is the same with and without this change."""
+
+    def lock(self, sub):
+        db, client = self.alder_with_revised_sow(sub)
+        self.add_signed(client, (SC / "AB-09_signed_contract.md").read_text(encoding="utf-8"))
+        for role in ("sales", "delivery"):
+            r = client.post("/api/deals/alder_bank/handover/notes", json={"role": role, "note": f"{role} note", "entered_by": "Sam"}, headers=H)
+            self.assertEqual(r.status_code, 200, r.text)
+        r = client.post("/api/deals/alder_bank/handover/complete", json={"completed_by": "Sam"}, headers=H)
+        self.assertEqual(r.status_code, 200, r.text)
+        return db, client, r.json()
+
+    def test_a_freshly_locked_alder_record_shows_the_exact_clause_from_its_own_stored_text(self):
+        db, client, hv = self.lock("l1")
+        self.assertEqual(len(hv["related_clauses"]), 1)  # one reopened gap, one entry
+        [(key, r)] = hv["related_clauses"].items()
+        self.assertTrue(key.endswith("|Missing from contract"))
+        self.assertEqual(r["sentence"], NEW_CLAUSE)
+        self.assertEqual((r["in"], r["label"], r["date"]), ("signed SOW", "Signed contract", "2026-10-20"))
+        signed = next(d for d in hv["snapshot"]["documents"] if d["type"] == "Signed contract")
+        self.assertEqual(r["version_id"], signed["source_version_id"])  # the document the record holds, with its stored hash
+        # and the signed text it came from is the one the record hashed
+        conn = ledger.connect(db)
+        self.addCleanup(conn.close)
+        (text, sha) = conn.execute("SELECT canonical_text, canonical_sha256 FROM source_versions WHERE id = ?", (signed["source_version_id"],)).fetchone()
+        self.assertEqual(sha, signed["sha256"])
+        self.assertIn(r["sentence"], text)
+
+    def test_the_snapshot_and_its_fingerprint_are_the_same_with_and_without_the_display_lookup(self):
+        import hashlib
+        import re
+        stored_all = []
+        for n in range(2):  # two freshly locked Alder records
+            db, client, hv = self.lock(f"f{n}")
+            conn = ledger.connect(db)
+            self.addCleanup(conn.close)
+            (stored,) = conn.execute("SELECT snapshot_json FROM handover_completions").fetchone()
+            stored_all.append(stored)
+            self.assertEqual(hv["fingerprint"], hashlib.sha256(stored.encode("utf-8")).hexdigest())  # the fingerprint is the hash of the stored text, as before
+            self.assertNotIn("related", stored)  # no related-clause field in the saved record
+            self.assertNotIn("1 May 2027", stored)  # and none of the signed text
+            self.assertTrue(hv["related_clauses"])  # the clause is there for display
+            with mock.patch.object(signed_check, "related_for_record", return_value={}):  # the same record read without the lookup
+                off = client.get("/api/deals/alder_bank/handover").json()
+            self.assertEqual(off["related_clauses"], {})
+            self.assertEqual((off["fingerprint"], off["snapshot"]), (hv["fingerprint"], hv["snapshot"]))  # same fingerprint and snapshot with and without it
+            self.assertEqual(client.get("/api/deals/alder_bank/handover").json()["fingerprint"], hv["fingerprint"])
+        day = lambda t: re.sub(r'"at": "[^"]*"', '"at": "<t>"', t)  # the notes' minute stamps differ between two separate locks; nothing else may
+        self.assertEqual(day(stored_all[0]), day(stored_all[1]))
+        src = (Path(signed_check.__file__).parent / "handover.py").read_text(encoding="utf-8")
+        self.assertIn('for k in ("status", "text", "reason", "earlier") if k in sc', src)  # the snapshot still copies its four fields only
+
+    def test_a_signed_text_that_no_longer_hashes_to_the_record_shows_nothing_and_an_older_record_without_hashes_stays_plain(self):
+        db, client, hv = self.lock("m")
+        snap = hv["snapshot"]
+        conn = ledger.connect(db)
+        self.addCleanup(conn.close)
+        self.assertTrue(signed_check.related_for_record(conn, snap))
+        bad = json.loads(json.dumps(snap))
+        for d in bad["documents"]:
+            d["sha256"] = "0" * 64
+        self.assertEqual(signed_check.related_for_record(conn, bad), {})  # the stored text is not the one the record hashed
+        old = json.loads(json.dumps(snap))
+        for d in old["documents"]:
+            d.pop("sha256", None)
+        self.assertEqual(signed_check.related_for_record(conn, old), {})  # records locked before the hashes were stored: no best-effort matching
+        self.assertEqual(signed_check.related_for_record(conn, {}), {})
+
+    def test_a_record_with_nothing_reopened_has_no_related_clause(self):
+        db, client = self.alder_with_revised_sow("n")
+        scratch = (SC / "AB-09_signed_contract.md").read_text(encoding="utf-8").replace(NEW_CLAUSE, DRAFT_SENTENCE)
+        self.add_signed(client, scratch)  # Run A: confirmed
+        for role in ("sales", "delivery"):
+            client.post("/api/deals/alder_bank/handover/notes", json={"role": role, "note": "n", "entered_by": "Sam"}, headers=H)
+        hv = client.post("/api/deals/alder_bank/handover/complete", json={"completed_by": "Sam"}, headers=H).json()
+        self.assertEqual(hv["related_clauses"], {})
 
 
 class TestSignedDates(AlderCase):
