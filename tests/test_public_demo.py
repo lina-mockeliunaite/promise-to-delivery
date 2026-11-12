@@ -323,7 +323,7 @@ class TestRefusals(Case):
                  ["Arjun Rao", "Head of Product", "BioCatch", "16 October 2026", "1 February 2027"]),
                 ("Revised statement of work", "Scam coaching detection is added as section 5 (16 October 2026).",
                  ["5. Scam coaching detection", "16 October 2026"]),
-                ("Signed contract", "Signed 20 October 2026 by Tom Fraser (Elva) and Priya Nair (Alder Bank). The agreement is dated 12 October. Its Statement of Work appendix sets a later date for coaching-scam detection (1 May 2027); the wording that closed the gap isn't in it, so the fix can't be confirmed and the gap reopens.",
+                ("Signed contract", "Signed 20 October 2026 by Tom Fraser (Elva) and Priya Nair (Alder Bank); agreement dated 12 October. The wording that closed the coaching-scam gap isn't in it, so the fix can't be confirmed and the gap reopens. Its statement of work appendix schedules coaching-scam detection for 1 May 2027.",
                  ["Tom Fraser", "Priya Nair", "20 October 2026", "Elva", "Alder Bank", "12 October", "1 May 2027"])],
         }
         for deal, expected in wording.items():
