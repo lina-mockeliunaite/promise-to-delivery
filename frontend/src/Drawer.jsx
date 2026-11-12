@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
-import { STAGE_LABELS, STATUS_CHIP, alsoIn, closedSettled, plainName, recordedBy, short } from "./dealpage.js";
+import { STAGE_LABELS, STATUS_CHIP, alsoIn, closedSettled, plainName, recordedBy, relatedHeading, short } from "./dealpage.js";
 import { renderDocument } from "./markdown.js";
 import { shortHash, verifyText } from "./docHash.js";
 
@@ -137,6 +137,25 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
           {!v.told.length && (v.toldFallback ? <p className="dr-plain">{v.toldFallback}</p> : <p className="dr-muted">No checked quote is stored for this commitment.</p>)}
         </section>
 
+        {v.reopened ? (
+          <>
+            {/* 12 Nov, round 4: a gap the signed paperwork reopened shows its cause first (the check's own reason, unchanged), then the evidence: the related clause, under a heading that names where it sits. */}
+            <section className="dr-sec">
+              <h3 className="dr-label">Why it reopened</h3>
+              <p className="dr-plain">{v.whyReopened}</p>
+            </section>
+            {v.related && (
+              <section className="dr-sec">
+                <h3 className="dr-label">{relatedHeading(v.related)}</h3>
+                <div className="dr-block dr-related">
+                  <span className="dr-muted">Related clause</span>
+                  <blockquote className="dr-quote">{v.related.quote}</blockquote>
+                  <Source label={v.related.label} date={v.related.date} doc={v.related.doc} onOpen={() => onOpenDoc?.(v.related.doc, v.related.quote)} />
+                </div>
+              </section>
+            )}
+          </>
+        ) : (
         <section className="dr-sec">
           <h3 className="dr-label">Contract says</h3>
           {v.signed ? (
@@ -163,14 +182,8 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
               )}
             </>
           )}
-          {v.related && (
-            <div className="dr-block dr-related">
-              <span className="dr-muted">Related clause in the {v.related.in}</span>
-              <blockquote className="dr-quote">{v.related.quote}</blockquote>
-              <Source label={v.related.label} date={v.related.date} doc={v.related.doc} onOpen={() => onOpenDoc?.(v.related.doc, v.related.quote)} />
-            </div>
-          )}
         </section>
+        )}
 
         <section className="dr-sec">
           <h3 className="dr-label">{v.status === "closed" ? "What closed it" : "What we found"}</h3>

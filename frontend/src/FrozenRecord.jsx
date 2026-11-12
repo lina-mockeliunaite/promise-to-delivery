@@ -59,8 +59,9 @@ export function RecordDetail({ v, documents, onOpenDoc }) {
           {v.signed?.doc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(v.signed.doc, v.signed.quote); }}>Open the signed clause</button></>}
         </p>
       )}
+      {r.why && <p className="fr-why"><strong>Why it reopened:</strong> {r.why}</p>}
       {r.related && (
-        <p className="fr-related"><strong>Related clause in the {r.related.in}:</strong> {r.related.text}
+        <p className="fr-related"><strong>{r.related.heading}</strong> · Related clause: {r.related.text}
           {r.related.doc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(r.related.doc, r.related.quote); }}>Open the clause</button></>}
         </p>
       )}

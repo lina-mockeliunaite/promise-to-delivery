@@ -571,7 +571,8 @@ test("the drawer's view of a reopened commitment: the reason in 'What we found',
       evidence: { contract_quote: { quote: "The Assistant will respond in four languages.", source: "Draft contract" } } },
   ] };
   const v = commitmentView(c, "open", DOCS);
-  assert.equal(v.found[0].fact, NOT_FOUND.reason);
+  assert.deepEqual(v.found, []); // 12 Nov, round 4: the reason is under "Why it reopened" and the finding label is hidden, so what we found has nothing to repeat
+  assert.deepEqual([v.reopened, v.whyReopened], [true, NOT_FOUND.reason]);
   assert.deepEqual(v.earlier, ["Earlier closed by Draft contract v2 · reopened by the signed contract"]);
   assert.deepEqual(v.ai, []); // the deterministic reason is not an AI-written summary
   assert.deepEqual(v.reopenedLines, [NOT_FOUND.reason, v.earlier[0]]);
@@ -585,7 +586,8 @@ test("a closed commitment carries the confirmation, live and in the locked recor
   assert.deepEqual(locked.signedLines, [CONFIRMED.text, NOT_CONFIRMED.text]);
   assert.deepEqual(frozenView({ item: { promise: "P", findings: [] }, status: "closed", closedFindings: [] }).signedLines, []);
   const open = frozenView({ item: { promise: "P", findings: [{ finding: "Contract says something different", signed_check: NOT_FOUND, why: NOT_FOUND.reason }] }, status: "open" });
-  assert.equal(open.found[0].fact, NOT_FOUND.reason);
+  assert.deepEqual(open.found, []);
+  assert.deepEqual([open.reopened, open.whyReopened], [true, NOT_FOUND.reason]);
   assert.deepEqual(open.ai, []);
   assert.equal(open.reopenedLines.length, 2);
 });
@@ -636,10 +638,11 @@ test("'Not in the draft contract or SOW' names the stored phrases and has no bod
     assert.deepEqual(live.found, [{ label: title, fact: "" }]);
     assert.deepEqual(locked.found, [{ label: title, fact: "" }]);
   }
-  // reopened by the signed check, the reason is new information and stays
+  // reopened by the signed check, the reason is new information: it is "Why it reopened" (round 4), and the false finding label is hidden
   const reopened = commitmentView({ name: "X", contract: "Not included", statements: [], issues: [{ id: 3, state: "Needs action", finding: "Missing from contract", evidence: null, reason: "r",
     signed_check: { status: "not_found", reason: "The fix in Draft SOW, version 2 was not found in the signed contract.", earlier: "" } }] }, "open", []);
-  assert.equal(reopened.found[0].fact, "The fix in Draft SOW, version 2 was not found in the signed contract.");
+  assert.deepEqual(reopened.found, []);
+  assert.equal(reopened.whyReopened, "The fix in Draft SOW, version 2 was not found in the signed contract.");
   // a conflict shows what the customer was told, and not the contract side again
   const d = commitmentView({ name: "X", contract: "chat and email", statements: [], issues: [{ id: 2, state: "Needs action", finding: "Contract says something different", evidence: { promised_value: "phone calls", contract_value: "chat and email" }, reason: "r" }] }, "open", []);
   assert.equal(d.found[0].fact, 'Told "phone calls".');
