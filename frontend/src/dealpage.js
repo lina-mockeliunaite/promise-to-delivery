@@ -1,5 +1,5 @@
 // Helpers for the deal page (16 Oct). Pure where possible, so they are tested without a browser.
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { fmtDate } from "./format.js";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -32,14 +32,18 @@ export function firstDocDate(stage) {
 
 // The viewer's name, remembered in this browser only, so nobody retypes it for every note or "seen".
 const KEY = "ptd.name";
-export function useName() {
-  const [name, setName] = useState(() => {
+export const DEMO_VISITOR = "Demo visitor"; // clearly fictional; the public demo's starting name
+// defaultName (public demo only, "Demo visitor"): the field starts with it when nothing is remembered; it is an ordinary editable name, and it is saved only if the visitor changes it.
+export function useName(defaultName = "") {
+  const stored = () => {
     try {
       return window.localStorage.getItem(KEY) ?? "";
     } catch {
       return "";
     }
-  });
+  };
+  const [name, setName] = useState(() => stored() || defaultName);
+  useEffect(() => { if (defaultName && !name && !stored()) setName(defaultName); }, [defaultName]); // the demo's config can arrive after the first render
   const update = (value) => {
     setName(value);
     try {
@@ -747,6 +751,14 @@ export function withoutRepeats(found, contract) {
   return found.map((f) => ({ ...f, fact: sentencesOf(f.fact).filter((s) => !said.has(sentenceKey(s))).join(" ") }));
 }
 
+// ---- Round 8 (13 Nov): precise evidence labels after signing -----------------------------------------------------------------------------------------------------------
+// "Signed contract \u00B7 confirmed": the signed check found the closing wording in the signed document. "Draft SOW \u00B7 not re-checked at signing": "Contract says" quotes a draft clause and a signed
+// document is in the deal, but no signed check confirmed it. Neither says "verified": the checks match wording, nothing more. Before signing nothing is added.
+export const signedConfirmedLabel = (signed) => `${signed?.label || "Signed contract"} \u00B7 confirmed`;
+export const NOT_RECHECKED = "not re-checked at signing";
+export const draftSourceLabel = (v, label) => (v?.afterSigning && label ? `${label} \u00B7 ${NOT_RECHECKED}` : label);
+const hasSigned = (docs) => (docs ?? []).some((d) => d.included !== false && (isSignedDoc(d.doc_type) || /^Signed (contract|SOW)/i.test(d.name ?? "")));
+
 // ---- Round 7 (13 Nov): display helpers --------------------------------------------------------------------------------------------------------------------------------
 // The locked record's summary pills (13 Nov, Round 7): a pill with a zero count is not shown.
 export const recordPills = ({ open = 0, noted = 0, closed = 0 }) => [
@@ -963,7 +975,7 @@ export function groupNotOffered(found, issues) {
 
 // One commitment, as the drawer shows it. status: "open" | "noted" | "closed".
 export function commitmentView(c, status, documents) {
-  return withoutRepeatedWording(commitmentViewRaw(c, status, documents));
+  return { ...withoutRepeatedWording(commitmentViewRaw(c, status, documents)), afterSigning: hasSigned(documents) };
 }
 function commitmentViewRaw(c, status, documents) {
   const unresolved = c.issues.filter((i) => i.state !== "Resolved");
@@ -1046,7 +1058,8 @@ function contractView(term, side, documents, now = null, searched = []) {
 // live: the same commitment as the live register has it (a locked deal cannot change, so it is the same); it carries the signed check's full output, which the saved record
 // keeps only in part. snapshotDocs: the documents captured in the locked handover, for "what was searched".
 export function frozenView(args) {
-  return withoutRepeatedWording(frozenViewRaw(args));
+  // a record is locked only once the deal is signed, so its drafts are always "after signing"
+  return { ...withoutRepeatedWording(frozenViewRaw(args)), afterSigning: true };
 }
 function frozenViewRaw({ item, status, closedFindings = [], documents = [], titles = {}, live = null, snapshotDocs = null, relatedMap = null, approvalScopes = null }) {
   const name = item.promise;
@@ -1142,9 +1155,9 @@ export function recordLines(v, documents = []) {
   const why = v.reopened ? v.whyReopened : ""; // 12 Nov, round 4: a reopened gap reads cause first ("Why it reopened"), then the related clause; no "Contract says" line
   // A commitment confirmed in the signed contract shows the signed clause, attributed to the signed contract with its date; the draft attribution goes (12 Nov).
   const back = (ref, label, date) => `${ref.replace(/^./, (c) => c.toUpperCase())} (${label}${date ? `, ${short(date)}` : ""})`; // 13 Nov: wording already shown above points back instead. The reference names the first source and date, so a clause shown above reads "RFP response, 29 Sep, above (Draft SOW, 16 Oct)"
-  if (v.signed?.quote) contract = v.signed.ref ? `${v.signed.status || "Confirmed in the signed contract"}: ${v.signed.ref}.` : quoteLine(v.signed.quote, v.signed.label, v.signed.date);
-  else if (v.contract.now?.quote) contract = v.contract.now.ref ? back(v.contract.now.ref, v.contract.now.label) : quoteLine(v.contract.now.quote, v.contract.now.label);
-  else if (v.contract.quote) contract = v.contract.quote.ref ? back(v.contract.quote.ref, v.contract.quote.label) : quoteLine(v.contract.quote.quote, v.contract.quote.label);
+  if (v.signed?.quote) contract = v.signed.ref ? `${signedConfirmedLabel(v.signed)}${v.signed.date ? ` (${short(v.signed.date)})` : ""}: ${v.signed.ref}.` : quoteLine(v.signed.quote, signedConfirmedLabel(v.signed), v.signed.date);
+  else if (v.contract.now?.quote) contract = v.contract.now.ref ? back(v.contract.now.ref, draftSourceLabel(v, v.contract.now.label)) : quoteLine(v.contract.now.quote, draftSourceLabel(v, v.contract.now.label));
+  else if (v.contract.quote) contract = v.contract.quote.ref ? back(v.contract.quote.ref, draftSourceLabel(v, v.contract.quote.label)) : quoteLine(v.contract.quote.quote, draftSourceLabel(v, v.contract.quote.label));
   else if (v.contract.text && !/^No gap found/.test(v.contract.text) && !v.reopened) contract = v.contract.text;
   // A commitment with some gaps closed and others open says both, per gap ("Approval: closed by Internal approvals note v2 (18 Oct)", "Not in the contract: still open"),
   // so a closed line next to "Needs attention" is never read as resolved. A commitment with nothing closed shows its gap lines; one with everything closed

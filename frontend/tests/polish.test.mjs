@@ -169,7 +169,7 @@ test("the demo bar is above every screen, and a new screen starts at the top (la
   const app = read("App.jsx");
   assert.match(app, /<DemoBar \/><AppBody \/>/); // one bar above landing, list and deal
   assert.match(app, /useEffect\(\(\) => \{ window\.scrollTo\(0, 0\); \}, \[current, landing, classic\]\);/); // the deal page's scroll offset no longer carries to the list
-  assert.match(app, /fetchDemoConfig\(\)\.then\(\(r\) => alive && setDemo\(r\), \(\) => \{ if \(alive && left > 0\) setTimeout/); // a failed config answer is asked again
+  assert.match(app, /fetchDemoConfig\(\)\.then\(\(r\) => \{ if \(alive\) \{ api\.setDemoEpoch\(r\.epoch\); setDemo\(r\); \} \}, \(\) => \{ if \(alive && left > 0\) setTimeout/); // a failed config answer is asked again
   assert.match(read("Landing.jsx"), /onOpen\(/); // "Open sample deal" and the back link both stay inside the one provider
   const back = app.match(/const back = \(\) => \{[^}]*\}/)[0];
   assert.ok(back.includes("setCurrent(null)")); // "All deals" goes to the list, which the effect then scrolls to the top

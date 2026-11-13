@@ -50,15 +50,16 @@ const state = (deal, samplesIn, noted = false) => {
 };
 const states = (deal, samplesIn, noted, toured = true) => { const s = state(deal, samplesIn, noted); return m.guideSteps(deal, SAMPLES[deal], s.documents, s.commitments, false, toured).map((x) => x.state); };
 
+const HANDOVER_STEP = "Complete the handover: add a Sales note and a Delivery note, then lock the record"; // Round 8: step 6 says up front what it asks for
 const LABELS = {
   noma_journeys: ["Get the picture", "Launch specialist: add the approval", "Support in 12 languages: add the revised contract", "Add the signed contract",
-    "Phone calls: record the customer's agreement as a note", "Complete the handover"],
+    "Phone calls: record the customer's agreement as a note", HANDOVER_STEP],
   alder_bank: ["Get the picture", "Scam-call alerts: add the approval", "Scam-call alerts: add the revised statement of work", "Add the signed contract",
-    "Hosting on Microsoft Azure: record the customer's agreement as a note", "Complete the handover"],
+    "Hosting on Microsoft Azure: record the customer's agreement as a note", HANDOVER_STEP],
 };
 const HINTS = {
   noma_journeys: [null, "Promised in the RFP and again in the proposal, never approved, not in the contract. Add the approval and see what closes.",
-    "Told 12 languages; the draft contract says four. Add the revised contract.", "The signed contract decides what Delivery inherits. Add it and see which fixes survive.",
+    "Open the RFP response to see the promise. Told 12 languages; the draft contract says four. Then add the revised contract.", "The signed contract decides what Delivery inherits. Add it and see which fixes survive.",
     "Aivuna doesn't offer voice, so no document can fix this. Noma agreed on a call: record it as a note.", null],
   alder_bank: [null, "Approved, but only from 1 May. Still open.",
     "The revised statement of work says live from 1 February. The contract gap closes; the approval is still open.", "Signed for 1 February, approved from 1 May. Delivery inherits the gap.",
@@ -100,7 +101,7 @@ test("each 'Do step N' goes to the right place: the drawer on the evidence with 
   const act = (deal, i) => { const s = state(deal, 0); return m.guideAction(m.guideSteps(deal, SAMPLES[deal], s.documents, s.commitments)[i], s.commitments); };
   assert.deepEqual(act("noma_journeys", 0), { tour: true, drawer: null, row: null, handover: false });
   assert.deepEqual(act("noma_journeys", 1), { drawer: { type: "commitment", id: 17, guide: { hint: HINTS.noma_journeys[1], highlight: "add" } }, row: 17, handover: false });
-  assert.deepEqual(act("noma_journeys", 2), { drawer: { type: "commitment", id: 16, guide: { hint: HINTS.noma_journeys[2], highlight: "add" } }, row: 16, handover: false });
+  assert.deepEqual(act("noma_journeys", 2), { drawer: { type: "commitment", id: 16, guide: { hint: HINTS.noma_journeys[2], highlight: "add", told: true } }, row: 16, handover: false });
   assert.deepEqual(act("noma_journeys", 3), { drawer: { type: "add", fromId: null, hint: HINTS.noma_journeys[3] }, row: null, handover: false });
   assert.deepEqual(act("noma_journeys", 4), { drawer: { type: "commitment", id: 15, guide: { hint: HINTS.noma_journeys[4], highlight: "note" } }, row: 15, handover: false });
   assert.deepEqual(act("noma_journeys", 5), { drawer: null, row: null, handover: true });
@@ -399,5 +400,7 @@ test("'Start the guided demo →' opens Noma Journeys at step 1: it forgets the 
   const app = read("App.jsx");
   assert.match(app, /<DemoNavContext\.Provider value=\{navRef\}>[\s\S]*?<DemoBar \/><AppBody \/>/); // 12 Nov: the landing contexts sit inside
   assert.match(app, /demoNav\.current = \(slug\) => \{ markLandingSeen\(\); if \(isWelcome\(window\.location\.hash\)\) clearHash\(\); setLanding\(false\); setClassic\(false\); setCurrent\(slug\); \};/);
-  assert.match(read("DemoUI.jsx"), /onClick=\{\(\) => startGuidedDemo\(nav\)\}>\{START_LABEL\}/);
+  // Round 8: the button is StartDemoButton; with nothing past the start (or in local mode) its click is exactly startGuidedDemo(nav)
+  assert.match(read("DemoUI.jsx"), /const onClick = \(\) => \(startAction\(demo\.public, state\) === "choose" \? setAsking\(true\) : startGuidedDemo\(nav\)\);/);
+  assert.match(read("DemoUI.jsx"), />\{START_LABEL\}<\/button>/);
 });

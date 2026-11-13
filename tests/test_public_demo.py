@@ -220,9 +220,10 @@ class TestSamplePreview(Case):
 class TestConfigAndHosts(Case):
     def test_the_banner_and_note_cap_are_reported_only_in_public_mode(self):
         on = self.client.get("/api/demo/config").json()
+        self.assertTrue(on.pop("epoch"))  # Round 8: the demo's epoch, changed by every reset (tests/test_demo_epoch.py)
         self.assertEqual(on, {"public": True, "note_max": 500, "banner": "Public demo · fictional data",
                               "note": "Shared with other visitors. If a deal has already been worked through, click Reset demo."})
-        self.assertEqual(self.make(False).get("/api/demo/config").json(), {"public": False, "banner": None, "note": None, "note_max": None})
+        self.assertEqual(self.make(False).get("/api/demo/config").json(), {"public": False, "banner": None, "note": None, "note_max": None, "epoch": None})
 
     def test_extra_hosts_count_only_in_public_mode(self):
         with mock.patch.dict(os.environ, {"DEALSHAPE_ALLOWED_HOSTS": "demo.onrender.com, other.example"}):

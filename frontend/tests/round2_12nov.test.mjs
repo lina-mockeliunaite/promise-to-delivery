@@ -7,7 +7,7 @@ const read = (f) => fs.readFileSync(new URL(`../src/${f}`, import.meta.url), "ut
 
 test("landing (public mode): the guided-demo button is first and primary, the cards' buttons are secondary, local mode is unchanged", () => {
   const jsx = read("Landing.jsx"), css = read("Landing.css");
-  assert.match(jsx, /\{guided && <button type="button" className="land-start" onClick=\{\(\) => startGuidedDemo\(nav\)\}>\{START_LABEL\}<\/button>\}\s*<button type="button" className="dp-link-btn dp-brand" onClick=\{onList\}>/);
+  assert.match(jsx, /\{guided && <StartDemoButton className="land-start" runState=\{runState\} \/>\}\s*\{showReplayHint\(demo\.public, runState\) && <span className="land-replay">\{REPLAY_HINT\}<\/span>\}\s*<button type="button" className="dp-link-btn dp-brand" onClick=\{onList\}>/);
   assert.match(jsx, /const guided = !!demo\.public/);
   assert.match(jsx, /className=\{`dp-btn land-open \$\{guided \? "land-open-secondary" : "dp-btn-dark"\}`\}/); // local: the dark button as before
   assert.ok(!/land-start[^"]*dp-btn-dark/.test(jsx));
@@ -18,7 +18,7 @@ test("landing (public mode): the guided-demo button is first and primary, the ca
 
 test("the bar drops its guided-demo button on the landing page only; the deal list keeps it", () => {
   const ui = read("DemoUI.jsx");
-  assert.match(ui, /\{!steps && !onLanding && <button type="button" className="demo-bar-do" onClick=\{\(\) => startGuidedDemo\(nav\)\}>/);
+  assert.match(ui, /\{!steps && !onLanding && <StartDemoButton className="demo-bar-do" \/>\}/);
   assert.match(ui, /<ResetDemo variant="bar" \/>/); // Reset demo stays
   assert.match(ui, /demo\.banner/); // so does the status text
   assert.match(read("Landing.jsx"), /publishLanding\(guided\); return \(\) => publishLanding\(false\)/); // off again when the landing goes

@@ -218,7 +218,7 @@ import { STATIC_CARDS } from "../src/landing.js";
 
 test("Alder's landing card is the approval-scope hook, and both dates are what the sample files say", async () => {
   const fs = await import("node:fs");
-  assert.deepEqual(STATIC_CARDS, { alder_bank: { title: "Scam-call alerts at launch", hook: "Promised: live at the 1 February launch · Approved: from 1 May" } });
+  assert.deepEqual(STATIC_CARDS, { alder_bank: { title: "Scam-call alerts at launch", hook: "Promised: live at the 1 February launch · Approved: from 1 May", preview: "Preview of the outcome" } });
   const root = new URL("../../data/", import.meta.url);
   assert.match(fs.readFileSync(new URL("alder_bank/docs/AB-03_rfp_response.md", root), "utf8"), /live from the 1 February 2027 launch/); // promised
   assert.match(fs.readFileSync(new URL("scenarios/AB-05_v2_named_exception.md", root), "utf8"), /approved by Arjun Rao \(Head of Product\) from 1 May 2027/); // approved

@@ -22,6 +22,7 @@ from pathlib import Path
 import os
 import sqlite3
 import threading
+import uuid
 
 from fastapi import Body, Depends, FastAPI, Header, HTTPException, Query, Request
 from fastapi.responses import JSONResponse, Response
@@ -251,9 +252,15 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None, public=None, hourly=
                 return deal
         raise HTTPException(status_code=404, detail=NOT_FOUND)
 
-    async def write_guard(request: Request, x_requested_with: str | None = Header(default=None), content_type: str | None = Header(default=None)):
+    async def write_guard(request: Request, x_requested_with: str | None = Header(default=None), content_type: str | None = Header(default=None),
+                          x_demo_epoch: str | None = Header(default=None)):
         if x_requested_with != "deal-workspace" or not (content_type or "").startswith("application/json"):
             raise HTTPException(status_code=403, detail="Forbidden")
+        # 13 Nov, Round 8: in the public demo a visitor's page carries the demo's epoch (changed by every reset, a visitor's or the hourly one). A write from a page that
+        # predates the reset would otherwise land silently on the restored deals, so it is refused with a plain message. A request without the header (the reset itself,
+        # older pages, tests) is not checked.
+        if public and x_demo_epoch is not None and x_demo_epoch != demo_epoch() and request.url.path != "/api/demo/reset":
+            raise HTTPException(status_code=409, detail=public_demo.DEMO_WAS_RESET, headers={"X-Demo-Reset": "1"})
         if public:  # notes are visible to every visitor: keep them short (a malformed body is the route's own 400)
             try:
                 body = await request.json()
@@ -313,6 +320,10 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None, public=None, hourly=
         return filename, text, {}
 
     reset_lock = threading.Lock()
+    epoch = {"run": uuid.uuid4().hex[:12], "n": 0}  # one worker (Dockerfile); a restart also changes it, and the next write says the demo was reset
+
+    def demo_epoch() -> str:
+        return f"{epoch['run']}-{epoch['n']}"
 
     def run_reset() -> dict:
         """The one reset: the Reset demo button and the hourly job both come through here, so the lock covers both.
@@ -327,6 +338,7 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None, public=None, hourly=
             raise HTTPException(status_code=500, detail="The reset failed and the current ledger was left as it was.") from None
         finally:
             reset_lock.release()
+        epoch["n"] += 1
         if public:
             public_demo.prune_backups(done["ledger"])
         return {"deals_restored": len(done["deals"]), "deals": [d["deal"] for d in done["deals"]],
@@ -340,7 +352,8 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None, public=None, hourly=
     @app.get("/api/demo/config")
     def demo_config():
         return {"public": public, "banner": public_demo.BANNER if public else None, "note": public_demo.SHARED_NOTE if public else None,
-                "note_max": public_demo.NOTE_MAX if public else None}
+                "note_max": public_demo.NOTE_MAX if public else None,
+                "epoch": demo_epoch() if public else None}
 
     @app.get("/api/demo/samples")
     def demo_samples(deal: str = Query(...)):

@@ -12,7 +12,7 @@ import * as api from "./api.js";
 import { addReady, fmtDate, fmtDateTime, mismatchNotice, newDocumentNotice, uploadKind } from "./format.js";
 import {
   CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, closedSettled, reopenedLines, scopeRowLines, SCOPE_HELD_TITLE, scopeHeldDetail, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, changeTitle, signedDatesLabel, changedPromises, closedTitle, confirmedTitle, reopenedTitle, coverageLines, docCount, gapProgress, orderPromises, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
-  mismatchParts, promiseLabels, missingForHandover, handoverChecklist, handoverOpen, changeView, changeDocLabel, datePrefill, plainName, readHash, recordedBy, rowTitle, toldParts, suggestFix, useName, whatChanged,
+  mismatchParts, promiseLabels, missingForHandover, handoverChecklist, handoverOpen, changeView, changeDocLabel, datePrefill, plainName, readHash, recordedBy, rowTitle, toldParts, suggestFix, useName, whatChanged, DEMO_VISITOR,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
 import BriefCard from "./BriefCard.jsx";
@@ -706,8 +706,8 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   const [docs, setDocs] = useState(null);
   const [error, setError] = useState(null);
   const [message, setMessage] = useState(null);
-  const [name, setName] = useName();
   const demo = useDemo();
+  const [name, setName] = useName(demo.public ? DEMO_VISITOR : ""); // 13 Nov, Round 8: the public demo starts with "Demo visitor" (editable); local mode starts empty, as before
   const [completing, setCompleting] = useState(false);
   const [completeDraft, setCompleteDraft] = useState("");
   const [catFocus, setCatFocus] = useState(null); // null = closed, "" = open unfocused, "CAP-…/AU" = open at an entry

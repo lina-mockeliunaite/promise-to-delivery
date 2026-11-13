@@ -148,6 +148,11 @@ class TestTourCaptionFacts(unittest.TestCase):
             self.assertEqual(len(r["open_rows"]), 3 if deal == "noma_journeys" else 2, deal)  # "Three need attention" (Noma); "Two need attention" (Alder, a two-row story)
             self.assertIn(vendor, js_text("demo.js")); self.assertIn("its leadership" if deal == "noma_journeys" else "its board", js_text("demo.js"))
 
+    def test_the_languages_hint_points_at_the_rfp_response_where_the_promise_is(self):
+        """Round 8: the hint says "Open the RFP response to see the promise"; the 12-languages promise is in the RFP response (and the proposal), so the first link is right."""
+        text = (config.DATA_DIR / "noma_journeys" / "docs" / "NJ-03_rfp_response.md").read_text(encoding="utf-8")
+        self.assertIn("12 languages", text)
+
     def test_the_hint_lines_in_the_front_end_are_the_ones_checked_here(self):
         demo = js_text("demo.js")
         for fragment in ("Promised in the RFP and again in the proposal, never approved, not in the contract.", "Told 12 languages; the draft contract says four.",

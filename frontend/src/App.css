@@ -461,3 +461,12 @@ main.home { max-width: 1440px; }
 .demo-doc h3.is-key, .demo-doc h4.is-key, .demo-doc li.is-key, .demo-doc-ln.is-key { box-shadow: inset 3px 0 0 var(--accent, #4f46e5); padding-left: 8px; display: inline-block; width: 100%; box-sizing: border-box; }
 .demo-preview-foot { position: sticky; bottom: 0; margin: 12px -4px -4px; padding: 12px 4px 4px; background: var(--card, #fff); border-top: 1px solid var(--hair, #e2e8f0); display: flex; justify-content: flex-end; }
 @media (max-width: 639px) { .demo-preview-foot .dp-btn { width: 100%; } }
+
+/* Round 8 (13 Nov): the start choice for a visitor who arrives after someone else, and the notice when a page predates a reset */
+.demo-choice { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; background: rgba(15, 23, 42, .5); padding: 16px; }
+.demo-choice-panel { background: #fff; color: #0f172a; border-radius: 12px; padding: 22px 24px; max-width: 460px; width: 100%; box-shadow: 0 20px 50px rgba(15, 23, 42, .3); }
+.demo-choice-panel h2 { margin: 0 0 8px; font-size: 17px; }
+.demo-choice-panel p { margin: 0 0 14px; font-size: 14px; color: #475569; }
+.demo-choice-actions { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
+.demo-choice-actions .dp-link-btn { align-self: center; }
+.demo-reset-note { padding: 8px 20px; font-size: 14px; background: #7c2d12; color: #ffedd5; }

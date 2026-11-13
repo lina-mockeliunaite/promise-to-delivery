@@ -2,8 +2,90 @@
 import { useContext, useEffect, useRef, useState } from "react";
 import * as api from "./api.js";
 import ResetDemo from "./ResetDemo.jsx";
+import { runReset } from "./deals.js";
+import { hashFor } from "./dealpage.js";
 import { blockLines, parsePreview } from "./preview.js";
-import { ALL_ADDED, BAR_DONE, BAR_NOTE_FALLBACK, DemoNavContext, GUIDES, GuideStateContext, LandingStateContext, START_LABEL, NAME_NOTE, NO_SAMPLES, TOUR_KEYS, addSample, barStepText, centeredScrollTop, filingLine, guideSteps, markTourDone, sampleSteps, startGuidedDemo, tourCaptions, tourDone, useDemo } from "./demo.js";
+import { startAction, whileIdle, CHOICE_OTHER, CHOICE_TITLE, FIRST_DEAL, DEMO_WAS_RESET, START_FRESH, runState, clearTourDone, ALL_ADDED, BAR_DONE, BAR_NOTE_FALLBACK, DemoNavContext, GUIDES, GuideStateContext, LandingStateContext, START_LABEL, NAME_NOTE, NO_SAMPLES, TOUR_KEYS, addSample, barStepText, centeredScrollTop, filingLine, guideSteps, markTourDone, sampleSteps, startGuidedDemo, tourCaptions, tourDone, useDemo } from "./demo.js";
+
+// 13 Nov, Round 8: the first deal's state, read once, for the public demo only (null elsewhere and until known; a failed read counts as "start as before").
+export function useRunState(enabled, client = api) {
+  const [state, setState] = useState(null);
+  useEffect(() => {
+    if (!enabled) { setState(null); return undefined; }
+    let live = true;
+    Promise.all([client.fetchRegister(FIRST_DEAL), client.fetchDocuments(FIRST_DEAL), client.fetchSamples(FIRST_DEAL)]).then(([reg, docs, smp]) => {
+      if (live) setState(runState(guideSteps(FIRST_DEAL, smp.samples, docs.documents, reg.commitments, !!reg.handover?.complete, false), !!reg.handover?.complete));
+    }, () => live && setState(null));
+    return () => { live = false; };
+  }, [enabled]);
+  return state;
+}
+
+const browserNav = { setHash: (h) => { window.location.hash = h; }, reload: () => window.location.reload(), beforeReload: () => clearTourDone() };
+
+// "Start the guided demo" (public mode): when the first deal is already past its starting state the visitor chooses between starting fresh (the existing reset, then step 1) and
+// seeing what is there. Local mode, and a first deal at its start, behave as before: the guide simply starts. Nothing is kept per visitor.
+export function StartDemoButton({ className, runState: given, resetApi = api.resetDemo, nav: browser = browserNav }) {
+  const demo = useDemo();
+  const nav = useContext(DemoNavContext);
+  const read = useRunState(demo.public && given === undefined);
+  const state = demo.public ? (given === undefined ? read : given) : null;
+  const [asking, setAsking] = useState(false);
+  const onClick = () => (startAction(demo.public, state) === "choose" ? setAsking(true) : startGuidedDemo(nav));
+  return (
+    <>
+      <button type="button" className={className} onClick={onClick}>{START_LABEL}</button>
+      {asking && <StartChoice state={state} onClose={() => setAsking(false)} onOther={() => { setAsking(false); nav?.current?.(FIRST_DEAL); }} resetApi={resetApi} browser={browser} />}
+    </>
+  );
+}
+
+export function StartChoice({ state, onClose, onOther, resetApi, browser }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [conflict, setConflict] = useState(false);
+  const fresh = useRef(whileIdle(async () => { // a second click while the reset runs does nothing (two resets in one second make the server refuse the second)
+    setBusy(true);
+    const done = await runReset(resetApi, browser, hashFor({ d: FIRST_DEAL })); // reset, then straight to step 1
+    if (!done.ok) { setError(done.message); setConflict(!!done.conflict); setBusy(false); }
+  })).current;
+  useEffect(() => {
+    const onKey = (e) => e.key === "Escape" && !busy && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [busy, onClose]);
+  return (
+    <div className="demo-choice" role="presentation" onClick={() => !busy && onClose()}>
+      <div className="demo-choice-panel" role="dialog" aria-modal="true" aria-label={CHOICE_TITLE[state]} onClick={(e) => e.stopPropagation()}>
+        <h2>{CHOICE_TITLE[state]}</h2>
+        <p>The demo is shared. You can start it again from the beginning, or look at what is there now.</p>
+        {error && <p className="dl-reset-error" role="alert">{error}{conflict && <>{" "}<button type="button" className="dp-link-btn" onClick={() => { browser.beforeReload?.(); browser.setHash(hashFor({ d: FIRST_DEAL })); browser.reload(); }}>Start again</button></>}</p>}
+        <div className="demo-choice-actions">
+          <button type="button" className="dp-btn dp-btn-dark" disabled={busy} onClick={() => fresh()}>{busy ? "Resetting…" : START_FRESH}</button>
+          <button type="button" className="dp-btn" disabled={busy} onClick={onOther}>{CHOICE_OTHER[state]}</button>
+          <button type="button" className="dp-link-btn" disabled={busy} onClick={onClose}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// Shown when a write is refused because the page predates a reset (a visitor's, the hourly one, or a restart): the plain message and a way back to the start.
+export function ResetNotice({ nav = browserNav }) {
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const on = () => setShown(true);
+    window.addEventListener("demo-reset", on);
+    return () => window.removeEventListener("demo-reset", on);
+  }, []);
+  if (!shown) return null;
+  return (
+    <div className="demo-reset-note" role="alert">
+      <span>{DEMO_WAS_RESET}</span>{" "}
+      <button type="button" className="demo-bar-link" onClick={() => { nav.beforeReload?.(); nav.setHash("#welcome"); nav.reload(); }}>Start again</button>
+    </div>
+  );
+}
 
 export function DemoNameNote() {
   return useDemo().public ? <p className="dp-faint dp-small demo-name-note">{NAME_NOTE}</p> : null;
@@ -61,7 +143,7 @@ export function DemoBar({ initialSamples = null, initialOpen = false, initialTou
       <div className="demo-bar-row">
         {steps && <span className="demo-bar-pill">Demo guide</span>}
         {!steps && <strong className="demo-bar-status">{demo.banner}</strong>}
-        {!steps && !onLanding && <button type="button" className="demo-bar-do" onClick={() => startGuidedDemo(nav)}>{START_LABEL}</button>}
+        {!steps && !onLanding && <StartDemoButton className="demo-bar-do" />}
         {steps && (
           <span className="demo-bar-stepblock" role="status">
             <span className="demo-bar-meta">
@@ -82,6 +164,7 @@ export function DemoBar({ initialSamples = null, initialOpen = false, initialTou
           <ResetDemo variant="bar" />
         </span>
       </div>
+      <ResetNotice />
       {steps && open && (
         <div className="demo-bar-menu" role="group" aria-label="All steps">
           <p className="demo-bar-menu-status">{demo.banner}</p>

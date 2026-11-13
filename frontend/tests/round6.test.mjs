@@ -90,7 +90,7 @@ test("Alder after the signed contract: the signed sentence is in full once (Why 
   assert.equal(count(html, SENTENCE), 1);
   assert.ok(html.indexOf(SENTENCE) > html.indexOf("Why it’s open") && html.indexOf(SENTENCE) < html.indexOf("Contract says"));
   // Round 7: the status line is the one place Contract says names its source (the parenthesis is the link); no "Source:" line, and no History (its only line was "same wording")
-  assert.ok(html.includes('<span class="dr-confirmed">Confirmed in the signed contract (<button type="button" class="dr-linkbtn">Signed contract, 20 Oct</button>): the clause shown above.</span>'));
+  assert.ok(html.includes('<span class="dr-confirmed"><button type="button" class="dr-linkbtn">Signed contract · confirmed</button> (20 Oct): the clause shown above.</span>'));
   assert.ok(!/Contract says[\s\S]*Source:[\s\S]*What we found/.test(html.replace(/Why it’s open[\s\S]*?Contract says/, "Contract says")));
   assert.ok(!html.includes(">History<") && !html.includes("with the same wording") && !html.includes("Draft wording that closed it"));
   assert.equal(count(html, "confirmed in the signed contract (20 Oct)"), 1); // "Closed by … · confirmed in the signed contract" appears once, under Already closed by the documents
@@ -144,7 +144,7 @@ test("the locked record: the same rule on its lines; for a gap held by approval 
     documents: DOCS, live, snapshotDocs: DOCS, approvalScopes: { "BioCatch-based coaching detection|Approval starts later": res } });
   const r = recordLines(v, DOCS);
   assert.ok(r.scope.start.includes(SENTENCE), "the first appearance is in full");
-  assert.equal(r.contract, "Confirmed in the signed contract (Signed contract, 20 Oct): the clause shown above.");
+  assert.equal(r.contract, "Signed contract · confirmed (20 Oct): the clause shown above.");
   const html = record(v, DOCS);
   assert.ok(html.indexOf("Why it’s open") < html.indexOf("Contract says"));
   assert.equal(count(html, SENTENCE), 1); // the signed clause, once, in "Why it's open"

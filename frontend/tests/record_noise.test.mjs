@@ -71,7 +71,7 @@ test("a not-offered commitment is one line instead of three overlapping findings
 test("a closed commitment reads 'Closed by <document> v<N> (<date>) · confirmed in the signed contract (<date>)' with the contract quote", () => {
   const r = recordLines(LANGS, DOCS);
   assert.deepEqual(r.settled, ["Closed by Draft contract v2 (19 Oct) · confirmed in the signed contract (20 Oct)"]);
-  assert.equal(r.contract, "“The Assistant will respond to Guest enquiries in 12 languages, listed in Schedule 1.” (Draft contract)");
+  assert.equal(r.contract, "“The Assistant will respond to Guest enquiries in 12 languages, listed in Schedule 1.” (Draft contract · not re-checked at signing)"); // Round 8: a draft clause in a locked record
   assert.deepEqual(r.gaps, []);
   const html = decode(renderToStaticMarkup(createElement(RecordDetail, { v: LANGS, documents: DOCS })));
   for (const gone of ["No gap found", "Contract wording containing", "unchanged", "checked with it", "Check on", "a lookup in the current documents", "that mentions"]) assert.ok(!html.includes(gone), gone);

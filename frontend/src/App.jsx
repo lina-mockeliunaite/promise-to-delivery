@@ -1016,7 +1016,7 @@ export default function App() {
   // Asked again a few times if the first answer fails (a wake-up from sleep can drop one request), so a public page is never left without its banner.
   useEffect(() => {
     let alive = true;
-    const ask = (left) => api.fetchDemoConfig().then((r) => alive && setDemo(r), () => { if (alive && left > 0) setTimeout(() => ask(left - 1), 1500); });
+    const ask = (left) => api.fetchDemoConfig().then((r) => { if (alive) { api.setDemoEpoch(r.epoch); setDemo(r); } }, () => { if (alive && left > 0) setTimeout(() => ask(left - 1), 1500); });
     ask(4);
     return () => { alive = false; };
   }, []);

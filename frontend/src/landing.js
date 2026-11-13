@@ -23,7 +23,8 @@ export const cardParts = (parts) => (parts ?? []).map((p) => (p.strong ? { ...p,
 // 13 Nov (Round 5): Alder's card is a fixed hook, not a mismatch read from the register: the approval is not in the deal until the visitor adds it, so the register at landing time
 // cannot show "Approved: from 1 May". Both dates are what the sample files say (the RFP response: "live from the 1 February 2027 launch"; AB-05: "from 1 May 2027"); a test ties them.
 export const STATIC_CARDS = {
-  alder_bank: { title: "Scam-call alerts at launch", hook: "Promised: live at the 1 February launch \u00B7 Approved: from 1 May" },
+  // 13 Nov, Round 8: the card shows where the story ends up, not where it starts, so it says so
+  alder_bank: { title: "Scam-call alerts at launch", hook: "Promised: live at the 1 February launch \u00B7 Approved: from 1 May", preview: "Preview of the outcome" },
 };
 
 export const availableSamples = (deals) => SAMPLES.filter((s) => (deals ?? []).some((d) => d.deal === s.deal));

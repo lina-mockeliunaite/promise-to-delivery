@@ -92,13 +92,13 @@ export const GUIDES = {
     { label: "Get the picture", kind: "tour", row: null },
     { label: "Launch specialist: add the approval", kind: "sample", sample: 0, row: /launch specialist/i, highlight: "add",
       hint: "Promised in the RFP and again in the proposal, never approved, not in the contract. Add the approval and see what closes." },
-    { label: "Support in 12 languages: add the revised contract", kind: "sample", sample: 1, row: /12 languages/i, highlight: "add",
-      hint: "Told 12 languages; the draft contract says four. Add the revised contract." },
+    { label: "Support in 12 languages: add the revised contract", kind: "sample", sample: 1, row: /12 languages/i, highlight: "add", told: true,
+      hint: "Open the RFP response to see the promise. Told 12 languages; the draft contract says four. Then add the revised contract." },
     { label: "Add the signed contract", kind: "sample", sample: 2, row: null,
       hint: "The signed contract decides what Delivery inherits. Add it and see which fixes survive." },
     { label: "Phone calls: record the customer's agreement as a note", kind: "note", row: /phone/i, highlight: "note",
       hint: "Aivuna doesn't offer voice, so no document can fix this. Noma agreed on a call: record it as a note." },
-    { label: "Complete the handover", kind: "handover", row: null },
+    { label: "Complete the handover: add a Sales note and a Delivery note, then lock the record", kind: "handover", row: null },
   ],
   alder_bank: [
     { label: "Get the picture", kind: "tour", row: null },
@@ -111,7 +111,7 @@ export const GUIDES = {
       hint: "Signed for 1 February, approved from 1 May. Delivery inherits the gap." },
     { label: "Hosting on Microsoft Azure: record the customer's agreement as a note", kind: "note", row: /hosting/i, highlight: "note",
       hint: "Hosting can wait until now. Elva doesn't offer Azure hosting, so no document can fix this. The customer agreed AWS Sydney on a call: record it as a note." },
-    { label: "Complete the handover", kind: "handover", row: null },
+    { label: "Complete the handover: add a Sales note and a Delivery note, then lock the record", kind: "handover", row: null },
   ],
 };
 export const findGuideRow = (commitments, re) => (re ? (commitments ?? []).find((c) => re.test(`${c.display_name ?? ""} ${c.name ?? ""}`)) ?? null : null);
@@ -174,7 +174,8 @@ export function guideAction(step, commitments) {
   if (step.kind === "tour") return { tour: true, drawer: null, row: null, handover: false };
   if (step.kind === "sample" && !step.row) return { drawer: { type: "add", fromId: null, hint: step.hint }, row: null, handover: false };
   if (step.kind === "handover") return { drawer: null, row: null, handover: true };
-  return { drawer: row ? { type: "commitment", id: row.id, guide: { hint: step.hint, highlight: step.highlight } } : null, row: rowId, handover: false };
+  // told: the step first points at the promise (the drawer's first "Customer was told" link is highlighted)
+  return { drawer: row ? { type: "commitment", id: row.id, guide: { hint: step.hint, highlight: step.highlight, ...(step.told ? { told: true } : {}) } } : null, row: rowId, handover: false };
 }
 
 // The deal page tells the demo bar which step the visitor is on (11 Nov). Two contexts so the page, which only publishes, does not re-render when the
@@ -193,6 +194,27 @@ export const BAR_DONE = "Done · Reset demo to try again";
 // "Start the guided demo →" on the landing page and the deal list (public mode): open Noma Journeys at step 1. The tour's browser-only done mark is cleared, so the
 // deal opens on "Get the picture"; every other step is read from the deal itself.
 export const FIRST_DEAL = "noma_journeys";
+// 13 Nov, Round 8: the first deal's state for a visitor who arrives after someone else: "fresh" (nothing past the tour), "partial" (a step is done, the handover is not) or "complete" (locked).
+// Only the public demo asks; local mode starts the guide as it always did.
+export const runState = (steps, handoverComplete) => (handoverComplete ? "complete" : (steps ?? []).slice(1).some((s) => s.state === "done") ? "partial" : "fresh");
+// What the start button does: ask first only in the public demo and only when the first deal is past its start; local mode, and a deal at its start, just start.
+export const startAction = (isPublic, state) => (isPublic && (state === "partial" || state === "complete") ? "choose" : "start");
+export const showReplayHint = (isPublic, state) => !!isPublic && state === "complete";
+export const START_FRESH = "Start fresh \u2014 resets the demo for everyone";
+export const CHOICE_TITLE = { complete: "Someone has already finished this demo", partial: "Someone is partway through this demo" };
+export const CHOICE_OTHER = { complete: "See the finished handover", partial: "Continue the current run" };
+export const REPLAY_HINT = "A run has already been completed here. Start fresh to replay it.";
+// A button's action that ignores a second call while the first is running (a double-click on "Start fresh" would send two resets in one second, and the server refuses the second).
+// It can run again once the first has finished without leaving the page (a failure).
+export function whileIdle(fn) {
+  let busy = false;
+  return async (...args) => {
+    if (busy) return undefined;
+    busy = true;
+    try { return await fn(...args); } finally { busy = false; }
+  };
+}
+export const DEMO_WAS_RESET = "The demo was reset.";
 export const START_LABEL = "Start the guided demo \u2192";
 // 12 Nov: the landing page has its own "Start the guided demo" button, so the bar drops its own there. The landing tells the app it is on screen.
 export const LandingPublishContext = createContext(() => {});

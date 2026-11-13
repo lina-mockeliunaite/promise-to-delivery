@@ -27,3 +27,7 @@
 .land-example .dp-prow-title { font-size: 16px; }
 .land-example .dp-prow-line { text-wrap: balance; } /* a wrapped comparison line splits evenly, never leaving a word or two alone */
 @media (max-width: 820px) { .land-inner { grid-template-columns: 1fr; gap: 28px; padding: 36px 16px; } .land-intro h1 { font-size: 28px; } .land-sub { font-size: 20px; } }
+
+/* Round 8 (13 Nov): the replay hint beside the start button, and the small label on the card that previews an outcome */
+.land-replay { font-size: 13px; color: var(--muted); }
+.land-preview { display: inline-block; align-self: flex-start; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line, #e2e8f0); border-radius: 999px; padding: 2px 8px; }

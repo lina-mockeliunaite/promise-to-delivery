@@ -1,3 +1,4 @@
+import { DEMO_WAS_RESET } from "./demo.js";
 // Deal list logic (16 Oct, Stitch screen 1). Pure functions, so they are tested without a browser.
 // open_gaps counts commitments that need attention, as the stage bar does; addressed_by_note counts those a note settled.
 // Every figure on the home screen is computed here from /api/workspace/deals: nothing is invented or estimated.
@@ -104,14 +105,16 @@ export function resetNext(state, event, message = "") {
 }
 // Calls the endpoint; on success sets #welcome and reloads the whole page, so no screen keeps stale state. The name
 // ("Recording as", in localStorage) is not touched here and survives the reload. On failure returns the server's message.
-export async function runReset(resetApi, nav) {
+export async function runReset(resetApi, nav, hash = "#welcome") { // hash: where the page goes after the reset ("Start fresh" goes straight to the first deal)
   const { setHash, reload } = nav;
   try {
     await resetApi();
   } catch (err) {
+    // 13 Nov, Round 8: a 409 from a reset means a reset was just done (the same second, or one still running): the demo has been reset, which is all the visitor wanted to know
+    if (err?.status === 409) return { ok: false, conflict: true, message: DEMO_WAS_RESET };
     return { ok: false, message: err?.message || "The reset failed." };
   }
-  setHash("#welcome");
+  setHash(hash);
   nav.beforeReload?.(); // public mode: forget the browser-only "Get the picture" tour state
   reload();
   return { ok: true, message: "" };

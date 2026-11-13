@@ -6,7 +6,8 @@ import { useContext, useEffect, useState } from "react";
 import * as api from "./api.js";
 import { AUDIENCE_ITEMS, CARDS_LABEL, DESCRIPTION, FICTIONAL, SUBHEAD, TAGLINE } from "./brand.js";
 import { MismatchSentence, TitleLine } from "./Drawer.jsx";
-import { DemoNavContext, LandingPublishContext, START_LABEL, startGuidedDemo, useDemo } from "./demo.js";
+import { DemoNavContext, LandingPublishContext, REPLAY_HINT, showReplayHint, useDemo } from "./demo.js";
+import { StartDemoButton, useRunState } from "./DemoUI.jsx";
 import { STATIC_CARDS, availableSamples, pickMismatches } from "./landing.js";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-500.css";
@@ -19,6 +20,7 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
   const demo = useDemo();
   const nav = useContext(DemoNavContext);
   const publishLanding = useContext(LandingPublishContext);
+  const runState = useRunState(!!demo.public); // 13 Nov, Round 8: the replay hint and the start choice exist in the public demo only
   const guided = !!demo.public; // public mode: "Start the guided demo" is the primary action and the cards' buttons are secondary
   useEffect(() => { publishLanding(guided); return () => publishLanding(false); }, [guided, publishLanding]);
   const samples = availableSamples(deals);
@@ -45,7 +47,8 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
             {AUDIENCE_ITEMS.map(([role, phrase]) => <li key={role}><strong>{role}</strong> {phrase}</li>)}
           </ul>
           <div className="land-actions">
-            {guided && <button type="button" className="land-start" onClick={() => startGuidedDemo(nav)}>{START_LABEL}</button>}
+            {guided && <StartDemoButton className="land-start" runState={runState} />}
+            {showReplayHint(demo.public, runState) && <span className="land-replay">{REPLAY_HINT}</span>}
             <button type="button" className="dp-link-btn dp-brand" onClick={onList}>See all deal reviews</button>
           </div>
           {unavailable && <p className="land-quiet" role="status">The sample deal can't be loaded right now. Check that the server is running.</p>}
@@ -57,6 +60,7 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
               <article key={s.deal} className="dp-card land-example">
                 <span className="dp-eyebrow">{s.title}</span>
                 <span className="land-parties">{s.parties}</span>
+                {STATIC_CARDS[s.deal].preview && <span className="land-preview">{STATIC_CARDS[s.deal].preview}</span>}
                 <TitleLine title={STATIC_CARDS[s.deal].title} labels={[]} stacked />
                 <p className="land-hook">{STATIC_CARDS[s.deal].hook}</p>
                 <button type="button" className={`dp-btn land-open ${guided ? "land-open-secondary" : "dp-btn-dark"}`} onClick={() => onOpen(s.deal)}>Open sample deal</button>

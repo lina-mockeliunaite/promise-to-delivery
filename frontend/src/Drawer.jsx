@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
-import { STAGE_LABELS, STATUS_CHIP, alsoIn, catalogueLabel, closedSettled, plainName, recordedBy, relatedHeading, short } from "./dealpage.js";
+import { STAGE_LABELS, STATUS_CHIP, alsoIn, catalogueLabel, closedSettled, draftSourceLabel, plainName, recordedBy, relatedHeading, short, signedConfirmedLabel } from "./dealpage.js";
 import { renderDocument } from "./markdown.js";
 import { shortHash, verifyText } from "./docHash.js";
 
@@ -106,10 +106,10 @@ export function useCatalogueNames(deal) {
 }
 
 // "Confirmed in the signed contract (Signed contract, 20 Oct)": the parenthesis is the link to the signed document when it is known.
-function ConfirmedStatus({ status, doc, onOpen }) {
-  const m = /^(.*?) \((.*)\)$/.exec(status ?? "");
-  if (!m || !doc || !onOpen) return status;
-  return <>{m[1]} (<button type="button" className="dr-linkbtn" onClick={onOpen}>{m[2]}</button>)</>;
+// 13 Nov, Round 8: "Signed contract · confirmed (20 Oct)": the signed document's own label and date, and what the check found; the label is the link when the document is known.
+function ConfirmedStatus({ signed, onOpen }) {
+  const label = signedConfirmedLabel(signed);
+  return <>{signed.doc && onOpen ? <button type="button" className="dr-linkbtn" onClick={onOpen}>{label}</button> : label}{signed.date ? ` (${short(signed.date)})` : ""}</>;
 }
 
 // A reference-back ("RFP response, 29 Sep, above") has no Source line of its own: the reference is the link to that document when it is known (13 Nov, Round 7).
@@ -117,12 +117,12 @@ function Ref({ text, doc, onOpen }) {
   return <p className="dr-muted">{doc && onOpen ? <button type="button" className="dr-linkbtn" onClick={onOpen}>{text}</button> : text}</p>;
 }
 
-function Source({ label, date, doc, onOpen, also }) {
+function Source({ label, date, doc, onOpen, also, guided = false }) {
   const text = `${label}${date ? `, ${short(date)}` : ""}`;
   return (
     <p className="dr-source">
       Source:{" "}
-      {doc && onOpen ? <button type="button" className="dr-linkbtn" onClick={onOpen}>{text}</button> : <span>{text}</span>}
+      {doc && onOpen ? <button type="button" className={`dr-linkbtn${guided ? " is-guided" : ""}`} onClick={onOpen}>{text}</button> : <span>{text}</span>}
       {alsoIn(also) && <span className="dr-also"> · {alsoIn(also)}</span>}
     </p>
   );
@@ -156,10 +156,10 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
 
         <section className="dr-sec">
           <h3 className="dr-label">Customer was told</h3>
-          {v.told.map((t) => (
+          {v.told.map((t, k) => (
             <div key={t.quote} className="dr-block">
               <blockquote className="dr-quote">{t.quote}</blockquote>
-              <Source label={t.label} date={t.date} doc={t.doc} also={t.also} onOpen={() => onOpenDoc?.(t.doc, t.quote)} />
+              <Source label={t.label} date={t.date} doc={t.doc} also={t.also} guided={!!guide?.told && k === 0} onOpen={() => onOpenDoc?.(t.doc, t.quote)} />
             </div>
           ))}
           {!v.told.length && (v.toldFallback ? <p className="dr-plain">{v.toldFallback}</p> : <p className="dr-muted">No checked quote is stored for this commitment.</p>)}
@@ -212,7 +212,7 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
           {v.signed ? (
             <div className="dr-block dr-signed">
               {/* One line carries the status and its source: "(Signed contract, 20 Oct)" is the link to the signed document, so the section no longer prints its source twice. */}
-              <span className="dr-confirmed"><ConfirmedStatus status={v.signed.status} doc={v.signed.doc} onOpen={() => onOpenDoc?.(v.signed.doc, v.signed.quote)} />{v.signed.ref ? `: ${v.signed.ref}.` : ""}</span>
+              <span className="dr-confirmed"><ConfirmedStatus signed={v.signed} onOpen={() => onOpenDoc?.(v.signed.doc, v.signed.quote)} />{v.signed.ref ? `: ${v.signed.ref}.` : ""}</span>
               {!v.signed.ref && <blockquote className="dr-quote">{v.signed.quote}</blockquote>}
             </div>
           ) : (
@@ -223,7 +223,7 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
                   {v.contract.quote.ref
                     ? <Ref text={`${v.contract.quote.ref}.`} doc={v.contract.quote.doc} onOpen={() => onOpenDoc?.(v.contract.quote.doc, v.contract.quote.quote)} />
                     : <><blockquote className="dr-quote">{v.contract.quote.quote}</blockquote>
-                      <Source label={v.contract.quote.label} doc={v.contract.quote.doc} onOpen={() => onOpenDoc?.(v.contract.quote.doc, v.contract.quote.quote)} /></>}
+                      <Source label={draftSourceLabel(v, v.contract.quote.label)} doc={v.contract.quote.doc} onOpen={() => onOpenDoc?.(v.contract.quote.doc, v.contract.quote.quote)} /></>}
                 </div>
               )}
               {v.contract.now && (
@@ -232,7 +232,7 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
                   {v.contract.now.ref
                     ? <Ref text={`${v.contract.now.ref}.`} doc={v.contract.now.doc} onOpen={() => onOpenDoc?.(v.contract.now.doc, v.contract.now.quote)} />
                     : <><blockquote className="dr-quote">{v.contract.now.quote}</blockquote>
-                      <Source label={v.contract.now.label} doc={v.contract.now.doc} onOpen={() => onOpenDoc?.(v.contract.now.doc, v.contract.now.quote)} /></>}
+                      <Source label={draftSourceLabel(v, v.contract.now.label)} doc={v.contract.now.doc} onOpen={() => onOpenDoc?.(v.contract.now.doc, v.contract.now.quote)} /></>}
                 </div>
               )}
             </>

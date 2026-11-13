@@ -45,7 +45,7 @@ test("C1: confirmed in the signed contract shows the signed clause, its date and
   assert.deepEqual([v.signed.quote, v.signed.label, v.signed.date, v.signed.doc?.source_key], [CLAUSE, "Signed contract", "2026-10-20", "NJ-09"]);
   const html = drawer(v);
   // 13 Nov, Round 7: the status line carries its own source: "(Signed contract, 20 Oct)" is the link that opens the signed document on that clause, and there is no second "Source:" line
-  assert.ok(html.includes('<span class="dr-confirmed">Confirmed in the signed contract (<button type="button" class="dr-linkbtn">Signed contract, 20 Oct</button>)</span>'));
+  assert.ok(html.includes('<span class="dr-confirmed"><button type="button" class="dr-linkbtn">Signed contract · confirmed</button> (20 Oct)</span>'));
   assert.ok(html.includes(`<blockquote class="dr-quote">${CLAUSE}</blockquote>`));
   assert.ok(!html.includes("Source: ") || !/Source: <button[^>]*>Signed contract, 20 Oct/.test(html));
   assert.ok(!html.includes("that mentions")); // the draft lookup is not what "Contract says" shows any more
@@ -141,7 +141,7 @@ test("the drawer's pieces are shared by the live drawer and the locked record, a
 test("12 Nov: the record's Contract says is the signed clause, attributed to the signed contract; no draft attribution", () => {
   const v = commitmentView(LANGS, "closed", DOCS);
   const r = recordLines(v, DOCS);
-  assert.equal(r.contract, `\u201C${CLAUSE}\u201D (Signed contract, 20 Oct)`);
+  assert.equal(r.contract, `\u201C${CLAUSE}\u201D (Signed contract \u00B7 confirmed, 20 Oct)`); // Round 8
   assert.ok(!/Draft contract/.test(r.contract));
   assert.deepEqual(r.settled, ["Closed by Draft contract v2 (19 Oct) \u00B7 confirmed in the signed contract (20 Oct)"]);
   const src = read("FrozenRecord.jsx");

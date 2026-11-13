@@ -22,6 +22,7 @@ NOTE_FIELDS = ("note", "reason", "rationale", "evidence")
 BACKUPS_KEPT = 3
 RESET_EVERY_SECONDS = 60 * 60
 NO_MODEL = "The public demo can't read new documents. Use one of the sample files."
+DEMO_WAS_RESET = "The demo was reset."  # 13 Nov, Round 8: shown when a page that predates a reset tries to write
 NOT_A_SAMPLE = "This public demo only accepts its sample files. Pick one under \"Use a sample file\"."
 REFUSED = {
     "user_deal": "The public demo has no new deals; open one of the sample deals.",

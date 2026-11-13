@@ -553,6 +553,7 @@ main.home.home-deal { max-width: none; margin: 0; padding: 0; }
 .dp-grid[data-tour] .dp-brief-card, .dp-grid[data-tour] #dp-commitments, .dp-grid[data-tour] .dp-aside { scroll-margin-top: calc(var(--demo-bar-h, 0px) + var(--topbar-h) + 12px); }
 /* A guided drawer: one hint line above the buttons, and the button to click is highlighted. */
 .dr-guide-hint { margin: 0; padding: 8px 10px; border-radius: 8px; background: var(--tint); color: var(--ink); font-size: 13px; line-height: 1.45; }
+.dr-source .dr-linkbtn.is-guided { box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--accent); border-radius: 4px; animation: demo-guided 1.4s ease-in-out 3; } /* Round 8: the promise link the languages step points at */
 .dr-actions .dp-btn.is-guided { box-shadow: 0 0 0 2px var(--card), 0 0 0 5px var(--accent); animation: demo-guided 1.4s ease-in-out 3; }
 @keyframes demo-guided { 0%, 100% { box-shadow: 0 0 0 2px var(--card), 0 0 0 5px var(--accent); } 50% { box-shadow: 0 0 0 2px var(--card), 0 0 0 8px var(--tint-line); } }
 

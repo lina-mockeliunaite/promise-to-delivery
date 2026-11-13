@@ -142,6 +142,8 @@ export default function FrozenRecord({ deal, onBack }) {
   const [withText, setWithText] = useState(false); // "Include full document text" in print (off by default)
   const [texts, setTexts] = useState({}); // { version id: text as read }, fetched when the box is ticked
   useEffect(() => { api.fetchHandover(deal).then(setHv, (err) => setError(err.message)); }, [deal]);
+  // 13 Nov, Round 8: arriving at the record (after locking, or from the list) starts at its top, so the outcome pills and the first rows are what is seen; a link to one commitment keeps its place
+  useEffect(() => { if (!readHash(window.location.hash).c) window.scrollTo(0, 0); }, [deal]);
   const snapDocs = hv?.snapshot?.documents;
   useEffect(() => {
     if (!withText || !snapDocs) return;

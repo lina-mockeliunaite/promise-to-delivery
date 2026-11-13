@@ -8,8 +8,18 @@ async function handle(response) {
   } catch {
     /* keep the generic message */
   }
-  throw new Error(detail);
+  const err = new Error(detail);
+  err.status = response.status;
+  if (response.headers?.get?.("X-Demo-Reset")) { // 13 Nov, Round 8: this page predates a reset (a visitor's, the hourly one, or a restart)
+    err.demoReset = true;
+    try { window.dispatchEvent(new CustomEvent("demo-reset", { detail })); } catch { /* no window: the message alone is thrown */ }
+  }
+  throw err;
 }
+
+// The public demo's epoch (changes with every reset), sent with every write so the server can tell a page that predates a reset.
+let demoEpoch = null;
+export const setDemoEpoch = (epoch) => { demoEpoch = epoch ?? null; };
 
 const getJson = (path) => fetch(path, { headers: { Accept: "application/json" } }).then(handle);
 
@@ -17,7 +27,7 @@ const getJson = (path) => fetch(path, { headers: { Accept: "application/json" } 
 const postJson = (path, body) =>
   fetch(path, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json", "X-Requested-With": "deal-workspace" },
+    headers: { "Content-Type": "application/json", Accept: "application/json", "X-Requested-With": "deal-workspace", ...(demoEpoch ? { "X-Demo-Epoch": demoEpoch } : {}) },
     body: JSON.stringify(body ?? {}),
   }).then(handle);
 
