@@ -8,7 +8,7 @@ import { AUDIENCE_ITEMS, CARDS_LABEL, DESCRIPTION, FICTIONAL, SUBHEAD, TAGLINE }
 import { MismatchSentence, TitleLine } from "./Drawer.jsx";
 import { DemoNavContext, LandingPublishContext, REPLAY_HINT, showReplayHint, useDemo } from "./demo.js";
 import { StartDemoButton, useRunState } from "./DemoUI.jsx";
-import { STATIC_CARDS, availableSamples, pickMismatches } from "./landing.js";
+import { STATIC_CARDS, availableSamples, cardState, pickMismatches } from "./landing.js";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-500.css";
 import "@fontsource/inter/latin-600.css";
@@ -25,16 +25,19 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
   useEffect(() => { publishLanding(guided); return () => publishLanding(false); }, [guided, publishLanding]);
   const samples = availableSamples(deals);
   const [registers, setRegisters] = useState({}); // deal -> its register; absent until it loads, and when it cannot be read
+  const [settled, setSettled] = useState({}); // deal -> true once its register has answered (or failed): until then its card is a placeholder of the same size
   const key = samples.map((s) => s.deal).join(",");
   useEffect(() => {
     let live = true;
-    samples.forEach((s) => api.fetchRegister(s.deal).then((r) => live && setRegisters((f) => ({ ...f, [s.deal]: r })), () => {}));
+    samples.forEach((s) => api.fetchRegister(s.deal).then((r) => live && (setRegisters((f) => ({ ...f, [s.deal]: r })), setSettled((f) => ({ ...f, [s.deal]: true }))), () => live && setSettled((f) => ({ ...f, [s.deal]: true }))));
     return () => { live = false; };
   }, [key]);
   // The cards are picked together, in card order, so they show different kinds of mismatch (see pickMismatches).
   const picks = pickMismatches(samples.map((s) => registers[s.deal] ?? null));
   const found = Object.fromEntries(samples.map((s, n) => [s.deal, picks[n]]));
-  const cards = samples.filter((s) => STATIC_CARDS[s.deal] || found[s.deal]);
+  const stateOf = (s) => cardState(s.deal, found[s.deal], settled[s.deal]); // 13 Nov: a card whose data has not arrived keeps its place, so nothing on the page moves when it does
+  const waiting = (s) => stateOf(s) === "waiting";
+  const cards = samples.filter((s) => stateOf(s) !== "none");
   return (
     <div className="dp land">
       <div className="land-inner">
@@ -56,7 +59,16 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
         {cards.length > 0 && (
           <div className="land-cards" aria-label="Two sample scenarios">
             <span className="dp-eyebrow land-cards-label">{CARDS_LABEL}</span>
-            {cards.map((s) => (STATIC_CARDS[s.deal] ? (
+            {cards.map((s) => (waiting(s) ? (
+              <article key={s.deal} className="dp-card land-example land-placeholder" aria-busy="true" data-testid="land-placeholder">
+                <span className="dp-eyebrow">{s.title}</span>
+                <span className="land-parties">{s.parties}</span>
+                <span className="land-skel land-skel-title" />
+                <span className="land-skel" />
+                <span className="land-skel land-skel-short" />
+                <span className="dp-btn land-open land-open-secondary land-skel-btn" aria-hidden="true">Open sample deal</span>
+              </article>
+            ) : STATIC_CARDS[s.deal] ? (
               <article key={s.deal} className="dp-card land-example">
                 <span className="dp-eyebrow">{s.title}</span>
                 <span className="land-parties">{s.parties}</span>

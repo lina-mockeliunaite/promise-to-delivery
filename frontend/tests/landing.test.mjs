@@ -224,6 +224,6 @@ test("Alder's landing card is the approval-scope hook, and both dates are what t
   assert.match(fs.readFileSync(new URL("scenarios/AB-05_v2_named_exception.md", root), "utf8"), /approved by Arjun Rao \(Head of Product\) from 1 May 2027/); // approved
   const jsx = fs.readFileSync(new URL("../src/Landing.jsx", import.meta.url), "utf8");
   assert.match(jsx, /<p className="land-hook">\{STATIC_CARDS\[s\.deal\]\.hook\}<\/p>/);
-  assert.match(jsx, /const cards = samples\.filter\(\(s\) => STATIC_CARDS\[s\.deal\] \|\| found\[s\.deal\]\);/);
+  assert.match(jsx, /const cards = samples\.filter\(\(s\) => stateOf\(s\) !== "none"\);/); // Round 8b: a card still loading keeps its place
   assert.ok(!/Hosting on Microsoft Azure/.test(jsx)); // the hosting card is gone from the landing page (the deal keeps its hosting row)
 });

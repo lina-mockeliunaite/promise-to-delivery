@@ -31,3 +31,11 @@
 /* Round 8 (13 Nov): the replay hint beside the start button, and the small label on the card that previews an outcome */
 .land-replay { font-size: 13px; color: var(--muted); }
 .land-preview { display: inline-block; align-self: flex-start; font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); border: 1px solid var(--line, #e2e8f0); border-radius: 999px; padding: 2px 8px; }
+
+/* 13 Nov: a card whose data has not arrived is a placeholder with the card's own title and parties; every example card has the same minimum height, so the intro column (centred
+   beside the cards) and the start button do not move when the data arrives */
+.land-example { min-height: var(--land-card-h, 212px); }
+.land-skel { display: block; height: 12px; border-radius: 6px; background: var(--line, #e2e8f0); opacity: .6; }
+.land-skel-title { height: 16px; width: 70%; margin-top: 4px; }
+.land-skel-short { width: 55%; }
+.land-skel-btn { visibility: hidden; }

@@ -27,6 +27,10 @@ export const STATIC_CARDS = {
   alder_bank: { title: "Scam-call alerts at launch", hook: "Promised: live at the 1 February launch \u00B7 Approved: from 1 May", preview: "Preview of the outcome" },
 };
 
+// 13 Nov: what a landing card is right now. "waiting": its data has not answered yet, so it shows a placeholder of the card's size and nothing moves when the data arrives; "none": the data
+// answered with nothing to show (or failed), so there is no card. The Alder card is static and is there from the first render.
+export const cardState = (deal, found, settled) => (STATIC_CARDS[deal] ? "static" : found ? "found" : settled ? "none" : "waiting");
+
 export const availableSamples = (deals) => SAMPLES.filter((s) => (deals ?? []).some((d) => d.deal === s.deal));
 
 // 21 Oct: #welcome always shows the landing page, whatever this browser has stored (a link for demos and for "About Dealshape").
