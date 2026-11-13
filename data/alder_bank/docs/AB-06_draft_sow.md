@@ -26,8 +26,6 @@ The parties will hold a weekly project status meeting during implementation.
 
 ## Annex A — Payment Decision Specification
 
-A.1 Outbound instant payments of AUD 1,000 or more are scored in real time before the payment is released.
+A.1 All outbound instant payments are scored in real time before the payment is released.
 
-A.2 Outbound instant payments below AUD 1,000 are scored in batches at hourly intervals after release.
-
-A.3 This specification applies to outbound instant payments from Alder personal and business accounts.
+A.2 This specification applies to outbound instant payments from Alder personal and business accounts.

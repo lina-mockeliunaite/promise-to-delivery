@@ -72,8 +72,8 @@ export const HANDOVER_SAMPLES = {
     delivery: "Accepted. We start on chat and email as contracted and provide the launch specialist for 30 days as approved; putting it in writing goes on the kickoff agenda.",
   },
   alder_bank: {
-    sales: "Coaching-scam detection moves to 1 May in the signed SOW. Confirm the revised launch scope with Alder before kickoff.",
-    delivery: "Accepted. We start on AWS Sydney as contracted; coaching detection and the volume limit go on the kickoff agenda.",
+    sales: "The signed statement of work commits to scam-call alerts at launch. Product approved them from 1 May. Confirm the delivery plan with Product and Alder before kickoff.",
+    delivery: "Accepted. We start on AWS Sydney as contracted; scam-call alerts go on the kickoff agenda.",
   },
 };
 export const noteSampleFor = (demo, deal, commitment) => {
@@ -102,14 +102,15 @@ export const GUIDES = {
   ],
   alder_bank: [
     { label: "Get the picture", kind: "tour", row: null },
-    { label: "Coaching-scam detection: add the BioCatch connector approval", kind: "sample", sample: 0, row: /coaching/i, highlight: "add",
-      hint: "Coaching detection depends on the BioCatch connector, which is in beta and needs a named approval; the SOW doesn't mention it. Add the approval and see what closes." },
-    { label: "Coaching-scam detection: add the revised SOW", kind: "sample", sample: 1, row: /coaching/i, highlight: "add",
-      hint: "The approval closed one gap, but the SOW still doesn't mention coaching detection. Add the revised SOW." },
+    // 13 Nov (Round 5): outcome first, plain English. Alder is two rows: scam-call alerts (the story) and hosting (it can wait).
+    { label: "Scam-call alerts: add the approval", kind: "sample", sample: 0, row: /scam-call/i, highlight: "add",
+      hint: "Approved, but only from 1 May. Still open." },
+    { label: "Scam-call alerts: add the revised statement of work", kind: "sample", sample: 1, row: /scam-call/i, highlight: "add",
+      hint: "The revised statement of work says live from 1 February. The contract gap closes; the approval is still open." },
     { label: "Add the signed contract", kind: "sample", sample: 2, row: null,
-      hint: "The signed contract decides what Delivery inherits. Add it and see which fixes survive. Its Statement of Work sets a later date for coaching detection (1 May 2027), and the wording that closed the gap isn't in it, so the fix can't be confirmed and the gap reopens." },
+      hint: "Signed for 1 February, approved from 1 May. Delivery inherits the gap." },
     { label: "Hosting on Microsoft Azure: record the customer's agreement as a note", kind: "note", row: /hosting/i, highlight: "note",
-      hint: "Elva doesn't offer Azure hosting, so no document can fix this. The customer agreed AWS Sydney on a call: record it as a note." },
+      hint: "Hosting can wait until now. Elva doesn't offer Azure hosting, so no document can fix this. The customer agreed AWS Sydney on a call: record it as a note." },
     { label: "Complete the handover", kind: "handover", row: null },
   ],
 };
@@ -131,7 +132,7 @@ export function clearTourDone(storage = globalThis.sessionStorage) {
 // Alder's: "We've told our board that date"). The date, the stage and the count come from the deal itself.
 export const TOUR_FACTS = {
   noma_journeys: { vendor: "Aivuna", customer: "Noma", audience: "its leadership" },
-  alder_bank: { vendor: "Elva", customer: "Alder Bank", audience: "its board" },
+  alder_bank: { vendor: "Elva", customer: "Alder Bank", audience: "its board", focus: "Start with scam-call alerts; hosting can wait." },
 };
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 const NUMBER_WORDS = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
@@ -144,7 +145,7 @@ export function tourCaptions(deal, facts) {
   return [
     `What ${t.vendor} is delivering, and the ${when ? `${when} ` : ""}go-live ${t.customer} has promised ${t.audience}.`,
     `Every document so far, by stage. We're at ${facts?.stageLabel}${facts?.stage === "contracting" ? ": the last point to fix gaps cheaply" : ""}.`,
-    `What the customer was told that the contract or catalogue doesn't back up. ${needAttention(facts?.open ?? 0)}`,
+    `What the customer was told that the contract or catalogue doesn't back up. ${needAttention(facts?.open ?? 0)}${t.focus ? ` ${t.focus}` : ""}`,
   ];
 }
 

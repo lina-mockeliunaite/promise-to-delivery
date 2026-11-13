@@ -4,11 +4,11 @@ Date: 29 September 2026
 
 Submitted by Elva
 
-**Section 2.1 — Behavioural signals**
+**Section 2.1 — Scam-call alerts**
 
-*Question 2.1.1: Describe how you detect customers who are being coached by a scammer.*
+*Question 2.1.1: Describe how you detect when a customer is on a call with a scammer.*
 
-Through its connector to BioCatch, Elva will use behavioural signals from Alder's mobile and internet banking to flag customers who appear to be coached by a scammer, live from the 1 February 2027 launch.
+Scam-call alerts warn the bank when a customer seems to be on a call with a scammer while making a payment, live from the 1 February 2027 launch.
 
 **Section 4.2 — Hosting**
 

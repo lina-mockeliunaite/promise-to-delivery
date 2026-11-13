@@ -15,9 +15,12 @@ OPEN_SQL = (
     " WHERE c.deal_id = ? AND s.state <> 'Resolved' ORDER BY i.id")
 
 
-def effective_state(state, check):
-    """The state a screen shows for one gap: "Needs action" when the signed check found the fix missing, else the ledger's state."""
-    return "Needs action" if check and check.get("status") == "not_found" else state
+def effective_state(state, check, scope=None):
+    """The state a screen shows for one gap: "Needs action" when the signed check found the fix missing, or when the approval that closed an approval gap
+    starts later than the commitment (approval_scope.py, 12 Nov), else the ledger's state."""
+    if check and check.get("status") == "not_found":
+        return "Needs action"
+    return "Needs action" if scope and scope.get("status") == "not_covered" else state
 
 
 def rows(conn, did: int, slug: str = None) -> list:
@@ -27,8 +30,9 @@ def rows(conn, did: int, slug: str = None) -> list:
         slug = deal_catalogue.slug_of(conn, did)
     found = conn.execute(OPEN_SQL, (did,)).fetchall()
     if slug:
+        import approval_scope
         import signed_check
-        back = signed_check.reopened(conn, did, slug)
+        back = {**signed_check.reopened(conn, did, slug), **approval_scope.reopened(conn, did, slug)}
         if back:
             found += conn.execute(
                 "SELECT id, commitment_id, issue_type, subject_key, closure_criteria FROM issues"

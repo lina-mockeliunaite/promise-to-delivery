@@ -8,7 +8,7 @@ Attendees: Tom Fraser (Account Executive, Elva), Mei Chen (Solutions Engineer, E
 
 **Rachel O'Neill:** We're launching scam protection on all outbound instant payments on 1 February 2027. We've told our board that date.
 
-**Sanjay Patel:** Today we send about 180,000 instant payments a day. With the new mobile app we're planning for 750,000 a day by the end of the first year. Our payments platform would hold each payment until Elva returns a decision.
+**Sanjay Patel:** Today we send about 180,000 instant payments a day. Our payments platform would hold each payment until Elva returns a decision.
 
 **Mei Chen:** That's exactly the pattern we support. We're also exploring whether we could add a payee name check next year; I'll bring our Product lead to the technical call so you hear it first-hand.
 

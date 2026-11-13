@@ -13,6 +13,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import config
+import real_readings
 import deal_catalogue
 import detect_v2
 import handover
@@ -59,7 +60,7 @@ class TestTheNomaRehearsalReplayed(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory()
-        cls.cache = mock.patch.object(config, "V2_CACHE_DIR", Path(cls.tmp.name) / "cache")
+        cls.cache = real_readings.patch_cache(Path(cls.tmp.name) / "cache")
         cls.cache.start()
         db = Path(cls.tmp.name) / "l.sqlite"
         reset_demo.reset(db_path=db)

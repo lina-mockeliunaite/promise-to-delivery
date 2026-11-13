@@ -20,6 +20,7 @@ from fastapi.testclient import TestClient
 
 import api
 import config
+import real_readings
 import scenarios
 from test_recheck import FakeExtractor, build_current
 
@@ -176,7 +177,7 @@ class TestUserDeal(WorkspaceCase):
                        contract_quote=None, note_quote=None, subject=None, promised_value=None, contract_value=None, reason="r")
         with mock.patch.dict(os.environ, {"ANTHROPIC_API_KEY": "test-only"}), \
                 mock.patch("anthropic.Anthropic", return_value=V2Fake([finding])), \
-                mock.patch.object(config, "V2_CACHE_DIR", Path(self.tmp) / "cache"):
+                real_readings.patch_cache(Path(self.tmp) / "cache"):
             r = self.post(f"/api/deals/{deal}/review", {})
         self.assertEqual(r.status_code, 200, r.text)
         self.assertEqual(r.json()["review"]["run_kind"], "review")

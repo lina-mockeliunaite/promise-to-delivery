@@ -71,3 +71,15 @@ test("the home catalogue switch lists the vendors in use, Elva first, and opens 
   assert.deepEqual(vendorsOf(undefined), []);
   assert.deepEqual(vendorsOf([{ deal: "x" }]), []); // an older server sends no vendor: no switch, Elva's catalogue
 });
+
+// 12 Nov (Round 5): Alder's own copy of Elva's catalogue has vendor id "elva_alder" and the name "Elva"; the switch must not list Elva twice or lose Elva-first.
+test("the catalogue switch lists a vendor name once, prefers the default Elva id, and keeps Elva first and default when only Alder's copy is present", () => {
+  const row = (deal, vendor, vendor_name) => ({ deal, vendor, vendor_name });
+  const both = vendorsOf([row("alder_bank", "elva_alder", "Elva"), row("harbour_bank", "elva", "Elva"), row("noma_journeys", "aivuna", "Aivuna")]);
+  assert.deepEqual(both, [{ id: "elva", name: "Elva" }, { id: "aivuna", name: "Aivuna" }]);
+  const publicMode = vendorsOf([row("alder_bank", "elva_alder", "Elva"), row("noma_journeys", "aivuna", "Aivuna")]);
+  assert.deepEqual(publicMode, [{ id: "elva_alder", name: "Elva" }, { id: "aivuna", name: "Aivuna" }]); // Elva first, one Elva
+  const storage = { getItem: () => null };
+  assert.equal(lastVendor(publicMode, storage), "elva_alder"); // the default is Elva, as it was when Alder's vendor id was "elva"
+  assert.equal(lastVendor(both, { getItem: () => "elva_alder" }), "elva"); // an id the list no longer has falls back to Elva
+});

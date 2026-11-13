@@ -30,7 +30,8 @@ class TestVerdictsUnchanged(unittest.TestCase):
 
     def test_the_golden_file_covers_each_outcome_on_the_demo_deals(self):
         self.assertEqual([v["status"] for k, v in GOLDEN["noma_journeys/shipped"].items() if k != "_steps"], ["confirmed"])
-        self.assertEqual([v["status"] for k, v in GOLDEN["alder_bank/shipped"].items() if k != "_steps"], ["not_found"])
+        self.assertEqual([v["status"] for k, v in GOLDEN["alder_bank/shipped"].items() if k != "_steps"], ["confirmed"])  # Round 5: the shipped AB-09 repeats the revised SOW sentence (it was not_found before)
+        self.assertEqual([v["status"] for k, v in GOLDEN["alder_bank/bare"].items() if k != "_steps"], ["not_found"])  # a signed text with none of the draft sentences still reopens
         self.assertEqual([v["status"] for k, v in GOLDEN["harbour_bank/bare"].items() if k != "_steps"], ["not_confirmed"])
         for deal in ("coral_pay", "atlas_remit"):  # no gap was closed by a contract or SOW: nothing to check, before and after
             self.assertEqual([k for k in GOLDEN[f"{deal}/shipped"] if k != "_steps"], [])

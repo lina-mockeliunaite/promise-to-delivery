@@ -20,6 +20,12 @@ export function cardTerm(term) {
 }
 export const cardParts = (parts) => (parts ?? []).map((p) => (p.strong ? { ...p, text: cardTerm(p.text) } : p.text === "Contract says " ? { ...p, text: "Contract specifies " } : p));
 
+// 13 Nov (Round 5): Alder's card is a fixed hook, not a mismatch read from the register: the approval is not in the deal until the visitor adds it, so the register at landing time
+// cannot show "Approved: from 1 May". Both dates are what the sample files say (the RFP response: "live from the 1 February 2027 launch"; AB-05: "from 1 May 2027"); a test ties them.
+export const STATIC_CARDS = {
+  alder_bank: { title: "Scam-call alerts at launch", hook: "Promised: live at the 1 February launch \u00B7 Approved: from 1 May" },
+};
+
 export const availableSamples = (deals) => SAMPLES.filter((s) => (deals ?? []).some((d) => d.deal === s.deal));
 
 // 21 Oct: #welcome always shows the landing page, whatever this browser has stored (a link for demos and for "About Dealshape").

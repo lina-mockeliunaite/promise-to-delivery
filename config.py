@@ -121,7 +121,7 @@ V2_SEED_FILES = {
     "harbour_bank": "v2_dev_20261010T083854Z.json",
     "coral_pay": "v2_dev_20261010T083854Z.json",
     "atlas_remit": "sealed_v2_atlas_remit_20261010T084453Z.json",
-    "alder_bank": "v2_demo_alder_bank_20261016T065312Z.json",  # demo run; 6 shown, 1 true finding rejected (BRIEF.md)
+    # alder_bank: no seed (13 Nov, Round 5): its documents were rewritten, so the old demo run no longer matches them. Its first review is read from results/v2_cache (fill_alder_readings.py).
     "noma_journeys": "v2_demo_noma_journeys_20261020T091857Z.json",  # demo run 1 of 1; 5 shown, 0 rejected (BRIEF.md)
 }
 V2_CACHE_DIR = ROOT / "results" / "v2_cache"

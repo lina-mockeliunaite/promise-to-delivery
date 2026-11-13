@@ -27,6 +27,7 @@ ROOT = Path(__file__).resolve().parents[1]
 ALLOWED_STATE_READERS = {
     "open_gaps.py": "the shared reading of which gaps are open",
     "signed_check.py": "finds the gaps closed by documents, to check them against signed paperwork",
+    "approval_scope.py": "finds the approval gaps closed by a pricing-note approval, to check the date the approval starts (12 Nov)",
     "workspace.py": "reads each issue's own state to build the register, then applies open_gaps.effective_state",
     "handover.py": "resolve_by_note: a note can settle an open gap (and a reopened one) but not a closed one",
     "finding_check.py": "compares each issue's state before and after a fix, to report what the fix closed (a ledger transition, not a count)",

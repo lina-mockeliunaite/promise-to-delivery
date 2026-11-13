@@ -36,6 +36,10 @@ DEFAULT_VENDOR = "elva"
 VENDORS = {
     "elva": {"name": "Elva", "file": "catalogue.json"},
     "aivuna": {"name": "Aivuna", "file": "catalogue_aivuna.json"},
+    # 12 Nov (Round 5): a demo fixture. A byte copy of Elva's published file in which only CAP-027's name ("Scam-call alerts") and its pre-built integrations ([]) differ, so Alder's
+    # documents, the catalogue pop-up and the model's wording name no real company. data/catalogue.json is untouched (Atlas Remit's sealed inputs and every Elva hash stay as they were).
+    # Published file only, like Aivuna's: nothing is added to it in the app.
+    "elva_alder": {"name": "Elva", "file": "catalogue_alder.json"},
 }
 
 STATUSES = {"generally_available": "Generally available", "beta": "Beta", "roadmap": "Roadmap"}

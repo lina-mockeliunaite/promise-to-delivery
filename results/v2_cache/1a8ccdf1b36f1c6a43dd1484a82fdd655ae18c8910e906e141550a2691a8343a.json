@@ -1,0 +1,112 @@
+{
+  "input_sha256": "1a8ccdf1b36f1c6a43dd1484a82fdd655ae18c8910e906e141550a2691a8343a",
+  "deal": "alder_bank",
+  "v2_version": 2,
+  "model": "claude-sonnet-5",
+  "findings": [
+    {
+      "kind": "approval_required",
+      "commitment": "Scam-call alerts live at the 1 February 2027 launch",
+      "promise_quotes": [
+        {
+          "source_id": "AB-03",
+          "quote": "Scam-call alerts warn the bank when a customer seems to be on a call with a scammer while making a payment, live from the 1 February 2027 launch."
+        },
+        {
+          "source_id": "AB-04",
+          "quote": "Scam-call alerts will warn the bank when a customer seems to be on a call with a scammer while making a payment, from the 1 February 2027 launch."
+        }
+      ],
+      "catalogue_path": "CAP-027/AU",
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": {
+        "source_id": "AB-05",
+        "quote": "CAP-027 Scam-call alerts | Australia, outbound instant payments | Beta; requires named approval; planned general release 31 December 2027 | No named exception approved for Alder Bank"
+      },
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "Scam-call alerts are still in beta in Australia and the catalogue requires a named approval before sale, but the pricing note confirms no named approver has approved this scope for Alder Bank."
+    },
+    {
+      "kind": "contract_gap",
+      "commitment": "Scam-call alerts live at the 1 February 2027 launch",
+      "promise_quotes": [
+        {
+          "source_id": "AB-04",
+          "quote": "Scam-call alerts will warn the bank when a customer seems to be on a call with a scammer while making a payment, from the 1 February 2027 launch."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [
+        "scam-call alerts",
+        "on a call with a scammer",
+        "1 February 2027 launch"
+      ],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The draft SOW and contract describe payment scoring, hosting, and case management but never mention scam-call alerts, so this customer-facing launch commitment has no contractual backing."
+    },
+    {
+      "kind": "absolute_limit",
+      "commitment": "Hosting of Alder's dedicated environment on Microsoft Azure",
+      "promise_quotes": [
+        {
+          "source_id": "AB-03",
+          "quote": "Elva will host Alder's dedicated environment on Microsoft Azure in the Australia East region."
+        }
+      ],
+      "catalogue_path": "CAP-019/AU",
+      "unlisted_value": "Microsoft Azure",
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "Elva's catalogue only supports AWS or GCP for regional cloud deployment in Australia, so Azure is not an offered cloud and cannot be sold even with an exception."
+    },
+    {
+      "kind": "conflicting_terms",
+      "commitment": "Cloud provider for Alder's dedicated hosting environment",
+      "promise_quotes": [
+        {
+          "source_id": "AB-03",
+          "quote": "Elva will host Alder's dedicated environment on Microsoft Azure in the Australia East region."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": {
+        "source_id": "AB-06",
+        "quote": "Provider will host the Customer's dedicated environment on Amazon Web Services in the Sydney region."
+      },
+      "note_quote": null,
+      "subject": "environment",
+      "promised_value": "Microsoft Azure",
+      "contract_value": "Amazon Web Services",
+      "reason": "The RFP response promised Azure hosting but the SOW instead commits to AWS hosting for the same dedicated environment, a direct conflict on cloud provider that customer legal will likely flag."
+    }
+  ],
+  "cost_usd": 0.07633,
+  "origin": "model_call",
+  "usage": {
+    "input_tokens": 9265,
+    "output_tokens": 5780
+  }
+}

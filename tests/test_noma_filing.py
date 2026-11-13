@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import config
+import real_readings
 import deal_catalogue
 import ledger
 import ledger_fixes
@@ -31,7 +32,7 @@ class Replay(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
-        cache = mock.patch.object(config, "V2_CACHE_DIR", Path(tmp.name) / "cache")
+        cache = real_readings.patch_cache(Path(tmp.name) / "cache")
         cache.start()
         self.addCleanup(cache.stop)
         db = Path(tmp.name) / "l.sqlite"
@@ -97,7 +98,7 @@ class TestTheRefusalNamesTheLikelyCause(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp:
             cache = Path(tmp) / "cache"
             g.flow("noma_journeys", g.noma_steps()[:2], g.clean(g.NOMA), True, cache, tmp)  # the designed flow fills the scratch cache
-            with mock.patch.dict(os.environ, {}, clear=False), mock.patch.object(config, "V2_CACHE_DIR", cache):
+            with mock.patch.dict(os.environ, {}, clear=False), real_readings.patch_cache(cache):
                 os.environ.pop("ANTHROPIC_API_KEY", None)
                 db = g.scratch_ledger(tmp, "mistaken.sqlite")
                 client = TestClient(api.create_app(dist_dir=Path(tmp) / "no-dist", ledger_path=db), base_url="http://127.0.0.1")

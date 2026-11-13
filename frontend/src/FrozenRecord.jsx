@@ -59,6 +59,17 @@ export function RecordDetail({ v, documents, onOpenDoc }) {
           {v.signed?.doc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(v.signed.doc, v.signed.quote); }}>Open the signed clause</button></>}
         </p>
       )}
+      {r.scope && (
+        <>
+          <p className="fr-why"><strong>Why it&rsquo;s open:</strong> {r.scope.why}</p>
+          <p className="fr-related">{r.scope.start}
+            {r.scope.startDoc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(r.scope.startDoc, r.scope.startQuote); }}>Open the clause</button></>}
+          </p>
+          <p className="fr-related">{r.scope.approval}
+            {r.scope.approvalDoc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(r.scope.approvalDoc, r.scope.approvalQuote); }}>Open the approval</button></>}
+          </p>
+        </>
+      )}
       {r.why && <p className="fr-why"><strong>Why it reopened:</strong> {r.why}</p>}
       {r.related && (
         <p className="fr-related"><strong>{r.related.heading}</strong> · Related clause: {r.related.text}
@@ -170,7 +181,7 @@ export default function FrozenRecord({ deal, onBack }) {
   const elsewhere = new Set([...open.map((x) => x.promise), ...noted.map((x) => x.promise)]);
   const closedOnly = [...new Set(resolved.map((r) => r.promise))].filter((p) => !elsewhere.has(p));
   const liveOf = (promise) => liveRegister?.commitments?.find((c) => c.name === promise) ?? null;
-  const common = { documents, titles, snapshotDocs: s.documents, relatedMap: hv.related_clauses ?? {} }; // what was searched is named from the documents captured in the handover
+  const common = { documents, titles, snapshotDocs: s.documents, relatedMap: hv.related_clauses ?? {}, approvalScopes: hv.approval_scopes ?? {} }; // what was searched is named from the documents captured in the handover
   const views = [
     ...open.map((item) => frozenView({ item, status: "open", closedFindings: closedFor(item.promise), live: liveOf(item.promise), ...common })),
     ...noted.map((item) => frozenView({ item, status: "noted", closedFindings: closedFor(item.promise), live: liveOf(item.promise), ...common })),

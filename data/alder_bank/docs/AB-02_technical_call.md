@@ -4,9 +4,9 @@ Date: 22 September 2026
 
 Attendees: Mei Chen (Solutions Engineer, Elva), Arjun Rao (Product Lead, Elva), Sanjay Patel (Head of Payments Technology, Alder Bank), Rachel O'Neill (Head of Fraud and Scams, Alder Bank)
 
-**Rachel O'Neill:** The scams we see most are coaching scams. The customer is on the phone with the scammer while they make the payment. Can you tell when someone is being coached?
+**Rachel O'Neill:** The scams we see most are call scams. The customer is on the phone with the scammer while they make the payment. Can you tell when that is happening?
 
-**Arjun Rao:** Elva connects to BioCatch for behavioural signals, things like hesitation, or typing in a way that looks like dictation. That connector is in beta in Australia today.
+**Arjun Rao:** We have a feature for that, called scam-call alerts. It warns the bank when a customer seems to be on a call with a scammer while making a payment, using signals like hesitation, or typing in a way that looks like dictation. It is in beta in Australia today.
 
 **Sanjay Patel:** What do you need from us for a 1 February go-live?
 

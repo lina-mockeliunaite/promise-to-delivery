@@ -36,9 +36,8 @@ const ROWS = {
   noma_journeys: [{ id: 15, name: "Assistant will answer guests' phone calls in addition to chat and email", display_name: "AI answers customers' phone calls at launch" },
     { id: 16, name: "Assistant will support guest conversations in 12 languages at launch", display_name: "Support in 12 languages at launch" },
     { id: 17, name: "Dedicated Aivuna launch specialist for the first 30 days after launch at no extra charge", display_name: "Dedicated launch specialist for the first 30 days, at no extra charge" }],
-  alder_bank: [{ id: 1, name: "Real-time scoring of 750,000 outbound instant payments per day by end of first year", display_name: "750,000 payments a day by the end of year one" },
-    { id: 2, name: "BioCatch-based coaching detection live from 1 February 2027 launch", display_name: "Coaching-scam detection live at launch" },
-    { id: 3, name: "Hosting Alder's environment on Microsoft Azure in Australia East", display_name: "Hosting on Microsoft Azure" }],
+  alder_bank: [{ id: 2, name: "Scam-call alerts live at the 1 February 2027 launch", display_name: "Scam-call alerts live at launch" },
+    { id: 3, name: "Hosting of Alder's dedicated environment on Microsoft Azure", display_name: "Hosting on Microsoft Azure" }],
 };
 const NOTE_ROW = { noma_journeys: /phone/i, alder_bank: /hosting/i };
 // A deal at a stage of the walk: how many samples are in (0-3), whether the note is recorded on its row.
@@ -54,16 +53,16 @@ const states = (deal, samplesIn, noted, toured = true) => { const s = state(deal
 const LABELS = {
   noma_journeys: ["Get the picture", "Launch specialist: add the approval", "Support in 12 languages: add the revised contract", "Add the signed contract",
     "Phone calls: record the customer's agreement as a note", "Complete the handover"],
-  alder_bank: ["Get the picture", "Coaching-scam detection: add the BioCatch connector approval", "Coaching-scam detection: add the revised SOW", "Add the signed contract",
+  alder_bank: ["Get the picture", "Scam-call alerts: add the approval", "Scam-call alerts: add the revised statement of work", "Add the signed contract",
     "Hosting on Microsoft Azure: record the customer's agreement as a note", "Complete the handover"],
 };
 const HINTS = {
   noma_journeys: [null, "Promised in the RFP and again in the proposal, never approved, not in the contract. Add the approval and see what closes.",
     "Told 12 languages; the draft contract says four. Add the revised contract.", "The signed contract decides what Delivery inherits. Add it and see which fixes survive.",
     "Aivuna doesn't offer voice, so no document can fix this. Noma agreed on a call: record it as a note.", null],
-  alder_bank: [null, "Coaching detection depends on the BioCatch connector, which is in beta and needs a named approval; the SOW doesn't mention it. Add the approval and see what closes.",
-    "The approval closed one gap, but the SOW still doesn't mention coaching detection. Add the revised SOW.", "The signed contract decides what Delivery inherits. Add it and see which fixes survive. Its Statement of Work sets a later date for coaching detection (1 May 2027), and the wording that closed the gap isn't in it, so the fix can't be confirmed and the gap reopens.",
-    "Elva doesn't offer Azure hosting, so no document can fix this. The customer agreed AWS Sydney on a call: record it as a note.", null],
+  alder_bank: [null, "Approved, but only from 1 May. Still open.",
+    "The revised statement of work says live from 1 February. The contract gap closes; the approval is still open.", "Signed for 1 February, approved from 1 May. Delivery inherits the gap.",
+    "Hosting can wait until now. Elva doesn't offer Azure hosting, so no document can fix this. The customer agreed AWS Sydney on a call: record it as a note.", null],
 };
 const decode = (t) => String(t).replace(/&#x27;/g, "'");
 
@@ -118,15 +117,15 @@ test("the tour captions are exactly as agreed for Noma, and built from the deal'
     "Every document so far, by stage. We're at Contracting: the last point to fix gaps cheaply.",
     "What the customer was told that the contract or catalogue doesn't back up. Three need attention.",
   ]);
-  assert.deepEqual(m.tourCaptions("alder_bank", FACTS), [
+  assert.deepEqual(m.tourCaptions("alder_bank", { ...FACTS, open: 2 }), [
     "What Elva is delivering, and the 1 February go-live Alder Bank has promised its board.",
     "Every document so far, by stage. We're at Contracting: the last point to fix gaps cheaply.",
-    "What the customer was told that the contract or catalogue doesn't back up. Three need attention.",
+    "What the customer was told that the contract or catalogue doesn't back up. Two need attention. Start with scam-call alerts; hosting can wait.", // 13 Nov: Alder is two rows
   ]);
   // another date, stage and count change the captions; nothing is hard-coded
   const later = m.tourCaptions("noma_journeys", { goLive: "2027-03-15", stage: "signed", stageLabel: "Signed", open: 1 });
   assert.ok(later[0].includes("15 March go-live") && later[1] === "Every document so far, by stage. We're at Signed." && later[2].endsWith("One needs attention."));
-  assert.ok(m.tourCaptions("alder_bank", { ...FACTS, open: 0 })[2].endsWith("Nothing needs attention."));
+  assert.ok(m.tourCaptions("alder_bank", { ...FACTS, open: 0 })[2].startsWith("What the customer was told that the contract or catalogue doesn't back up. Nothing needs attention.")); // the focus line follows
   assert.equal(m.dayMonth("2027-02-01"), "1 February"); assert.equal(m.dayMonth(null), "");
   assert.deepEqual(m.TOUR_KEYS, ["brief", "journey", "commitments"]);
 });

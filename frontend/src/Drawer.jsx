@@ -137,6 +137,23 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
           {!v.told.length && (v.toldFallback ? <p className="dr-plain">{v.toldFallback}</p> : <p className="dr-muted">No checked quote is stored for this commitment.</p>)}
         </section>
 
+        {v.scope && (
+          <section className="dr-sec">
+            {/* 12 Nov, Round 5: an approval that closed the gap starts later than the commitment. The reason first, then the two clauses with their dates. */}
+            <h3 className="dr-label">Why it&rsquo;s open</h3>
+            <p className="dr-plain">{v.scope.reason}</p>
+            <div className="dr-block dr-related">
+              <span className="dr-muted">{v.scope.start.heading}</span>
+              <blockquote className="dr-quote">{v.scope.start.quote}</blockquote>
+              <Source label={v.scope.start.label} date={v.scope.start.date} doc={v.scope.start.doc} onOpen={() => onOpenDoc?.(v.scope.start.doc, v.scope.start.quote)} />
+            </div>
+            <div className="dr-block dr-related">
+              <span className="dr-muted">{v.scope.approval.heading}</span>
+              <blockquote className="dr-quote">{v.scope.approval.quote}</blockquote>
+              <Source label={v.scope.approval.label} date={v.scope.approval.date} doc={v.scope.approval.doc} onOpen={() => onOpenDoc?.(v.scope.approval.doc, v.scope.approval.quote)} />
+            </div>
+          </section>
+        )}
         {v.reopened ? (
           <>
             {/* 12 Nov, round 4: a gap the signed paperwork reopened shows its cause first (the check's own reason, unchanged), then the evidence: the related clause, under a heading that names where it sits. */}
@@ -204,6 +221,7 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
             <div className="dr-closed">
               {v.status !== "closed" && <span className="dr-label">Already closed by the documents</span>}
               {closedSettled(v, documents).map((l) => <div key={l} className="dr-gap"><p><strong>{l}</strong></p></div>)}
+          {v.scopeNotes?.map((l) => <p key={l} className="dr-muted">{l}</p>)}
             </div>
           )}
         </section>

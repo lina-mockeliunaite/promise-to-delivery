@@ -10,7 +10,9 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config
+import real_readings
 import finding_check
 import handoff
 import ledger
@@ -40,7 +42,7 @@ class V2Case(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         self.dir = Path(tmp.name)
-        p = mock.patch.object(config, "V2_CACHE_DIR", self.dir / "cache")
+        p = real_readings.patch_cache(self.dir / "cache")
         p.start()
         self.addCleanup(p.stop)
         self.built = reset_demo.build(self.dir / "l.sqlite")
@@ -71,12 +73,11 @@ class V2Case(unittest.TestCase):
 class TestBuild(V2Case):
     def test_seeded_reset_makes_no_model_call_and_every_finding_verifies(self):
         self.assertEqual({s: r["model_calls"] for s, r in self.built.items()}, {s: 0 for s in config.V2_DEALS})
-        expected_rejected = {s: 0 for s in config.V2_DEALS}
-        expected_rejected["alder_bank"] = 1  # demo deal: a true conflict rejected on wording (data/alder_bank/BRIEF.md)
-        self.assertEqual({s: r["rejected"] for s, r in self.built.items()}, expected_rejected)
-        self.assertEqual({s: r["origin"] for s, r in self.built.items()}, {s: "seed" for s in config.V2_DEALS})
+        self.assertEqual({s: r["rejected"] for s, r in self.built.items()}, {s: 0 for s in config.V2_DEALS})  # Alder's two-row story proposes nothing the verifier refuses (13 Nov)
+        # every deal but Alder is seeded from its saved demo or evaluation run; Alder has no seed (config.V2_SEED_FILES) and reads its base-document reading from the cache (real_readings.K0)
+        self.assertEqual({s: r["origin"] for s, r in self.built.items()}, {**{s: "seed" for s in config.V2_DEALS}, "alder_bank": "cache"})
         counts = {s: workspace.overview(self.conn, s)["finding_counts"]["unresolved"] for s in config.V2_DEALS}
-        self.assertEqual(counts, {"alder_bank": 6, "noma_journeys": 5, "harbour_bank": 6, "coral_pay": 3, "atlas_remit": 7})
+        self.assertEqual(counts, {"alder_bank": 4, "noma_journeys": 5, "harbour_bank": 6, "coral_pay": 3, "atlas_remit": 7})
 
     def test_every_deal_is_current_so_decisions_can_be_made(self):
         for s in config.V2_DEALS:
@@ -195,7 +196,7 @@ if __name__ == "__main__":
 class TestRealModelCheckScript(unittest.TestCase):
     def test_the_check_passes_with_a_model_that_finds_nothing_new(self):
         import check_v2_app
-        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(config, "V2_CACHE_DIR", Path(tmp) / "cache"):
+        with tempfile.TemporaryDirectory() as tmp, real_readings.patch_cache(Path(tmp) / "cache"):
             results = check_v2_app.run(FakeClient([]), Path(tmp) / "c.sqlite")
         self.assertEqual([r[0] for r in results if not r[1]], [])
 
@@ -205,7 +206,7 @@ class TestUserDeal(unittest.TestCase):
 
     def test_new_deal_is_v2_needs_the_model_and_raises_verified_findings(self):
         import ledger_fixes
-        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(config, "V2_CACHE_DIR", Path(tmp) / "cache"):
+        with tempfile.TemporaryDirectory() as tmp, real_readings.patch_cache(Path(tmp) / "cache"):
             conn = ledger.open_ledger(Path(tmp) / "u.sqlite")
             self.addCleanup(conn.close)
             slug = ledger_fixes.create_user_deal(conn, "Test Co")

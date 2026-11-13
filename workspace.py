@@ -24,12 +24,14 @@ ISSUE_LABELS = {
 }
 NEXT_STEP = {
     "approval": "Record a named exception with its approver, or change the promise.",
+    "approval_scope": "Get an approval that starts on or before the promised start date, or change the promise.",
     "approval_absolute": "Not offered: change or withdraw the promise. An exception cannot close this.",
     "contract_gap": "Add the promise to the SOW or contract, or withdraw it.",
     "conflicting_terms": "Align the documents so they say the same thing.",
     "insufficient_evidence": "Add the missing evidence, then review again.",
     "missing_condition": "Restore the condition, or record that it was withdrawn.",
 }
+_APPROVAL_SCOPE_LABEL = "Approval starts later"  # = approval_scope.LABEL_OPEN (not imported here: approval_scope imports this module)
 DOC_TYPE_LABELS = {
     "call_transcript": "Call transcript", "rfp_response": "RFP response", "proposal": "Proposal",
     "draft_sow": "Draft SOW", "draft_contract": "Draft contract", "pricing_services_note": "Internal approvals note",
@@ -373,6 +375,8 @@ def register(conn, slug: str) -> dict:
     names = document_labels(conn, did)
     import signed_check
     signed = signed_check.evaluate(conn, did, slug)  # 21 Oct: closed gaps checked against the signed paperwork ({} when there is none)
+    import approval_scope
+    scopes = approval_scope.evaluate(conn, did, slug)  # 12 Nov: an approval that closed an approval gap, checked for the date it starts
     commitments, sort_keys = [], {}
     rows = conn.execute(
         "SELECT c.id, c.commitment_key, c.note, s.status, a.id, a.review_id, a.name, a.language, a.authorisation,"
@@ -437,12 +441,16 @@ def register(conn, slug: str) -> dict:
             sc = signed.get(iid)
             if sc and sc["status"] == "not_found":  # the fix is not in the signed paperwork: Needs attention again (the ledger still records the closure)
                 step = NEXT_STEP.get(itype, "")
-            state = open_gaps.effective_state(state, sc)
+            if scopes.get(iid) and scopes[iid]["status"] == "not_covered":  # the approval starts later than the promise: held open (12 Nov)
+                step = NEXT_STEP["approval_scope"]
+            ap = scopes.get(iid)
+            state = open_gaps.effective_state(state, sc, ap)
             issues.append({
-                "id": iid, "type": itype, "label": issue_label(itype, subject), "state": state, "signed_check": sc,
+                "id": iid, "type": itype, "label": issue_label(itype, subject), "state": state, "signed_check": sc, "approval_scope": ap,
                 "owner": owner, "note": plain(inote, names), "next_step": step if state != "Resolved" else "",
                 "absolute_limit": bool(absolute), "raised_by": raised_by,
-                "reason": (sc["reason"] if sc and sc["status"] == "not_found" else explain(check[0]) if check else ""),
+                "reason": (sc["reason"] if sc and sc["status"] == "not_found" else ap["reason"] if ap and ap["status"] == "not_covered"
+                           else explain(check[0]) if check else ""),
                 "unmet": [plain(u, names) for u in json.loads(check[1])] if check and check[1] else [],
                 "evidence_versions": [e.get("source_version_id") for e in json.loads(check[2])] if check else [],
                 "last_check": check[3] if check else None,
@@ -837,7 +845,7 @@ def overview(conn, slug: str) -> dict:
         people, decisions = [], []
         for i in c["issues"]:
             absolute = i["absolute_limit"]
-            i["finding"] = finding_label(i["type"], None, absolute)
+            i["finding"] = _APPROVAL_SCOPE_LABEL if (i.get("approval_scope") or {}).get("status") == "not_covered" else finding_label(i["type"], None, absolute)
             i["decision"] = workspace_records.decision_for(conn, slug, i["id"])
             i["accountable"] = integrity.accountability_status(conn, i["id"])
             impact = integrity.impact_status(conn, slug, i["id"])

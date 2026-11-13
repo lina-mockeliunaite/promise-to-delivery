@@ -10,15 +10,13 @@ This proposal describes Elva's scam protection for Alder Bank's outbound instant
 
 ## 2. Real-time payment decisions
 
-All outbound instant payments will be scored in real time before they are released, from the 1 February 2027 launch.
+All outbound instant payments will be scored in real time before they are released.
 
 Real-time scoring will handle up to 200,000 payments per day at launch.
 
-Real-time scoring will handle up to 750,000 payments per day by the end of the first year.
+## 3. Scam-call alerts
 
-## 3. Scam coaching detection
-
-Behavioural signals from BioCatch will flag customers who appear to be coached by a scammer, from the 1 February 2027 launch.
+Scam-call alerts will warn the bank when a customer seems to be on a call with a scammer while making a payment, from the 1 February 2027 launch.
 
 ## 4. Investigations
 

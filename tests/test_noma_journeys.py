@@ -14,7 +14,9 @@ from unittest import mock
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 import catalogue_store
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config
+import real_readings
 import deal_catalogue
 import detect_v2
 import ledger
@@ -161,7 +163,7 @@ class TestNomaInTheLedger(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         for patch in (mock.patch.object(config, "V2_DEALS", ["noma_journeys", "harbour_bank"]),
-                      mock.patch.object(config, "V2_CACHE_DIR", Path(tmp.name) / "cache"),
+                      real_readings.patch_cache(Path(tmp.name) / "cache"),
                       mock.patch.dict(config.V2_SEED_FILES, {}, clear=True)):  # scripted findings only: no saved model output
             patch.start()
             self.addCleanup(patch.stop)

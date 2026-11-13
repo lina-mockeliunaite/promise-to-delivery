@@ -21,6 +21,7 @@ from fastapi.testclient import TestClient
 
 import api
 import config
+import real_readings
 import deal_catalogue
 import ledger
 import ledger_fixes
@@ -31,7 +32,7 @@ from test_noma_journeys import FakeClient
 SCEN = config.DATA_DIR / "scenarios"
 H = {"X-Requested-With": "deal-workspace"}
 NOMA = [f for f in json.loads((config.RESULTS_DIR / "v2_demo_noma_journeys_20261020T091857Z.json").read_text())["deals"][0]["accepted"]]
-ALDER = [f for f in json.loads((config.RESULTS_DIR / "v2_demo_alder_bank_20261016T065312Z.json").read_text())["deals"][0]["accepted"]]
+ALDER = real_readings.k1_findings()  # the accepted reading of the state with AB-05 and AB-06 added (13 Nov), as a fake model returns it
 clean = lambda findings: [{k: v for k, v in f.items() if k != "problems"} for f in findings]
 
 
@@ -45,7 +46,7 @@ class TestTheGuardAndTheReviewAgree(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
-        cache = mock.patch.object(config, "V2_CACHE_DIR", Path(tmp.name) / "cache")
+        cache = real_readings.patch_cache(Path(tmp.name) / "cache")
         cache.start()
         self.addCleanup(cache.stop)
         self.conn = ledger.connect(scratch_ledger(tmp.name))
@@ -95,7 +96,7 @@ def flow(deal, steps, findings, key_set, cache_dir, tmp):
     """The demo flow through the add-and-check route itself. Returns (responses, model calls, locked snapshot counts)."""
     fake = FakeClient(findings)
     env = {"ANTHROPIC_API_KEY": "test"} if key_set else {}
-    with mock.patch.dict(os.environ, env), mock.patch.object(config, "V2_CACHE_DIR", cache_dir), \
+    with mock.patch.dict(os.environ, env), real_readings.patch_cache(cache_dir), \
             mock.patch("anthropic.Anthropic", return_value=fake):
         if not key_set:
             os.environ.pop("ANTHROPIC_API_KEY", None)
@@ -162,15 +163,19 @@ class TestTheOfflineReplayThroughTheRoute(unittest.TestCase):
         languages = next(i for i in snap["closed_items"] if "12 languages" in i["promise"])
         self.assertEqual(languages["signed"][0]["text"], "Confirmed in the signed contract (Signed contract, 20 Oct)")
 
-    def test_the_alder_flow_offline_ends_with_the_coaching_fix_reopened(self):
-        # the revised SOW needs the model once; the signed contract does not contain the sentence that closed the coaching gap (the check reads the signed text itself, not which SOW it names)
-        snap = self.replay("alder_bank", alder_steps(), clean(ALDER), 1, (2, 1, 1))
-        coaching = next(i for i in snap["open_items"] if "coach" in i["promise"].lower())
-        reopened = next(f for f in coaching["findings"] if f["finding"] == "Missing from contract")
-        self.assertEqual(reopened["signed_check"]["reason"], "The signed contract doesn't contain the wording that closed this gap, so the fix can't be confirmed.")
+    def test_the_alder_flow_offline_ends_with_the_contract_fix_confirmed_and_the_approval_held_open(self):
+        # the revised SOW needs the model once; the signed contract repeats its sentence, so the contract fix is confirmed; the approval starts 1 May, after the signed
+        # 1 February, so its gap stays open (Round 5). Nothing is closed by documents on the coaching commitment's approval; the contract gap is closed and confirmed.
+        snap = self.replay("alder_bank", alder_steps(), clean(ALDER), 1, (1, 1, 1))  # open: scam-call alerts (the approval); addressed by note: hosting; closed: the scam-call contract gap
+        coaching = next(i for i in snap["open_items"] if "scam-call" in i["promise"].lower())
+        held = next(f for f in coaching["findings"] if f["finding"] == "Approval starts later")
+        self.assertEqual(held["why"], "The signed start date is earlier than the approved start date.")
+        self.assertEqual([f["finding"] for f in coaching["findings"]], ["Approval starts later"])  # the contract gap is not open
+        closed = next(i for i in snap["closed_items"] if "scam-call" in i["promise"].lower())
+        self.assertEqual(closed["signed"][0]["text"], "Confirmed in the signed contract (Signed contract, 20 Oct)")
 
     def test_a_changed_document_with_no_key_and_no_cache_is_still_refused_and_nothing_is_added(self):
-        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(config, "V2_CACHE_DIR", Path(tmp) / "cache"), \
+        with tempfile.TemporaryDirectory() as tmp, real_readings.patch_cache(Path(tmp) / "cache"), \
                 mock.patch.dict(os.environ, {}, clear=False):
             os.environ.pop("ANTHROPIC_API_KEY", None)
             db = scratch_ledger(tmp)

@@ -18,6 +18,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import config
+import real_readings
 import reset_demo
 from test_handover import HandoverCase
 from test_api_workspace import H
@@ -35,7 +36,7 @@ class ResetApiCase(HandoverCase):
         super().setUp()
         cache = tempfile.TemporaryDirectory()
         self.addCleanup(cache.cleanup)
-        p = mock.patch.object(config, "V2_CACHE_DIR", Path(cache.name))
+        p = real_readings.patch_cache(Path(cache.name))
         p.start()
         self.addCleanup(p.stop)
 

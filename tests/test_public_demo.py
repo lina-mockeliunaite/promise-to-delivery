@@ -178,7 +178,7 @@ class TestSamplePreview(Case):
         expect = {("noma_journeys", "NJ-05_v2_named_exception.md"): ["Named exception approved by Omar Haddad"],
                   ("noma_journeys", "NJ-07_v2_languages_aligned.md"): ["12 languages"],
                   ("alder_bank", "AB-05_v2_named_exception.md"): ["Named exception approved by Arjun Rao"],
-                  ("alder_bank", "AB-06_v2_coaching_added.md"): ["Scam coaching detection", "BioCatch"]}
+                  ("alder_bank", "AB-06_v2_coaching_added.md"): ["Scam-call alerts", "on a call with a scammer"]}
         for (deal, file), phrases in expect.items():
             text, key = self.lines(deal, file)
             self.assertTrue(key, file)
@@ -319,12 +319,12 @@ class TestRefusals(Case):
                 ("Signed contract", "Signed 20 October 2026 by Liam Hart (Aivuna) and Celeste Wong (Noma Journeys).",
                  ["Liam Hart", "Celeste Wong", "20 October 2026", "Aivuna", "Noma Journeys"])],
             "alder_bank": [
-                ("Approval for the BioCatch connector (coaching detection)", "Arjun Rao, Head of Product, approves the BioCatch connector (beta) as a named exception for the 1 February 2027 launch (16 October 2026).",
-                 ["Arjun Rao", "Head of Product", "BioCatch", "16 October 2026", "1 February 2027"]),
-                ("Revised statement of work", "Scam coaching detection is added as section 5 (16 October 2026).",
-                 ["5. Scam coaching detection", "16 October 2026"]),
-                ("Signed contract", "Signed 20 October 2026 by Tom Fraser (Elva) and Priya Nair (Alder Bank); agreement dated 12 October. The wording that closed the coaching-scam gap isn't in it, so the fix can't be confirmed and the gap reopens. Its statement of work appendix schedules coaching-scam detection for 1 May 2027.",
-                 ["Tom Fraser", "Priya Nair", "20 October 2026", "Elva", "Alder Bank", "12 October", "1 May 2027"])],
+                ("Approval for scam-call alerts", "Arjun Rao, Head of Product, approves scam-call alerts as a named exception from 1 May 2027 (issued 16 October 2026).",
+                 ["Arjun Rao", "Head of Product", "16 October 2026", "1 May 2027"]),
+                ("Revised statement of work", "Scam-call alerts are added as section 5, live from the 1 February 2027 launch (16 October 2026).",
+                 ["5. Scam-call alerts", "16 October 2026", "1 February 2027"]),
+                ("Signed contract", "Signed 20 October 2026 by Tom Fraser (Elva) and Priya Nair (Alder Bank); agreement dated 12 October. Its statement of work appendix says scam-call alerts will be live from the 1 February 2027 launch, as in the revised statement of work.",
+                 ["Tom Fraser", "Priya Nair", "20 October 2026", "Elva", "Alder Bank", "12 October", "1 February 2027"])],
         }
         for deal, expected in wording.items():
             listing = self.client.get("/api/demo/samples", params={"deal": deal}).json()["samples"]
@@ -370,6 +370,8 @@ class TestSamplePathEndToEnd(Case):
         self.assertEqual(reg["freshness"]["state"], "Up to date")
 
     def test_alder_ab05_ab06_ab09_through_the_sample_path_with_no_key_and_no_model_call(self):
+        """"Use a sample file" accepts AB-05, AB-06 and AB-09 in order with no key and no model call (Round 5). The reading of the state with AB-05 and AB-06 added is in results/v2_cache
+        (made once, 13 Nov, by fill_alder_readings.py), so the hash-gated samples go through the demo's own default path."""
         for file in ("AB-05_v2_named_exception.md", "AB-06_v2_coaching_added.md", "AB-09_signed_contract.md"):
             r = self.add_sample("alder_bank", file)
             self.assertEqual(r.status_code, 200, (file, r.text))
@@ -377,6 +379,7 @@ class TestSamplePathEndToEnd(Case):
         reg = self.client.get("/api/deals/alder_bank/register").json()
         self.assertEqual(reg["stage"]["current"], "signed")
         self.assertEqual(reg["freshness"]["state"], "Up to date")
+        self.assertEqual(len(reg["commitments"]), 2)  # the two-row story
 
 
 class TestResets(Case):

@@ -11,7 +11,7 @@ Thanks for the drafts. Our legal team is reviewing the agreement and will send c
 
 We'll share 12 months of confirmed scam cases by 15 November.
 
-Our board approved the 1 February launch on the basis that every payment is checked before it leaves, and that coaching detection is live from day one.
+Our board approved the 1 February launch on the basis that scam-call alerts are live from day one.
 
 Best regards,
 Rachel

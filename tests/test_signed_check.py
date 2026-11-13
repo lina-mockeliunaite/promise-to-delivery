@@ -14,6 +14,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 import config
+import real_readings
 import deal_catalogue
 import deal_stage
 import handover
@@ -41,14 +42,14 @@ class Replay(unittest.TestCase):
     def setUp(self):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
-        cache = mock.patch.object(config, "V2_CACHE_DIR", Path(tmp.name) / "cache")
+        cache = real_readings.patch_cache(Path(tmp.name) / "cache")
         cache.start()
         self.addCleanup(cache.stop)
         db = Path(tmp.name) / "l.sqlite"
         reset_demo.reset(db_path=db)
         self.conn = ledger.connect(db)
         self.addCleanup(self.conn.close)
-        accepted = json.loads(self.run_file.read_text(encoding="utf-8"))["deals"][0]["accepted"]
+        accepted = json.loads(self.run_file.read_text(encoding="utf-8"))["deals"][0]["accepted"] if self.deal != "alder_bank" else real_readings.k1_findings()  # Alder: the accepted K1 reading (13 Nov)
         self.client = FakeClient([{k: v for k, v in f.items() if k != "problems"} for f in accepted])
 
     def filed(self, source_key, name):
@@ -149,26 +150,46 @@ class TestAlder(Replay):
     deal = "alder_bank"
     run_file = ALDER_RUN
 
-    def test_the_signed_contract_that_incorporates_the_9_october_sow_reopens_the_coaching_fix(self):
+    def test_the_shipped_ab09_confirms_the_coaching_fix_and_the_approval_that_starts_later_stays_open(self):
+        """Round 5: AB-06 and AB-09 carry one identical sentence, so the signed text confirms the contract fix; the approval starts 1 May, after the signed 1 February."""
         self.filed("AB-05", "AB-05_v2_named_exception.md")
+        _, approval = self.issue("scam-call", "Approval starts later")
+        self.assertEqual((approval["state"], approval["approval_scope"]["start"]["source"]), ("Needs action", "promise"))
         self.filed("AB-06", "AB-06_v2_coaching_added.md")
-        _, gap = self.issue("coaching", "Missing from contract")
-        self.assertEqual(gap["state"], "Resolved")  # closed by the revised SOW, before any signed paperwork
+        _, approval = self.issue("scam-call", "Approval starts later")
+        self.assertEqual(approval["approval_scope"]["start"]["source"], "contract")
         self.sign((SCEN / "AB-09_signed_contract.md").read_text(encoding="utf-8"), "AB-09_signed_contract.md")
         ov = self.ov()
-        c, gap = self.issue("coaching", "Missing from contract", ov)
+        _, gap = self.issue("scam-call", "Missing from contract", ov)
+        self.assertEqual((gap["state"], gap["signed_check"]["status"]), ("Resolved", "confirmed"))
+        _, approval = self.issue("scam-call", "Approval starts later", ov)
+        self.assertEqual((approval["state"], approval["approval_scope"]["start"]["source"], approval["reason"]),
+                         ("Needs action", "signed", "The signed start date is earlier than the approved start date."))
+
+    def test_a_signed_appendix_without_the_closing_sentence_reopens_the_coaching_fix(self):
+        self.filed("AB-05", "AB-05_v2_named_exception.md")
+        self.filed("AB-06", "AB-06_v2_coaching_added.md")
+        _, gap = self.issue("scam-call", "Missing from contract")
+        self.assertEqual(gap["state"], "Resolved")  # closed by the revised SOW, before any signed paperwork
+        shipped = (SCEN / "AB-09_signed_contract.md").read_text(encoding="utf-8")
+        later = shipped.replace("Scam-call alerts will be live from the 1 February 2027 launch: they warn the bank when a customer seems to be on a call with a scammer while making a payment.",
+                                "Early warnings will be live from 1 May 2027, for when a customer seems to be on a call with a scammer while making a payment.").replace("**2. Scam-call alerts.**", "**2. Early warnings.**")
+        self.assertNotEqual(later, shipped)  # test-local text: data/scenarios is only read
+        self.sign(later, "AB-09_signed_contract.md")
+        ov = self.ov()
+        c, gap = self.issue("scam-call", "Missing from contract", ov)
         self.assertEqual(gap["state"], "Needs action")
         self.assertEqual(gap["signed_check"]["reason"], "The signed contract doesn't contain the wording that closed this gap, so the fix can't be confirmed.")
         self.assertIn("Draft SOW, version 2", gap["signed_check"]["earlier"])  # the closing document is named beneath
-        _, approval = self.issue("coaching", "No approval recorded", ov)
-        self.assertEqual((approval["state"], approval["signed_check"]), ("Resolved", None))  # the pricing-note fix is untouched
+        _, approval = self.issue("scam-call", "No approval recorded", ov)
+        self.assertEqual((approval["state"], approval["signed_check"]), ("Resolved", None))  # the pricing-note fix is untouched; the signed sentence now says 1 May, which the approval (from 1 May) covers
         # the predicted locked-record verdict: nothing is closed by documents any more
         hosting = next(k for k in ov["commitments"] if "azure" in k["name"].lower())
         for i in hosting["issues"]:  # one note on the commitment settles all its open gaps, as the screen does
             handover.resolve_by_note(self.conn, self.deal, i["id"], "Tom Fraser", "Customer agreed AWS Sydney on the 14 Oct call.")
         snap = handover.build_snapshot(self.conn, self.deal, "Priya Nair")
         self.assertEqual((len(snap["open_items"]), len(snap["resolved_by_note"]), len([r for r in snap["closed_items"] if not any(
-            f for f in snap["open_items"] if f["promise"] == r["promise"])])), (2, 1, 0))
+            f for f in snap["open_items"] if f["promise"] == r["promise"])])), (1, 1, 0))
 
 
 class TestMatching(unittest.TestCase):
@@ -237,7 +258,7 @@ class TestTheSignedContractWordedDifferently(Replay):
 
 class TestTheFourElvaDeals(unittest.TestCase):
     def test_without_signed_paperwork_nothing_changes_anywhere(self):
-        with tempfile.TemporaryDirectory() as tmp, mock.patch.object(config, "V2_CACHE_DIR", Path(tmp) / "cache"):
+        with tempfile.TemporaryDirectory() as tmp, real_readings.patch_cache(Path(tmp) / "cache"):
             reset_demo.reset(db_path=Path(tmp) / "l.sqlite")
             conn = ledger.connect(Path(tmp) / "l.sqlite")
             try:

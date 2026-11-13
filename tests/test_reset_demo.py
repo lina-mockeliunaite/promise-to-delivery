@@ -14,7 +14,9 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config
+import real_readings
 import ledger_consolidate
 import ledger_fixes
 import reset_demo
@@ -50,7 +52,7 @@ class ResetCase(unittest.TestCase):
         self.db = self.dir / "ledger.sqlite"
         cache = tempfile.TemporaryDirectory()
         self.addCleanup(cache.cleanup)
-        p = mock.patch.object(config, "V2_CACHE_DIR", Path(cache.name))
+        p = real_readings.patch_cache(Path(cache.name))
         p.start()
         self.addCleanup(p.stop)
 
@@ -134,13 +136,14 @@ class TestReset(ResetCase):
 class TestTitlesSurviveReset(ResetCase):
     """19 Oct: plain titles are keyed by commitment key, so the keys must be the same after every reset."""
 
-    def test_alder_keeps_the_same_three_commitment_keys_and_titles_after_reset(self):
+    def test_alder_keeps_the_same_two_commitment_keys_and_titles_after_reset(self):
         import deal_stage
         import handover
         import ledger
         import workspace
         titles = deal_stage.load_profile("alder_bank")["titles"]
-        self.assertEqual(len(titles), 3)
+        self.assertEqual(len(titles), 2)  # 13 Nov: a two-row story
+        self.assertEqual(sorted(titles.values()), ["Hosting on Microsoft Azure", "Scam-call alerts live at launch"])
         for _ in range(2):  # a second reset must not move the keys either
             reset_demo.reset(self.db)
             conn = ledger.connect(self.db)
@@ -162,8 +165,8 @@ class TestTitlesSurviveReset(ResetCase):
         self.addCleanup(conn.close)
         reg = workspace.overview(conn, "alder_bank")
         refs = {c["name"]: c["ref"] for c in reg["commitments"]}
-        self.assertEqual(len(refs), 3)
-        self.assertEqual(len(set(refs.values())), 3)
+        self.assertEqual(len(refs), 2)
+        self.assertEqual(len(set(refs.values())), 2)
         self.assertTrue(all(re.fullmatch(r"[0-9a-f]{12}", r) for r in refs.values()))
         self.assertTrue(all("key" not in c for c in reg["commitments"]))  # the internal commitment key itself never reaches a reader
         self.assertNotIn("v2-", json.dumps(reg))
@@ -258,7 +261,8 @@ class TestSignedPaperwork(ResetCase):
         self.assertEqual(workspace.overview(conn, "alder_bank")["stage"]["current"], "signed")
         self.assertEqual(ledger_fixes.freshness(conn, did)["state"], "Up to date")  # documents the checks don't read: not stale
         self.assertNotIn("signed_contract", {d["doc_type"] for d in ledger_v2.current_docs(conn, did)})  # the checks never read it
-        result = ledger_v2.review(conn, "alder_bank", client=_NoModel())
+        import deal_catalogue
+        result = deal_catalogue.recheck(conn, "alder_bank", None, _NoModel())  # through the resolver, as the app does: Alder is checked against its own catalogue (13 Nov)
         self.assertEqual(result["model_calls"], 0)
         self.assertEqual(ledger_fixes.freshness(conn, did)["state"], "Up to date")
         self.assertEqual(self.findings(conn), before)  # not one finding changed

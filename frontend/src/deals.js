@@ -69,15 +69,24 @@ export function initials(name) {
 // The catalogue pop-up on the home screen (20 Oct): a vendor switch, preselected to the vendor of the deal opened last (Elva on a
 // fresh start). Remembered in this browser only; when storage fails the first vendor shows.
 export const VENDOR_KEY = "ptd.lastVendor";
+// 12 Nov (Round 5): Alder is checked against its own copy of Elva's catalogue (vendor id "elva_alder", name "Elva"), so two ids can share one name. The switch lists a name once,
+// under the default "elva" id when the deal list has it; with only the Alder copy (the public demo) Elva still comes first and is the default.
+const isElva = (v) => v.name === "Elva";
 export function vendorsOf(deals) {
   const seen = new Map();
-  for (const d of deals ?? []) if (d.vendor && !seen.has(d.vendor)) seen.set(d.vendor, { id: d.vendor, name: d.vendor_name || d.vendor });
-  return [...seen.values()].sort((a, b) => (a.id === "elva" ? -1 : b.id === "elva" ? 1 : a.name.localeCompare(b.name)));
+  for (const d of deals ?? []) {
+    if (!d.vendor) continue;
+    const v = { id: d.vendor, name: d.vendor_name || d.vendor };
+    const same = [...seen.values()].find((x) => x.name === v.name);
+    if (!same) seen.set(v.id, v);
+    else if (v.id === "elva" && same.id !== "elva") { seen.delete(same.id); seen.set(v.id, v); }
+  }
+  return [...seen.values()].sort((a, b) => (isElva(a) ? -1 : isElva(b) ? 1 : a.name.localeCompare(b.name)));
 }
 export function lastVendor(vendors, storage = globalThis.localStorage) {
   let id = null;
   try { id = storage.getItem(VENDOR_KEY); } catch { /* storage blocked */ }
-  return vendors.some((v) => v.id === id) ? id : vendors.find((v) => v.id === "elva")?.id ?? vendors[0]?.id;
+  return vendors.some((v) => v.id === id) ? id : vendors.find(isElva)?.id ?? vendors[0]?.id;
 }
 export function rememberVendor(id, storage = globalThis.localStorage) {
   try { storage.setItem(VENDOR_KEY, id); } catch { /* the choice lasts for this page only */ }

@@ -11,7 +11,7 @@ import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
 import { addReady, fmtDate, fmtDateTime, mismatchNotice, newDocumentNotice, uploadKind } from "./format.js";
 import {
-  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, closedSettled, reopenedLines, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, changeTitle, signedDatesLabel, changedPromises, closedTitle, confirmedTitle, reopenedTitle, coverageLine, docCount, gapProgress, orderPromises, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
+  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, closedSettled, reopenedLines, scopeRowLines, SCOPE_HELD_TITLE, scopeHeldDetail, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, changeTitle, signedDatesLabel, changedPromises, closedTitle, confirmedTitle, reopenedTitle, coverageLine, docCount, gapProgress, orderPromises, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
   mismatchParts, promiseLabels, missingForHandover, handoverChecklist, handoverOpen, changeView, changeDocLabel, datePrefill, plainName, readHash, recordedBy, rowTitle, toldParts, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
@@ -125,6 +125,7 @@ export function CommitRow({ c, status, active, onOpen, flash = false, documents 
           {/* 12 Nov: a closed row says it as the drawer and the record do: "Closed by Draft contract v2 (19 Oct) · confirmed in the signed contract (20 Oct)". */}
           {status === "closed" && closedSettled(commitmentView(c, status, documents), documents)
             .map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
+          {status !== "closed" && scopeRowLines(c.issues).map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
           {status !== "closed" && reopenedLines(c.issues, documents).map((l) => <span key={l} className="dp-prow-note">{l}</span>)}
           {status === "noted" && noteRes && <span className="dp-prow-note">{recordedBy(noteRes.by, noteRes.at, fmtDate)}</span>}
         </span>
@@ -217,7 +218,7 @@ export function ChangeDialog({ change, titleOf, onClose, onGotIt }) {
   const { openPromises } = change;
   const short = (f) => FINDING_SHORT[f] ?? f;
   const view = changeView(change, titleOf, change.acted);
-  const rows = view.groups.some((g) => g.closed.length || g.confirmed.length || g.reopened.length || g.stillOpen.length || g.opened.length);
+  const rows = view.groups.some((g) => g.closed.length || g.confirmed.length || g.reopened.length || g.stillOpen.length || g.opened.length || g.scopeHeld.length);
   const titleId = useId();
   const gotIt = useRef(null);
   useEffect(() => {
@@ -271,6 +272,18 @@ export function ChangeDialog({ change, titleOf, onClose, onGotIt }) {
                       <span className="dp-chip dp-chip-amber"><span className="dp-dot" />Reopened</span>
                     </div>
                     {x.reason && <p>{x.reason}</p>}
+                  </div>
+                </div>
+              ))}
+              {g.scopeHeld.map((x) => (
+                <div key={`o|${x.finding}`} className="dp-change-row is-open">
+                  <span className="dp-change-mark"><Icon d={I.alert} size={13} /></span>
+                  <div>
+                    <div className="dp-change-line">
+                      <strong>{SCOPE_HELD_TITLE}</strong>
+                      <span className="dp-change-still"> · still open</span>
+                    </div>
+                    <p>{scopeHeldDetail(x)}</p>
                   </div>
                 </div>
               ))}

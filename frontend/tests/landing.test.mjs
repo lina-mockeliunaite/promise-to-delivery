@@ -212,3 +212,18 @@ test("on the cards the contract label is 'Contract specifies' (a missing finding
   assert.equal(partsText(cardParts([{ text: "Contract has ", strong: false }, { text: "no matching wording", strong: true }])), "Contract has no matching wording");
   assert.equal(partsText(cardParts([{ text: "Contract differs", strong: true }])), "Contract differs");
 });
+
+// 13 Nov (Round 5): Alder's landing card is a fixed hook, tied to what the sample files say.
+import { STATIC_CARDS } from "../src/landing.js";
+
+test("Alder's landing card is the approval-scope hook, and both dates are what the sample files say", async () => {
+  const fs = await import("node:fs");
+  assert.deepEqual(STATIC_CARDS, { alder_bank: { title: "Scam-call alerts at launch", hook: "Promised: live at the 1 February launch · Approved: from 1 May" } });
+  const root = new URL("../../data/", import.meta.url);
+  assert.match(fs.readFileSync(new URL("alder_bank/docs/AB-03_rfp_response.md", root), "utf8"), /live from the 1 February 2027 launch/); // promised
+  assert.match(fs.readFileSync(new URL("scenarios/AB-05_v2_named_exception.md", root), "utf8"), /approved by Arjun Rao \(Head of Product\) from 1 May 2027/); // approved
+  const jsx = fs.readFileSync(new URL("../src/Landing.jsx", import.meta.url), "utf8");
+  assert.match(jsx, /<p className="land-hook">\{STATIC_CARDS\[s\.deal\]\.hook\}<\/p>/);
+  assert.match(jsx, /const cards = samples\.filter\(\(s\) => STATIC_CARDS\[s\.deal\] \|\| found\[s\.deal\]\);/);
+  assert.ok(!/Hosting on Microsoft Azure/.test(jsx)); // the hosting card is gone from the landing page (the deal keeps its hosting row)
+});

@@ -7,7 +7,7 @@ import * as api from "./api.js";
 import { AUDIENCE_ITEMS, CARDS_LABEL, DESCRIPTION, FICTIONAL, SUBHEAD, TAGLINE } from "./brand.js";
 import { MismatchSentence, TitleLine } from "./Drawer.jsx";
 import { DemoNavContext, LandingPublishContext, START_LABEL, startGuidedDemo, useDemo } from "./demo.js";
-import { availableSamples, pickMismatches } from "./landing.js";
+import { STATIC_CARDS, availableSamples, pickMismatches } from "./landing.js";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-500.css";
 import "@fontsource/inter/latin-600.css";
@@ -32,7 +32,7 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
   // The cards are picked together, in card order, so they show different kinds of mismatch (see pickMismatches).
   const picks = pickMismatches(samples.map((s) => registers[s.deal] ?? null));
   const found = Object.fromEntries(samples.map((s, n) => [s.deal, picks[n]]));
-  const cards = samples.filter((s) => found[s.deal]);
+  const cards = samples.filter((s) => STATIC_CARDS[s.deal] || found[s.deal]);
   return (
     <div className="dp land">
       <div className="land-inner">
@@ -53,7 +53,15 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
         {cards.length > 0 && (
           <div className="land-cards" aria-label="Two sample scenarios">
             <span className="dp-eyebrow land-cards-label">{CARDS_LABEL}</span>
-            {cards.map((s) => (
+            {cards.map((s) => (STATIC_CARDS[s.deal] ? (
+              <article key={s.deal} className="dp-card land-example">
+                <span className="dp-eyebrow">{s.title}</span>
+                <span className="land-parties">{s.parties}</span>
+                <TitleLine title={STATIC_CARDS[s.deal].title} labels={[]} stacked />
+                <p className="land-hook">{STATIC_CARDS[s.deal].hook}</p>
+                <button type="button" className={`dp-btn land-open ${guided ? "land-open-secondary" : "dp-btn-dark"}`} onClick={() => onOpen(s.deal)}>Open sample deal</button>
+              </article>
+            ) : (
               <article key={s.deal} className="dp-card land-example">
                 <span className="dp-eyebrow">{s.title}</span>
                 <span className="land-parties">{s.parties}</span>
@@ -62,7 +70,7 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
                 <MismatchSentence parts={found[s.deal].parts} />
                 <button type="button" className={`dp-btn land-open ${guided ? "land-open-secondary" : "dp-btn-dark"}`} onClick={() => onOpen(s.deal)}>Open sample deal</button>
               </article>
-            ))}
+            )))}
           </div>
         )}
       </div>

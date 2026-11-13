@@ -5,7 +5,7 @@ The current description of the product is the repository's [`README.md`](../READ
 ## Current
 
 - [`DEMO_SCRIPT_2026-10-21_noma.md`](DEMO_SCRIPT_2026-10-21_noma.md): the main demo (Aivuna, Noma Journeys).
-- [`DEMO_SCRIPT_2026-10-20_alder.md`](DEMO_SCRIPT_2026-10-20_alder.md): the second demo (Elva, Alder Bank), a draft fix that didn't survive signing.
+- [`DEMO_SCRIPT_2026-10-20_alder.md`](DEMO_SCRIPT_2026-10-20_alder.md): the second demo (Elva, Alder Bank), an approval that starts later than the promise.
 - [`RESULTS_coral_pay_2026-10-10.md`](RESULTS_coral_pay_2026-10-10.md): the first sealed run (version 1, rules decide), in full.
 - [`RESULTS_atlas_remit_v2_2026-10-10.md`](RESULTS_atlas_remit_v2_2026-10-10.md): the second sealed run (version 2, model detects, code verifies), in full. Both results describe the versions that were tested.
 - [`brand/`](brand/): the logo generator (`make_logo.py`) and previews. The files the app serves are in `frontend/public/brand/`.

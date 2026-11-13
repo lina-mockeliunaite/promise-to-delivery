@@ -70,8 +70,8 @@ test("sample text is exactly what was agreed, within the 500-character note limi
   assert.equal(NOTE_SAMPLES.alder_bank.text, "Customer agreed AWS Sydney on the 14 Oct call.");
   assert.equal(HANDOVER_SAMPLES.noma_journeys.sales, "Signed. Noma was promised a launch specialist for the first 30 days; it's approved as a named exception at no charge, but it isn't in the contract. Noma expects it: provide it, and get it into writing at kickoff. Noma launches on chat and email; voice isn't offered.");
   assert.equal(HANDOVER_SAMPLES.noma_journeys.delivery, "Accepted. We start on chat and email as contracted and provide the launch specialist for 30 days as approved; putting it in writing goes on the kickoff agenda.");
-  assert.equal(HANDOVER_SAMPLES.alder_bank.sales, "Coaching-scam detection moves to 1 May in the signed SOW. Confirm the revised launch scope with Alder before kickoff.");
-  assert.equal(HANDOVER_SAMPLES.alder_bank.delivery, "Accepted. We start on AWS Sydney as contracted; coaching detection and the volume limit go on the kickoff agenda.");
+  assert.equal(HANDOVER_SAMPLES.alder_bank.sales, "The signed statement of work commits to scam-call alerts at launch. Product approved them from 1 May. Confirm the delivery plan with Product and Alder before kickoff.");
+  assert.equal(HANDOVER_SAMPLES.alder_bank.delivery, "Accepted. We start on AWS Sydney as contracted; scam-call alerts go on the kickoff agenda.");
   for (const t of [...Object.values(NOTE_SAMPLES).map((x) => x.text), ...Object.values(HANDOVER_SAMPLES).flatMap((x) => Object.values(x))]) assert.ok(t.length <= 500, t);
 });
 

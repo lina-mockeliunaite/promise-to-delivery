@@ -20,9 +20,9 @@ Provider will score outbound instant payments in accordance with the Payment Dec
 
 Payments held for review will open as cases in Provider's case management workspace, with a full case audit history.
 
-## 5. Scam coaching detection
+## 5. Scam-call alerts
 
-Through its connector to BioCatch, Provider will use behavioural signals from the Customer's mobile and internet banking to flag customers who appear to be coached by a scammer, from the 1 February 2027 launch, subject to the beta terms agreed in the pricing schedule.
+Scam-call alerts will be live from the 1 February 2027 launch: they warn the bank when a customer seems to be on a call with a scammer while making a payment.
 
 ## 6. Governance
 
@@ -30,8 +30,6 @@ The parties will hold a weekly project status meeting during implementation.
 
 ## Annex A — Payment Decision Specification
 
-A.1 Outbound instant payments of AUD 1,000 or more are scored in real time before the payment is released.
+A.1 All outbound instant payments are scored in real time before the payment is released.
 
-A.2 Outbound instant payments below AUD 1,000 are scored in batches at hourly intervals after release.
-
-A.3 This specification applies to outbound instant payments from Alder personal and business accounts.
+A.2 This specification applies to outbound instant payments from Alder personal and business accounts.

@@ -4,7 +4,7 @@
   "summary": "Elva provides scam protection for Alder Bank's outbound instant payments, holding each payment until Elva returns a decision, from a 1 February 2027 launch. Go-live depends on Alder providing sandbox access to its payments platform by 1 December.",
   "deliverables": [
     "Dedicated environment on AWS, Sydney region",
-    "Real-time scoring for instant payments of AUD 1,000 or more; hourly batches below that",
+    "Checks every outbound instant payment for scams before it's released",
     "Up to 200,000 payments a day at launch",
     "Case management workspace with full case audit history",
     "Weekly project status meeting during implementation"
@@ -17,8 +17,8 @@
     "version": 1
   },
   "titles": {
-    "v2-6e5a9364550eece7": "Coaching-scam detection live at launch",
-    "v2-9b2a6caa8d45126a": "750,000 payments a day by the end of year one",
+    "v2-07524eb2dabbfe87": "Scam-call alerts live at launch",
     "v2-5d0b02e39b1dfda4": "Hosting on Microsoft Azure"
-  }
+  },
+  "catalogue": "elva_alder"
 }

@@ -128,7 +128,7 @@ test("C5: a reopened finding explains itself in the rule's words and its history
 
 test("the drawer's pieces are shared by the live drawer and the locked record, and the saved record is not changed", () => {
   const fr = read("FrozenRecord.jsx");
-  assert.match(fr, /const common = \{ documents, titles, snapshotDocs: s\.documents, relatedMap: hv\.related_clauses \?\? \{\} \};/); // 12 Nov: the related clause comes beside the snapshot
+  assert.match(fr, /const common = \{ documents, titles, snapshotDocs: s\.documents, relatedMap: hv\.related_clauses \?\? \{\}, approvalScopes: hv\.approval_scopes \?\? \{\} \};/); // 12 Nov: the related clause and the approval-scope dates come beside the snapshot
   assert.match(fr, /api\.fetchRegister\(deal\)\.then\(setLiveRegister/);
   assert.ok(!/signed_sentence|signed_label/.test(fr)); // nothing here writes into the saved record
   assert.match(read("dealpage.js"), /signed_check: liveOpen\.find\(\(l\) => l\.finding === f\.finding\)\?\.signed_check \?\? f\.signed_check/);

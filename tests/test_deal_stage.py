@@ -10,7 +10,9 @@ from unittest import mock
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 import config
+import real_readings
 import deal_stage
 import ledger
 import ledger_v2
@@ -50,7 +52,7 @@ class TestOnDemoDeals(unittest.TestCase):
     def setUpClass(cls):
         cls.tmp = tempfile.TemporaryDirectory()
         d = Path(cls.tmp.name)
-        cls.patch = mock.patch.object(config, "V2_CACHE_DIR", d / "cache")
+        cls.patch = real_readings.patch_cache(d / "cache")
         cls.patch.start()
         reset_demo.build(d / "l.sqlite")
         cls.conn = ledger.connect(d / "l.sqlite")

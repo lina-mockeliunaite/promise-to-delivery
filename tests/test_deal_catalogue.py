@@ -18,6 +18,7 @@ from fastapi.testclient import TestClient
 import api
 import catalogue_store
 import config
+import real_readings
 import deal_catalogue
 import deal_stage
 import integrity
@@ -38,10 +39,13 @@ FOUR = ["alder_bank", "harbour_bank", "coral_pay", "atlas_remit"]  # the deals t
 
 
 class TestResolver(unittest.TestCase):
-    def test_the_four_existing_deals_and_user_deals_use_elvas_catalogue(self):
-        for slug in FOUR + ["u_0123456789abcdef"]:
+    def test_the_other_existing_deals_and_user_deals_use_elvas_catalogue_and_alder_uses_its_copy(self):
+        for slug in [s for s in FOUR if s != "alder_bank"] + ["u_0123456789abcdef"]:
             self.assertEqual(deal_catalogue.vendor_of(slug), "elva", slug)
             self.assertIsNone(deal_catalogue.path_for(slug), slug)  # no catalogue_path: the unchanged default resolution
+        # 13 Nov (Round 5): Alder is checked against its own copy of Elva's file (a demo fixture: no real company name; see tests/test_catalogue_alder.py)
+        self.assertEqual(deal_catalogue.vendor_of("alder_bank"), "elva_alder")
+        self.assertEqual(deal_catalogue.path_for("alder_bank"), config.DATA_DIR / "catalogue_alder.json")
 
     def test_noma_journeys_uses_aivunas(self):
         self.assertEqual((deal_catalogue.vendor_of("noma_journeys"), deal_catalogue.vendor_name("noma_journeys")), ("aivuna", "Aivuna"))
@@ -73,19 +77,25 @@ class TestTheFourExistingDealsAreUnchanged(unittest.TestCase):
 
     def test_every_deal_is_up_to_date_on_the_hash_computed_from_elvas_catalogue_alone(self):
         want = integrity.config_sha256(integrity.HASH_DEFINITION, catalogue_store.published_bytes("elva"))
-        for slug in FOUR:
+        for slug in [s for s in FOUR if s != "alder_bank"]:  # Alder is checked against its own copy (Round 5), so its hash is built on that file
             did = ledger_fixes.deal_id(self.conn, slug)
             review = self.conn.execute("SELECT MAX(id) FROM reviews WHERE deal_id = ?", (did,)).fetchone()[0]
             self.assertEqual(integrity.review_config(self.conn, review), (integrity.HASH_DEFINITION, want), slug)
             fresh = ledger_fixes.freshness(self.conn, did)
             self.assertEqual((fresh["state"], fresh["reasons"]), ("Up to date", []), slug)
+        did = ledger_fixes.deal_id(self.conn, "alder_bank")
+        review = self.conn.execute("SELECT MAX(id) FROM reviews WHERE deal_id = ?", (did,)).fetchone()[0]
+        alder = integrity.config_sha256(integrity.HASH_DEFINITION, (config.DATA_DIR / "catalogue_alder.json").read_bytes())
+        self.assertEqual(integrity.review_config(self.conn, review), (integrity.HASH_DEFINITION, alder))
+        self.assertNotEqual(alder, want)
+        self.assertEqual(ledger_fixes.freshness(self.conn, did)["state"], "Up to date")
 
 
 class TestNothingStartsACheckWithoutTheResolver(unittest.TestCase):
     def test_no_module_calls_the_check_entry_points_directly(self):
         # recheck.recheck / ledger_v2.needs_model / ledger_v2.review / ledger_v2.build take the catalogue as an optional argument,
         # so a caller that forgets it would silently use Elva's. Callers go through deal_catalogue (or pass the path, as reset_demo does).
-        allowed = {"deal_catalogue.py", "reset_demo.py", "recheck.py", "ledger_v2.py"}
+        allowed = {"deal_catalogue.py", "reset_demo.py", "recheck.py", "ledger_v2.py", "fill_alder_readings.py"}  # the last passes deal_catalogue.path_for(DEAL) to review, as reset_demo does (12 Nov)
         pattern = re.compile(r"\b(?:recheck\.recheck|ledger_v2\.(?:needs_model|review|build))\(")
         offenders = []
         for path in ROOT.glob("*.py"):
@@ -114,7 +124,7 @@ class TestTheCataloguePopupApi(unittest.TestCase):
         self.addCleanup(tmp.cleanup)
         for patch in (mock.patch.object(config, "V2_DEALS", ["noma_journeys", "harbour_bank"]),
                       mock.patch.object(config, "UI_DEALS", ["noma_journeys", "harbour_bank"]),
-                      mock.patch.object(config, "V2_CACHE_DIR", Path(tmp.name) / "cache"),
+                      real_readings.patch_cache(Path(tmp.name) / "cache"),
                       mock.patch.dict(config.V2_SEED_FILES, {}, clear=True)):  # scripted findings only: no saved model output
             patch.start()
             self.addCleanup(patch.stop)

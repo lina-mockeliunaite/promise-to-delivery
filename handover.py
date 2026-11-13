@@ -174,8 +174,9 @@ def resolve_by_note(conn, slug: str, issue_id, resolved_by, reason) -> dict:
     if row is None:
         raise HandoverError("That item is not in this deal.", 404)
     if row[0] == "Resolved":
+        import approval_scope  # 12 Nov: so is an approval gap held open because the approval starts later than the commitment
         import signed_check  # 21 Oct: a gap closed by a draft that the signed paperwork lacks is open again, and can be addressed by a note
-        if issue_id not in signed_check.reopened(conn, did, slug):
+        if issue_id not in {**signed_check.reopened(conn, did, slug), **approval_scope.reopened(conn, did, slug)}:
             raise HandoverError("This gap is already closed by the documents.", 409)
     _insert(conn, "INSERT INTO note_resolutions (deal_id, issue_id, resolved_by, reason, source_set_sha256) VALUES (?, ?, ?, ?, ?)",
             (did, issue_id, who, why, ledger_fixes.source_set_sha256(conn, did)))
@@ -302,7 +303,8 @@ def complete(conn, slug: str, completed_by) -> dict:
 
 def handover(conn, slug: str) -> dict:
     """The handover panel: complete or not, both notes, and the frozen snapshot once complete."""
-    import signed_check  # local: signed_check imports workspace, which imports this module
+    import approval_scope  # local: these import workspace, which imports this module
+    import signed_check
     did = ledger_fixes.deal_id(conn, slug)
     done = completion(conn, did)
     snap = fingerprint = None
@@ -318,6 +320,8 @@ def handover(conn, slug: str) -> dict:
             "display_names": _display_names(conn, did, slug) if snap else {},
             # 12 Nov: the related clause of each reopened gap, found now from the signed text the record holds; not in the snapshot, so the fingerprint is untouched
             "related_clauses": signed_check.related_for_record(conn, snap) if snap else {},
+            # 12 Nov: the dates behind a gap held open by approval scope, found now; not in the snapshot either
+            "approval_scopes": approval_scope.for_record(conn, did, slug, snap) if snap else {},
             # 19 Oct: the deal owner, read now (profile, else the Sales note's author), as the deal list shows it; not in the snapshot
             "owner": deal_stage.load_profile(slug).get("owner") or ((notes(conn, did)["sales"] or {}).get("by"))}
 

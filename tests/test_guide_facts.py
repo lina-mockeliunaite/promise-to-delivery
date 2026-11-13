@@ -89,26 +89,41 @@ class TestNomaHints(unittest.TestCase):
 
 
 class TestAlderHints(unittest.TestCase):
-    def test_coaching_detection_needs_a_named_approval_for_a_beta_connector_and_the_sow_does_not_mention_it(self):
-        c = row("alder_bank", "coaching")
+    def test_scam_call_alerts_need_a_named_approval_for_a_beta_feature_and_the_base_sow_does_not_mention_them(self):
+        c = row("alder_bank", "scam-call")
         self.assertEqual(types(c), [("approval", False), ("contract_gap", False)])
-        cap = next(x for x in json.loads((config.DATA_DIR / "catalogue.json").read_text(encoding="utf-8"))["capabilities"] if x["id"] == "CAP-027")
-        self.assertEqual((cap["regions"]["AU"]["status"], cap["regions"]["AU"]["sellable"]), ("beta", "requires_named_approval"))
+        cap = next(x for x in json.loads((config.DATA_DIR / "catalogue_alder.json").read_text(encoding="utf-8"))["capabilities"] if x["id"] == "CAP-027")
+        self.assertEqual((cap["name"], cap["regions"]["AU"]["status"], cap["regions"]["AU"]["sellable"]), ("Scam-call alerts", "beta", "requires_named_approval"))
         sow = DOCS("alder_bank", "AB-06_draft_sow.md").lower()
-        self.assertNotIn("coaching", sow); self.assertNotIn("biocatch", sow)
+        self.assertNotIn("scam-call", sow); self.assertNotIn("biocatch", sow)
 
-    def test_the_second_coaching_step_follows_the_approval_with_the_contract_gap_still_open(self):
+    def test_the_second_step_follows_the_approval_with_the_contract_gap_still_open(self):
         sow2 = (config.SCENARIOS_DIR / "AB-06_v2_coaching_added.md").read_text(encoding="utf-8").lower()
-        self.assertIn("coaching", sow2)  # the revised SOW is what closes the gap the hint names
+        self.assertIn("scam-call alerts", sow2)  # the revised statement of work is what closes the gap the hint names
         approval = (config.SCENARIOS_DIR / "AB-05_v2_named_exception.md").read_text(encoding="utf-8")
         self.assertIn("Named exception approved", approval)
 
-    def test_the_signed_step_names_the_later_date_the_shipped_signed_contract_sets_and_does_not_describe_the_check_as_comparing_dates(self):
+    def test_the_approval_starts_later_than_the_promise_and_the_signed_appendix_repeats_the_revised_sentence(self):
+        """Round 5: what the Alder hints say is what the files say."""
+        approval = (config.SCENARIOS_DIR / "AB-05_v2_named_exception.md").read_text(encoding="utf-8")
+        sow = (config.SCENARIOS_DIR / "AB-06_v2_coaching_added.md").read_text(encoding="utf-8")
         signed = (config.SCENARIOS_DIR / "AB-09_signed_contract.md").read_text(encoding="utf-8")
-        self.assertIn("will be enabled from 1 May 2027", signed)  # the date the hint and the summary name
-        self.assertEqual(signed.lower().count("biocatch"), 1)
-        for text in (js_text("demo.js"), (config.ROOT / "public_demo.py").read_text(encoding="utf-8")):
-            self.assertNotRegex(text.lower(), r"compar\w* (the )?(dates?|terms)")
+        rfp = DOCS("alder_bank", "AB-03_rfp_response.md")
+        self.assertIn("approved by Arjun Rao (Head of Product) from 1 May 2027", approval)  # "approved from 1 May"
+        self.assertIn("1 February 2027 launch", rfp)  # "the 1 February promise"
+        sentence = "Scam-call alerts will be live from the 1 February 2027 launch: they warn the bank when a customer seems to be on a call with a scammer while making a payment."
+        self.assertIn(sentence, sow)  # step 3: the revised statement of work
+        self.assertIn(sentence, signed)  # step 4: the signed appendix repeats it
+        hints = js_text("demo.js")
+        for fragment in ("Approved, but only from 1 May. Still open.",
+                         "The revised statement of work says live from 1 February. The contract gap closes; the approval is still open.",
+                         "Signed for 1 February, approved from 1 May. Delivery inherits the gap.",
+                         "Start with scam-call alerts; hosting can wait."):
+            self.assertIn(fragment, hints)
+        for text in (hints, (config.ROOT / "public_demo.py").read_text(encoding="utf-8")):
+            self.assertNotRegex(text.lower(), r"signed check compar\w* (the )?(dates?|terms)")  # the signed check looks for the closing wording; only the approval check compares two dates
+            self.assertNotIn("biocatch", text.lower())
+        self.assertNotRegex(hints[hints.index("alder_bank: ["):hints.index("findGuideRow")], r"\bSOW\b")  # "statement of work", not "SOW", in the Alder hints
 
     def test_azure_is_not_a_supported_cloud_the_sow_says_aws_sydney_and_the_note_is_the_fix(self):
         c = row("alder_bank", "hosting")
@@ -130,13 +145,13 @@ class TestTourCaptionFacts(unittest.TestCase):
             self.assertEqual(r["brief"]["go_live"], "2027-02-01", deal)  # "1 February"
             self.assertEqual(r["stage"]["current"], "contracting", deal)  # "We're at Contracting"
             self.assertEqual(r["stage"]["current_label"], "Contracting", deal)
-            self.assertEqual(len(r["open_rows"]), 3, deal)  # "Three need attention"
+            self.assertEqual(len(r["open_rows"]), 3 if deal == "noma_journeys" else 2, deal)  # "Three need attention" (Noma); "Two need attention" (Alder, a two-row story)
             self.assertIn(vendor, js_text("demo.js")); self.assertIn("its leadership" if deal == "noma_journeys" else "its board", js_text("demo.js"))
 
     def test_the_hint_lines_in_the_front_end_are_the_ones_checked_here(self):
         demo = js_text("demo.js")
         for fragment in ("Promised in the RFP and again in the proposal, never approved, not in the contract.", "Told 12 languages; the draft contract says four.",
-                         "Aivuna doesn't offer voice, so no document can fix this.", "which is in beta and needs a named approval; the SOW doesn't mention it.",
+                         "Aivuna doesn't offer voice, so no document can fix this.", "Approved, but only from 1 May. Still open.",
                          "Elva doesn't offer Azure hosting, so no document can fix this. The customer agreed AWS Sydney on a call: record it as a note."):
             self.assertIn(fragment, demo)
 

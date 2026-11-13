@@ -74,34 +74,39 @@ export function whatChanged(before, after) {
   const confirmed = now.filter((i) => i.signed_check?.status === "confirmed" && beforeById.get(i.id)?.signed_check?.status !== "confirmed")
     .map((i) => ({ promise: i.promise, finding: i.finding }));
   const reopenedIds = new Set(now.filter((i) => i.state !== "Resolved" && !wasOpen.has(i.id) && i.signed_check?.status === "not_found").map((i) => i.id));
+  // 12 Nov, Round 5: an approval was found but starts later than the commitment, so the approval gap stays open. That is a result of the document too: it is said, not left as "nothing changed".
+  const scopeNow = (i) => i?.approval_scope?.status === "not_covered";
+  const scopeHeld = now.filter((i) => scopeNow(i) && !scopeNow(beforeById.get(i.id)))
+    .map((i) => ({ promise: i.promise, finding: i.finding, approvalDate: i.approval_scope.approval.date, startDate: i.approval_scope.start.date, source: i.approval_scope.start.source }));
+  const scopeIds = new Set(now.filter((i) => scopeNow(i) && !scopeNow(beforeById.get(i.id))).map((i) => i.id));
   // 11 Nov: a gap opened on a commitment that already had gaps is an "additional finding" (another reason on a commitment already flagged); "new" is for a commitment with none.
   const hadGaps = new Set(rows(before).map((i) => i.promise));
-  const opened = now.filter((i) => i.state !== "Resolved" && !wasOpen.has(i.id) && !reopenedIds.has(i.id)).map((i) => ({ promise: i.promise, finding: i.finding, additional: hadGaps.has(i.promise) }));
-  const touched = new Set([...closed, ...opened, ...reopened, ...confirmed].map((x) => x.promise));
-  const stillOpen = now.filter((i) => i.state !== "Resolved" && touched.has(i.promise) && wasOpen.has(i.id))
+  const opened = now.filter((i) => i.state !== "Resolved" && !wasOpen.has(i.id) && !reopenedIds.has(i.id) && !scopeIds.has(i.id)).map((i) => ({ promise: i.promise, finding: i.finding, additional: hadGaps.has(i.promise) }));
+  const touched = new Set([...closed, ...opened, ...reopened, ...confirmed, ...scopeHeld].map((x) => x.promise));
+  const stillOpen = now.filter((i) => i.state !== "Resolved" && touched.has(i.promise) && wasOpen.has(i.id) && !scopeIds.has(i.id))
     .map((i) => ({ promise: i.promise, finding: i.finding }));
   // A gap resolved by a current note is not open on screen either (one truth with the deal list and the page).
   const openPromises = new Set(now.filter((i) => i.state !== "Resolved" && !i.note_resolution?.current).map((i) => i.promise)).size;
-  return { closed, opened, reopened, confirmed, stillOpen, openPromises };
+  return { closed, opened, reopened, confirmed, scopeHeld, stillOpen, openPromises };
 }
 
 // "What changed", per commitment (31 Oct). The headline is the change on the commitment the person acted on (`acted`: the commitment whose drawer
 // the document was added from; from the sidebar, the commitments the document closed, confirmed or reopened something on). Everything else that
 // moved is one line naming the commitments, and the detail boxes are grouped under each commitment's title. Wording is the existing wording.
 export function changeView(change, titleOf = (n) => n, acted = null) {
-  const { closed = [], opened = [], reopened = [], confirmed = [] } = change;
+  const { closed = [], opened = [], reopened = [], confirmed = [], scopeHeld = [] } = change;
   // The card shows what the document changed. "Still open" is shown only on the commitment acted on (a partial fix reads "Approval found · the contract
   // gap on this commitment is still open"); from the sidebar, on the commitments the document closed or confirmed something on. The other commitments'
   // unchanged gaps are in the list below the card.
   const stillFor = new Set(acted ? [acted] : [...closed, ...confirmed].map((x) => x.promise));
   const stillOpen = (change.stillOpen ?? []).filter((x) => stillFor.has(x.promise));
-  const all = [...closed, ...stillOpen, ...opened, ...reopened, ...confirmed];
+  const all = [...closed, ...stillOpen, ...opened, ...reopened, ...confirmed, ...scopeHeld];
   const names = [...new Set(all.map((x) => x.promise))];
-  const direct = new Set(acted ? [acted] : [...closed, ...reopened, ...confirmed].map((x) => x.promise));
+  const direct = new Set(acted ? [acted] : [...closed, ...reopened, ...confirmed, ...scopeHeld].map((x) => x.promise));
   const order = [...names.filter((n) => direct.has(n)), ...names.filter((n) => !direct.has(n))];
   const pick = (list, n) => list.filter((x) => x.promise === n);
   const groups = order.map((promise) => ({ promise, title: titleOf(promise), closed: pick(closed, promise), stillOpen: pick(stillOpen, promise),
-    opened: pick(opened, promise), reopened: pick(reopened, promise), confirmed: pick(confirmed, promise) }));
+    opened: pick(opened, promise), reopened: pick(reopened, promise), confirmed: pick(confirmed, promise), scopeHeld: pick(scopeHeld, promise) }));
   const titles = (list) => [...new Set(list.map((x) => titleOf(x.promise)))].join("; ");
   const n = (k, one, many) => `${k} ${k === 1 ? one : many}`;
   const mine = (list) => list.filter((x) => direct.has(x.promise));
@@ -111,6 +116,7 @@ export function changeView(change, titleOf = (n) => n, acted = null) {
   }
   if (mine(confirmed).length) lead.push(`${n(mine(confirmed).length, "earlier fix", "earlier fixes")} confirmed in the signed contract: ${titles(mine(confirmed))}`);
   if (mine(reopened).length) lead.push(`${n(mine(reopened).length, "earlier fix", "earlier fixes")} not found in the signed contract, reopened: ${titles(mine(reopened))}`);
+  if (mine(scopeHeld).length) lead.push(`${SCOPE_HELD_TITLE}, the gap stays open: ${titles(mine(scopeHeld))}`);
   const headline = lead.length ? `${lead.join(" · ")}.`
     : all.length ? `Nothing changed on ${acted ? titleOf(acted) : "the commitments the document touched"}.`
     : "Nothing closed and nothing new: the document did not change any gap.";
@@ -121,6 +127,7 @@ export function changeView(change, titleOf = (n) => n, acted = null) {
     if (g.closed.length) bits.push(`${g.closed.length} closed`);
     if (g.opened.length) bits.push(`${openedPhrase(g.opened)}, ${g.opened.map((x) => label(x.finding)).join(" and ")}`);
     if (g.reopened.length) bits.push(`reopened, ${g.reopened.map((x) => lowerFirst(reopenedTitle(x.finding))).join(" and ")}`);
+    if (g.scopeHeld.length) bits.push("approval found, starts later");
     return `${g.title}: ${bits.join("; ")}`;
   });
   return { headline, elsewhere: elsewhere.length ? `Elsewhere: ${elsewhere.join(" · ")}.` : "", groups };
@@ -157,7 +164,7 @@ export const changeTitle = ({ name, existing, version, date }) =>
 // The commitments a recheck changed (closed, confirmed, reopened or newly opened a gap on), in the order the dialog lists them: "Got it" highlights their rows.
 export function changedPromises(change, titleOf = (n) => n, acted = null) {
   return changeView(change, titleOf, acted).groups
-    .filter((g) => g.closed.length || g.confirmed.length || g.reopened.length || g.opened.length)
+    .filter((g) => g.closed.length || g.confirmed.length || g.reopened.length || g.opened.length || g.scopeHeld.length)
     .map((g) => g.promise);
 }
 
@@ -170,6 +177,11 @@ export function suggestFix(open, documents) {
   if (kinds.includes("Not offered")) {
     return { source_key: "", doc_type: "proposal",
              hint: "The product doesn't offer this, so no approval can fix it. Only changing the promise resolves it: add a new version of the proposal or RFP response that withdraws or changes it." };
+  }
+  if (kinds.includes(APPROVAL_SCOPE_LABEL) && !kinds.includes("No approval recorded")) {
+    const d = byType("pricing_services_note");
+    return { source_key: d?.source_key ?? "", doc_type: "pricing_services_note",
+             hint: "A named approval that starts on or before the promised start date closes this gap. Add the new version of the approvals note, or change the promise." };
   }
   if (kinds.includes("No approval recorded")) {
     const d = byType("pricing_services_note");
@@ -383,8 +395,16 @@ export function closingLine(reason) {
 // --- Simplified deal page (19 Oct) ------------------------------------------------------------------------------------
 // Everything below is built only from verified finding labels, stored terms and owner-confirmed wording, never from AI text.
 
+export const APPROVAL_SCOPE_LABEL = "Approval starts later"; // 12 Nov, Round 5: the approval that closed the gap starts later than the commitment (approval_scope.py)
+export const SCOPE_HELD_TITLE = "Approval found, but it starts later than the promised date";
+// The result dialog's detail line for it, by the source of the start date: "The approval starts 1 May 2027; the promise starts 1 February 2027. The gap stays open."
+const SCOPE_SOURCE = { signed: "the signed SOW", contract: "the contract", promise: "the promise" };
+export const scopeHeldDetail = (x) => `The approval starts ${longDate(x.approvalDate)}; ${SCOPE_SOURCE[x.source] ?? "the promise"} starts ${longDate(x.startDate)}. The gap stays open.`;
+const longDate = (iso) => { const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso ?? ""); return m ? `${+m[3]} ${["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"][+m[2] - 1]} ${m[1]}` : ""; };
+export const APPROVAL_SCOPE_DETAIL = "The approval starts later than the commitment."; // "What we found" for a gap held open by approval scope
 export const FINDING_SHORT = {
   "No approval recorded": "No approval found",
+  [APPROVAL_SCOPE_LABEL]: "Approval starts later",
   "Missing from contract": "Not in the contract",
   "Contract says something different": "Contract differs",
   "Not offered": "Not offered",
@@ -392,6 +412,7 @@ export const FINDING_SHORT = {
 export const rowTitle = (c) => c.display_name || c.name;
 const FINDING_DETAIL = {
   "No approval recorded": "No approval found in the supplied documents",
+  [APPROVAL_SCOPE_LABEL]: APPROVAL_SCOPE_DETAIL,
   "Missing from contract": "Not in the draft contract or SOW",
   "Not offered": "Not offered: no exception can fix this; only changing the promise can",
 };
@@ -732,6 +753,35 @@ export function signedClauseOf(issues, documents) {
   return { quote: hit.signed_sentence, label: hit.signed, date: hit.date, status: hit.text, doc, draftQuote: hit.sentence, closedBy: hit.closed_by };
 }
 
+// ---- Approval scope (12 Nov, Round 5) -------------------------------------------------------------------------------------------------------------------------------
+// An approval that closed an approval gap can start later than the commitment it covers (approval_scope.py compares two explicit dates, nothing else). The gap is then held
+// open, and the drawer says why: the reason sentence, then the two clauses with their dates. "Product approval starts" is the approval's effective date; the note it sits in
+// keeps its own issue date, shown on the source line. Display only.
+const SCOPE_HEADING = { signed: (r) => (r === "signed SOW" ? "Signed SOW" : "Signed contract"), contract: (r) => (r === "draft SOW" ? "Draft SOW" : "Draft contract"), promise: () => "Promise" };
+const approvalCell = (line) => {
+  const cells = String(line ?? "").split("|").map((c) => c.trim()).filter(Boolean);
+  return cells.find((c) => /approved by/i.test(c)) ?? String(line ?? "").trim();
+};
+export function scopeFromResult(res, documents) {
+  if (!res || res.status !== "not_covered") return null;
+  const find = (versionId, key) => (documents ?? []).find((d) => d.source_version_id === versionId) ?? (documents ?? []).find((d) => d.source_key === key) ?? null;
+  const st = res.start, ap = res.approval;
+  const stDoc = find(st.version_id, st.key), apDoc = find(ap.version_id, ap.key);
+  return {
+    reason: res.reason,
+    start: { heading: `${SCOPE_HEADING[st.source](st.in)} \u00B7 ${short(st.date)}`, quote: st.sentence, label: st.label, date: stDoc ? (stDoc.version_date || stDoc.date) : null, doc: stDoc },
+    approval: { heading: `Product approval starts \u00B7 ${short(ap.date)}`, quote: approvalCell(ap.line), label: ap.label, date: ap.doc_date ?? (apDoc ? (apDoc.version_date || apDoc.date) : null), doc: apDoc },
+  };
+}
+export const approvalScopeOf = (issues, documents) => {
+  const i = (issues ?? []).find((x) => x.approval_scope?.status === "not_covered");
+  return i ? scopeFromResult(i.approval_scope, documents) : null;
+};
+// "No start dates to compare." under a closed approval gap, only when exactly one of the two dates was found (the server decides; nothing is said when neither was).
+export const scopeNotesOf = (issues) => [...new Set((issues ?? []).map((i) => i.approval_scope?.note).filter(Boolean))];
+// The row's line for a gap held open by approval scope: the reason, once.
+export const scopeRowLines = (issues) => [...new Set((issues ?? []).filter((i) => i.approval_scope?.status === "not_covered").map((i) => i.approval_scope.reason))];
+
 // The signed clause that bears on a gap the signed paperwork could not confirm (12 Nov): the signed sentence sharing the most of the finding's searched phrases, found by the
 // server and shown only for a reopened gap. "Related clause in the signed SOW" (or "signed contract"), with the document to link to; the viewer opens on that clause. Display
 // only: nothing here decides anything, and without a related clause nothing extra is shown.
@@ -795,7 +845,7 @@ export function searchedLines(issues, docs) {
     const signed = list.filter((d) => kindOf(d) === "signed");
     if (signed.length) lines.push(`${signed.map((d) => d.name).join(", ")}: checked only for earlier fixes.`);
   }
-  if (kinds.has("No approval recorded")) {
+  if (kinds.has("No approval recorded") || kinds.has(APPROVAL_SCOPE_LABEL)) {
     const notes = list.filter((d) => kindOf(d) === "approval");
     if (notes.length) lines.push(`Searched: ${notes.map((d) => `${d.name} v${d.version}`).join(", ")}.`);
   }
@@ -852,6 +902,7 @@ export function commitmentView(c, status, documents) {
     found: status === "closed" ? [] : visibleRows(groupNotOffered(hideReopened(withoutRepeats(unresolved.map((i) => ({ label: findingDetail(i, c.contract),
       fact: i.signed_check?.status === "not_found" ? i.signed_check.reason : gapLine(i.finding, i.evidence, i.catalogue_path) })), contract), unresolved), unresolved)),
     reopened: reopenedBySignedPaper, whyReopened: reopenedReason(unresolved),
+    scope: approvalScopeOf(unresolved, documents), scopeNotes: scopeNotesOf(closedIssues),
     earlier: reopenedBySigned(unresolved).map((i) => earlierLine(i.signed_check, documents)).filter(Boolean),
     signedLines: signedConfirmations(closedIssues.map((i) => i.signed_check)),
     reopenedLines: reopenedLines(unresolved, documents),
@@ -860,7 +911,7 @@ export function commitmentView(c, status, documents) {
     closed: closedIssues.map((i) => ({ finding: i.finding, label: FINDING_SHORT[i.finding] ?? i.finding, by: closedBy(i.resolved_by?.text) || (status === "closed" ? "Closed in the documents" : ""),
       gap: gapClosed(i.finding, i.resolved_by?.text) })),
     catalogue: status === "closed" ? [] : uniq(unresolved.map((i) => i.catalogue_path)),
-    ai: status === "closed" ? [] : uniq(shown.filter((i) => i.signed_check?.status !== "not_found").map((i) => cleanReason(i.reason))),
+    ai: status === "closed" ? [] : uniq(shown.filter((i) => i.signed_check?.status !== "not_found" && i.approval_scope?.status !== "not_covered").map((i) => cleanReason(i.reason))),
     notes, seen: [...new Map(unresolved.flatMap((i) => i.seen || []).map((s) => [s.by, s])).values()],
     issueIds: unresolved.map((i) => i.id),
     ...evidenceFields({ status, issues: c.issues, unresolved, closedIssues, documents, searchDocs: documents }),
@@ -909,7 +960,7 @@ function contractView(term, side, documents, now = null, searched = []) {
 // left out, never invented. item: an open or addressed-by-note entry, or { promise } for one whose gaps all closed.
 // live: the same commitment as the live register has it (a locked deal cannot change, so it is the same); it carries the signed check's full output, which the saved record
 // keeps only in part. snapshotDocs: the documents captured in the locked handover, for "what was searched".
-export function frozenView({ item, status, closedFindings = [], documents = [], titles = {}, live = null, snapshotDocs = null, relatedMap = null }) {
+export function frozenView({ item, status, closedFindings = [], documents = [], titles = {}, live = null, snapshotDocs = null, relatedMap = null, approvalScopes = null }) {
   const name = item.promise;
   const findings = item.findings ?? [];
   const quoted = (item.quotes ?? []).filter((q) => q.quote);
@@ -938,6 +989,7 @@ export function frozenView({ item, status, closedFindings = [], documents = [], 
     found: visibleRows(groupNotOffered(hideReopened(withoutRepeats(issues.map((i, n) => ({ label: findingDetail(i, item.contract),
       fact: i.signed_check?.status === "not_found" ? i.signed_check.reason : gapLine(i.finding, i.evidence, i.catalogue_path) })), contract), issues), issues)),
     reopened: issues.some((i) => i.signed_check?.status === "not_found"), whyReopened: reopenedReason(issues),
+    scope: scopeFromResult(Object.entries(approvalScopes ?? {}).find(([k]) => k.startsWith(`${name}|`))?.[1], documents), scopeNotes: [],
     notOffered: (() => { const n = issues.find((i) => i.finding === "Not offered"); return n ? { capability: n.evidence?.unlisted_value ?? "",
       wording: issues.map((i) => i.evidence?.contract_value).find(Boolean) || (/^(Not included|No gap found|)$/.test(item.contract ?? "") ? "" : item.contract) } : null; })(),
     earlier: reopenedBySigned(issues).map((i) => earlierLine(i.signed_check, snapshotDocs ?? documents)).filter(Boolean),
@@ -948,7 +1000,7 @@ export function frozenView({ item, status, closedFindings = [], documents = [], 
     closed: closedFindings.map((r) => ({ finding: r.finding, label: FINDING_SHORT[r.finding] ?? r.finding, by: closedBy(r.resolved_by), gap: gapClosed(r.finding, r.resolved_by) })),
     openGaps: [...new Set(issues.map((i) => FINDING_SHORT[i.finding] ?? i.finding))],
     catalogue: uniq(issues.map((i) => i.catalogue_path)),
-    ai: status === "closed" ? [] : uniq(findings.filter((f) => f.signed_check?.status !== "not_found").map((f) => cleanReason(f.why))),
+    ai: status === "closed" ? [] : uniq(findings.filter((f) => f.signed_check?.status !== "not_found" && f.finding !== APPROVAL_SCOPE_LABEL).map((f) => cleanReason(f.why))),
     notes, seen: [...new Map(seenAll.map((s) => [s.by, s])).values()], issueIds: [],
     ...evidenceFields({ status, issues: [...issues, ...(liveClosed.length ? liveClosed : closedFindings)], unresolved: issues, closedIssues: liveClosed.length ? liveClosed : closedFindings.map((r) => ({ finding: r.finding })),
       documents, searchDocs: snapshotDocs ?? documents }),
@@ -1025,5 +1077,8 @@ export function recordLines(v, documents = []) {
   if (partly) for (const g of v.openGaps) settled.push(`${g}: still open`);
   for (const n of v.notes) settled.push(`${recordedBy(n.by, n.at, fmtDate)}: \u201C${n.text}\u201D`);
   const related = v.related ? { in: v.related.in, heading: relatedHeading(v.related), text: quoteLine(v.related.quote, v.related.label, v.related.date), doc: v.related.doc, quote: v.related.quote } : null;
-  return { told, contract, why, gaps, settled, related };
+  const scope = v.scope ? { why: v.scope.reason, start: `${v.scope.start.heading}: \u201C${v.scope.start.quote}\u201D (${v.scope.start.label}${v.scope.start.date ? `, ${short(v.scope.start.date)}` : ""})`,
+    approval: `${v.scope.approval.heading}: \u201C${v.scope.approval.quote}\u201D (${v.scope.approval.label}${v.scope.approval.date ? `, ${short(v.scope.approval.date)}` : ""})`,
+    startDoc: v.scope.start.doc, startQuote: v.scope.start.quote, approvalDoc: v.scope.approval.doc, approvalQuote: v.scope.approval.quote } : null;
+  return { told, contract, why, scope, gaps, settled, related };
 }

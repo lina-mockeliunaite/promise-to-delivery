@@ -8,8 +8,8 @@ Elva — Deal Desk. Not for distribution to the customer.
 
 | Capability | Region and scope | Catalogue position | Deal approval |
 |---|---|---|---|
-| CAP-003 Real-time transaction monitoring | Australia, outbound instant payments | Generally available; maximum 500,000 transactions per day | No approval for 750,000/day |
-| CAP-027 Third-party behavioural intelligence connector | Australia, BioCatch signals | Beta; requires named approval; planned GA 31 December 2027 | No named exception approved for Alder Bank |
+| CAP-003 Real-time transaction monitoring | Australia, outbound instant payments | Generally available; maximum 500,000 transactions per day | No exception needed |
+| CAP-027 Scam-call alerts | Australia, outbound instant payments | Beta; requires named approval; planned general release 31 December 2027 | No named exception approved for Alder Bank |
 | CAP-011 Case management workspace | Australia | Generally available; standard | No exception needed |
 | CAP-019 Regional cloud deployment | Australia | Generally available; AWS or GCP | No exception needed for AWS |
 
@@ -20,4 +20,4 @@ Elva — Deal Desk. Not for distribution to the customer.
 | Implementation and configuration | Alder instant payments launch scope | 70 person-days |
 | Training | Three sessions for Alder fraud operations staff | 3 person-days |
 
-**Provider commercial boundary:** Alder Bank holds its own BioCatch licence. Elva's connector is part of the Elva platform; BioCatch licence and usage fees are excluded from this pricing note.
+**Provider commercial boundary:** Scam-call alerts are part of the Elva platform. Any third-party data fees are excluded from this pricing note.

@@ -22,6 +22,7 @@
 .land-cards { display: flex; flex-direction: column; gap: 16px; }
 .land-parties { font-size: 12px; color: var(--muted); }
 .land-open { align-self: flex-start; margin-top: 8px; }
+.land-hook { margin: 0; font-size: 14px; line-height: 1.45; color: var(--body); text-wrap: balance; }
 .land-example { display: flex; flex-direction: column; gap: 6px; padding: 20px 24px; }
 .land-example .dp-prow-title { font-size: 16px; }
 .land-example .dp-prow-line { text-wrap: balance; } /* a wrapped comparison line splits evenly, never leaving a word or two alone */
