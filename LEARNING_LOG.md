@@ -244,3 +244,30 @@ Today’s checkpoint showed me how much the UI was getting in the way of underst
 - **Practical:**
   - Again, one commit took many changes (21 Oct, 27 Oct, now 30–31 Oct), and this time I committed and pushed before the test result was back. The tests passed (781 Python, 176 front-end), but the order was wrong. The rule from here: run the tests, read the summary line, commit, then start the next change.
   - `git merge --ff-only revamp` moves `main` forward without creating a merge; GitHub shows `main` by default, so it has to be current before anything is shared.
+## 10–13 Nov 2026: public demo, the Alder rebuild, and the last round of polish
+
+*Drafted by Claude from the session record, for Lina to edit.*
+
+**What I did**
+
+- **10–11 Nov.** Added a Reset demo button, then put Dealshape online: the same code as the local app, switched into a locked-down public mode by one setting, running in Docker on Render's free tier. Sample files instead of uploads, no model calls, no API key, an hourly reset. I checked it on my phone.
+- **12 Nov.** Used the public demo as a stranger would. It showed problems no test had caught: no obvious starting point, a guide that disagreed with its own progress dots, a handover record that made a half-open commitment look closed, and the same fact repeated three times in one drawer. Each was fixed and pinned with a test.
+- **13 Nov, Alder.** Rebuilt the second demo around one plain story: scam-call alerts were sold for the 1 February launch, but Product approved them only from 1 May. Added an approval-scope check: code reads the two dates from quotes it has already verified and compares them. The model never decides it. I paid for a fresh model reading rather than re-filing the old one under a new key. The first reading was refused by my own safety script, because the model found a real extra gap in the draft contract. I fixed the documents, not the engine. Total spend: about $0.45.
+- **13 Nov, polish (Rounds 6–8).** Removed on-screen noise, renamed a sample file that would have been mislabelled on camera, and acted on an outside review: a choice for returning visitors, evidence prompts on the guided path, and labels that say how firm each contract quote is ("Signed contract · confirmed" or "Draft SOW · not re-checked at signing").
+- **13 Nov, documentation.** A how-to-run guide, product overview, brochure, run sheet, primer and slide deck, kept in Drive and updated after every change.
+
+**What I learned**
+
+1. **A passing test suite is not a working product.** The most useful bugs came from walking the public demo as a first-time visitor, not from the 1,000+ tests.
+2. **A false state on screen is false, however briefly.** The locked record showed "not re-checked" for 0.2 seconds on a clause that had been checked. The cause was two separate requests: the record and its labels arrived at different times. The fix was to send them in one response, so the screen can't draw one without the other. A loading spinner would only have hidden it.
+3. **Shared state needs a version number.** In a shared demo, one visitor's reset could let another visitor's old page write a note silently into the rebuilt deal. A counter that changes on every reset lets the server refuse writes from out-of-date pages.
+4. **Change behaviour beside the engine, not inside it.** The date check and the evidence labels are read-time layers. The evaluated engine, its saved readings and the sealed results stayed untouched, and checksums prove it.
+5. **When the model finds something unexpected, check whether it's right first.** The "failed" Alder reading had found a genuine gap in my own documents.
+6. **Words make claims.** "Verified" claims more than the check does, so the product says "confirmed", and "not re-checked" where nothing was checked. The brochure has to follow the same rule as the screen.
+7. **Every change ripples.** One label change touches the screens, tests, run sheet, brochure, slides, primer and test counts. Tracing that before approving a plan is part of the job, not an afterthought.
+
+**Process**
+
+- Committed after each working change this time, as separate commits (Round 8, the welcome-page fix, the label fix), instead of bundling days of work.
+- Kept the API key out of every file: set in Terminal only, and unset afterwards.
+- Open: the demo video (my call when), an unaided test with someone new, and a short backlog.

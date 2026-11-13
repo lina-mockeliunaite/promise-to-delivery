@@ -15,7 +15,7 @@ Dealshape catches deal surprises before signing. It reads a B2B deal's paper tra
 - A locked handover record with per-document SHA-256 hashes, checked in the browser.
 - Two vendors' catalogues through one pipeline (Elva and Aivuna).
 - A public demo (11 Nov): https://dealshape-demo.onrender.com. Noma Journeys and Alder Bank only, shared by every visitor, with sample files instead of uploads, no API key, and a reset every hour and on wake-up (free hosting sleeps when idle).
-- 781 Python and 176 front-end tests passing at the last commit (31 Oct).
+- 925 Python and 337 front-end tests passing (13 Nov).
 
 ## Results
 
@@ -64,7 +64,7 @@ Read straight: v2 matched a good prompt on detection on one unseen deal. Its val
 
 ## Cost and effort
 
-- Model spend across the build: [confirm from the Anthropic Console]. Each sealed run cost about $0.25.
+- API spend in November: $0.56 (about $0.45 for the three Alder readings on 13 Nov; the rest self-test runs). $15.87 of credit remaining. The API did not lapse on 31 Oct. Each sealed run cost about $0.25. The Claude subscription (Claude Code and chat) is separate and not included.
 - Commits: 132, 25 Sep to 31 Oct.
 - Hours: [confirm from the learning log or Progress Report].
 
