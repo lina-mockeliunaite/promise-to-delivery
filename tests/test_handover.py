@@ -4,14 +4,26 @@ Visibility only: none of these records may change a finding, and once the handov
 deal. Runs against a temporary ledger built from the development deals, like test_api_workspace.
 """
 
+import hashlib
 import sys
+import tempfile
 import unittest
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 
+from fastapi.testclient import TestClient
+
+import api
+import config
+import handover
+import ledger
+import ledger_fixes
+import reset_demo
 from test_api_workspace import WorkspaceCase
+
+SCEN = config.SCENARIOS_DIR
 
 
 def states(reg):
@@ -300,6 +312,35 @@ class TestDealList(HandoverCase):
         reg = self.register()
         promises = sum(1 for c in reg["commitments"] if any(i["state"] != "Resolved" for i in c["issues"]))
         self.assertEqual(hb["open_gaps"], promises)  # the stage-bar match is checked on v2 deals in test_one_truth
+
+
+class TestSnapshotUnchanged(unittest.TestCase):
+    def test_the_snapshot_and_its_fingerprint_do_not_change_and_the_split_sits_beside_them(self):
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        db = Path(tmp.name) / "l.sqlite"
+        reset_demo.reset(db_path=db)
+        client = TestClient(api.create_app(dist_dir=Path(tmp.name) / "x", ledger_path=db, public=False), base_url="http://127.0.0.1")
+        H = {"X-Requested-With": "deal-workspace"}
+        for body in ({"source_key": "AB-05", "filename": "n.md", "text": (SCEN / "AB-05_v2_named_exception.md").read_text(encoding="utf-8")},
+                     {"name": "Signed contract", "filename": "s.md", "doc_type": "signed_contract", "doc_date": "2026-10-20", "text": (SCEN / "AB-09_signed_contract.md").read_text(encoding="utf-8")}):
+            self.assertEqual(client.post("/api/deals/alder_bank/documents/add-and-check", json=body, headers=H).status_code, 200)
+        for role, note in (("sales", "Sales note."), ("delivery", "Accepted.")):
+            self.assertEqual(client.post("/api/deals/alder_bank/handover/notes", json={"role": role, "note": note, "entered_by": "Sam"}, headers=H).status_code, 200)
+        self.assertEqual(client.post("/api/deals/alder_bank/handover/complete", json={"completed_by": "Sam"}, headers=H).status_code, 200)
+        conn = ledger.connect(db)
+        self.addCleanup(conn.close)
+        did = ledger_fixes.deal_id(conn, "alder_bank")
+        stored = conn.execute("SELECT snapshot_json FROM handover_completions WHERE deal_id = ?", (did,)).fetchone()[0]
+        hv = handover.handover(conn, "alder_bank")
+        self.assertEqual(hv["snapshot"]["check_coverage"], {"rejected": 1})  # the saved total, as before
+        self.assertNotIn("check_split", hv["snapshot"])
+        self.assertNotIn("check_split", stored)
+        self.assertEqual(hv["fingerprint"], hashlib.sha256(stored.encode("utf-8")).hexdigest())
+        self.assertEqual(hv["check_split"], {"failed": 0, "answered": 1})
+        again = handover.handover(conn, "alder_bank")  # reading it again changes nothing
+        self.assertEqual((again["fingerprint"], again["snapshot"]), (hv["fingerprint"], hv["snapshot"]))
+        self.assertEqual(conn.execute("SELECT snapshot_json FROM handover_completions WHERE deal_id = ?", (did,)).fetchone()[0], stored)
 
 
 if __name__ == "__main__":

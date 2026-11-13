@@ -129,33 +129,6 @@ class TestAlderAndNoma(unittest.TestCase):
         broken["promise_quotes"][0]["quote"] = broken["promise_quotes"][0]["quote"] + " (and more words that are not there)"
         self.assertEqual(rejection_kind.classify(broken, docs, cat), "failed")  # the gap is answered, the quote fails: failed
 
-    def test_the_snapshot_and_its_fingerprint_do_not_change_and_the_split_sits_beside_them(self):
-        tmp = tempfile.TemporaryDirectory()
-        self.addCleanup(tmp.cleanup)
-        db = Path(tmp.name) / "l.sqlite"
-        reset_demo.reset(db_path=db)
-        client = TestClient(api.create_app(dist_dir=Path(tmp.name) / "x", ledger_path=db, public=False), base_url="http://127.0.0.1")
-        H = {"X-Requested-With": "deal-workspace"}
-        for body in ({"source_key": "AB-05", "filename": "n.md", "text": (SCEN / "AB-05_v2_named_exception.md").read_text(encoding="utf-8")},
-                     {"name": "Signed contract", "filename": "s.md", "doc_type": "signed_contract", "doc_date": "2026-10-20", "text": (SCEN / "AB-09_signed_contract.md").read_text(encoding="utf-8")}):
-            self.assertEqual(client.post("/api/deals/alder_bank/documents/add-and-check", json=body, headers=H).status_code, 200)
-        for role, note in (("sales", "Sales note."), ("delivery", "Accepted.")):
-            self.assertEqual(client.post("/api/deals/alder_bank/handover/notes", json={"role": role, "note": note, "entered_by": "Sam"}, headers=H).status_code, 200)
-        self.assertEqual(client.post("/api/deals/alder_bank/handover/complete", json={"completed_by": "Sam"}, headers=H).status_code, 200)
-        conn = ledger.connect(db)
-        self.addCleanup(conn.close)
-        did = ledger_fixes.deal_id(conn, "alder_bank")
-        stored = conn.execute("SELECT snapshot_json FROM handover_completions WHERE deal_id = ?", (did,)).fetchone()[0]
-        hv = handover.handover(conn, "alder_bank")
-        self.assertEqual(hv["snapshot"]["check_coverage"], {"rejected": 1})  # the saved total, as before
-        self.assertNotIn("check_split", hv["snapshot"])
-        self.assertNotIn("check_split", stored)
-        self.assertEqual(hv["fingerprint"], hashlib.sha256(stored.encode("utf-8")).hexdigest())
-        self.assertEqual(hv["check_split"], {"failed": 0, "answered": 1})
-        again = handover.handover(conn, "alder_bank")  # reading it again changes nothing
-        self.assertEqual((again["fingerprint"], again["snapshot"]), (hv["fingerprint"], hv["snapshot"]))
-        self.assertEqual(conn.execute("SELECT snapshot_json FROM handover_completions WHERE deal_id = ?", (did,)).fetchone()[0], stored)
-
     def test_the_locked_record_gets_the_signed_check_results_in_its_own_response_and_the_snapshot_is_untouched(self):
         """Round 8c: GET handover carries live_commitments (the signed check's results, read now) beside the snapshot, so the record is drawn from one response. The snapshot, its
         fingerprint and the stored text do not change; the default handover() (which workspace.overview calls) does not carry them, so there is no recursion."""
