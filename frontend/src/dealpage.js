@@ -121,7 +121,9 @@ export function changeView(change, titleOf = (n) => n, acted = null) {
     : all.length ? `Nothing changed on ${acted ? titleOf(acted) : "the commitments the document touched"}.`
     : "Nothing closed and nothing new: the document did not change any gap.";
   const label = (f) => lowerFirst(FINDING_SHORT[f] ?? f);
-  const elsewhere = order.filter((p) => !direct.has(p)).map((p) => {
+  // 13 Nov, Round 7: "Elsewhere" lists only a commitment the card does not already show a row for.
+  const shown = (g) => g.closed.length || g.confirmed.length || g.reopened.length || g.stillOpen.length || g.opened.length || g.scopeHeld.length;
+  const elsewhere = order.filter((p) => !direct.has(p) && !shown(groups.find((x) => x.promise === p))).map((p) => {
     const g = groups.find((x) => x.promise === p);
     const bits = [];
     if (g.closed.length) bits.push(`${g.closed.length} closed`);
@@ -130,7 +132,7 @@ export function changeView(change, titleOf = (n) => n, acted = null) {
     if (g.scopeHeld.length) bits.push("approval found, starts later");
     return `${g.title}: ${bits.join("; ")}`;
   });
-  return { headline, elsewhere: elsewhere.length ? `Elsewhere: ${elsewhere.join(" · ")}.` : "", groups };
+  return { headline, elsewhere: elsewhere.filter((e) => !e.endsWith(": ")).length ? `Elsewhere: ${elsewhere.filter((e) => !e.endsWith(": ")).join(" · ")}.` : "", groups };
 }
 
 // The date a document states about itself ("Date: 20 October 2026" among its first lines) as YYYY-MM-DD, or null: the add form's "Dated" field starts
@@ -320,11 +322,11 @@ const CLOSED_PHRASE = {
 export const closedTitle = (finding) => CLOSED_PHRASE[finding] ?? `${FINDING_SHORT[finding] ?? finding}: closed`;
 
 // A fix the signed contract confirmed, or found missing (11 Nov), is also named by what is now true, never by the original finding.
-// Confirmed: "Contract wording matches · confirmed in the signed contract". Reopened: "Contract wording not in the signed contract" (with the Reopened chip).
+// Confirmed: "Contract wording found · confirmed in the signed contract" (one phrase for both deals, 13 Nov). Reopened: "Contract wording not in the signed contract" (with the Reopened chip).
 const CONFIRMED_PHRASE = {
   "No approval recorded": "Approval found",
   "Missing from contract": "Contract wording found",
-  "Contract says something different": "Contract wording matches",
+  "Contract says something different": "Contract wording found", // 13 Nov, Round 7: one phrase for every signed confirmation of contract wording, both deals
   "Needs evidence": "Evidence found",
   "A condition was dropped": "Condition restored",
   "Not offered": "Promise changed",
@@ -745,6 +747,32 @@ export function withoutRepeats(found, contract) {
   return found.map((f) => ({ ...f, fact: sentencesOf(f.fact).filter((s) => !said.has(sentenceKey(s))).join(" ") }));
 }
 
+// ---- Round 7 (13 Nov): display helpers --------------------------------------------------------------------------------------------------------------------------------
+// The locked record's summary pills (13 Nov, Round 7): a pill with a zero count is not shown.
+export const recordPills = ({ open = 0, noted = 0, closed = 0 }) => [
+  open > 0 && { kind: "open", text: `${open} needing attention` },
+  noted > 0 && { kind: "noted", text: `${noted} addressed by note` },
+  closed > 0 && { kind: "closed", text: `${closed} closed by documents` },
+].filter(Boolean);
+export const REGION_NAMES = { AU: "Australia", SG: "Singapore" };
+// "Catalogue: Scam-call alerts (Australia)": the catalogue's own entry name and a region name; the path stays on hover. Without the catalogue's names it falls back to the code.
+export function catalogueLabel(path, names = {}) {
+  const [id, region, ...scope] = String(path ?? "").split("/");
+  const name = names?.[id];
+  if (!name) return `${[id, region].filter(Boolean).join(" \u00B7 ")}${scope.length ? ` \u00B7 ${scope.join(" ").replace(/_/g, " ")}` : ""}`;
+  return `${name}${region ? ` (${REGION_NAMES[region] ?? region})` : ""}${scope.length ? ` \u00B7 ${scope.join(" ").replace(/_/g, " ")}` : ""}`;
+}
+// The locked record states the brief's staleness as a fact, not an instruction (the live page keeps its note). The snapshot stores the brief's basis only as text ("draft SOW, 9 Oct": document and
+// date, no version), and the version numbers only inside the stored note ("Confirmed against Draft SOW version 1; version 2 has arrived since."), so the sentence is built from both; if the
+// note does not read that way, the stored note is shown as it was.
+export function recordBriefNotice(brief) {
+  if (!brief?.needs_reconfirmation) return "";
+  const m = /^Confirmed against (.+?) version (\d+); version (\d+) has arrived since\./.exec(brief.reconfirm_note ?? "");
+  if (!m) return brief.reconfirm_note ?? "";
+  const date = /,\s*(\d{1,2} [A-Z][a-z]{2})\s*$/.exec(brief.basis ?? "")?.[1];
+  return `Brief confirmed against ${m[1]} v${m[2]}${date ? ` (${date})` : ""}; not reconfirmed after v${m[3]}.`;
+}
+
 // ---- Repeated wording (13 Nov, Round 6) ----------------------------------------------------------------------------------------------------------------------------
 // The same text (whitespace aside) is shown in full only where it first appears in the drawer, top to bottom: what the customer was told, why it's open, the related clause,
 // the contract's side. A later section keeps its label, source and date and refers back. The history's draft wording folds the same way. Display only: nothing stored or decided.
@@ -778,8 +806,10 @@ export function withoutRepeatedWording(v) {
     const m = /^Draft wording that closed it: \u201C([\s\S]*)\u201D, in (.*)\.$/.exec(l);
     if (!m || !first.has(wsn(m[1]))) return l;
     const w = first.get(wsn(m[1]));
-    return signedWhere ? `Closed by ${m[2]} with the same wording${signedWhere}.` : `Draft wording that closed it: ${w.label || "the document"}${w.date ? `, ${short(w.date)}` : ""}, above, in ${m[2]}.`;
-  }))];
+    // 13 Nov, Round 7: when the draft wording is the signed clause, "Closed by <document> · confirmed in the signed contract" is already said once, under "Already closed by the
+    // documents" (or "What closed it"), so this line says nothing new and goes; the section disappears when it was the only line.
+    return signedWhere ? null : `Draft wording that closed it: ${w.label || "the document"}${w.date ? `, ${short(w.date)}` : ""}, above, in ${m[2]}.`;
+  }).filter(Boolean))];
   return out;
 }
 
@@ -1139,5 +1169,7 @@ export function recordLines(v, documents = []) {
   const scope = v.scope ? { why: v.scope.reason, start: v.scope.start.ref ? `${v.scope.start.heading}: ${v.scope.start.ref}` : `${v.scope.start.heading}: \u201C${v.scope.start.quote}\u201D (${v.scope.start.label}${v.scope.start.date ? `, ${short(v.scope.start.date)}` : ""})`,
     approval: v.scope.approval.ref ? `${v.scope.approval.heading}: ${v.scope.approval.ref}` : `${v.scope.approval.heading}: \u201C${v.scope.approval.quote}\u201D (${v.scope.approval.label}${v.scope.approval.date ? `, ${short(v.scope.approval.date)}` : ""})`,
     startDoc: v.scope.start.doc, startQuote: v.scope.start.quote, approvalDoc: v.scope.approval.doc, approvalQuote: v.scope.approval.quote } : null;
+  // one link per clause: the start line's "Open the clause" goes when the Contract says line already links the same signed text
+  if (scope && v.signed?.doc && scope.startDoc && v.signed.doc.source_version_id === scope.startDoc.source_version_id && wsn(v.signed.quote) === wsn(scope.startQuote)) scope.startDoc = null;
   return { told, contract, why, scope, gaps, settled, related };
 }

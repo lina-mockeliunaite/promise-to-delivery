@@ -44,15 +44,16 @@ test("C1: confirmed in the signed contract shows the signed clause, its date and
   const v = commitmentView(LANGS, "closed", DOCS);
   assert.deepEqual([v.signed.quote, v.signed.label, v.signed.date, v.signed.doc?.source_key], [CLAUSE, "Signed contract", "2026-10-20", "NJ-09"]);
   const html = drawer(v);
-  assert.ok(html.includes('<span class="dr-confirmed">Confirmed in the signed contract (Signed contract, 20 Oct)</span>'));
+  // 13 Nov, Round 7: the status line carries its own source: "(Signed contract, 20 Oct)" is the link that opens the signed document on that clause, and there is no second "Source:" line
+  assert.ok(html.includes('<span class="dr-confirmed">Confirmed in the signed contract (<button type="button" class="dr-linkbtn">Signed contract, 20 Oct</button>)</span>'));
   assert.ok(html.includes(`<blockquote class="dr-quote">${CLAUSE}</blockquote>`));
-  assert.match(html, /Source: <button type="button" class="dr-linkbtn">Signed contract, 20 Oct<\/button>/); // the link: opens the signed document on that clause
+  assert.ok(!html.includes("Source: ") || !/Source: <button[^>]*>Signed contract, 20 Oct/.test(html));
   assert.ok(!html.includes("that mentions")); // the draft lookup is not what "Contract says" shows any more
   // 13 Nov, Round 6: the draft wording is the same sentence as the signed clause shown above, so the history says so instead of repeating it
-  assert.ok(!html.includes("Draft wording that closed it"));
-  assert.ok(html.includes("Closed by Draft contract v2 (19 Oct) with the same wording; confirmed in the signed contract (20 Oct)."));
+  assert.ok(!html.includes("Draft wording that closed it") && !html.includes("with the same wording"));
+  assert.ok(!html.includes('class="dr-history"') && !html.includes(">History<")); // 13 Nov, Round 7: History's only line said the same wording, which "What closed it" already says once
+  assert.equal(html.split("confirmed in the signed contract (20 Oct)").length - 1, 1); // "Closed by … · confirmed in the signed contract" appears once
   assert.equal(html.split(CLAUSE).length - 1, 1); // the sentence is on the screen once
-  assert.ok(html.indexOf("Contract says") < html.indexOf("with the same wording")); // the history comes after
   // without a signed confirmation the drawer is as it was
   const plain = commitmentView({ ...LANGS, issues: [{ ...LANGS.issues[0], signed_check: undefined }] }, "closed", DOCS);
   assert.equal(plain.signed, null);

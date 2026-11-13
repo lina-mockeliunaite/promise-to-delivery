@@ -54,8 +54,12 @@ test("the lines render: main in the existing style, the quiet one marked quiet; 
 });
 
 test("both pages use the split: the live page keeps hiding the lines in public mode; the record shows them from the handover's split", () => {
-  assert.ok(read("DealPage.jsx").includes("{!demo.public && <CoverageLines lines={coverageLines(reg.check_coverage?.rejected, reg.check_split)} />}"));
-  assert.ok(read("FrozenRecord.jsx").includes("<CoverageLines lines={coverageLines(s.check_coverage?.rejected, hv.check_split)} />"));
+  // Round 7: the warning line stays under the heading and the "already answered" footnote is the last line of the Commitments section, on the live page and in the record alike
+  const live = read("DealPage.jsx"), locked = read("FrozenRecord.jsx");
+  assert.ok(live.includes('{!demo.public && <CoverageLines part="main" lines={coverageLines(reg.check_coverage?.rejected, reg.check_split)} />}'));
+  assert.ok(locked.includes('<CoverageLines part="main" lines={coverageLines(s.check_coverage?.rejected, hv.check_split)} />'));
+  assert.match(live, /<\/ul>\s*\{!demo\.public && <CoverageLines part="quiet" lines=\{coverageLines\(reg\.check_coverage\?\.rejected, reg\.check_split\)\} \/>\}\s*<\/section>/);
+  assert.match(locked, /<\/ul>\s*<CoverageLines part="quiet" lines=\{coverageLines\(s\.check_coverage\?\.rejected, hv\.check_split\)\} \/>\s*<\/section>/);
 });
 
 // ---- 2. repeated wording --------------------------------------------------------------------------------------------------------------------------------------------
@@ -85,10 +89,11 @@ test("Alder after the signed contract: the signed sentence is in full once (Why 
   const html = drawer(v, DOCS);
   assert.equal(count(html, SENTENCE), 1);
   assert.ok(html.indexOf(SENTENCE) > html.indexOf("Why it’s open") && html.indexOf(SENTENCE) < html.indexOf("Contract says"));
-  assert.ok(html.includes('<span class="dr-confirmed">Confirmed in the signed contract (Signed contract, 20 Oct): the clause shown above.</span>'));
-  assert.match(html, /Source: <button type="button" class="dr-linkbtn">Signed contract, 20 Oct<\/button>/); // label, source and date stay
-  assert.ok(html.includes("Closed by Draft SOW v2 (16 Oct) with the same wording; confirmed in the signed contract (20 Oct)."));
-  assert.ok(!html.includes("Draft wording that closed it"));
+  // Round 7: the status line is the one place Contract says names its source (the parenthesis is the link); no "Source:" line, and no History (its only line was "same wording")
+  assert.ok(html.includes('<span class="dr-confirmed">Confirmed in the signed contract (<button type="button" class="dr-linkbtn">Signed contract, 20 Oct</button>): the clause shown above.</span>'));
+  assert.ok(!/Contract says[\s\S]*Source:[\s\S]*What we found/.test(html.replace(/Why it’s open[\s\S]*?Contract says/, "Contract says")));
+  assert.ok(!html.includes(">History<") && !html.includes("with the same wording") && !html.includes("Draft wording that closed it"));
+  assert.equal(count(html, "confirmed in the signed contract (20 Oct)"), 1); // "Closed by … · confirmed in the signed contract" appears once, under Already closed by the documents
   assert.ok(html.includes(`<blockquote class="dr-quote">${CELL}</blockquote>`)); // the approval text stays in full
 });
 
@@ -97,8 +102,9 @@ test("Alder after the approval: the promise start refers back to what the custom
   const html = drawer(v, DOCS);
   assert.equal(count(html, SENTENCE), 1); // only under "Customer was told"
   assert.ok(html.indexOf(SENTENCE) < html.indexOf("Why it’s open"));
-  assert.ok(html.includes('<span class="dr-muted">Promise · 1 Feb</span><p class="dr-muted">RFP response, 1 Feb, above</p>'));
-  assert.match(html, /Promise · 1 Feb[\s\S]*?<button type="button" class="dr-linkbtn">RFP response, 1 Feb<\/button>/);
+  assert.ok(html.includes('<span class="dr-muted">Promise · 1 Feb</span><p class="dr-muted"><button type="button" class="dr-linkbtn">RFP response, 1 Feb, above</button></p>')); // the reference is the link; no Source line of its own
+  assert.ok(!/Promise · 1 Feb[\s\S]*?Source:[\s\S]*?Product approval starts/.test(html));
+  assert.match(html, /Promise · 1 Feb[\s\S]*?<button type="button" class="dr-linkbtn">RFP response, 1 Feb, above<\/button>/);
   assert.ok(html.includes(`<blockquote class="dr-quote">${CELL}</blockquote>`));
   assert.equal(v.scope.start.ref, "RFP response, 1 Feb, above");
 });
@@ -125,7 +131,7 @@ test("Noma: a closed row's History says the draft had the same wording instead o
       signed_check: { status: "confirmed", sentence: CLAUSE, signed: "Signed contract", date: "2026-10-20", closed_by: "Draft contract, version 2", text: "Confirmed in the signed contract (Signed contract, 20 Oct)", signed_sentence: CLAUSE, signed_key: "NJ-09", signed_version_id: 9 } }] };
   const html = drawer(commitmentView(c, "closed", docs), docs);
   assert.equal(count(html, CLAUSE), 1);
-  assert.ok(html.includes("Closed by Draft contract v2 (19 Oct) with the same wording; confirmed in the signed contract (20 Oct)."));
+  assert.ok(!html.includes(">History<") && !html.includes("with the same wording")); // Round 7: History said only this, and "What closed it" says it once
   const none = { ...c, issues: [{ ...c.issues[0], signed_check: undefined }] };
   assert.ok(!drawer(commitmentView(none, "closed", docs), docs).includes("with the same wording"));
 });

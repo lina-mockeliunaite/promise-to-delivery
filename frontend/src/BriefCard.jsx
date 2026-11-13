@@ -1,13 +1,13 @@
 // "What we're delivering" (20 Oct): the deal brief as its own card, shared by the live deal page and the locked record.
 // Every word is the owner-confirmed brief; nothing here is generated.
 import { useId, useState } from "react";
-import { confirmedBy } from "./dealpage.js";
+import { confirmedBy, recordBriefNotice } from "./dealpage.js";
 import { Icon } from "./Drawer.jsx";
 
 const INFO = "M12 16v-4M12 8h.01M22 12a10 10 0 1 1-20 0 10 10 0 0 1 20 0z";
 
 // `collapsible` (30 Oct): the live deal page hides the deliverables behind a button; the locked record never passes it and stays expanded.
-export default function BriefCard({ brief, collapsible = false }) {
+export default function BriefCard({ brief, collapsible = false, record = false }) {
   const listId = useId();
   const [open, setOpen] = useState(false); // not stored: a reload starts collapsed
   if (!brief) return null;
@@ -41,7 +41,7 @@ export default function BriefCard({ brief, collapsible = false }) {
           </span>
         </footer>
         {brief.needs_reconfirmation && (
-          <div className="dp-notice" role="status"><Icon d={INFO} size={16} /><p>{brief.reconfirm_note}</p></div>
+          <div className="dp-notice" role="status"><Icon d={INFO} size={16} /><p>{record ? recordBriefNotice(brief) : brief.reconfirm_note}</p></div>
         )}
       </div>
     </section>

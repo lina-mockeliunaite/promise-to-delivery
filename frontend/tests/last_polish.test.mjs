@@ -35,7 +35,7 @@ const LANG = "Support in 12 languages at launch";
 test("confirmations and reopens are named by what is now true: the full before/after list", () => {
   const confirmed = [
     ["No approval recorded", "Approval found"], ["Missing from contract", "Contract wording found"],
-    ["Contract says something different", "Contract wording matches"], ["Needs evidence", "Evidence found"],
+    ["Contract says something different", "Contract wording found"], ["Needs evidence", "Evidence found"],
     ["A condition was dropped", "Condition restored"], ["Not offered", "Promise changed"],
   ];
   const reopened = [
@@ -48,13 +48,13 @@ test("confirmations and reopens are named by what is now true: the full before/a
   assert.ok(!confirmedTitle("Other").includes("earlier fix") && !reopenedTitle("Other").includes("earlier fix"));
 });
 
-test("the card's confirmed row reads 'Contract wording matches · confirmed in the signed contract'; a reopened row names what is now true", () => {
+test("the card's confirmed row reads 'Contract wording found · confirmed in the signed contract'; a reopened row names what is now true", () => {
   const before = reg([LANG, [iss(1, "Contract says something different", "Resolved")]], ["Phone", [iss(2, "Missing from contract", "Resolved")]]);
   const after = reg([LANG, [iss(1, "Contract says something different", "Resolved", { signed_check: { status: "confirmed" } })]],
     ["Phone", [iss(2, "Missing from contract", "Needs action", { signed_check: { status: "not_found", reason: "Not found in the signed contract." } })]]);
   const change = whatChanged(before, after);
   const html = renderToStaticMarkup(createElement(m.ChangeDialog, { change: { ...change, doc: "Signed contract, 20 Oct", acted: null, modelCalls: 0 }, titleOf: (n) => n, onClose() {} }));
-  assert.ok(html.includes('<strong>Contract wording matches</strong><span class="dp-change-closed"> · confirmed in the signed contract</span>'));
+  assert.ok(html.includes('<strong>Contract wording found</strong><span class="dp-change-closed"> · confirmed in the signed contract</span>'));
   assert.ok(html.includes("<strong>Contract wording missing from the signed contract</strong>") && html.includes("Reopened"));
   assert.ok(!html.includes("earlier fix confirmed</strong>") && !html.includes("earlier fix not found in the signed contract</strong>"));
   assert.ok(!html.includes("Contract differs") && !html.includes("Not in the contract"));

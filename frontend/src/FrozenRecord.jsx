@@ -6,9 +6,9 @@ import { useEffect, useMemo, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
 import {
-  STATUS_CHIP, coverageLines, byDocumentDate, frozenView, hashFor, signedDatesLabel, plainName, readHash, recordLines, recordedBy,
+  STATUS_CHIP, coverageLines, recordPills, byDocumentDate, frozenView, hashFor, signedDatesLabel, plainName, readHash, recordLines, recordedBy,
 } from "./dealpage.js";
-import { Drawer, CommitmentView, CoverageLines, DocumentView, TitleLine, Icon, ICON } from "./Drawer.jsx";
+import { CatalogueNames, Drawer, CommitmentView, CoverageLines, DocumentView, TitleLine, Icon, ICON } from "./Drawer.jsx";
 import BriefCard from "./BriefCard.jsx";
 import { appendixEntries, hasStoredText, shortHash } from "./docHash.js";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
@@ -234,19 +234,22 @@ export default function FrozenRecord({ deal, onBack }) {
         </div>
         <p className="dp-faint dp-small fr-checked">Checked {s.documents.length} documents and the product catalogue</p>
         <div className={`fr-verdict ${open.length ? "is-open" : "is-clear"}`}>
-          <div className="fr-chips">
-            <span className="dp-chip dp-chip-amber"><span className="dp-dot" />{counts.open} needing attention</span>
-            <span className="dp-chip dp-chip-note"><span className="dp-dot dp-dot-grey" />{counts.noted} addressed by note</span>
-            <span className="dp-chip dp-chip-green"><Check />{counts.closed} closed by documents</span>
-          </div>
+          {/* 13 Nov, Round 7: a pill with a zero count is not shown */}
+          {recordPills(counts).length > 0 && (
+            <div className="fr-chips">
+              {recordPills(counts).map((p) => p.kind === "open" ? <span key={p.kind} className="dp-chip dp-chip-amber"><span className="dp-dot" />{p.text}</span>
+                : p.kind === "noted" ? <span key={p.kind} className="dp-chip dp-chip-note"><span className="dp-dot dp-dot-grey" />{p.text}</span>
+                : <span key={p.kind} className="dp-chip dp-chip-green"><Check />{p.text}</span>)}
+            </div>
+          )}
         </div>
       </section>
 
-      <BriefCard brief={s.brief} />
+      <BriefCard brief={s.brief} record />
 
       <section className={`dp-card dp-promises ${counts.open ? "is-attention" : "is-clear"}`}>
         <div className="dp-sec-head"><h2>Commitments</h2></div>
-        <CoverageLines lines={coverageLines(s.check_coverage?.rejected, hv.check_split)} />
+        <CoverageLines part="main" lines={coverageLines(s.check_coverage?.rejected, hv.check_split)} />
         {views.length === 0 && <p className="dp-faint dp-pad">No commitment had a gap on the documents checked.</p>}
         <ul className="dp-plist">
           {views.map((v) => (
@@ -254,6 +257,7 @@ export default function FrozenRecord({ deal, onBack }) {
                        onOpen={() => { setDrawer({ type: "commitment", key: v.key }); writeHash(v.key); }} />
           ))}
         </ul>
+        <CoverageLines part="quiet" lines={coverageLines(s.check_coverage?.rejected, hv.check_split)} />
       </section>
 
       <section className="dp-card">
@@ -303,8 +307,10 @@ export default function FrozenRecord({ deal, onBack }) {
       {drawer && (
         <Drawer labelledBy="dr-title" flush onClose={() => { setDrawer(null); writeHash(null); }} focusKey={`${drawer.type}:${drawer.key ?? drawer.docKey ?? ""}`}>
           {drawer.type === "commitment" && active && (
-            <CommitmentView v={active} documents={s.documents} titleId="dr-title" readOnly onClose={() => { setDrawer(null); writeHash(null); }}
-                            onOpenDoc={(doc, quote) => doc && setDrawer({ type: "doc", docKey: doc.source_key, quote, fromKey: active.key })} />
+            <CatalogueNames deal={deal}>
+              <CommitmentView v={active} documents={s.documents} titleId="dr-title" readOnly onClose={() => { setDrawer(null); writeHash(null); }}
+                              onOpenDoc={(doc, quote) => doc && setDrawer({ type: "doc", docKey: doc.source_key, quote, fromKey: active.key })} />
+            </CatalogueNames>
           )}
           {drawer.type === "record-doc" && s.documents.find((d) => d.source_version_id === drawer.id) && (
             <DocumentView deal={deal} doc={s.documents.find((d) => d.source_version_id === drawer.id)} titleId="dr-title"

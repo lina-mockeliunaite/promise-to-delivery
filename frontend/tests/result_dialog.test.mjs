@@ -73,7 +73,7 @@ test("an opened gap is an 'Additional finding' on a commitment that already had 
     [PHONE, [iss(2, "Missing from contract", "Needs action", { signed_check: { status: "not_found", reason: "Not found in the signed contract." } })]],
     ["A brand-new commitment", [iss(9, "Not offered", "Needs action")]]);
   const html = dialog({ ...whatChanged(before, after), title: "Rechecked after adding Signed contract (20 Oct)", acted: null, modelCalls: 0, openPromises: 3 });
-  assert.ok(html.includes('<strong>Contract wording matches</strong><span class="dp-change-closed"> · confirmed in the signed contract</span>'));
+  assert.ok(html.includes('<strong>Contract wording found</strong><span class="dp-change-closed"> · confirmed in the signed contract</span>'));
   assert.ok(html.includes("<strong>Contract wording missing from the signed contract</strong>") && html.includes("Reopened"));
   assert.match(html, /<strong>Not in the contract<\/strong><span class="dp-chip dp-chip-amber"><span class="dp-dot"><\/span>Additional finding<\/span>/); // the commitment already had a (closed) gap
   assert.match(html, /<strong>Not offered<\/strong><span class="dp-chip dp-chip-amber"><span class="dp-dot"><\/span>New<\/span>/); // a commitment with none before

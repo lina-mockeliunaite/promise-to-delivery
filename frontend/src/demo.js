@@ -159,6 +159,8 @@ export function guideSteps(deal, samples, documents, commitments, handoverComple
     if (g.kind === "note") return (findGuideRow(commitments, g.row)?.noted_count ?? 0) > 0;
     return false; // "Complete the handover" is done only when the record is locked
   });
+  // 13 Nov, Round 7: the tour's done mark is the browser's only, so a visitor who skips it would stay on "Step 1" while the dots went on. Any later step done means the visitor has the picture.
+  if (list[0]?.kind === "tour" && !done[0] && done.slice(1).some(Boolean)) done[0] = true;
   const current = done.indexOf(false);
   return list.map((g, i) => ({ ...g, n: i + 1, state: done[i] ? "done" : i === current ? "current" : "later" }));
 }

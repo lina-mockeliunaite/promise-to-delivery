@@ -1,9 +1,9 @@
 // The right-hand drawer (20 Oct). A commitment, a document, the add-document form and the note form open here instead of
 // expanding the list in place, so the deal's shape stays in view. The same shell serves the locked record, read-only.
-import { useEffect, useMemo, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
-import { STAGE_LABELS, STATUS_CHIP, alsoIn, closedSettled, plainName, recordedBy, relatedHeading, short } from "./dealpage.js";
+import { STAGE_LABELS, STATUS_CHIP, alsoIn, catalogueLabel, closedSettled, plainName, recordedBy, relatedHeading, short } from "./dealpage.js";
 import { renderDocument } from "./markdown.js";
 import { shortHash, verifyText } from "./docHash.js";
 
@@ -90,6 +90,33 @@ const NOTE_KIND = {
   kept: "",
 };
 
+// The catalogue's entry names, { CAP-027: "Scam-call alerts" }, for the drawer's "Catalogue:" line (13 Nov, Round 7). Provided by the deal page and the locked record; empty until loaded.
+export const CatalogueNamesContext = createContext({});
+export function CatalogueNames({ deal, children }) {
+  return <CatalogueNamesContext.Provider value={useCatalogueNames(deal)}>{children}</CatalogueNamesContext.Provider>;
+}
+export function useCatalogueNames(deal) {
+  const [names, setNames] = useState({});
+  useEffect(() => {
+    let live = true;
+    if (deal) api.fetchCatalogue({ deal }).then((c) => live && setNames(Object.fromEntries((c.capabilities ?? []).map((x) => [x.id, x.name]))), () => {});
+    return () => { live = false; };
+  }, [deal]);
+  return names;
+}
+
+// "Confirmed in the signed contract (Signed contract, 20 Oct)": the parenthesis is the link to the signed document when it is known.
+function ConfirmedStatus({ status, doc, onOpen }) {
+  const m = /^(.*?) \((.*)\)$/.exec(status ?? "");
+  if (!m || !doc || !onOpen) return status;
+  return <>{m[1]} (<button type="button" className="dr-linkbtn" onClick={onOpen}>{m[2]}</button>)</>;
+}
+
+// A reference-back ("RFP response, 29 Sep, above") has no Source line of its own: the reference is the link to that document when it is known (13 Nov, Round 7).
+function Ref({ text, doc, onOpen }) {
+  return <p className="dr-muted">{doc && onOpen ? <button type="button" className="dr-linkbtn" onClick={onOpen}>{text}</button> : text}</p>;
+}
+
 function Source({ label, date, doc, onOpen, also }) {
   const text = `${label}${date ? `, ${short(date)}` : ""}`;
   return (
@@ -105,6 +132,7 @@ function Source({ label, date, doc, onOpen, also }) {
 // guide (public demo): { hint, highlight: "add" | "note" } from the demo bar's "Do step N": one hint line above the buttons, and the button to click highlighted.
 export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", guide = null, onOpenDoc, onSeen, onNote, onAddDoc, onCatalogue, onClose }) {
   const seenByMe = v.seen.some((x) => x.by === me.trim());
+  const catNames = useContext(CatalogueNamesContext);
   return (
     <>
       <DrawerHead id={titleId} title={v.title} chip={v.status} onClose={onClose} />
@@ -144,13 +172,17 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
             <p className="dr-plain">{v.scope.reason}</p>
             <div className="dr-block dr-related">
               <span className="dr-muted">{v.scope.start.heading}</span>
-              {v.scope.start.ref ? <p className="dr-muted">{v.scope.start.ref}</p> : <blockquote className="dr-quote">{v.scope.start.quote}</blockquote>}
-              <Source label={v.scope.start.label} date={v.scope.start.date} doc={v.scope.start.doc} onOpen={() => onOpenDoc?.(v.scope.start.doc, v.scope.start.quote)} />
+              {v.scope.start.ref
+                ? <Ref text={v.scope.start.ref} doc={v.scope.start.doc} onOpen={() => onOpenDoc?.(v.scope.start.doc, v.scope.start.quote)} />
+                : <><blockquote className="dr-quote">{v.scope.start.quote}</blockquote>
+                  <Source label={v.scope.start.label} date={v.scope.start.date} doc={v.scope.start.doc} onOpen={() => onOpenDoc?.(v.scope.start.doc, v.scope.start.quote)} /></>}
             </div>
             <div className="dr-block dr-related">
               <span className="dr-muted">{v.scope.approval.heading}</span>
-              {v.scope.approval.ref ? <p className="dr-muted">{v.scope.approval.ref}</p> : <blockquote className="dr-quote">{v.scope.approval.quote}</blockquote>}
-              <Source label={v.scope.approval.label} date={v.scope.approval.date} doc={v.scope.approval.doc} onOpen={() => onOpenDoc?.(v.scope.approval.doc, v.scope.approval.quote)} />
+              {v.scope.approval.ref
+                ? <Ref text={v.scope.approval.ref} doc={v.scope.approval.doc} onOpen={() => onOpenDoc?.(v.scope.approval.doc, v.scope.approval.quote)} />
+                : <><blockquote className="dr-quote">{v.scope.approval.quote}</blockquote>
+                  <Source label={v.scope.approval.label} date={v.scope.approval.date} doc={v.scope.approval.doc} onOpen={() => onOpenDoc?.(v.scope.approval.doc, v.scope.approval.quote)} /></>}
             </div>
           </section>
         )}
@@ -166,8 +198,10 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
                 <h3 className="dr-label">{relatedHeading(v.related)}</h3>
                 <div className="dr-block dr-related">
                   <span className="dr-muted">Related clause</span>
-                  {v.related.ref ? <p className="dr-muted">{v.related.ref}</p> : <blockquote className="dr-quote">{v.related.quote}</blockquote>}
-                  <Source label={v.related.label} date={v.related.date} doc={v.related.doc} onOpen={() => onOpenDoc?.(v.related.doc, v.related.quote)} />
+                  {v.related.ref
+                    ? <Ref text={v.related.ref} doc={v.related.doc} onOpen={() => onOpenDoc?.(v.related.doc, v.related.quote)} />
+                    : <><blockquote className="dr-quote">{v.related.quote}</blockquote>
+                      <Source label={v.related.label} date={v.related.date} doc={v.related.doc} onOpen={() => onOpenDoc?.(v.related.doc, v.related.quote)} /></>}
                 </div>
               </section>
             )}
@@ -177,24 +211,28 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
           <h3 className="dr-label">Contract says</h3>
           {v.signed ? (
             <div className="dr-block dr-signed">
-              <span className="dr-confirmed">{v.signed.status}{v.signed.ref ? `: ${v.signed.ref}.` : ""}</span>
+              {/* One line carries the status and its source: "(Signed contract, 20 Oct)" is the link to the signed document, so the section no longer prints its source twice. */}
+              <span className="dr-confirmed"><ConfirmedStatus status={v.signed.status} doc={v.signed.doc} onOpen={() => onOpenDoc?.(v.signed.doc, v.signed.quote)} />{v.signed.ref ? `: ${v.signed.ref}.` : ""}</span>
               {!v.signed.ref && <blockquote className="dr-quote">{v.signed.quote}</blockquote>}
-              <Source label={v.signed.label} date={v.signed.date} doc={v.signed.doc} onOpen={() => onOpenDoc?.(v.signed.doc, v.signed.quote)} />
             </div>
           ) : (
             <>
               {v.contract.text && <p className="dr-plain">{v.contract.text}</p>}
               {v.contract.quote && (
                 <div className="dr-block">
-                  {v.contract.quote.ref ? <p className="dr-muted">{v.contract.quote.ref}.</p> : <blockquote className="dr-quote">{v.contract.quote.quote}</blockquote>}
-                  <Source label={v.contract.quote.label} doc={v.contract.quote.doc} onOpen={() => onOpenDoc?.(v.contract.quote.doc, v.contract.quote.quote)} />
+                  {v.contract.quote.ref
+                    ? <Ref text={`${v.contract.quote.ref}.`} doc={v.contract.quote.doc} onOpen={() => onOpenDoc?.(v.contract.quote.doc, v.contract.quote.quote)} />
+                    : <><blockquote className="dr-quote">{v.contract.quote.quote}</blockquote>
+                      <Source label={v.contract.quote.label} doc={v.contract.quote.doc} onOpen={() => onOpenDoc?.(v.contract.quote.doc, v.contract.quote.quote)} /></>}
                 </div>
               )}
               {v.contract.now && (
                 <div className="dr-block">
                   <span className="dr-muted">Wording in {v.contract.now.label}{v.contract.now.date ? ` (${short(v.contract.now.date)})` : ""} that mentions “{v.contract.now.target}”:</span>
-                  {v.contract.now.ref ? <p className="dr-muted">{v.contract.now.ref}.</p> : <blockquote className="dr-quote">{v.contract.now.quote}</blockquote>}
-                  <Source label={v.contract.now.label} doc={v.contract.now.doc} onOpen={() => onOpenDoc?.(v.contract.now.doc, v.contract.now.quote)} />
+                  {v.contract.now.ref
+                    ? <Ref text={`${v.contract.now.ref}.`} doc={v.contract.now.doc} onOpen={() => onOpenDoc?.(v.contract.now.doc, v.contract.now.quote)} />
+                    : <><blockquote className="dr-quote">{v.contract.now.quote}</blockquote>
+                      <Source label={v.contract.now.label} doc={v.contract.now.doc} onOpen={() => onOpenDoc?.(v.contract.now.doc, v.contract.now.quote)} /></>}
                 </div>
               )}
             </>
@@ -213,8 +251,8 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
           ))}
           {v.searched?.map((l) => <p key={l} className="dr-muted dr-searched">{l}</p>)}
           {v.catalogue.map((p) => (
-            <button key={p} type="button" className="cat-open" onClick={() => onCatalogue?.(p)} title="Open the product catalogue at this entry">
-              Catalogue: {p.split("/").slice(0, 2).join(" · ")}{p.split("/").length > 2 ? ` · ${p.split("/").slice(2).join(" ").replace(/_/g, " ")}` : ""}
+            <button key={p} type="button" className="cat-open" onClick={() => onCatalogue?.(p)} title={`Open the product catalogue at this entry (${p})`}>
+              Catalogue: {catalogueLabel(p, catNames)}
             </button>
           ))}
           {v.closed.length > 0 && (
@@ -362,11 +400,12 @@ export function PromiseBadges({ labels }) {
 }
 
 // The coverage lines under "Commitments" (13 Nov): the main line counts findings whose evidence failed verification; a quieter line counts the points the documents already answered.
-export function CoverageLines({ lines }) {
+// part: "main" (the warning, under the heading) or "quiet" (the footnote, the last line of the Commitments section, after the rows); no part: both (13 Nov, Round 7).
+export function CoverageLines({ lines, part }) {
   return (
     <>
-      {lines.main && <p className="dp-coverage">{lines.main}</p>}
-      {lines.quiet && <p className="dp-coverage is-quiet">{lines.quiet}</p>}
+      {part !== "quiet" && lines.main && <p className="dp-coverage">{lines.main}</p>}
+      {part !== "main" && lines.quiet && <p className="dp-coverage is-quiet">{lines.quiet}</p>}
     </>
   );
 }

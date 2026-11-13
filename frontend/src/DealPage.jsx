@@ -17,7 +17,7 @@ import {
 import FrozenRecord from "./FrozenRecord.jsx";
 import BriefCard from "./BriefCard.jsx";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
-import { CardHead, CoverageLines, Drawer, DrawerHead, CommitmentView, DocumentView, MismatchSentence, TitleLine, Icon as DIcon, ICON } from "./Drawer.jsx";
+import { CardHead, CatalogueNames, CoverageLines, Drawer, DrawerHead, CommitmentView, DocumentView, MismatchSentence, TitleLine, Icon as DIcon, ICON } from "./Drawer.jsx";
 import { FICTIONAL } from "./brand.js";
 import CatalogueModal from "./CatalogueModal.jsx";
 import { DemoNameNote, SamplePicker, UseSampleText } from "./DemoUI.jsx";
@@ -920,13 +920,14 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
             <CardHead eyebrow="Commitments" title="What the customer was promised">
               <AttentionChip open={openRows.length} noted={(reg.noted_rows || []).length} />
             </CardHead>
-            {!demo.public && <CoverageLines lines={coverageLines(reg.check_coverage?.rejected, reg.check_split)} />}
+            {!demo.public && <CoverageLines part="main" lines={coverageLines(reg.check_coverage?.rejected, reg.check_split)} />}
             {promiseRows.length === 0 && <p className="dp-faint dp-pad">No commitments with gaps on the current documents.</p>}
             <ul className="dp-plist">
               {promiseRows.map(({ c, status }) => (
                 <CommitRow key={c.id} c={c} status={status} documents={docs.documents} active={fromId === c.id} flash={flash.row === c.id || flash.rows.includes(c.id)} onOpen={() => openCommitment(c)} />
               ))}
             </ul>
+            {!demo.public && <CoverageLines part="quiet" lines={coverageLines(reg.check_coverage?.rejected, reg.check_split)} />}
           </section>
 
           <section className={`dp-card dp-handover ${flash.handover ? "is-flash" : ""}`.trim()} id="dp-handover">
@@ -990,12 +991,14 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
       {drawer && (
         <Drawer labelledBy="dr-title" onClose={closeDrawer} focusKey={`${drawer.type}:${drawer.id ?? drawer.docKey ?? ""}`}>
           {drawer.type === "commitment" && drawerC && (
+            <CatalogueNames deal={deal}>
             <CommitmentView v={commitmentView(drawerC, statusOf(drawerC.id), docs.documents)} documents={docs.documents} titleId="dr-title" me={name} guide={drawer.guide}
                             onClose={closeDrawer} onCatalogue={setCatFocus}
                             onOpenDoc={(doc, quote) => doc && setDrawer({ type: "doc", docKey: doc.source_key, quote, fromId: drawerC.id })}
                             onSeen={() => withName((who) => act(async () => { for (const i of seenIssues(drawerC)) await api.markSeen(deal, { issue_id: i.id, seen_by: who }); }))}
                             onNote={() => setDrawer({ type: "note", id: drawerC.id })}
                             onAddDoc={() => setDrawer({ type: "add", fromId: drawerC.id })} />
+            </CatalogueNames>
           )}
           {drawer.type === "doc" && docs.documents.find((d) => d.source_key === drawer.docKey) && (
             <DocumentView deal={deal} doc={docs.documents.find((d) => d.source_key === drawer.docKey)} quote={drawer.quote} titleId="dr-title"

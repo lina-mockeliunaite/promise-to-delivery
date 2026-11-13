@@ -81,7 +81,7 @@ test("the record page is cut down: no verdict sentence, 'Commitments' only, no s
   const src = read("FrozenRecord.jsx");
   assert.ok(!src.includes("verdictLine") && !src.includes("scope_note") && !src.includes("Handed over with") && !src.includes("Demonstrated on") && !src.includes("At handover"));
   assert.match(src, /Checked \{s\.documents\.length\} documents and the product catalogue<\/p>/);
-  assert.match(src, /<span className="dp-chip dp-chip-amber"><span className="dp-dot" \/>\{counts\.open\} needing attention<\/span>/); // the three count chips stay
+  assert.match(src, /recordPills\(counts\)\.map/); assert.match(src, /dp-chip dp-chip-amber/); // the three count chips stay (13 Nov, Round 7: a zero count is not shown; see round7.test.mjs)
   assert.ok(src.indexOf("<BriefCard") > src.indexOf('<section className="dp-card fr-head"') && src.indexOf("<BriefCard") < src.indexOf("<h2>Commitments</h2>"));
   assert.match(src, /<footer className="dp-foot">\{FICTIONAL\}<\/footer>/);
   assert.ok(!src.includes("PrintDetail") && !src.includes('"fr-print"') && !src.includes("AI-written"));

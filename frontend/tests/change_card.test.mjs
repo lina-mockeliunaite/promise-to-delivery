@@ -77,7 +77,9 @@ test("the headline is the change on the commitment the document was added from; 
   const v = changeView(revised(), titleOf, LANG);
   assert.equal(v.headline, "Contract wording now matches the promise.");
   assert.ok(!/not-offered|phone/i.test(v.headline)); // nothing from the other commitment in the headline
-  assert.equal(v.elsewhere, `Elsewhere: ${PHONE}: 1 additional gap, not in the contract.`); // its unchanged gaps (not offered, contract differs) are in the list below, not here
+  // 13 Nov, Round 7: the phone commitment's new gap is a row of its own on the card, so "Elsewhere" does not repeat it
+  assert.equal(v.elsewhere, "");
+  assert.ok(v.groups.some((g) => g.promise === PHONE && g.opened.length)); // it is listed above
 });
 
 test("the detail boxes are grouped per commitment, the acted-on one first, with no commitment title repeated inside a box", () => {

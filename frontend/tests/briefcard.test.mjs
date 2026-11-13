@@ -61,7 +61,7 @@ test("not collapsible (the locked record): the list is shown, with no button and
 
 test("only the deal page asks for the fold, and print always shows the list", () => {
   assert.match(read("DealPage.jsx"), /<BriefCard brief=\{reg\.brief\} collapsible \/>/);
-  assert.match(read("FrozenRecord.jsx"), /<BriefCard brief=\{s\.brief\} \/>/);
+  assert.match(read("FrozenRecord.jsx"), /<BriefCard brief=\{s\.brief\} record \/>/);
   assert.ok(!/collapsible/.test(read("FrozenRecord.jsx")));
   assert.match(read("DealPage.css"), /@media print \{ \.dp-brief-card \.dp-deliverables\[hidden\] \{ display: block !important; \}/);
 });

@@ -89,7 +89,10 @@ test("step states at every stage of both deals: done, current (the first not don
     assert.deepEqual(states(deal, 3, true), ["done", "done", "done", "done", "done", "current"], `${deal} after the note`);
     const s = state(deal, 3, true);
     assert.deepEqual(m.guideSteps(deal, SAMPLES[deal], s.documents, s.commitments, true, false).map((x) => x.state), Array(6).fill("done"), `${deal} handover complete`);
-    assert.deepEqual(states(deal, 1, false, false), ["current", "done", "later", "later", "later", "later"], `${deal} deal worked ahead of the tour: a done step is ticked wherever it sits`);
+    // 13 Nov, Round 7: a deal worked ahead of the tour counts step 1 as done (any later step done means the visitor has the picture), so the label and the dots agree
+    assert.deepEqual(states(deal, 1, false, false), ["done", "done", "current", "later", "later", "later"], `${deal} deal worked ahead of the tour: the label is the next step, in sync with the dots`);
+    assert.deepEqual(states(deal, 3, true, false), ["done", "done", "done", "done", "done", "current"], `${deal} note recorded, tour skipped: step 6`);
+    assert.deepEqual(states(deal, 0, false, false), ["current", "later", "later", "later", "later", "later"], `${deal} fresh: still step 1`);
   }
 });
 
