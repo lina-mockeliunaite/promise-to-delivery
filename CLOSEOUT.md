@@ -1,6 +1,6 @@
 # Dealshape: close-out
 
-*Draft written by Claude on 2 Nov 2026 from DECISIONS.md, LEARNING_LOG.md, the README and the git history, for Lina to edit. Items marked [confirm] need a fact only Lina has.*
+*Drafted by Claude on 2 Nov 2026 from DECISIONS.md, LEARNING_LOG.md, the README and the git history, for Lina to edit. Updated 13 Nov with Lina's figures for spend, hours and the video status.*
 
 ## In one paragraph
 
@@ -41,7 +41,7 @@ Read straight: v2 matched a good prompt on detection on one unseen deal. Its val
 ## What is not done, stated plainly
 
 - **The unaided test.** No one who had never seen the product has been asked to read a deal page cold. The 6 Oct and 16 Oct sessions were compromised (I named the gap first; I narrated first).
-- **The demo video** [confirm: re-recorded after 31 Oct, or still to do].
+- **The demo video:** still to do. Not re-recorded after 31 Oct; the public demo at https://dealshape-demo.onrender.com is the current walkthrough.
 - **A full promise inventory.** Only promises with findings are listed; listing every promise changes the tested prompt and needs a fresh sealed check.
 - **The detection prompt still names the first vendor.** Changing it raises the detection version and invalidates saved readings.
 - **No connectors or accounts.** Documents carry a Drive link field; no live Drive, CRM or sign-in.
@@ -66,7 +66,7 @@ Read straight: v2 matched a good prompt on detection on one unseen deal. Its val
 
 - API spend in November: $0.56 (about $0.45 for the three Alder readings on 13 Nov; the rest self-test runs). $15.87 of credit remaining. The API did not lapse on 31 Oct. Each sealed run cost about $0.25. The Claude subscription (Claude Code and chat) is separate and not included.
 - Commits: 132, 25 Sep to 31 Oct.
-- Hours: [confirm from the learning log or Progress Report].
+- Hours: about 10 hours for 10–13 Nov (public demo, Alder rebuild, polish rounds, documentation). Build total not tracked.
 
 ## What I learned
 
