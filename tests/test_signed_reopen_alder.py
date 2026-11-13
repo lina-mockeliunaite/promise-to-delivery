@@ -64,7 +64,7 @@ class AlderCase(unittest.TestCase):
         db = self.dir / f"ledger{sub}.sqlite"
         reset_demo.reset(db)
         client = TestClient(api.create_app(dist_dir=self.dir / "x", ledger_path=db, public=False), base_url="http://127.0.0.1")
-        for f, key in (("AB-05_v2_named_exception.md", "AB-05"), ("AB-06_v2_coaching_added.md", "AB-06")):
+        for f, key in (("AB-05_v2_named_exception.md", "AB-05"), ("AB-06_v2_scam_alerts_added.md", "AB-06")):
             r = client.post("/api/deals/alder_bank/documents/add-and-check", json={"source_key": key, "filename": f, "text": (SC / f).read_text(encoding="utf-8")}, headers=H)
             self.assertEqual(r.status_code, 200, r.text)
         return db, client
@@ -97,7 +97,7 @@ class TestWhyCoachingReopens(AlderCase):
     def test_run_a_the_shipped_ab09_repeats_the_revised_sow_sentence_and_confirms_it(self):
         """Run A (Round 5): AB-06 and AB-09 carry one identical sentence (1 February 2027 launch), so the signed text confirms the closing wording."""
         shipped = (SC / "AB-09_signed_contract.md").read_text(encoding="utf-8")
-        self.assertIn(SENTENCE, (SC / "AB-06_v2_coaching_added.md").read_text(encoding="utf-8"))
+        self.assertIn(SENTENCE, (SC / "AB-06_v2_scam_alerts_added.md").read_text(encoding="utf-8"))
         self.assertIn(SENTENCE, shipped)
         db, client, conn, did, res = self.run_signed(shipped, "a")
         [v] = res.values()

@@ -178,7 +178,7 @@ class TestSamplePreview(Case):
         expect = {("noma_journeys", "NJ-05_v2_named_exception.md"): ["Named exception approved by Omar Haddad"],
                   ("noma_journeys", "NJ-07_v2_languages_aligned.md"): ["12 languages"],
                   ("alder_bank", "AB-05_v2_named_exception.md"): ["Named exception approved by Arjun Rao"],
-                  ("alder_bank", "AB-06_v2_coaching_added.md"): ["Scam-call alerts", "on a call with a scammer"]}
+                  ("alder_bank", "AB-06_v2_scam_alerts_added.md"): ["Scam-call alerts", "on a call with a scammer"]}
         for (deal, file), phrases in expect.items():
             text, key = self.lines(deal, file)
             self.assertTrue(key, file)
@@ -302,7 +302,7 @@ class TestRefusals(Case):
         self.assertEqual([s["file"] for s in listing], ["NJ-05_v2_named_exception.md", "NJ-07_v2_languages_aligned.md", "NJ-09_signed_contract.md"])
         self.assertTrue(all(s["title"] and s["summary"] and "description" not in s for s in listing))
         alder = self.client.get("/api/demo/samples", params={"deal": "alder_bank"}).json()["samples"]
-        self.assertEqual([s["file"] for s in alder], ["AB-05_v2_named_exception.md", "AB-06_v2_coaching_added.md", "AB-09_signed_contract.md"])
+        self.assertEqual([s["file"] for s in alder], ["AB-05_v2_named_exception.md", "AB-06_v2_scam_alerts_added.md", "AB-09_signed_contract.md"])
         self.assertEqual(self.client.get("/api/demo/samples", params={"deal": "harbour_bank"}).status_code, 404)
         for bad in ("../../CLAUDE.md", "HB-05_v2_named_exception.md", "scenarios.json", "NOPE.md"):
             self.assertEqual(self.client.get("/api/demo/sample", params={"deal": "noma_journeys", "file": bad}).status_code, 404, bad)
@@ -372,7 +372,7 @@ class TestSamplePathEndToEnd(Case):
     def test_alder_ab05_ab06_ab09_through_the_sample_path_with_no_key_and_no_model_call(self):
         """"Use a sample file" accepts AB-05, AB-06 and AB-09 in order with no key and no model call (Round 5). The reading of the state with AB-05 and AB-06 added is in results/v2_cache
         (made once, 13 Nov, by fill_alder_readings.py), so the hash-gated samples go through the demo's own default path."""
-        for file in ("AB-05_v2_named_exception.md", "AB-06_v2_coaching_added.md", "AB-09_signed_contract.md"):
+        for file in ("AB-05_v2_named_exception.md", "AB-06_v2_scam_alerts_added.md", "AB-09_signed_contract.md"):
             r = self.add_sample("alder_bank", file)
             self.assertEqual(r.status_code, 200, (file, r.text))
             self.assertEqual(r.json()["review"]["model_calls"], 0, file)

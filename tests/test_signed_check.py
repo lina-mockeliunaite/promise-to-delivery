@@ -155,7 +155,7 @@ class TestAlder(Replay):
         self.filed("AB-05", "AB-05_v2_named_exception.md")
         _, approval = self.issue("scam-call", "Approval starts later")
         self.assertEqual((approval["state"], approval["approval_scope"]["start"]["source"]), ("Needs action", "promise"))
-        self.filed("AB-06", "AB-06_v2_coaching_added.md")
+        self.filed("AB-06", "AB-06_v2_scam_alerts_added.md")
         _, approval = self.issue("scam-call", "Approval starts later")
         self.assertEqual(approval["approval_scope"]["start"]["source"], "contract")
         self.sign((SCEN / "AB-09_signed_contract.md").read_text(encoding="utf-8"), "AB-09_signed_contract.md")
@@ -168,7 +168,7 @@ class TestAlder(Replay):
 
     def test_a_signed_appendix_without_the_closing_sentence_reopens_the_coaching_fix(self):
         self.filed("AB-05", "AB-05_v2_named_exception.md")
-        self.filed("AB-06", "AB-06_v2_coaching_added.md")
+        self.filed("AB-06", "AB-06_v2_scam_alerts_added.md")
         _, gap = self.issue("scam-call", "Missing from contract")
         self.assertEqual(gap["state"], "Resolved")  # closed by the revised SOW, before any signed paperwork
         shipped = (SCEN / "AB-09_signed_contract.md").read_text(encoding="utf-8")

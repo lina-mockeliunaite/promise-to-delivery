@@ -15,7 +15,7 @@ DOCS = config.DATA_DIR / "alder_bank" / "docs"
 SCEN = config.DATA_DIR / "scenarios"
 SENTENCE = "Scam-call alerts will be live from the 1 February 2027 launch: they warn the bank when a customer seems to be on a call with a scammer while making a payment."
 read = lambda p: Path(p).read_text(encoding="utf-8")
-ALDER_FILES = [*sorted(DOCS.glob("AB-*.md")), *[SCEN / n for n in ("AB-05_v2_named_exception.md", "AB-06_v2_coaching_added.md", "AB-09_signed_contract.md")],
+ALDER_FILES = [*sorted(DOCS.glob("AB-*.md")), *[SCEN / n for n in ("AB-05_v2_named_exception.md", "AB-06_v2_scam_alerts_added.md", "AB-09_signed_contract.md")],
                DOCS.parent / "BRIEF.md", config.DATA_DIR / "profiles" / "alder_bank.json", config.DATA_DIR / "catalogue_alder.json"]
 
 
@@ -28,7 +28,7 @@ class TestAlderDocuments(unittest.TestCase):
 
     def test_the_real_time_promise_and_annex_a_agree_so_neither_is_a_finding(self):
         prop = read(DOCS / "AB-04_proposal.md")
-        for path in (DOCS / "AB-06_draft_sow.md", SCEN / "AB-06_v2_coaching_added.md"):
+        for path in (DOCS / "AB-06_draft_sow.md", SCEN / "AB-06_v2_scam_alerts_added.md"):
             sow = read(path)
             self.assertIn("A.1 All outbound instant payments are scored in real time before the payment is released.", sow)
             self.assertNotIn("below", sow.split("Annex A")[-1].lower())  # no hourly batches
@@ -42,7 +42,7 @@ class TestAlderDocuments(unittest.TestCase):
 
     def test_the_promise_the_sow_and_the_signed_appendix_say_live_from_1_february_and_the_approval_says_from_1_may(self):
         self.assertIn("Scam-call alerts warn the bank when a customer seems to be on a call with a scammer while making a payment, live from the 1 February 2027 launch.", read(DOCS / "AB-03_rfp_response.md"))
-        sow, signed = read(SCEN / "AB-06_v2_coaching_added.md"), read(SCEN / "AB-09_signed_contract.md")
+        sow, signed = read(SCEN / "AB-06_v2_scam_alerts_added.md"), read(SCEN / "AB-09_signed_contract.md")
         self.assertEqual((sow.count(SENTENCE), signed.count(SENTENCE)), (1, 1))  # one identical sentence, built from one string
         self.assertEqual(len(re.findall(r"\d{1,2} [A-Z][a-z]+ \d{4}", SENTENCE)), 1)  # one explicit date in it
         self.assertIn("**1. Launch.** The platform launches on 1 February 2027.", signed)  # the signed appendix still states the go-live date
@@ -61,14 +61,14 @@ class TestAlderDocuments(unittest.TestCase):
     def test_the_revised_sow_heading_and_the_signed_lead_hold_none_of_the_gap_phrases_so_the_closing_wording_is_the_full_sentence(self):
         """Round 5c: a heading holding a searched phrase would make the signed check's closing wording a fragment (tests/test_signed_reopen_alder.py: TestGenericHeadingWeakness)."""
         phrases = ("scam-call alerts", "on a call with a scammer", "1 february 2027 launch")
-        for path in (SCEN / "AB-06_v2_coaching_added.md", SCEN / "AB-09_signed_contract.md"):
+        for path in (SCEN / "AB-06_v2_scam_alerts_added.md", SCEN / "AB-09_signed_contract.md"):
             for line in read(path).splitlines():
                 if line.startswith("#") or line.startswith("**"):
                     lead = line.split("**")[1] if line.startswith("**") else line
                     self.assertFalse(any(p in lead.lower() for p in phrases), f"{path.name}: {lead}")
-        self.assertIn("## 5. Fraud warnings during payment", read(SCEN / "AB-06_v2_coaching_added.md"))
+        self.assertIn("## 5. Fraud warnings during payment", read(SCEN / "AB-06_v2_scam_alerts_added.md"))
         self.assertIn("**2. Fraud warnings during payment.**", read(SCEN / "AB-09_signed_contract.md"))
-        for path in (SCEN / "AB-06_v2_coaching_added.md", SCEN / "AB-09_signed_contract.md"):  # the only line holding any of the phrases is the shared sentence
+        for path in (SCEN / "AB-06_v2_scam_alerts_added.md", SCEN / "AB-09_signed_contract.md"):  # the only line holding any of the phrases is the shared sentence
             held = [l for l in read(path).splitlines() if any(p in l.lower() for p in phrases)]
             self.assertEqual([l.split("** ")[-1] for l in held], [SENTENCE], path.name)
 

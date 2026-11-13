@@ -68,7 +68,7 @@ class TestAlderScenario(unittest.TestCase):
             self.assertEqual(detect_v2.verify(f, after, self.cat), [])
 
     def test_the_revised_statement_of_work_closes_the_scam_call_contract_gap_and_nothing_else(self):
-        after = self.swap(self.swap(self.docs, "AB-05", "AB-05_v2_named_exception.md"), "AB-06", "AB-06_v2_coaching_added.md")
+        after = self.swap(self.swap(self.docs, "AB-05", "AB-05_v2_named_exception.md"), "AB-06", "AB-06_v2_scam_alerts_added.md")
         self.assertNotEqual(detect_v2.verify(SCAM_GAP, after, self.cat), [])
         for f in (AZURE, HOSTING):  # what is left for the note
             self.assertEqual(detect_v2.verify(f, after, self.cat), [])

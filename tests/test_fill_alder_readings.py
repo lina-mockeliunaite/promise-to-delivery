@@ -78,7 +78,7 @@ class TestRound5c(unittest.TestCase):
         tmp = tempfile.TemporaryDirectory()
         self.addCleanup(tmp.cleanup)
         d = Path(tmp.name)
-        for name in ("AB-05_v2_named_exception.md", "AB-06_v2_coaching_added.md", "AB-09_signed_contract.md"):
+        for name in ("AB-05_v2_named_exception.md", "AB-06_v2_scam_alerts_added.md", "AB-09_signed_contract.md"):
             text = fill.staged("scenarios", name)
             if heading_old_style:
                 text = text.replace("## 5. Fraud warnings during payment", "## 5. Scam-call alerts").replace("**2. Fraud warnings during payment.**", "**2. Scam-call alerts.**")

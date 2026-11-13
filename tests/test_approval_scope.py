@@ -90,7 +90,7 @@ class Flow(unittest.TestCase):
         reset_demo.reset(db)
         client = TestClient(api.create_app(dist_dir=self.dir / "x", ledger_path=db, public=False), base_url="http://127.0.0.1")
         read = lambda f: (SC / f).read_text(encoding="utf-8")
-        docs = [("AB-05", "AB-05_v2_named_exception.md", ab05 or read("AB-05_v2_named_exception.md")), ("AB-06", "AB-06_v2_coaching_added.md", ab06 or read("AB-06_v2_coaching_added.md"))][:steps]
+        docs = [("AB-05", "AB-05_v2_named_exception.md", ab05 or read("AB-05_v2_named_exception.md")), ("AB-06", "AB-06_v2_scam_alerts_added.md", ab06 or read("AB-06_v2_scam_alerts_added.md"))][:steps]
         for key, f, text in docs:
             r = client.post("/api/deals/alder_bank/documents/add-and-check", json={"source_key": key, "filename": f, "text": text}, headers=H)
             self.assertEqual(r.status_code, 200, r.text)
@@ -115,7 +115,7 @@ class TestTwoRunMatrix(Flow):
     """The signed start date is fixed at 1 February 2027 (AB-06 and AB-09 carry one identical sentence); only the approval's effective date changes."""
 
     def test_a_the_approval_from_1_may_confirms_the_signed_wording_and_the_approval_gap_stays_open_with_both_clauses(self):
-        self.assertIn(SENTENCE, (SC / "AB-06_v2_coaching_added.md").read_text(encoding="utf-8"))
+        self.assertIn(SENTENCE, (SC / "AB-06_v2_scam_alerts_added.md").read_text(encoding="utf-8"))
         self.assertIn(SENTENCE, (SC / "AB-09_signed_contract.md").read_text(encoding="utf-8"))
         db, client = self.alder(sub="a")
         c, by = self.coaching(client)

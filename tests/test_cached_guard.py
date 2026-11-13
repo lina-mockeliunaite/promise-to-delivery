@@ -134,7 +134,7 @@ def noma_steps():
 def alder_steps():
     read = lambda n: (SCEN / n).read_text(encoding="utf-8")
     return [("doc", {"source_key": "AB-05", "filename": "AB-05_v2_named_exception.md", "text": read("AB-05_v2_named_exception.md")}),
-            ("doc", {"source_key": "AB-06", "filename": "AB-06_v2_coaching_added.md", "text": read("AB-06_v2_coaching_added.md")}),
+            ("doc", {"source_key": "AB-06", "filename": "AB-06_v2_scam_alerts_added.md", "text": read("AB-06_v2_scam_alerts_added.md")}),
             ("note_all", {"word": "azure", "reason": "Customer agreed AWS Sydney on the 14 Oct call."}),
             ("doc", {"name": "Signed contract", "filename": "AB-09_signed_contract.md", "doc_type": "signed_contract", "doc_date": "2026-10-20", "text": read("AB-09_signed_contract.md")}),
             ("handover_note", {"role": "sales", "note": "Signed; see open items.", "entered_by": "Tom Fraser"}),

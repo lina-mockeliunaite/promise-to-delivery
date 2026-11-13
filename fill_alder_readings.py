@@ -70,7 +70,7 @@ def staged(kind: str, name: str) -> str:
 
 def closing_sentence() -> str:
     """The one sentence the revised statement of work and the signed appendix share, read from the sample files."""
-    line = next(l.strip() for l in staged("scenarios", "AB-06_v2_coaching_added.md").splitlines() if "will be live from the 1 February 2027 launch" in l)
+    line = next(l.strip() for l in staged("scenarios", "AB-06_v2_scam_alerts_added.md").splitlines() if "will be live from the 1 February 2027 launch" in l)
     if staged("scenarios", "AB-09_signed_contract.md").count(line) != 1:
         raise NotReady("the signed appendix does not carry the revised statement of work's sentence exactly once")
     return line
@@ -251,7 +251,7 @@ def pipeline(cache_dir: Path, client, reuse_k0: bool = True) -> dict:
         rep["readings"]["K0"] = {"key": k0, "findings": r0["findings"], "cost": r0.get("cost_usd"), "verdicts": verdicts("K0", r0["findings"])}
 
         post = lambda body: web.post(f"/api/deals/{DEAL}/documents/add-and-check", json=body, headers=H)
-        ab05, ab06, ab09 = staged("scenarios", "AB-05_v2_named_exception.md"), staged("scenarios", "AB-06_v2_coaching_added.md"), staged("scenarios", "AB-09_signed_contract.md")
+        ab05, ab06, ab09 = staged("scenarios", "AB-05_v2_named_exception.md"), staged("scenarios", "AB-06_v2_scam_alerts_added.md"), staged("scenarios", "AB-09_signed_contract.md")
         r = post({"source_key": "AB-05", "filename": "AB-05_v2_named_exception.md", "text": ab05})
         if r.status_code != 200:
             raise NotReady(f"adding AB-05 failed: {r.status_code} {r.text[:200]}")
@@ -261,7 +261,7 @@ def pipeline(cache_dir: Path, client, reuse_k0: bool = True) -> dict:
             guard = deal_catalogue.cache_key(c, DEAL, "AB-06", "draft_sow", ledger_import.markdown_adapter(ab06.encode("utf-8"))["canonical_text"], None)
         finally:
             c.close()
-        r = post({"source_key": "AB-06", "filename": "AB-06_v2_coaching_added.md", "text": ab06})
+        r = post({"source_key": "AB-06", "filename": "AB-06_v2_scam_alerts_added.md", "text": ab06})
         if r.status_code != 200:
             raise NotReady(f"adding AB-06 failed: {r.status_code} {r.text[:200]}")
         k1, r1 = key_and_findings()

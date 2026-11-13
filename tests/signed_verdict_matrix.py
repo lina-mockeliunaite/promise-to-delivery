@@ -30,7 +30,7 @@ SC = config.SCENARIOS_DIR
 KEYS = ("status", "closed_by", "earlier", "kind", "text", "reason", "sentence", "signed", "date")
 DEALS = {
     "noma_journeys": [("NJ-05_v2_named_exception.md", "NJ-05"), ("NJ-07_v2_languages_aligned.md", "NJ-07")],
-    "alder_bank": [("AB-05_v2_named_exception.md", "AB-05"), ("AB-06_v2_coaching_added.md", "AB-06")],
+    "alder_bank": [("AB-05_v2_named_exception.md", "AB-05"), ("AB-06_v2_scam_alerts_added.md", "AB-06")],
     "harbour_bank": [("HB-05_v2_named_exception.md", "HB-05"), ("HB-06_v2_annex_aligned.md", "HB-06")],
     "coral_pay": [],
     "atlas_remit": [],

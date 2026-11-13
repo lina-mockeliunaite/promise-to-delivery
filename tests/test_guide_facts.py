@@ -98,7 +98,7 @@ class TestAlderHints(unittest.TestCase):
         self.assertNotIn("scam-call", sow); self.assertNotIn("biocatch", sow)
 
     def test_the_second_step_follows_the_approval_with_the_contract_gap_still_open(self):
-        sow2 = (config.SCENARIOS_DIR / "AB-06_v2_coaching_added.md").read_text(encoding="utf-8").lower()
+        sow2 = (config.SCENARIOS_DIR / "AB-06_v2_scam_alerts_added.md").read_text(encoding="utf-8").lower()
         self.assertIn("scam-call alerts", sow2)  # the revised statement of work is what closes the gap the hint names
         approval = (config.SCENARIOS_DIR / "AB-05_v2_named_exception.md").read_text(encoding="utf-8")
         self.assertIn("Named exception approved", approval)
@@ -106,7 +106,7 @@ class TestAlderHints(unittest.TestCase):
     def test_the_approval_starts_later_than_the_promise_and_the_signed_appendix_repeats_the_revised_sentence(self):
         """Round 5: what the Alder hints say is what the files say."""
         approval = (config.SCENARIOS_DIR / "AB-05_v2_named_exception.md").read_text(encoding="utf-8")
-        sow = (config.SCENARIOS_DIR / "AB-06_v2_coaching_added.md").read_text(encoding="utf-8")
+        sow = (config.SCENARIOS_DIR / "AB-06_v2_scam_alerts_added.md").read_text(encoding="utf-8")
         signed = (config.SCENARIOS_DIR / "AB-09_signed_contract.md").read_text(encoding="utf-8")
         rfp = DOCS("alder_bank", "AB-03_rfp_response.md")
         self.assertIn("approved by Arjun Rao (Head of Product) from 1 May 2027", approval)  # "approved from 1 May"
