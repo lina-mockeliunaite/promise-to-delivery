@@ -58,6 +58,20 @@ class TestAlderDocuments(unittest.TestCase):
                 self.assertNotIn(phrase.lower(), text.lower(), f"{name}: {phrase}")
         self.assertIn("No named exception approved for Alder Bank", read(DOCS / "AB-05_pricing_services_note.md"))
 
+    def test_the_revised_sow_heading_and_the_signed_lead_hold_none_of_the_gap_phrases_so_the_closing_wording_is_the_full_sentence(self):
+        """Round 5c: a heading holding a searched phrase would make the signed check's closing wording a fragment (tests/test_signed_reopen_alder.py: TestGenericHeadingWeakness)."""
+        phrases = ("scam-call alerts", "on a call with a scammer", "1 february 2027 launch")
+        for path in (SCEN / "AB-06_v2_coaching_added.md", SCEN / "AB-09_signed_contract.md"):
+            for line in read(path).splitlines():
+                if line.startswith("#") or line.startswith("**"):
+                    lead = line.split("**")[1] if line.startswith("**") else line
+                    self.assertFalse(any(p in lead.lower() for p in phrases), f"{path.name}: {lead}")
+        self.assertIn("## 5. Fraud warnings during payment", read(SCEN / "AB-06_v2_coaching_added.md"))
+        self.assertIn("**2. Fraud warnings during payment.**", read(SCEN / "AB-09_signed_contract.md"))
+        for path in (SCEN / "AB-06_v2_coaching_added.md", SCEN / "AB-09_signed_contract.md"):  # the only line holding any of the phrases is the shared sentence
+            held = [l for l in read(path).splitlines() if any(p in l.lower() for p in phrases)]
+            self.assertEqual([l.split("** ")[-1] for l in held], [SENTENCE], path.name)
+
     def test_the_approval_rows_carry_the_capability_id_the_verifier_matches_and_the_catalogue_name(self):
         cat = json.loads(read(config.DATA_DIR / "catalogue_alder.json"))
         name = next(c["name"] for c in cat["capabilities"] if c["id"] == "CAP-027")

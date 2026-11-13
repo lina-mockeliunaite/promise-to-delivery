@@ -322,7 +322,7 @@ class TestRefusals(Case):
                 ("Approval for scam-call alerts", "Arjun Rao, Head of Product, approves scam-call alerts as a named exception from 1 May 2027 (issued 16 October 2026).",
                  ["Arjun Rao", "Head of Product", "16 October 2026", "1 May 2027"]),
                 ("Revised statement of work", "Scam-call alerts are added as section 5, live from the 1 February 2027 launch (16 October 2026).",
-                 ["5. Scam-call alerts", "16 October 2026", "1 February 2027"]),
+                 ["5. Fraud warnings during payment", "16 October 2026", "1 February 2027"]),
                 ("Signed contract", "Signed 20 October 2026 by Tom Fraser (Elva) and Priya Nair (Alder Bank); agreement dated 12 October. Its statement of work appendix says scam-call alerts will be live from the 1 February 2027 launch, as in the revised statement of work.",
                  ["Tom Fraser", "Priya Nair", "20 October 2026", "Elva", "Alder Bank", "12 October", "1 February 2027"])],
         }

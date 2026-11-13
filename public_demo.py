@@ -43,7 +43,7 @@ SAMPLES = {
     "alder_bank": [
         {"file": "AB-05_v2_named_exception.md", "version_of": "AB-05", "title": "Approval for scam-call alerts", "key": ["Named exception approved by Arjun Rao"],
          "summary": "Arjun Rao, Head of Product, approves scam-call alerts as a named exception from 1 May 2027 (issued 16 October 2026)."},
-        {"file": "AB-06_v2_coaching_added.md", "version_of": "AB-06", "title": "Revised statement of work", "key": ["## 5. Scam-call alerts", "Scam-call alerts will be live"],
+        {"file": "AB-06_v2_coaching_added.md", "version_of": "AB-06", "title": "Revised statement of work", "key": ["## 5. Fraud warnings during payment", "Scam-call alerts will be live"],
          "summary": "Scam-call alerts are added as section 5, live from the 1 February 2027 launch (16 October 2026)."},
         {"file": "AB-09_signed_contract.md", "doc_type": "signed_contract", "doc_date": "2026-10-20", "title": "Signed contract", "key_from": "## Signatures",
          "summary": "Signed 20 October 2026 by Tom Fraser (Elva) and Priya Nair (Alder Bank); agreement dated 12 October. Its statement of work appendix says scam-call alerts will be live from the 1 February 2027 launch, as in the revised statement of work."},

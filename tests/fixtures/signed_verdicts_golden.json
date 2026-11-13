@@ -20,7 +20,7 @@
    "earlier": "Resolved by Draft SOW, version 2 \u00b7 Draft contract, version 1 unchanged \u00b7 13 Nov 2026",
    "kind": "signed contract",
    "reason": "The signed contract doesn't contain the wording that closed this gap, so the fix can't be confirmed.",
-   "sentence": "Scam-call alerts",
+   "sentence": "Scam-call alerts will be live from the 1 February 2027 launch: they warn the bank when a customer seems to be on a call with a scammer while making a payment.",
    "signed": null,
    "status": "not_found",
    "text": "Closed earlier by Draft SOW, version 2, but not found in the signed contract"
@@ -47,7 +47,7 @@
    "earlier": "Resolved by Draft SOW, version 2 \u00b7 Draft contract, version 1 unchanged \u00b7 13 Nov 2026",
    "kind": "signed contract",
    "reason": null,
-   "sentence": "Scam-call alerts",
+   "sentence": "Scam-call alerts will be live from the 1 February 2027 launch: they warn the bank when a customer seems to be on a call with a scammer while making a payment.",
    "signed": "Signed contract",
    "status": "confirmed",
    "text": "Confirmed in the signed contract (Signed contract, 20 Oct)"
@@ -74,7 +74,7 @@
    "earlier": "Resolved by Draft SOW, version 2 \u00b7 Draft contract, version 1 unchanged \u00b7 13 Nov 2026",
    "kind": "signed contract",
    "reason": null,
-   "sentence": "Scam-call alerts",
+   "sentence": "Scam-call alerts will be live from the 1 February 2027 launch: they warn the bank when a customer seems to be on a call with a scammer while making a payment.",
    "signed": "Signed contract",
    "status": "confirmed",
    "text": "Confirmed in the signed contract (Signed contract, 20 Oct)"

@@ -16,7 +16,7 @@ Between Elva ("Provider") and Alder Bank ("Customer").
 
 **1. Launch.** The platform launches on 1 February 2027.
 
-**2. Scam-call alerts.** Scam-call alerts will be live from the 1 February 2027 launch: they warn the bank when a customer seems to be on a call with a scammer while making a payment.
+**2. Fraud warnings during payment.** Scam-call alerts will be live from the 1 February 2027 launch: they warn the bank when a customer seems to be on a call with a scammer while making a payment.
 
 ## Signatures
 

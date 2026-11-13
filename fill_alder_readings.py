@@ -1,4 +1,9 @@
-"""Make the two model readings the Alder documents need, show them for checking, and store them only when you say so. (Round 5, 12-13 Nov.)
+"""Make the model readings the Alder documents need, show them for checking, and store them only when you say so. (Round 5, 12-13 Nov; Round 5c, 13 Nov.)
+
+Round 5c: the revised statement of work's heading and the signed appendix's bold lead are renamed ("## 5. Fraud warnings during payment"), so the signed check's closing wording is the full
+sentence and not a heading fragment. Those two files are staged in data/staged_alder/scenarios/ until the reading is accepted; while that folder exists every mode reads the scenario files from it
+(the script says so), so the key is the one the app will compute after they go live. AB-06 is part of the K1 key, so K1 needs one new reading; K0 (the base documents) is unchanged and is
+reused from results/v2_cache with no model call.
 
 The detection cache is keyed by every current document's text and by the catalogue, so two
 Alder states need one fresh reading each:
@@ -38,7 +43,8 @@ import config  # noqa: E402
 
 DEAL = "alder_bank"
 DOCS_DIR = config.DATA_DIR / "alder_bank" / "docs"
-SCEN_DIR = config.DATA_DIR / "scenarios"
+SCEN_LIVE = config.DATA_DIR / "scenarios"
+SCEN_STAGED = ROOT / "data" / "staged_alder" / "scenarios"
 CANDIDATES = ROOT / "scratch_alder_candidates"
 REAL_CACHE = ROOT / "results" / "v2_cache"
 H = {"X-Requested-With": "deal-workspace"}
@@ -52,9 +58,22 @@ class NotReady(Exception):
     pass
 
 
+def scen_dir() -> Path:
+    """Where the sample files are read from: the staged copies while they exist (Round 5c), else the live ones."""
+    return SCEN_STAGED if SCEN_STAGED.is_dir() else SCEN_LIVE
+
+
 def staged(kind: str, name: str) -> str:
-    """The text of a live Alder document ("docs": the base documents; "scenarios": the three sample files)."""
-    return ((DOCS_DIR if kind == "docs" else SCEN_DIR) / name).read_text(encoding="utf-8")
+    """The text of an Alder document ("docs": the base documents; "scenarios": the three sample files, staged or live)."""
+    return ((DOCS_DIR if kind == "docs" else scen_dir()) / name).read_text(encoding="utf-8")
+
+
+def closing_sentence() -> str:
+    """The one sentence the revised statement of work and the signed appendix share, read from the sample files."""
+    line = next(l.strip() for l in staged("scenarios", "AB-06_v2_coaching_added.md").splitlines() if "will be live from the 1 February 2027 launch" in l)
+    if staged("scenarios", "AB-09_signed_contract.md").count(line) != 1:
+        raise NotReady("the signed appendix does not carry the revised statement of work's sentence exactly once")
+    return line
 
 
 def subject_of(f: dict) -> str:
@@ -136,7 +155,7 @@ class FakeClient:
 
 
 # ---- the pipeline: the app's own code, on a scratch ledger and a scratch cache ---------------------------------------------------------------------------------------------------
-def pipeline(cache_dir: Path, client) -> dict:
+def pipeline(cache_dir: Path, client, reuse_k0: bool = True) -> dict:
     """client: None (offline: cache hits only), a FakeClient, or a real anthropic client. Returns the report data; never writes outside the scratch ledger and `cache_dir`."""
     import anthropic
     from fastapi.testclient import TestClient
@@ -170,6 +189,11 @@ def pipeline(cache_dir: Path, client) -> dict:
         conn.commit()
         cat_path = deal_catalogue.path_for(DEAL)
         catalogue = json.loads(Path(cat_path).read_text(encoding="utf-8"))
+        if reuse_k0:  # the base documents are unchanged: their accepted reading is reused, so the only new model call is K1's
+            k0 = ledger_v2.input_sha256(ledger_v2.current_docs(conn, did), Path(cat_path).read_bytes(), config.EXTRACTION_MODEL)
+            if (REAL_CACHE / f"{k0}.json").is_file() and not (cache_dir / f"{k0}.json").is_file():
+                shutil.copyfile(REAL_CACHE / f"{k0}.json", cache_dir / f"{k0}.json")
+                rep["k0_reused"] = k0
         try:
             ledger_v2.review(conn, DEAL, client, None, str(cat_path))
         except ledger_v2.NeedsModel as exc:
@@ -199,7 +223,8 @@ def pipeline(cache_dir: Path, client) -> dict:
                                 for i in c["issues"] if i.get("catalogue_path")), "?")
                 rows.append({"subject": subject, "key": c["ref"], "ckey": ckeys.get(c["id"]), "name": c["name"], "status": {"open": "Needs attention", "noted": "Addressed by note", "resolved": "Closed"}.get(c["group"], c["group"]), "open": c["open_count"], "noted": c["noted_count"],
                              "issues": [{"finding": i["finding"], "state": i["state"], "reason": i["reason"], "path": i.get("catalogue_path"),
-                                         "signed": (i.get("signed_check") or {}).get("status"), "scope": (i.get("approval_scope") or {}).get("status")} for i in c["issues"]]})
+                                         "signed": (i.get("signed_check") or {}).get("status"), "scope": (i.get("approval_scope") or {}).get("status"),
+                                         "closing": (i.get("signed_check") or {}).get("sentence"), "signed_clause": (i.get("signed_check") or {}).get("signed_sentence")} for i in c["issues"]]})
             st = {"label": label, "rows": rows, "rejected": reg["check_coverage"]["rejected"], "open_rows": len(reg["open_rows"]), "noted_rows": len(reg["noted_rows"])}
             rep["states"].append(st)
             return st
@@ -305,6 +330,9 @@ def pipeline(cache_dir: Path, client) -> dict:
             problem("step 4: the signed contract should confirm the contract fix")
         if not (a3 and a3["reason"].startswith("The signed start date")):
             problem("step 4: the approval gap should stay open, by the signed start date")
+        whole = closing_sentence()  # Round 5c: the closing wording the checker uses, and the signed clause the drawer shows, are the full sentence, not a heading fragment
+        if c3 and (c3["closing"] != whole or c3["signed_clause"] != whole):
+            problem(f"step 4: the signed check's closing wording is {c3['closing']!r} and the signed clause is {c3['signed_clause']!r}, not the full sentence: a heading probably holds a searched phrase")
         h4 = row(s4, HOSTING)
         if not (h4 and h4["open"] == 0 and h4["noted"] > 0):
             problem("step 5: the hosting row should be addressed by note")
@@ -321,7 +349,8 @@ def show(rep: dict) -> None:
         if not rd:
             continue
         what = "the base documents" if name == "K0" else "the base documents + AB-05 + AB-06 (the demo's sample files)"
-        print(f"\n{line}\nREADING {name}: {what}\n  cache key {rd['key']}   cost ${rd['cost']}\n{line}")
+        reused = rep.get("k0_reused") == rd["key"]
+        print(f"\n{line}\nREADING {name}: {what}\n  cache key {rd['key']}   cost ${rd['cost']}{'   (reused from results/v2_cache: no model call)' if reused else ''}\n{line}")
         for v in rd["verdicts"]:
             verdict = "accepted" if not v["problems"] else "rejected: " + v["problems"][0][:110]
             print(f"  {v['kind']:18s} {v['subject']:17s} entry={v['path']}\n    commitment: {v['commitment'][:100]}\n    phrases: {v['phrases']}  quotes from: {sorted({q[0] for q in v['quotes']})}\n    verifier: {verdict}")
@@ -337,6 +366,9 @@ def show(rep: dict) -> None:
                 print(f"        {i['finding']:32s} {i['state']:13s} {i['reason'][:78]}{extra}")
     lk = rep["locked"]
     print(f"\nLOCKED RECORD: needing attention {[p[:50] for p in lk['open']]}; addressed by note {[p[:50] for p in lk['noted']]}; closed only {[p[:50] for p in lk['closed_only']]}")
+    print(f"\nSIGNED CHECK: closing wording and signed clause are the full sentence: {closing_sentence()!r}" if not any("closing wording" in p for p in rep["problems"]) else "\nSIGNED CHECK: not the full sentence (see below)")
+    here = scen_dir()
+    print(f"\nSCENARIO FILES READ FROM: {here.relative_to(ROOT) if here.is_relative_to(ROOT) else here}")
     print(f"\nAPP KEY CHECK: the cache-key guard and the stored reading agree: {rep['guard'][:12] == rep['readings']['K1']['key'][:12]}")
     print("\nPROFILE TITLES (the commitment keys, for data/profiles/alder_bank.json):\n" + json.dumps(rep["titles"], indent=2))
     print(f"\n{line}")
@@ -353,7 +385,7 @@ def verdict(rep: dict) -> int:
 def selftest() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         fake = FakeClient()
-        rep = pipeline(Path(tmp) / "cache", fake)
+        rep = pipeline(Path(tmp) / "cache", fake, reuse_k0=False)
     show(rep)
     code = verdict(rep)
     if code == 0 and fake.calls == 2:

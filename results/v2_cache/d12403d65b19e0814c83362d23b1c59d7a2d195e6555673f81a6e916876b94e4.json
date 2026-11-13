@@ -1,0 +1,91 @@
+{
+  "input_sha256": "d12403d65b19e0814c83362d23b1c59d7a2d195e6555673f81a6e916876b94e4",
+  "deal": "alder_bank",
+  "v2_version": 2,
+  "model": "claude-sonnet-5",
+  "findings": [
+    {
+      "kind": "approval_required",
+      "commitment": "Scam-call alerts live from the 1 February 2027 launch, Australia outbound instant payments",
+      "promise_quotes": [
+        {
+          "source_id": "AB-03",
+          "quote": "Scam-call alerts warn the bank when a customer seems to be on a call with a scammer while making a payment, live from the 1 February 2027 launch."
+        },
+        {
+          "source_id": "AB-04",
+          "quote": "Scam-call alerts will warn the bank when a customer seems to be on a call with a scammer while making a payment, from the 1 February 2027 launch."
+        },
+        {
+          "source_id": "AB-06",
+          "quote": "Scam-call alerts will be live from the 1 February 2027 launch: they warn the bank when a customer seems to be on a call with a scammer while making a payment."
+        }
+      ],
+      "catalogue_path": "CAP-027/AU",
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": {
+        "source_id": "AB-05",
+        "quote": "Named exception approved by Arjun Rao (Head of Product) from 1 May 2027, subject to the beta terms in Annex B"
+      },
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "Scam-call alerts are beta and require a named approval, but the only approval on record starts 1 May 2027 — three months after the promised 1 February go-live — so the launch window itself is unapproved."
+    },
+    {
+      "kind": "absolute_limit",
+      "commitment": "Host Alder's dedicated environment on Microsoft Azure in the Australia East region",
+      "promise_quotes": [
+        {
+          "source_id": "AB-03",
+          "quote": "Elva will host Alder's dedicated environment on Microsoft Azure in the Australia East region."
+        }
+      ],
+      "catalogue_path": "CAP-019/AU",
+      "unlisted_value": "Microsoft Azure",
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": null,
+      "note_quote": null,
+      "subject": null,
+      "promised_value": null,
+      "contract_value": null,
+      "reason": "The catalogue only lists AWS and GCP as supported clouds for regional deployment in Australia; Microsoft Azure is not offered at all and cannot be sold even with an exception."
+    },
+    {
+      "kind": "conflicting_terms",
+      "commitment": "Hosting cloud and region for Alder's dedicated environment",
+      "promise_quotes": [
+        {
+          "source_id": "AB-03",
+          "quote": "Elva will host Alder's dedicated environment on Microsoft Azure in the Australia East region."
+        }
+      ],
+      "catalogue_path": null,
+      "unlisted_value": null,
+      "limit_name": null,
+      "promised_quantity": null,
+      "missing_phrases": [],
+      "contract_quote": {
+        "source_id": "AB-06",
+        "quote": "Provider will host the Customer's dedicated environment on Amazon Web Services in the Sydney region."
+      },
+      "note_quote": null,
+      "subject": "dedicated environment",
+      "promised_value": "Microsoft Azure in the Australia East region",
+      "contract_value": "Amazon Web Services in the Sydney region",
+      "reason": "The RFP response promised hosting on Microsoft Azure in Australia East, but the Statement of Work instead commits to Amazon Web Services in Sydney — a direct conflict on both cloud provider and region that will confuse delivery and customer expectations."
+    }
+  ],
+  "cost_usd": 0.087482,
+  "origin": "model_call",
+  "usage": {
+    "input_tokens": 9391,
+    "output_tokens": 6870
+  }
+}

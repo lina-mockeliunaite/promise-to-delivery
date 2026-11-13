@@ -36,11 +36,9 @@ REASON = "The signed contract doesn't contain the wording that closed this gap, 
 SENTENCE = "Scam-call alerts will be live from the 1 February 2027 launch: they warn the bank when a customer seems to be on a call with a scammer while making a payment."  # one sentence in AB-06 and AB-09 (Round 5)
 LATER_CLAUSE = "Early warnings will be live from 1 May 2027, for when a customer seems to be on a call with a scammer while making a payment."  # test-local: names no scam-call alerts, but holds one of the gap's phrases
 NEW_CLAUSE = LATER_CLAUSE
-# KNOWN LIMITATION (13 Nov, Round 5). The checker's closing "sentence" is what workspace.matching_contract_wording finds first in the draft SOW for the gap's first searched phrase. AB-06 v2's
-# numbered heading "## 5. Scam-call alerts" holds that phrase, and the lookup splits "5." from "Scam-call alerts", so the looked-up wording is the fragment "Scam-call alerts", not the full
-# sentence. Any signed document that mentions scam-call alerts therefore confirms the fix. Renaming that heading (and one more model reading for the state with AB-06 added) would restore the exact match.
-LOOKED_UP = "Scam-call alerts"
-DRAFT_SENTENCE = LOOKED_UP
+# 13 Nov (Round 5c): the headings that held the searched phrase were renamed ("## 5. Fraud warnings during payment"), so the checker's closing wording is the full shared sentence. The generic
+# weakness (a numbered heading holding the first searched phrase gives a fragment) is pinned separately with test-local text: TestGenericHeadingWeakness.
+DRAFT_SENTENCE = SENTENCE
 
 
 def scratch_1_may() -> str:
@@ -103,8 +101,8 @@ class TestWhyCoachingReopens(AlderCase):
         self.assertIn(SENTENCE, shipped)
         db, client, conn, did, res = self.run_signed(shipped, "a")
         [v] = res.values()
-        self.assertEqual((v["status"], v["closed_by"], v["sentence"]), ("confirmed", "Draft SOW, version 2", LOOKED_UP))  # see KNOWN LIMITATION above
-        self.assertIn(LOOKED_UP, v["signed_sentence"])  # found in the signed text
+        self.assertEqual((v["status"], v["closed_by"], v["sentence"]), ("confirmed", "Draft SOW, version 2", SENTENCE))  # the full sentence (Round 5c)
+        self.assertEqual(v["signed_sentence"], SENTENCE)  # found word for word in the signed text
         self.assertEqual(v["text"], "Confirmed in the signed contract (Signed contract, 20 Oct)")
         self.assertNotIn("related", v)  # a confirmed gap has nothing to relate
         coaching = next(c for c in client.get("/api/deals/alder_bank/register").json()["commitments"] if "Scam-call alerts" in c["name"])
@@ -202,6 +200,30 @@ class TestSignedCheckOutputFields(AlderCase):
     def test_the_saved_handover_record_keeps_only_its_old_fields(self):
         src = (Path(signed_check.__file__).parent / "handover.py").read_text(encoding="utf-8")
         self.assertIn('for k in ("status", "text", "reason", "earlier") if k in sc', src)  # the snapshot copies four fields: new fields never enter the saved record
+
+
+class TestGenericHeadingWeakness(unittest.TestCase):
+    """The generic weakness behind Round 5c, pinned with test-local text (it does not depend on the Alder files): the closing wording is the first line of the draft SOW that holds the gap's
+    first searched phrase, so a numbered heading holding that phrase gives a fragment, and any signed text that merely names the feature then confirms the fix. A heading that holds none of the
+    phrases gives the full sentence, which a signed text must repeat. signed_check.py and workspace.matching_contract_wording are not changed for this; the data avoids it."""
+    SENTENCE = "Scam-call alerts will be live from the 1 February 2027 launch: they warn the bank when a customer seems to be on a call with a scammer while making a payment."
+    CLAIM = {"kind": "contract_gap", "missing_phrases": ["scam-call alerts", "on a call with a scammer", "1 February 2027 launch"]}
+
+    def chain(self, heading):
+        return [{"text": f"# DRAFT Statement of Work\n\n## 5. {heading}\n\n{self.SENTENCE}\n", "label": "Draft SOW", "key": "AB-06", "type": "draft_sow"}]
+
+    def test_a_heading_that_holds_the_phrase_gives_a_fragment_and_any_mention_confirms(self):
+        import workspace
+        quote = workspace.matching_contract_wording(self.CLAIM, self.chain("Scam-call alerts"))["quote"]
+        self.assertEqual(quote, "Scam-call alerts")  # the heading's text after the "5." split, not the sentence
+        self.assertTrue(signed_check.contains("Appendix. We may add Scam-call alerts later, on other terms.", quote))  # so a signed text that only names the feature confirms the fix
+
+    def test_a_heading_with_none_of_the_phrases_gives_the_full_sentence_which_a_signed_text_must_repeat(self):
+        import workspace
+        quote = workspace.matching_contract_wording(self.CLAIM, self.chain("Fraud warnings during payment"))["quote"]
+        self.assertEqual(quote, self.SENTENCE)
+        self.assertFalse(signed_check.contains("Appendix. We may add Scam-call alerts later, on other terms.", quote))
+        self.assertTrue(signed_check.contains(f"**2. Fraud warnings during payment.** {self.SENTENCE}", quote))
 
 
 class TestRelatedClause(unittest.TestCase):

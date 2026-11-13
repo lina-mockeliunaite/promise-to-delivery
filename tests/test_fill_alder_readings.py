@@ -70,6 +70,59 @@ class TestBaseContractPhrases(unittest.TestCase):
         self.assertIn('problem(f"K0: {line}")', text)
 
 
+class TestRound5c(unittest.TestCase):
+    """Round 5c: a numbered heading that holds the gap's searched phrase turns the signed check's closing wording into a fragment. The self-test fails that case, and passes the renamed headings."""
+
+    def temp_scenarios(self, heading_old_style: bool):
+        import tempfile
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        d = Path(tmp.name)
+        for name in ("AB-05_v2_named_exception.md", "AB-06_v2_coaching_added.md", "AB-09_signed_contract.md"):
+            text = fill.staged("scenarios", name)
+            if heading_old_style:
+                text = text.replace("## 5. Fraud warnings during payment", "## 5. Scam-call alerts").replace("**2. Fraud warnings during payment.**", "**2. Scam-call alerts.**")
+            (d / name).write_text(text, encoding="utf-8")
+        return d
+
+    def test_an_old_style_heading_is_reported_as_not_safe_with_the_fragment(self):
+        d = self.temp_scenarios(True)
+        with mock.patch.object(fill, "scen_dir", lambda: d):
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = fill.selftest()
+        self.assertEqual(code, 1)
+        out = buf.getvalue()
+        self.assertIn("NOT SAFE", out)
+        self.assertIn("closing wording is 'Scam-call alerts'", out)
+        self.assertIn("a heading probably holds a searched phrase", out)
+
+    def test_the_renamed_headings_give_the_full_sentence(self):
+        d = self.temp_scenarios(False)
+        with mock.patch.object(fill, "scen_dir", lambda: d):
+            sentence = fill.closing_sentence()
+            buf = io.StringIO()
+            with redirect_stdout(buf):
+                code = fill.selftest()
+        self.assertEqual(code, 0, buf.getvalue()[-800:])
+        self.assertEqual(sentence, "Scam-call alerts will be live from the 1 February 2027 launch: they warn the bank when a customer seems to be on a call with a scammer while making a payment.")
+        self.assertIn(f"the full sentence: {sentence!r}", buf.getvalue())
+
+    def test_the_two_files_must_share_the_sentence_exactly_once(self):
+        d = self.temp_scenarios(False)
+        (d / "AB-09_signed_contract.md").write_text(fill.staged("scenarios", "AB-09_signed_contract.md").replace("they warn the bank", "they alert the bank"), encoding="utf-8")
+        with mock.patch.object(fill, "scen_dir", lambda: d):
+            with self.assertRaises(fill.NotReady):
+                fill.closing_sentence()
+
+    def test_the_base_reading_is_reused_so_only_the_new_state_needs_a_model(self):
+        with __import__("tempfile").TemporaryDirectory() as tmp:
+            with self.assertRaises(fill.NotReady) as cm:
+                fill.pipeline(Path(tmp) / "cache", None)  # offline: K0 is copied from results/v2_cache; K1 is not there, so adding AB-06 is refused
+        self.assertIn("adding AB-06 failed", str(cm.exception))
+        self.assertNotIn("no reading for the base documents", str(cm.exception))
+
+
 class TestTheScript(unittest.TestCase):
     def test_the_selftest_runs_the_whole_story_on_canned_readings_and_writes_nothing_to_the_real_cache(self):
         before = cache_fingerprint()

@@ -20,7 +20,7 @@ Provider will score outbound instant payments in accordance with the Payment Dec
 
 Payments held for review will open as cases in Provider's case management workspace, with a full case audit history.
 
-## 5. Scam-call alerts
+## 5. Fraud warnings during payment
 
 Scam-call alerts will be live from the 1 February 2027 launch: they warn the bank when a customer seems to be on a call with a scammer while making a payment.
 
