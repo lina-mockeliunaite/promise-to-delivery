@@ -652,7 +652,7 @@ def create_app(dist_dir: Path = DIST_DIR, ledger_path=None, public=None, hourly=
     @app.get("/api/deals/{deal}/handover")
     def hv_view(deal: str, conn=Depends(db)):
         workspace_deal(deal, conn)
-        return handover.handover(conn, deal)
+        return handover.handover(conn, deal, with_live=True)
 
     # --- Handoff (saved snapshots and exports) --------------------------------------------------------------
     def saved_version(deal: str, version, conn):

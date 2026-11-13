@@ -204,3 +204,34 @@ test("follow-up 2: a double click sends one reset; a 409 from a reset shows the 
   assert.ok(!choice.includes("demo was reset")); // shown only after a conflict
   assert.ok(read("DemoUI.jsx").includes("{conflict && <>") && read("DemoUI.jsx").includes("Start again"));
 });
+
+// ---- follow-up: the record never shows a firmness label before the signed-check result is known -----------------------------------------------------------
+const CL = "The Assistant will respond to Guest enquiries in 12 languages, listed in Schedule 1.";
+const DC = { source_key: "NJ-07", name: "Draft contract", doc_type: "draft_contract", version: 2, date: "2026-10-14", version_date: "2026-10-19", source_version_id: 4, included: true };
+const SG = { source_key: "NJ-09", name: "Signed contract", doc_type: "signed_contract", version: 1, date: "2026-10-20", version_date: "2026-10-20", source_version_id: 9, included: true };
+const LANG_ITEM = { promise: "Support in 12 languages", findings: [], contract: "No gap found", contract_now: { target: "12 languages", quote: CL, document: "Draft contract" }, signed: [{ status: "confirmed", text: "Confirmed in the signed contract (Signed contract, 20 Oct)" }] };
+const LANG_LIVE = { name: "Support in 12 languages", issues: [{ finding: "Contract says something different", state: "Resolved", signed_check: { status: "confirmed", sentence: CL, signed: "Signed contract", date: "2026-10-20", closed_by: "Draft contract, version 2", text: "Confirmed in the signed contract (Signed contract, 20 Oct)", signed_sentence: CL, signed_key: "NJ-09", signed_version_id: 9 } }] };
+const lang = (extra) => frozenView({ item: LANG_ITEM, status: "closed", closedFindings: [{ finding: "Contract says something different", resolved_by: "Resolved by Draft contract, version 2 · 19 Oct 2026" }], documents: [DC, SG], snapshotDocs: [DC, SG], ...extra });
+
+test("record: with the signed-check result pending, no row says 'not re-checked' or 'confirmed' on a guess; once it is known the label is the true one", () => {
+  const pending = record(lang({ live: null, pending: true }), [DC, SG]);
+  // (the settled line "Closed by … · confirmed in the signed contract (20 Oct)" comes from the saved record and is final; the labels under test come from the signed-check result)
+  assert.ok(!pending.includes("not re-checked") && !pending.includes("Signed contract · confirmed"), pending);
+  assert.ok(pending.includes("(Draft contract)")); // the source, with no firmness label
+  assert.equal(lang({ live: null, pending: true }).afterSigning, false);
+  const known = record(lang({ live: LANG_LIVE }), [DC, SG]);
+  assert.ok(known.includes("Signed contract · confirmed") && !known.includes("not re-checked"));
+  // a draft clause that no signed check confirmed, once the results are known, is labelled
+  const phone = frozenView({ item: { promise: "Phone", findings: [{ finding: "Not offered", evidence: {}, signed_check: null }], contract: CL, quotes: [] }, status: "open", documents: [DC, SG], snapshotDocs: [DC, SG], live: { name: "Phone", issues: [] } });
+  assert.equal(phone.afterSigning, true);
+});
+
+test("record: the drawer view and the row both stay label-free while pending; print waits for the labels", () => {
+  const v = lang({ live: null, pending: true });
+  const html = decode(renderToStaticMarkup(createElement(CommitmentView, { v, documents: [DC, SG], titleId: "t", readOnly: true, onClose() {}, onOpenDoc() {} })));
+  assert.ok(!html.includes("not re-checked") && !html.includes("Signed contract · confirmed"));
+  const fr = read("FrozenRecord.jsx");
+  assert.ok(fr.includes("const evidencePending = !liveCommitments;") && fr.includes("hv.live_commitments ?? liveRegister?.commitments ?? null"));
+  assert.ok(fr.includes("disabled={evidencePending ||") && fr.includes("const printAll = () => { if (evidencePending) return;"));
+  assert.ok(fr.includes("if (hv && !hv.live_commitments) api.fetchRegister(deal)")); // the register is asked for only when the handover response lacks them
+});

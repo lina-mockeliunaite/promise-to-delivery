@@ -1059,7 +1059,8 @@ function contractView(term, side, documents, now = null, searched = []) {
 // keeps only in part. snapshotDocs: the documents captured in the locked handover, for "what was searched".
 export function frozenView(args) {
   // a record is locked only once the deal is signed, so its drafts are always "after signing"
-  return { ...withoutRepeatedWording(frozenViewRaw(args)), afterSigning: true };
+  // pending (the signed-check results have not arrived): no firmness label at all, so a source is never labelled "not re-checked" or "confirmed" on a guess
+  return { ...withoutRepeatedWording(frozenViewRaw(args)), afterSigning: !args.pending, evidencePending: !!args.pending };
 }
 function frozenViewRaw({ item, status, closedFindings = [], documents = [], titles = {}, live = null, snapshotDocs = null, relatedMap = null, approvalScopes = null }) {
   const name = item.promise;

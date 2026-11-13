@@ -154,7 +154,9 @@ export default function FrozenRecord({ deal, onBack }) {
   useEffect(() => { api.fetchDocuments(deal).then((r) => setDocuments(r.documents), () => setDocuments([])); }, [deal]);
   // The live register, for the signed check's full output (the saved record keeps it only in part); a locked deal cannot change, so it is the same deal.
   const [liveRegister, setLiveRegister] = useState(null);
-  useEffect(() => { api.fetchRegister(deal).then(setLiveRegister, () => setLiveRegister(null)); }, [deal]);
+  // The signed check's results come in the handover response itself ("live_commitments"), so the record is drawn from one response. A server that does not send them (older) falls back to the
+  // register, and until that arrives the record shows each source without a firmness label ("pending"): never a guessed one.
+  useEffect(() => { if (hv && !hv.live_commitments) api.fetchRegister(deal).then(setLiveRegister, () => setLiveRegister(null)); }, [deal, hv]);
   useEffect(() => {
     const { c } = readHash(window.location.hash);
     if (c) setDrawer({ type: "commitment", key: c });
@@ -182,8 +184,10 @@ export default function FrozenRecord({ deal, onBack }) {
   const closedFor = (promise) => resolved.filter((r) => r.promise === promise);
   const elsewhere = new Set([...open.map((x) => x.promise), ...noted.map((x) => x.promise)]);
   const closedOnly = [...new Set(resolved.map((r) => r.promise))].filter((p) => !elsewhere.has(p));
-  const liveOf = (promise) => liveRegister?.commitments?.find((c) => c.name === promise) ?? null;
-  const common = { documents, titles, snapshotDocs: s.documents, relatedMap: hv.related_clauses ?? {}, approvalScopes: hv.approval_scopes ?? {} }; // what was searched is named from the documents captured in the handover
+  const liveCommitments = hv.live_commitments ?? liveRegister?.commitments ?? null;
+  const evidencePending = !liveCommitments;
+  const liveOf = (promise) => liveCommitments?.find((c) => c.name === promise) ?? null;
+  const common = { documents, titles, snapshotDocs: s.documents, relatedMap: hv.related_clauses ?? {}, approvalScopes: hv.approval_scopes ?? {}, pending: evidencePending }; // what was searched is named from the documents captured in the handover
   const views = [
     ...open.map((item) => frozenView({ item, status: "open", closedFindings: closedFor(item.promise), live: liveOf(item.promise), ...common })),
     ...noted.map((item) => frozenView({ item, status: "noted", closedFindings: closedFor(item.promise), live: liveOf(item.promise), ...common })),
@@ -193,7 +197,7 @@ export default function FrozenRecord({ deal, onBack }) {
   const appendix = withText ? appendixEntries(s.documents, texts) : [];
   // The live documents know both dates of each signed document (the saved record does not, and is not changed): shown beside it, display only.
   const signedLabels = Object.fromEntries(documents.filter((d) => signedDatesLabel(d)).map((d) => [d.source_version_id, signedDatesLabel(d)]));
-  const printAll = () => { setRecord(true); setTimeout(() => window.print(), 80); };
+  const printAll = () => { if (evidencePending) return; setRecord(true); setTimeout(() => window.print(), 80); }; // printing waits until the evidence labels are final
   const copy = async () => {
     try {
       await navigator.clipboard.writeText(hv.fingerprint);
@@ -218,7 +222,7 @@ export default function FrozenRecord({ deal, onBack }) {
               <input type="checkbox" checked={withText} onChange={(e) => setWithText(e.target.checked)} /> Include full document text
             </label>
           )}
-          <button type="button" className="dp-btn" onClick={printAll} disabled={withText && appendix.some((a) => a.text === null)}>Print or save as PDF</button>
+          <button type="button" className="dp-btn" onClick={printAll} disabled={evidencePending || (withText && appendix.some((a) => a.text === null))}>Print or save as PDF</button>
         </span>
       </div>
 

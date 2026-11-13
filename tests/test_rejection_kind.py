@@ -156,6 +156,40 @@ class TestAlderAndNoma(unittest.TestCase):
         self.assertEqual((again["fingerprint"], again["snapshot"]), (hv["fingerprint"], hv["snapshot"]))
         self.assertEqual(conn.execute("SELECT snapshot_json FROM handover_completions WHERE deal_id = ?", (did,)).fetchone()[0], stored)
 
+    def test_the_locked_record_gets_the_signed_check_results_in_its_own_response_and_the_snapshot_is_untouched(self):
+        """Round 8c: GET handover carries live_commitments (the signed check's results, read now) beside the snapshot, so the record is drawn from one response. The snapshot, its
+        fingerprint and the stored text do not change; the default handover() (which workspace.overview calls) does not carry them, so there is no recursion."""
+        tmp = tempfile.TemporaryDirectory()
+        self.addCleanup(tmp.cleanup)
+        db = Path(tmp.name) / "l.sqlite"
+        reset_demo.reset(db_path=db)
+        client = TestClient(api.create_app(dist_dir=Path(tmp.name) / "x", ledger_path=db, public=False), base_url="http://127.0.0.1")
+        H = {"X-Requested-With": "deal-workspace"}
+        r = client.post("/api/deals/noma_journeys/documents/add-and-check", json={"name": "Signed contract", "filename": "s.md", "doc_type": "signed_contract", "doc_date": "2026-10-20",
+                                                                                   "text": (SCEN / "NJ-09_signed_contract.md").read_text(encoding="utf-8")}, headers=H)
+        self.assertEqual(r.status_code, 200, r.text)
+        self.assertIsNone(client.get("/api/deals/noma_journeys/handover").json()["live_commitments"])  # not locked: nothing
+        for role in ("sales", "delivery"):
+            client.post("/api/deals/noma_journeys/handover/notes", json={"role": role, "note": "n", "entered_by": "Sam"}, headers=H)
+        self.assertEqual(client.post("/api/deals/noma_journeys/handover/complete", json={"completed_by": "Sam"}, headers=H).status_code, 200)
+        conn = ledger.connect(db)
+        self.addCleanup(conn.close)
+        did = ledger_fixes.deal_id(conn, "noma_journeys")
+        stored = conn.execute("SELECT snapshot_json FROM handover_completions WHERE deal_id = ?", (did,)).fetchone()[0]
+        hv = client.get("/api/deals/noma_journeys/handover").json()
+        live = {c["name"]: c for c in hv["live_commitments"]}
+        self.assertTrue(live)
+        self.assertEqual(hv["fingerprint"], hashlib.sha256(stored.encode("utf-8")).hexdigest())
+        self.assertNotIn("live_commitments", hv["snapshot"])
+        self.assertNotIn("live_commitments", stored)
+        self.assertEqual({c["name"] for c in hv["live_commitments"]} >= {i["promise"] for i in hv["snapshot"]["open_items"]}, True)  # every open promise of the record is there
+        for c in hv["live_commitments"]:
+            for i in c["issues"]:
+                self.assertIn("finding", i)
+                self.assertIn("state", i)  # the same issue records the live register has, signed_check included when there is one
+        self.assertIsNone(handover.handover(conn, "noma_journeys")["live_commitments"])
+        self.assertEqual(conn.execute("SELECT snapshot_json FROM handover_completions WHERE deal_id = ?", (did,)).fetchone()[0], stored)
+
     def test_a_deal_with_no_review_has_no_split_and_an_unlocked_deal_has_no_record_split(self):
         conn = fresh(self)
         self.assertIsNone(workspace.rejection_split(conn, 10**6, "alder_bank"))

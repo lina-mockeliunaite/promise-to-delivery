@@ -301,8 +301,9 @@ def complete(conn, slug: str, completed_by) -> dict:
     return handover(conn, slug)
 
 
-def handover(conn, slug: str) -> dict:
-    """The handover panel: complete or not, both notes, and the frozen snapshot once complete."""
+def handover(conn, slug: str, with_live: bool = False) -> dict:
+    """The handover panel: complete or not, both notes, and the frozen snapshot once complete. with_live (the locked record's own request): also the live commitments with their signed-check
+    results, read now, so the record is drawn from one response and never renders its evidence labels before they are known (workspace.overview itself calls this without it)."""
     import approval_scope  # local: these import workspace, which imports this module
     import workspace
     import signed_check
@@ -325,6 +326,8 @@ def handover(conn, slug: str) -> dict:
             "approval_scopes": approval_scope.for_record(conn, did, slug, snap) if snap else {},
             # 13 Nov: the saved total of proposed-but-rejected findings split by kind, read now; the snapshot keeps only the total
             "check_split": workspace.rejection_split(conn, did, slug) if snap else None,
+            # 13 Nov: the signed check's results for the locked deal, in the same response as the snapshot (display only; not in the snapshot, so the fingerprint is untouched)
+            "live_commitments": ([{"name": c["name"], "issues": c["issues"]} for c in workspace.overview(conn, slug)["commitments"]] if snap and with_live else None),
             # 19 Oct: the deal owner, read now (profile, else the Sales note's author), as the deal list shows it; not in the snapshot
             "owner": deal_stage.load_profile(slug).get("owner") or ((notes(conn, did)["sales"] or {}).get("by"))}
 
