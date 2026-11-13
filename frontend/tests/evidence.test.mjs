@@ -47,13 +47,16 @@ test("C1: confirmed in the signed contract shows the signed clause, its date and
   assert.ok(html.includes('<span class="dr-confirmed">Confirmed in the signed contract (Signed contract, 20 Oct)</span>'));
   assert.ok(html.includes(`<blockquote class="dr-quote">${CLAUSE}</blockquote>`));
   assert.match(html, /Source: <button type="button" class="dr-linkbtn">Signed contract, 20 Oct<\/button>/); // the link: opens the signed document on that clause
-  assert.ok(!html.includes("a lookup in the current documents")); // the draft lookup is not what "Contract says" shows any more
-  assert.ok(html.includes("Draft wording that closed it: “" + CLAUSE + "”, in Draft contract v2 (19 Oct)."));
-  assert.ok(html.indexOf("Contract says") < html.indexOf("Draft wording that closed it")); // the history comes after
+  assert.ok(!html.includes("that mentions")); // the draft lookup is not what "Contract says" shows any more
+  // 13 Nov, Round 6: the draft wording is the same sentence as the signed clause shown above, so the history says so instead of repeating it
+  assert.ok(!html.includes("Draft wording that closed it"));
+  assert.ok(html.includes("Closed by Draft contract v2 (19 Oct) with the same wording; confirmed in the signed contract (20 Oct)."));
+  assert.equal(html.split(CLAUSE).length - 1, 1); // the sentence is on the screen once
+  assert.ok(html.indexOf("Contract says") < html.indexOf("with the same wording")); // the history comes after
   // without a signed confirmation the drawer is as it was
   const plain = commitmentView({ ...LANGS, issues: [{ ...LANGS.issues[0], signed_check: undefined }] }, "closed", DOCS);
   assert.equal(plain.signed, null);
-  assert.ok(drawer(plain).includes("a lookup in the current documents"));
+  assert.ok(drawer(plain).includes("Wording in Draft contract (19 Oct) that mentions “12 languages”:")); // 13 Nov: the lookup line names the document and its date
   assert.equal(signedClauseOf([{ signed_check: { status: "confirmed" } }], DOCS), null); // an older result without the clause: nothing invented
 });
 
@@ -122,7 +125,7 @@ test("C5: a reopened finding explains itself in the rule's words and its history
   // the draft wording is history, not "Contract says": a reopened gap has no contract wording that closes it
   const withNow = commitmentView({ ...REOPENED, contract_now: { target: "BioCatch", quote: "Through its connector to BioCatch, Provider will use behavioural signals.", document: "Draft SOW" } }, "open", ALDER_DOCS);
   assert.equal(withNow.contract.now, null);
-  assert.ok(!drawer(withNow).includes("a lookup in the current documents"));
+  assert.ok(!drawer(withNow).includes("that mentions"));
   assert.ok(html.includes("Signed contract: checked only for earlier fixes.")); // and the signed contract is named for what it is
 });
 

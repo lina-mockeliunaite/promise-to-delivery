@@ -380,6 +380,20 @@ export function coverageLine(n) {
   return `${k} proposed ${k === 1 ? "finding" : "findings"} couldn't be verified against the documents and ${k === 1 ? "isn't" : "aren't"} shown.`;
 }
 
+// 13 Nov, Round 6: the proposals the code rejected, split by kind (rejection_kind.py, derived at read time; nothing stored). The main line counts only the ones whose evidence
+// failed verification; the ones the documents already answered sit in a quieter second line. Nothing is hidden: both counts add up to the total. Without a split (an older server)
+// the whole total is the main line, as before.
+export function coverageLines(total, split) {
+  const has = split && Number.isInteger(split.failed) && Number.isInteger(split.answered);
+  const failed = has ? split.failed : total;
+  const answered = has ? split.answered : 0;
+  const k = Number(answered);
+  return {
+    main: coverageLine(failed),
+    quiet: Number.isInteger(k) && k > 0 ? `${k} ${k === 1 ? "point the model raised was" : "points the model raised were"} already answered by the documents.` : "",
+  };
+}
+
 // The sidebar journey (20 Oct): only the current stage starts expanded; a click toggles any stage. Counts stay visible on every
 // stage, so "which documents were checked" is answerable at a glance.
 export const journeyOpen = (stages) => new Set((stages ?? []).filter((s) => s.state === "current").map((s) => s.key));
@@ -731,6 +745,44 @@ export function withoutRepeats(found, contract) {
   return found.map((f) => ({ ...f, fact: sentencesOf(f.fact).filter((s) => !said.has(sentenceKey(s))).join(" ") }));
 }
 
+// ---- Repeated wording (13 Nov, Round 6) ----------------------------------------------------------------------------------------------------------------------------
+// The same text (whitespace aside) is shown in full only where it first appears in the drawer, top to bottom: what the customer was told, why it's open, the related clause,
+// the contract's side. A later section keeps its label, source and date and refers back. The history's draft wording folds the same way. Display only: nothing stored or decided.
+const wsn = (t) => String(t ?? "").replace(/\s+/g, " ").trim();
+export const ABOVE_CLAUSE = "the clause shown above";
+export function withoutRepeatedWording(v) {
+  const first = new Map(); // normalised text -> where it was first shown: { label, date }
+  // Returns the back-reference for text already shown: "RFP response, 29 Sep, above" (the first appearance's source and date). `plain`: the line itself already names that source and date
+  // (the signed status line, the lookup line), so it says "the clause shown above".
+  const see = (text, where, plain = false) => {
+    const k = wsn(text);
+    if (!k) return "";
+    if (!first.has(k)) { first.set(k, where); return ""; }
+    const w = first.get(k);
+    return plain ? ABOVE_CLAUSE : `${w.label || "the document"}${w.date ? `, ${short(w.date)}` : ""}, above`;
+  };
+  for (const t of v.told ?? []) see(t.quote, { label: t.label, date: t.date });
+  const out = { ...v };
+  const ref = (o, text, plain = false) => { const r = see(text, { label: o.label, date: o.date }, plain); return r ? { ...o, ref: r } : o; }; // a "ref" appears only where the wording was already shown
+  if (v.scope) out.scope = { ...v.scope, start: ref(v.scope.start, v.scope.start.quote), approval: ref(v.scope.approval, v.scope.approval.quote) };
+  if (v.reopened) {
+    if (v.related) out.related = ref(v.related, v.related.quote);
+  } else if (v.signed) out.signed = ref(v.signed, v.signed.quote, true);
+  else if (v.contract) {
+    out.contract = { ...v.contract };
+    if (v.contract.quote) out.contract.quote = ref(v.contract.quote, v.contract.quote.quote);
+    if (v.contract.now) out.contract.now = ref(v.contract.now, v.contract.now.quote, true);
+  }
+  const signedWhere = v.signed && !v.reopened ? `; confirmed in the ${lowerFirst(v.signed.label || "signed contract")}${v.signed.date ? ` (${short(v.signed.date)})` : ""}` : "";
+  out.history = [...new Set((v.history ?? []).map((l) => {
+    const m = /^Draft wording that closed it: \u201C([\s\S]*)\u201D, in (.*)\.$/.exec(l);
+    if (!m || !first.has(wsn(m[1]))) return l;
+    const w = first.get(wsn(m[1]));
+    return signedWhere ? `Closed by ${m[2]} with the same wording${signedWhere}.` : `Draft wording that closed it: ${w.label || "the document"}${w.date ? `, ${short(w.date)}` : ""}, above, in ${m[2]}.`;
+  }))];
+  return out;
+}
+
 // ---- Evidence in the drawer and the record (11 Nov) ---------------------------------------------------------------------------------------------------
 export const EVIDENCE_LINE = "No matching wording found in the reviewed draft contract or statement of work.";
 
@@ -881,6 +933,9 @@ export function groupNotOffered(found, issues) {
 
 // One commitment, as the drawer shows it. status: "open" | "noted" | "closed".
 export function commitmentView(c, status, documents) {
+  return withoutRepeatedWording(commitmentViewRaw(c, status, documents));
+}
+function commitmentViewRaw(c, status, documents) {
   const unresolved = c.issues.filter((i) => i.state !== "Resolved");
   const closedIssues = c.issues.filter((i) => i.state === "Resolved");
   const shown = status === "closed" ? closedIssues : unresolved;
@@ -952,7 +1007,7 @@ function contractView(term, side, documents, now = null, searched = []) {
     quote,
     missing,
     missingLabel: quote && missing ? "No matching wording found for" : "Searched for:",
-    now: now?.quote ? { target: now.target, quote: now.quote, label: now.document, doc: matchDoc(documents, [now.document], null) } : null,
+    now: now?.quote ? (() => { const doc = matchDoc(documents, [now.document], null); return { target: now.target, quote: now.quote, label: now.document, doc, date: doc ? (doc.version_date || doc.date || "") : "" }; })() : null,
   };
 }
 
@@ -960,7 +1015,10 @@ function contractView(term, side, documents, now = null, searched = []) {
 // left out, never invented. item: an open or addressed-by-note entry, or { promise } for one whose gaps all closed.
 // live: the same commitment as the live register has it (a locked deal cannot change, so it is the same); it carries the signed check's full output, which the saved record
 // keeps only in part. snapshotDocs: the documents captured in the locked handover, for "what was searched".
-export function frozenView({ item, status, closedFindings = [], documents = [], titles = {}, live = null, snapshotDocs = null, relatedMap = null, approvalScopes = null }) {
+export function frozenView(args) {
+  return withoutRepeatedWording(frozenViewRaw(args));
+}
+function frozenViewRaw({ item, status, closedFindings = [], documents = [], titles = {}, live = null, snapshotDocs = null, relatedMap = null, approvalScopes = null }) {
   const name = item.promise;
   const findings = item.findings ?? [];
   const quoted = (item.quotes ?? []).filter((q) => q.quote);
@@ -1053,9 +1111,10 @@ export function recordLines(v, documents = []) {
   let contract = "";
   const why = v.reopened ? v.whyReopened : ""; // 12 Nov, round 4: a reopened gap reads cause first ("Why it reopened"), then the related clause; no "Contract says" line
   // A commitment confirmed in the signed contract shows the signed clause, attributed to the signed contract with its date; the draft attribution goes (12 Nov).
-  if (v.signed?.quote) contract = quoteLine(v.signed.quote, v.signed.label, v.signed.date);
-  else if (v.contract.now?.quote) contract = quoteLine(v.contract.now.quote, v.contract.now.label);
-  else if (v.contract.quote) contract = quoteLine(v.contract.quote.quote, v.contract.quote.label);
+  const back = (ref, label, date) => `${ref.replace(/^./, (c) => c.toUpperCase())} (${label}${date ? `, ${short(date)}` : ""})`; // 13 Nov: wording already shown above points back instead. The reference names the first source and date, so a clause shown above reads "RFP response, 29 Sep, above (Draft SOW, 16 Oct)"
+  if (v.signed?.quote) contract = v.signed.ref ? `${v.signed.status || "Confirmed in the signed contract"}: ${v.signed.ref}.` : quoteLine(v.signed.quote, v.signed.label, v.signed.date);
+  else if (v.contract.now?.quote) contract = v.contract.now.ref ? back(v.contract.now.ref, v.contract.now.label) : quoteLine(v.contract.now.quote, v.contract.now.label);
+  else if (v.contract.quote) contract = v.contract.quote.ref ? back(v.contract.quote.ref, v.contract.quote.label) : quoteLine(v.contract.quote.quote, v.contract.quote.label);
   else if (v.contract.text && !/^No gap found/.test(v.contract.text) && !v.reopened) contract = v.contract.text;
   // A commitment with some gaps closed and others open says both, per gap ("Approval: closed by Internal approvals note v2 (18 Oct)", "Not in the contract: still open"),
   // so a closed line next to "Needs attention" is never read as resolved. A commitment with nothing closed shows its gap lines; one with everything closed
@@ -1076,9 +1135,9 @@ export function recordLines(v, documents = []) {
   const settled = closedSettled(v, documents);
   if (partly) for (const g of v.openGaps) settled.push(`${g}: still open`);
   for (const n of v.notes) settled.push(`${recordedBy(n.by, n.at, fmtDate)}: \u201C${n.text}\u201D`);
-  const related = v.related ? { in: v.related.in, heading: relatedHeading(v.related), text: quoteLine(v.related.quote, v.related.label, v.related.date), doc: v.related.doc, quote: v.related.quote } : null;
-  const scope = v.scope ? { why: v.scope.reason, start: `${v.scope.start.heading}: \u201C${v.scope.start.quote}\u201D (${v.scope.start.label}${v.scope.start.date ? `, ${short(v.scope.start.date)}` : ""})`,
-    approval: `${v.scope.approval.heading}: \u201C${v.scope.approval.quote}\u201D (${v.scope.approval.label}${v.scope.approval.date ? `, ${short(v.scope.approval.date)}` : ""})`,
+  const related = v.related ? { in: v.related.in, heading: relatedHeading(v.related), text: v.related.ref ? back(v.related.ref, v.related.label, v.related.date) : quoteLine(v.related.quote, v.related.label, v.related.date), doc: v.related.doc, quote: v.related.quote } : null;
+  const scope = v.scope ? { why: v.scope.reason, start: v.scope.start.ref ? `${v.scope.start.heading}: ${v.scope.start.ref}` : `${v.scope.start.heading}: \u201C${v.scope.start.quote}\u201D (${v.scope.start.label}${v.scope.start.date ? `, ${short(v.scope.start.date)}` : ""})`,
+    approval: v.scope.approval.ref ? `${v.scope.approval.heading}: ${v.scope.approval.ref}` : `${v.scope.approval.heading}: \u201C${v.scope.approval.quote}\u201D (${v.scope.approval.label}${v.scope.approval.date ? `, ${short(v.scope.approval.date)}` : ""})`,
     startDoc: v.scope.start.doc, startQuote: v.scope.start.quote, approvalDoc: v.scope.approval.doc, approvalQuote: v.scope.approval.quote } : null;
   return { told, contract, why, scope, gaps, settled, related };
 }

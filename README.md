@@ -14,7 +14,7 @@ It flags four kinds of mismatch:
 - **not in the draft contract or SOW:** a firm promise has no matching wording in the contract;
 - **contract says something different:** the contract covers the same thing on different terms.
 
-It also says what it could not check: if the model proposed findings that failed verification against the documents, the count is shown.
+It also says what it could not check. If the model proposed findings whose quotes failed verification against the documents, the count is shown; points the model raised that the documents already answer (for example, an approval already recorded) are counted separately in a quieter line, and nothing is hidden from the record.
 
 **Design principle:** visibility, not workflow. It has no tasks, assignees, approvals or risk scores.
 

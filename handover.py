@@ -304,6 +304,7 @@ def complete(conn, slug: str, completed_by) -> dict:
 def handover(conn, slug: str) -> dict:
     """The handover panel: complete or not, both notes, and the frozen snapshot once complete."""
     import approval_scope  # local: these import workspace, which imports this module
+    import workspace
     import signed_check
     did = ledger_fixes.deal_id(conn, slug)
     done = completion(conn, did)
@@ -322,6 +323,8 @@ def handover(conn, slug: str) -> dict:
             "related_clauses": signed_check.related_for_record(conn, snap) if snap else {},
             # 12 Nov: the dates behind a gap held open by approval scope, found now; not in the snapshot either
             "approval_scopes": approval_scope.for_record(conn, did, slug, snap) if snap else {},
+            # 13 Nov: the saved total of proposed-but-rejected findings split by kind, read now; the snapshot keeps only the total
+            "check_split": workspace.rejection_split(conn, did, slug) if snap else None,
             # 19 Oct: the deal owner, read now (profile, else the Sales note's author), as the deal list shows it; not in the snapshot
             "owner": deal_stage.load_profile(slug).get("owner") or ((notes(conn, did)["sales"] or {}).get("by"))}
 

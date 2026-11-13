@@ -36,8 +36,8 @@ test("the live page says COMMITMENTS / What the customer was promised and the lo
   assert.match(locked, /<div className="dp-sec-head"><h2>Commitments<\/h2><\/div>/); // 11 Nov: no "At handover", no attention chip
   assert.ok(!live.includes("<h2>Commitments needing attention</h2>") && !live.includes("Needing attention\">") && !locked.includes("<h2>Commitments at handover</h2>"));
   // the "N need attention" chip and the coverage line are as before, in the same place under the heading
-  assert.match(live, /<\/CardHead>\s*\{!demo\.public && coverageLine\(reg\.check_coverage\?\.rejected\) && <p className="dp-coverage">/);
-  assert.match(locked, /<h2>Commitments<\/h2><\/div>\s*\{coverageLine\(s\.check_coverage\?\.rejected\) && <p className="dp-coverage">/);
+  assert.match(live, /<\/CardHead>\s*\{!demo\.public && <CoverageLines lines=\{coverageLines\(reg\.check_coverage\?\.rejected, reg\.check_split\)\} \/>\}/);
+  assert.match(locked, /<h2>Commitments<\/h2><\/div>\s*<CoverageLines lines=\{coverageLines\(s\.check_coverage\?\.rejected, hv\.check_split\)\} \/>/);
   // the brief card keeps its own header markup, and the eyebrow is the same class
   assert.match(read("BriefCard.jsx"), /<span className="dp-eyebrow">Deal brief<\/span>\s*<h2>What we're delivering<\/h2>/);
 });

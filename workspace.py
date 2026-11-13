@@ -741,6 +741,18 @@ def rejected_count(conn, did: int):
     return len(json.loads(row[0])) if row else None
 
 
+def rejection_split(conn, did: int, slug: str):
+    """The rejected findings of the latest review split into {"failed", "answered"} (rejection_kind.py), read now from the stored
+    findings and the current documents. Display only; None when the deal has no v2 review."""
+    if rejected_count(conn, did) is None:
+        return None
+    import ledger_v2
+    import rejection_kind
+    row = conn.execute("SELECT d.rejected_json FROM v2_detections d JOIN reviews r ON r.id = d.review_id WHERE r.deal_id = ?"
+                       " ORDER BY d.review_id DESC LIMIT 1", (did,)).fetchone()
+    return rejection_kind.split(json.loads(row[0]), ledger_v2.current_docs(conn, did), deal_catalogue.load(conn, slug))
+
+
 def _searchable_documents(conn, did: int, slug: str) -> list:
     """The checked documents as they stand now, for the origin line: customer-facing documents only (the internal pricing note
     is evidence of approvals, never a promise), signed paperwork left out as everywhere. Text is normalised once, with the
@@ -825,6 +837,7 @@ def overview(conn, slug: str) -> dict:
         reg["freshness_label"] = fresh["state"]
     reg["can_decide"] = bool(can_decide)
     reg["check_coverage"] = {"rejected": rejected_count(conn, did)}
+    reg["check_split"] = rejection_split(conn, did, slug)  # 13 Nov: the same count by kind, for the screens; the total above is unchanged
     reg["deal_note"] = workspace_records.deal_note(conn, did)
     docs = [d for d in documents(conn, slug) if d["included"]]
     reg["versions_line"] = " · ".join(f"{d['name']} v{d['version']}" for d in docs)

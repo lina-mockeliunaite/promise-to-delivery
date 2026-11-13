@@ -57,7 +57,7 @@
 - **Hashes:** in the locked record, scroll to **Documents at handover** → click **Signed contract** → *Matches the text shown*. "Each document is stored with a SHA-256 of the exact text Dealshape read; the record's fingerprint covers them all."
 - **Print:** tick **Include full document text** → **Print or save as PDF**.
 - **Stage:** "The stage comes from the documents on the right; nobody sets it by hand."
-- **Refused findings:** on Alder, "1 proposed finding couldn't be verified against the documents and isn't shown."
+- **Refused findings:** in the locked record of Alder, a quiet line: "1 point the model raised was already answered by the documents." (the model re-proposed a gap the approval note had closed). A finding whose quotes fail verification would instead read "N proposed findings couldn't be verified against the documents and aren't shown." The live deal page hides both in the public demo.
 
 ## If something goes wrong
 

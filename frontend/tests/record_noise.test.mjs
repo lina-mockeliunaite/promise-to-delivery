@@ -74,7 +74,7 @@ test("a closed commitment reads 'Closed by <document> v<N> (<date>) · confirmed
   assert.equal(r.contract, "“The Assistant will respond to Guest enquiries in 12 languages, listed in Schedule 1.” (Draft contract)");
   assert.deepEqual(r.gaps, []);
   const html = decode(renderToStaticMarkup(createElement(RecordDetail, { v: LANGS, documents: DOCS })));
-  for (const gone of ["No gap found", "Contract wording containing", "unchanged", "checked with it", "Check on", "a lookup in the current documents"]) assert.ok(!html.includes(gone), gone);
+  for (const gone of ["No gap found", "Contract wording containing", "unchanged", "checked with it", "Check on", "a lookup in the current documents", "that mentions"]) assert.ok(!html.includes(gone), gone);
 });
 
 test("the record page is cut down: no verdict sentence, 'Commitments' only, no scope note, the brief first, the short footer, documents oldest first", () => {

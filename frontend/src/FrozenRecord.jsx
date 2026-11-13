@@ -6,9 +6,9 @@ import { useEffect, useMemo, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
 import {
-  STATUS_CHIP, coverageLine, byDocumentDate, frozenView, hashFor, signedDatesLabel, plainName, readHash, recordLines, recordedBy,
+  STATUS_CHIP, coverageLines, byDocumentDate, frozenView, hashFor, signedDatesLabel, plainName, readHash, recordLines, recordedBy,
 } from "./dealpage.js";
-import { Drawer, CommitmentView, DocumentView, TitleLine, Icon, ICON } from "./Drawer.jsx";
+import { Drawer, CommitmentView, CoverageLines, DocumentView, TitleLine, Icon, ICON } from "./Drawer.jsx";
 import BriefCard from "./BriefCard.jsx";
 import { appendixEntries, hasStoredText, shortHash } from "./docHash.js";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
@@ -54,11 +54,6 @@ export function RecordDetail({ v, documents, onOpenDoc }) {
   return (
     <div className="fr-detail">
       {r.told.length > 0 && <div><strong>Customer was told:</strong>{r.told.map((t) => <p key={t} className="fr-quote">{t}</p>)}</div>}
-      {r.contract && (
-        <p><strong>Contract says:</strong> {r.contract}
-          {v.signed?.doc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(v.signed.doc, v.signed.quote); }}>Open the signed clause</button></>}
-        </p>
-      )}
       {r.scope && (
         <>
           <p className="fr-why"><strong>Why it&rsquo;s open:</strong> {r.scope.why}</p>
@@ -69,6 +64,11 @@ export function RecordDetail({ v, documents, onOpenDoc }) {
             {r.scope.approvalDoc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(r.scope.approvalDoc, r.scope.approvalQuote); }}>Open the approval</button></>}
           </p>
         </>
+      )}
+      {r.contract && (
+        <p><strong>Contract says:</strong> {r.contract}
+          {v.signed?.doc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(v.signed.doc, v.signed.quote); }}>Open the signed clause</button></>}
+        </p>
       )}
       {r.why && <p className="fr-why"><strong>Why it reopened:</strong> {r.why}</p>}
       {r.related && (
@@ -246,7 +246,7 @@ export default function FrozenRecord({ deal, onBack }) {
 
       <section className={`dp-card dp-promises ${counts.open ? "is-attention" : "is-clear"}`}>
         <div className="dp-sec-head"><h2>Commitments</h2></div>
-        {coverageLine(s.check_coverage?.rejected) && <p className="dp-coverage">{coverageLine(s.check_coverage.rejected)}</p>}
+        <CoverageLines lines={coverageLines(s.check_coverage?.rejected, hv.check_split)} />
         {views.length === 0 && <p className="dp-faint dp-pad">No commitment had a gap on the documents checked.</p>}
         <ul className="dp-plist">
           {views.map((v) => (

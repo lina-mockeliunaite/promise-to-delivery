@@ -144,12 +144,12 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
             <p className="dr-plain">{v.scope.reason}</p>
             <div className="dr-block dr-related">
               <span className="dr-muted">{v.scope.start.heading}</span>
-              <blockquote className="dr-quote">{v.scope.start.quote}</blockquote>
+              {v.scope.start.ref ? <p className="dr-muted">{v.scope.start.ref}</p> : <blockquote className="dr-quote">{v.scope.start.quote}</blockquote>}
               <Source label={v.scope.start.label} date={v.scope.start.date} doc={v.scope.start.doc} onOpen={() => onOpenDoc?.(v.scope.start.doc, v.scope.start.quote)} />
             </div>
             <div className="dr-block dr-related">
               <span className="dr-muted">{v.scope.approval.heading}</span>
-              <blockquote className="dr-quote">{v.scope.approval.quote}</blockquote>
+              {v.scope.approval.ref ? <p className="dr-muted">{v.scope.approval.ref}</p> : <blockquote className="dr-quote">{v.scope.approval.quote}</blockquote>}
               <Source label={v.scope.approval.label} date={v.scope.approval.date} doc={v.scope.approval.doc} onOpen={() => onOpenDoc?.(v.scope.approval.doc, v.scope.approval.quote)} />
             </div>
           </section>
@@ -166,7 +166,7 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
                 <h3 className="dr-label">{relatedHeading(v.related)}</h3>
                 <div className="dr-block dr-related">
                   <span className="dr-muted">Related clause</span>
-                  <blockquote className="dr-quote">{v.related.quote}</blockquote>
+                  {v.related.ref ? <p className="dr-muted">{v.related.ref}</p> : <blockquote className="dr-quote">{v.related.quote}</blockquote>}
                   <Source label={v.related.label} date={v.related.date} doc={v.related.doc} onOpen={() => onOpenDoc?.(v.related.doc, v.related.quote)} />
                 </div>
               </section>
@@ -177,8 +177,8 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
           <h3 className="dr-label">Contract says</h3>
           {v.signed ? (
             <div className="dr-block dr-signed">
-              <span className="dr-confirmed">{v.signed.status}</span>
-              <blockquote className="dr-quote">{v.signed.quote}</blockquote>
+              <span className="dr-confirmed">{v.signed.status}{v.signed.ref ? `: ${v.signed.ref}.` : ""}</span>
+              {!v.signed.ref && <blockquote className="dr-quote">{v.signed.quote}</blockquote>}
               <Source label={v.signed.label} date={v.signed.date} doc={v.signed.doc} onOpen={() => onOpenDoc?.(v.signed.doc, v.signed.quote)} />
             </div>
           ) : (
@@ -186,14 +186,14 @@ export function CommitmentView({ v, documents = [], titleId, readOnly, me = "", 
               {v.contract.text && <p className="dr-plain">{v.contract.text}</p>}
               {v.contract.quote && (
                 <div className="dr-block">
-                  <blockquote className="dr-quote">{v.contract.quote.quote}</blockquote>
+                  {v.contract.quote.ref ? <p className="dr-muted">{v.contract.quote.ref}.</p> : <blockquote className="dr-quote">{v.contract.quote.quote}</blockquote>}
                   <Source label={v.contract.quote.label} doc={v.contract.quote.doc} onOpen={() => onOpenDoc?.(v.contract.quote.doc, v.contract.quote.quote)} />
                 </div>
               )}
               {v.contract.now && (
                 <div className="dr-block">
-                  <span className="dr-muted">Contract wording containing “{v.contract.now.target}” (a lookup in the current documents):</span>
-                  <blockquote className="dr-quote">{v.contract.now.quote}</blockquote>
+                  <span className="dr-muted">Wording in {v.contract.now.label}{v.contract.now.date ? ` (${short(v.contract.now.date)})` : ""} that mentions “{v.contract.now.target}”:</span>
+                  {v.contract.now.ref ? <p className="dr-muted">{v.contract.now.ref}.</p> : <blockquote className="dr-quote">{v.contract.now.quote}</blockquote>}
                   <Source label={v.contract.now.label} doc={v.contract.now.doc} onOpen={() => onOpenDoc?.(v.contract.now.doc, v.contract.now.quote)} />
                 </div>
               )}
@@ -358,6 +358,16 @@ export function PromiseBadges({ labels }) {
     <span className="dp-fbadges" role="list" title="About what the customer was promised">
       {labels.map((l) => <span key={l} role="listitem" className="dp-fbadge">{l}</span>)}
     </span>
+  );
+}
+
+// The coverage lines under "Commitments" (13 Nov): the main line counts findings whose evidence failed verification; a quieter line counts the points the documents already answered.
+export function CoverageLines({ lines }) {
+  return (
+    <>
+      {lines.main && <p className="dp-coverage">{lines.main}</p>}
+      {lines.quiet && <p className="dp-coverage is-quiet">{lines.quiet}</p>}
+    </>
   );
 }
 

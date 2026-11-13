@@ -11,13 +11,13 @@ import "@fontsource/inter/latin-700.css";
 import * as api from "./api.js";
 import { addReady, fmtDate, fmtDateTime, mismatchNotice, newDocumentNotice, uploadKind } from "./format.js";
 import {
-  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, closedSettled, reopenedLines, scopeRowLines, SCOPE_HELD_TITLE, scopeHeldDetail, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, changeTitle, signedDatesLabel, changedPromises, closedTitle, confirmedTitle, reopenedTitle, coverageLine, docCount, gapProgress, orderPromises, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
+  CLOSING_ONE_LINE, FINDING_SHORT, GAP_CLOSES, closedBy, closedLines, closedSettled, reopenedLines, scopeRowLines, SCOPE_HELD_TITLE, scopeHeldDetail, signedConfirmations, SIGNED_NOTE, STATUS_CHIP, commitmentView, attentionText, changeResult, changeTitle, signedDatesLabel, changedPromises, closedTitle, confirmedTitle, reopenedTitle, coverageLines, docCount, gapProgress, orderPromises, journeyOpen, docLabel, groupByStage, hashFor, isSignedDoc,
   mismatchParts, promiseLabels, missingForHandover, handoverChecklist, handoverOpen, changeView, changeDocLabel, datePrefill, plainName, readHash, recordedBy, rowTitle, toldParts, suggestFix, useName, whatChanged,
 } from "./dealpage.js";
 import FrozenRecord from "./FrozenRecord.jsx";
 import BriefCard from "./BriefCard.jsx";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
-import { CardHead, Drawer, DrawerHead, CommitmentView, DocumentView, MismatchSentence, TitleLine, Icon as DIcon, ICON } from "./Drawer.jsx";
+import { CardHead, CoverageLines, Drawer, DrawerHead, CommitmentView, DocumentView, MismatchSentence, TitleLine, Icon as DIcon, ICON } from "./Drawer.jsx";
 import { FICTIONAL } from "./brand.js";
 import CatalogueModal from "./CatalogueModal.jsx";
 import { DemoNameNote, SamplePicker, UseSampleText } from "./DemoUI.jsx";
@@ -920,7 +920,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
             <CardHead eyebrow="Commitments" title="What the customer was promised">
               <AttentionChip open={openRows.length} noted={(reg.noted_rows || []).length} />
             </CardHead>
-            {!demo.public && coverageLine(reg.check_coverage?.rejected) && <p className="dp-coverage">{coverageLine(reg.check_coverage.rejected)}</p>}
+            {!demo.public && <CoverageLines lines={coverageLines(reg.check_coverage?.rejected, reg.check_split)} />}
             {promiseRows.length === 0 && <p className="dp-faint dp-pad">No commitments with gaps on the current documents.</p>}
             <ul className="dp-plist">
               {promiseRows.map(({ c, status }) => (

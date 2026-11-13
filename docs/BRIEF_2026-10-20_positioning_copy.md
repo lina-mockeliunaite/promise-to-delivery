@@ -99,6 +99,8 @@ If the current review has proposed findings that failed verification and are the
 
 > "N proposed findings couldn't be verified against the documents and aren't shown."
 
+*Update, 13 Nov (Round 6): this line now counts only findings whose evidence failed verification. Findings the documents already answer are counted in a second, quieter line ("N point(s) the model raised was/were already answered by the documents."). See DECISIONS.md.*
+
 - Use the existing stored rejected-finding records; add one read-only count field if needed.
 - Show nothing when N is 0.
 - **Neutral styling, not a status.** It changes no count or verdict.

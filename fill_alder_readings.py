@@ -355,10 +355,10 @@ def show(rep: dict) -> None:
             verdict = "accepted" if not v["problems"] else "rejected: " + v["problems"][0][:110]
             print(f"  {v['kind']:18s} {v['subject']:17s} entry={v['path']}\n    commitment: {v['commitment'][:100]}\n    phrases: {v['phrases']}  quotes from: {sorted({q[0] for q in v['quotes']})}\n    verifier: {verdict}")
         if name == "K1":
-            print("  (a gap that is already closed is re-proposed and rejected here; that is expected and only adds to the 'couldn't be verified' count below)")
+            print("  (a gap that is already closed is re-proposed and rejected here; that is expected and only adds to the 'rejected' count below, which the screens show as 'already answered')")
     print(f"\n{line}\nSTORY, step by step (rows, statuses, reasons)\n{line}")
     for st in rep["states"]:
-        print(f"  {st['label']}   [{st['open_rows']} need attention, {st['noted_rows']} addressed by note; proposed findings that couldn't be verified: {st['rejected']}]")
+        print(f"  {st['label']}   [{st['open_rows']} need attention, {st['noted_rows']} addressed by note; proposed findings the verifier rejected (screens: failed / already answered): {st['rejected']}]")
         for r in st["rows"]:
             print(f"    - {r['subject']:17s} {r['status']}")
             for i in r["issues"]:
