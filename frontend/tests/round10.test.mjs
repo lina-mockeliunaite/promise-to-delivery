@@ -149,12 +149,16 @@ test("the print stylesheet: Inter, thin card borders, the rules as real borders,
   assert.equal(/\.fr-print-h \{[^}]*margin: 16px 20px/.test(printCss), false); // the headings line up with the card edges
 });
 
-test("one set of page margins, a page number in the footer margin box, no running header on page 1, and the header text from the record in the top margin box", () => {
+test("one set of page margins, a page number in the footer margin box, the running header on every page including the first, and the header text from the record in the top margin box", () => {
   assert.equal((printCss.match(/@page \{ margin:/g) || []).length, 1);
   assert.match(printCss, /@page \{ margin: 16mm 10mm 15mm;[^}]*@bottom-center \{ content: "Page " counter\(page\) " \/ " counter\(pages\)/);
-  assert.match(printCss, /@page :first \{ @top-center \{ content: none; \} \}/);
+  // page 1 carries the running header too: visible text in the top box is what keeps Chrome's own date and title off it (`none` and a non-breaking space did not)
+  const all = printCss + read("FrozenRecord.jsx");
+  assert.equal(/@page\s*:first/.test(all), false); // no :first rule at all (so none can say `content: none`, "" or only a non-breaking space): the general rule's header text applies to page 1 as to the others
+  assert.equal(/content:\s*(none|""|"\\00A0"|"\\u00A0")/.test(all.slice(all.indexOf("@page"))), false);
+  assert.match(printCss, /@bottom-center \{ content: "Page " counter\(page\)/); // the bottom box has content on every page, first included, so Chrome's URL footer is blocked the same way
   const jsx = read("FrozenRecord.jsx");
-  assert.match(jsx, /@page \{ @top-center \{ content: \$\{JSON\.stringify\(`\$\{s\.deal\} \\u00B7 Handover record`\)\}; \} \} @page :first \{ @top-center \{ content: none; \} \}/);
+  assert.match(jsx, /@page \{ @top-center \{ content: \$\{JSON\.stringify\(`\$\{s\.deal\} \\u00B7 Handover record`\)\}; \} \} \}`\}<\/style>/); // the header text, for every page including the first
   assert.equal(/continued/i.test(jsx.slice(jsx.indexOf("<style>"), jsx.indexOf("</style>"))), false);
   assert.equal(/position:\s*fixed/.test(printCss), false); // the header and footer sit in the page margin, not over the content
 });

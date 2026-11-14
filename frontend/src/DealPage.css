@@ -468,9 +468,8 @@ body:has(.dp) { background: #f8fafc; }
   /* The record's documents and fingerprint always print, whatever the on-screen fold is doing: the folded copy is hidden, the print-only copy shown (11 Nov). */
   .fr .fr-record { display: none; }
   .fr .fr-print-record { display: block; padding: 8px 0 0; }
-  /* Round 10 (14 Nov): one set of page margins for the record and the appendix. The top and bottom hold the running header (every page after the first; its text is set from the record) and the footer's page number, in the margin so they never overlap content. */
+  /* Round 10 (14 Nov): one set of page margins for the record and the appendix. The top and bottom hold the running header (on every page, the first included, so Chrome's own header cannot print there; its text is set from the record) and the footer's page number, in the margin so they never overlap content. */
   @page { margin: 16mm 10mm 15mm; @bottom-center { content: "Page " counter(page) " / " counter(pages); font: 9pt "Inter", system-ui, sans-serif; color: #64748b; } @top-center { font: 9pt "Inter", system-ui, sans-serif; color: #64748b; } }
-  @page :first { @top-center { content: none; } }
   /* Round 9 (14 Nov): a printed record starts with the Dealshape logo and has clear section headings: Handover record (header and outcomes), Deal brief, Commitments, Handover notes, Documents at handover, Record details */
   .fr .dp-topbar { display: none !important; }
   .fr .fr-print-head { display: block; padding: 0 0 10px; } /* Round 10: headings and the logo line up with the card edges */

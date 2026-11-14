@@ -253,8 +253,8 @@ export default function FrozenRecord({ deal, onBack }) {
 
   return (
     <div className="dp fr">
-      {/* Round 10 (14 Nov): the running header on every printed page after the first (the first page has the logo); the page number is in the footer. Both sit in the page margin, so they cannot overlap the record. */}
-      <style>{`@media print { @page { @top-center { content: ${JSON.stringify(`${s.deal} \u00B7 Handover record`)}; } } @page :first { @top-center { content: none; } } }`}</style>
+      {/* Round 10 (14 Nov): the running header on every printed page, the first included (visible text in the top margin box is what keeps Chrome's own date and title from printing there); the page number is in the footer. Both sit in the page margin, so they cannot overlap the record. */}
+      <style>{`@media print { @page { @top-center { content: ${JSON.stringify(`${s.deal} \u00B7 Handover record`)}; } } }`}</style>
       {/* Round 9 (14 Nov): the printed record starts with the Dealshape logo; on screen this is not shown */}
       <div className="fr-print-head" aria-hidden="true"><Logo height={34} /></div>
       <div className="fr-ident" aria-hidden={!headerGone}>
