@@ -1077,7 +1077,12 @@ function AppBody() {
   useEffect(() => { window.scrollTo(0, 0); }, [current, landing, classic]);
   // 21 Oct: #welcome typed into an open tab shows the landing page too.
   useEffect(() => {
-    const onHash = () => { if (isWelcome(window.location.hash)) { setCurrent(null); setClassic(false); setLanding(true); } };
+    const onHash = () => {
+      if (isWelcome(window.location.hash)) { setCurrent(null); setClassic(false); setLanding(true); return; }
+      // 14 Nov, Round 9: a hash that names another deal opens that deal (it used to change the address and leave the page on the first deal); the commitment part is the deal page's own
+      const d = readHash(window.location.hash).d;
+      if (d) { markLandingSeen(); setLanding(false); setClassic(false); setCurrent((cur) => (cur === d ? cur : d)); }
+    };
     window.addEventListener("hashchange", onHash);
     return () => window.removeEventListener("hashchange", onHash);
   }, []);

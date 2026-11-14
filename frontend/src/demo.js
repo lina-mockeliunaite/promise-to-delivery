@@ -119,6 +119,64 @@ export const findGuideRow = (commitments, re) => (re ? (commitments ?? []).find(
 // "Get the picture" (11 Nov): a 3-part tour in the bar. Its done state is the browser's only (sessionStorage), never the server's; Reset demo clears it.
 export const TOUR_KEYS = ["brief", "journey", "commitments"];
 const TOUR_STORE = "ptd.tour.";
+// ---- Round 9 (14 Nov): the active path ---------------------------------------------------------------------------------------------------------------------------
+// Which deal's guide the visitor is on: Noma by default; starting or doing a step on another guided deal switches to it. Remembered in this browser tab only (sessionStorage), never on the server.
+// "Back to step N" asks the deal page to open where the step happens; the request is also only in this browser.
+export const ACTIVE_KEY = "ptd.guide.deal";
+export const PENDING_KEY = "ptd.guide.pending";
+export function activeGuide(storage = globalThis.sessionStorage) {
+  try { const v = storage?.getItem(ACTIVE_KEY); return v && GUIDES[v] ? v : FIRST_DEAL; } catch { return FIRST_DEAL; }
+}
+export function setActiveGuide(deal, storage = globalThis.sessionStorage) {
+  if (!GUIDES[deal]) return;
+  try { storage?.setItem(ACTIVE_KEY, deal); } catch { /* private window: the default path is used */ }
+}
+export function requestStep(deal, storage = globalThis.sessionStorage) {
+  try { storage?.setItem(PENDING_KEY, deal); } catch { /* the visitor lands on the deal without the step opened */ }
+}
+export function takePendingStep(deal, storage = globalThis.sessionStorage) {
+  try { if (storage?.getItem(PENDING_KEY) === deal) { storage.removeItem(PENDING_KEY); return true; } } catch { /* nothing stored */ }
+  return false;
+}
+export const GUIDE_DEAL_NAME = { noma_journeys: "Noma", alder_bank: "Alder" };
+
+// Is the visitor where the current step happens? view: what the deal page has open ({ drawer: {type, id} | null, catalogueOpen }). On the step's deal with nothing open, yes (the bar's
+// button is right there); a drawer on the step's own row (or the add panel for a step with no row) is the step; any other drawer, the catalogue, or another page is not.
+export function stepHere(step, commitments, view) {
+  if (!step) return true;
+  if (view?.catalogueOpen) return false;
+  const d = view?.drawer ?? null;
+  if (!d) return true;
+  if (step.kind === "tour" || step.kind === "handover") return false;
+  if (step.row) { const row = findGuideRow(commitments, step.row); return !!row && d.id === row.id; }
+  return d.type === "add"; // the signed contract: the sample panel
+}
+
+// The away state of the bar: null while the step is where the visitor is, nothing has been started, or the guide is finished (a locked deal's guide is done, so there is nothing to go back to).
+export function awayFrom({ steps, complete, here }) {
+  if (!steps || complete || here) return null;
+  const current = steps.find((s) => s.state === "current");
+  if (!current || !steps.some((s) => s.state === "done")) return null;
+  return { n: current.n, total: steps.length, step: current, line: `You're on step ${current.n} of ${steps.length}`, button: `Back to step ${current.n}` };
+}
+
+// The plain lines a block shows (public demo only). One line each, naming what to do first.
+const lowerFirstWord = (t) => (/^[A-Z][a-z]/.test(t) ? t[0].toLowerCase() + t.slice(1) : t);
+export const sampleBlockedLine = (previousTitle, after) => `Add the ${lowerFirstWord(previousTitle)} first: step ${after}`;
+export function lockBlockedLine(missing) {
+  const m = missing ?? [];
+  if (m.includes("upload the signed contract")) return "Add the signed contract first: step 4";
+  const notes = [m.includes("add the Sales note") && "the Sales note", m.includes("add the Delivery note") && "the Delivery note"].filter(Boolean);
+  return notes.length ? `Add ${notes.join(" and ")} first: step 6` : "";
+}
+export const NOTE_ROW_NAME = { noma_journeys: "phone calls", alder_bank: "hosting" };
+export const addressedBlockedLine = (deal) => `In this guided demo, the agreement is recorded at step 5 (${NOTE_ROW_NAME[deal] ?? "the note step"}).`;
+// "Mark as addressed by note" in the public demo: only on the step-5 row, and only once step 5 is the current step. Keep-open notes are never asked about here.
+export function addressedAllowed(deal, steps, commitment) {
+  const current = (steps ?? []).find((s) => s.state === "current");
+  return !!current && current.kind === "note" && !!findGuideRow(commitment ? [commitment] : [], current.row);
+}
+
 export function tourDone(deal, storage = globalThis.sessionStorage) {
   try { return storage?.getItem(`${TOUR_STORE}${deal}`) === "1"; } catch { return false; }
 }
@@ -127,6 +185,7 @@ export function markTourDone(deal, storage = globalThis.sessionStorage) {
 }
 export function clearTourDone(storage = globalThis.sessionStorage) {
   try { for (const deal of Object.keys(GUIDES)) storage?.removeItem(`${TOUR_STORE}${deal}`); } catch { /* nothing stored */ }
+  try { storage?.removeItem(ACTIVE_KEY); storage?.removeItem(PENDING_KEY); } catch { /* nothing stored */ } // a reset forgets which guide was the path, too
 }
 // Who the deal is with and who the go-live was promised to: the documents say it (Noma's discovery call: "We have already told our leadership that date";
 // Alder's: "We've told our board that date"). The date, the stage and the count come from the deal itself.

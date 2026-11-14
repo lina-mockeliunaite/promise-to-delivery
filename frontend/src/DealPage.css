@@ -191,12 +191,12 @@ body:has(.dp) { background: #f8fafc; }
 
 /* Handover: sizes as the commitments card (heading 15, body 13, muted 12, same padding) */
 .dp-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-@media (max-width: 760px) { .dp-notes { grid-template-columns: 1fr; } }
-.dp-note { display: flex; flex-direction: column; gap: 8px; padding: 10px 14px; border-radius: 12px; background: var(--soft); }
+@media (max-width: 760px) { .dp-notes { grid-template-columns: minmax(0, 1fr); } } /* Round 9: minmax(0, ...) so a long unbroken word cannot widen the column past the screen */
+.dp-note { display: flex; flex-direction: column; gap: 8px; padding: 10px 14px; border-radius: 12px; background: var(--soft); min-width: 0; }
 .dp-note-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .dp-note-who { display: block; font-size: 14px; font-weight: 600; color: var(--ink); }
 .dp-note-role { display: block; font-size: 12px; color: var(--muted); }
-.dp-note-text { margin: 0; font-size: 13px; font-style: italic; line-height: 1.5; color: var(--ink); }
+.dp-note-text { margin: 0; font-size: 13px; font-style: italic; line-height: 1.5; color: var(--ink); overflow-wrap: anywhere; } /* notes wrap fully, even an unbroken URL */
 .dp-note-form { display: flex; flex-direction: column; gap: 8px; }
 .dp-note-form textarea, .dp-add textarea, .dr-form textarea { width: 100%; box-sizing: border-box; padding: 9px 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--ink); font: inherit; font-size: 13px; resize: vertical; }
 .dp-note-foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
@@ -235,6 +235,13 @@ body:has(.dp) { background: #f8fafc; }
 .dp-choice label:hover { background: var(--soft); }
 .dp-choice label.is-on { border-color: var(--accent); background: var(--tint); color: var(--body); }
 .dp-choice strong { color: var(--ink); font-size: 13px; font-weight: 600; }
+/* Round 9: an option the guided demo does not allow here is greyed and cannot be chosen; the line saying why stays readable under it */
+.dp-choice label.is-disabled, .dp-choice label.is-disabled * { cursor: not-allowed; }
+.dp-choice label.is-disabled { background: var(--soft); border-color: var(--line); color: #94a3b8; }
+.dp-choice label.is-disabled:hover { background: var(--soft); }
+.dp-choice label.is-disabled strong { color: #94a3b8; }
+.dp-choice label.is-disabled input { opacity: .5; }
+.dp-choice label.is-disabled .demo-blocked { color: var(--muted); }
 .dp-choice input { margin-top: 2px; accent-color: var(--accent); }
 .dp-default { font-style: normal; font-size: 11px; font-weight: 500; padding: 0 6px; border-radius: 999px; background: var(--hair); color: var(--body); margin-left: 4px; }
 .dp-field { display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600; color: var(--ink); }
@@ -461,7 +468,18 @@ body:has(.dp) { background: #f8fafc; }
   /* The record's documents and fingerprint always print, whatever the on-screen fold is doing: the folded copy is hidden, the print-only copy shown (11 Nov). */
   .fr .fr-record { display: none; }
   .fr .fr-print-record { display: block; padding: 8px 0 0; }
-  .fr .fr-print-record::before { content: "Record details"; display: block; padding: 0 20px 4px; font-size: 13px; font-weight: 600; color: var(--body); }
+  @page { margin: 12mm 10mm; } /* Round 9: page margins, so a document's text and wide tables do not touch the paper's edge */
+  /* Round 9 (14 Nov): a printed record starts with the Dealshape logo and has clear section headings: Handover record (header and outcomes), Deal brief, Commitments, Handover notes, Documents at handover, Record details */
+  .fr .dp-topbar { display: none !important; }
+  .fr .fr-print-head { display: block; padding: 0 20px 10px; }
+  .fr .fr-print-h { display: block; margin: 16px 20px 6px; padding-bottom: 4px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #334155; border-bottom: 1px solid #cbd5e1; break-after: avoid; }
+  .fr .dp-brief-card .dp-eyebrow { display: none; }
+  /* Commitments and Handover notes take the same print heading as the other sections (the cards' own headings are not printed); only a commitment (or one note) is kept whole, so
+     the Handover notes card may start right after the commitments instead of jumping to the next page */
+  .fr .dp-promises > .dp-sec-head, .fr .fr-notes-card > .dp-sec-head { display: none; }
+  .fr .fr-notes-card { break-inside: auto; }
+  .fr .fr-notes-card .dp-note { break-inside: avoid; }
+  .fr .fr-print-record .fr-record-body > div { break-inside: avoid; }
   .fr .fr-appendix { display: block; }
   .fr .fr-appendix-doc { break-before: page; page-break-before: always; }
 }
@@ -476,7 +494,19 @@ body:has(.dp) { background: #f8fafc; }
 .fr-appendix { display: none; }
 .fr-appendix-doc h2 { margin: 0 0 4px; font-size: 16px; }
 .fr-appendix-doc p { margin: 0 0 10px; font-size: 11px; color: #475569; word-break: break-all; }
-.fr-appendix-doc pre { margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; font: 11px/1.45 ui-monospace, "SF Mono", Menlo, monospace; color: #0f172a; }
+.fr-print-head, .fr-print-h { display: none; } /* print only (Round 9) */
+.fr-appendix-doc .fr-appendix-note { margin: 0 0 12px; font-size: 10.5px; font-style: italic; color: #475569; word-break: normal; }
+/* The document's text, rendered for reading (headings, paragraphs, lists, tables); a document that is not Markdown prints as plain paragraphs. Wide tables fit the page width. */
+.fr-appendix-text { font: 11.5px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; color: #0f172a; }
+.fr-appendix-text .demo-doc-h { margin: 12px 0 4px; font: 600 13px/1.3 system-ui, -apple-system, "Segoe UI", sans-serif; text-transform: none; letter-spacing: 0; color: #0f172a; }
+.fr-appendix-text p, .fr-appendix-text li { margin: 0 0 6px; font-size: 11.5px; color: #0f172a; word-break: normal; overflow-wrap: anywhere; }
+.fr-appendix-text ul { margin: 0 0 8px; padding-left: 18px; }
+.fr-appendix-text table { width: 100%; max-width: 100%; table-layout: fixed; border-collapse: collapse; margin: 6px 0 10px; font-size: 10px; }
+.fr-appendix-text th, .fr-appendix-text td { border: 1px solid #cbd5e1; padding: 3px 5px; text-align: left; vertical-align: top; overflow-wrap: anywhere; word-break: break-word; }
+.fr-appendix-text th { background: #f1f5f9; font-family: inherit; text-transform: none; letter-spacing: 0; font-weight: 600; }
+.fr-appendix-text .fr-plain-para { white-space: pre-wrap; }
+.fr-appendix-text tr { break-inside: avoid; }
+.fr-detail p, .dr-note p { overflow-wrap: anywhere; } /* a long unbroken word in a note wraps (Round 9) */
 .dr-hash { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 12px; }
 .dr-hash code { font-family: ui-monospace, "SF Mono", Menlo, monospace; }
 .dr-hash-ok { color: var(--green-text); }
@@ -594,3 +624,6 @@ main.home.home-deal { max-width: none; margin: 0; padding: 0; }
 
 /* The record's "Open the signed clause" link sits in the line of text it belongs to (12 Nov). */
 .fr-detail .dr-linkbtn { font-size: inherit; line-height: inherit; min-height: 0; padding: 0; font-weight: 400; border: 0; }
+
+/* Round 9 (14 Nov): the one plain line a block shows in the guided demo; muted, never styled as a status */
+.demo-blocked { color: var(--muted); font-size: 12px; font-style: normal; }

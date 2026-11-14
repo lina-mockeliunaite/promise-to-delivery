@@ -37,13 +37,13 @@ const picker = (extra = {}) => renderToStaticMarkup(createElement(m.DemoContext.
 const text05 = scenario("NJ-05_v2_named_exception.md");
 const key05 = [14]; // the named-exception line, as the sample route reports it
 
-test("every sample in the list has a quiet Preview link beside its button, waiting ones included; 'After step N' stays for adding", () => {
+test("every sample in the list has a quiet Preview link beside its button, waiting ones included; a waiting one says what to add first (Round 9)", () => {
   const html = picker();
   assert.equal((html.match(/class="dp-link-btn dp-brand demo-sample-preview"[^>]*>Preview<\/button>/g) || []).length, 3);
   const items = html.split("<li ").slice(1);
   assert.ok(items[0].includes(">Add and check<") && items[0].includes(">Preview<"));        // the current step
-  assert.ok(items[1].includes(">After step 2<") && items[1].includes(">Preview<"));        // a waiting sample can be previewed
-  assert.ok(items[2].includes(">After step 3<") && items[2].includes(">Preview<"));
+  assert.ok(items[1].includes(">Not yet<") && /first: step 2</.test(items[1]) && items[1].includes(">Preview<"));        // a waiting sample can be previewed
+  assert.ok(items[2].includes(">Not yet<") && /first: step 3</.test(items[2]) && items[2].includes(">Preview<"));
   assert.equal((html.match(/>Add and check</g) || []).length, 1); // adding is still only for the current step
   const done = picker({ documents: [doc("NJ-05", 2), doc("NJ-07", 1)] });
   assert.ok(done.split("<li ")[1].includes(">Added<") && done.split("<li ")[1].includes(">Preview<")); // an added sample can still be read

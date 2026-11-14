@@ -55,7 +55,7 @@
 
 ## If asked: show, don't narrate
 - **Hashes:** in the locked record, scroll to **Documents at handover** → click **Signed contract** → *Matches the text shown*. "Each document is stored with a SHA-256 of the exact text Dealshape read; the record's fingerprint covers them all."
-- **Print:** tick **Include full document text** → **Print or save as PDF**.
+- **Print:** **Print or save as PDF** gives the record with the Dealshape logo and clear section headings (header and outcomes, deal brief, commitments, handover notes, documents at handover, record details). Tick **Include full document text** first and each document follows on its own page with its name, version, date and SHA-256, the line "SHA-256 covers the source text Dealshape read; formatting here is for reading.", and its text set as headings, paragraphs, lists and tables (a PDF, Word or other non-Markdown file prints as plain paragraphs).
 - **Stage:** "The stage comes from the documents on the right; nobody sets it by hand."
 - **Refused findings:** in the locked record of Alder, a quiet line: "1 point the model raised was already answered by the documents." (the model re-proposed a gap the approval note had closed). A finding whose quotes fail verification would instead read "N proposed findings couldn't be verified against the documents and aren't shown." The live deal page hides both in the public demo.
 

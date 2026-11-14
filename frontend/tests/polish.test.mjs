@@ -117,10 +117,11 @@ test("the next sample is derived from what is already in the deal; later ones wa
 });
 
 const within = (el) => renderToStaticMarkup(createElement(m.DemoContext.Provider, { value: { public: true, banner: "b", note_max: 500 } }, el));
-test("only the next sample has an active 'Add and check'; the later ones are disabled with 'After step N'", () => {
+test("only the next sample has an active 'Add and check'; the later ones are disabled ('Not yet') with one plain line saying what to add first", () => {
   const html = within(createElement(m.SamplePicker, { deal: "noma_journeys", documents: [doc("NJ-05", 2), doc("NJ-07", 1)], labels: { signed_contract: "Signed contract" }, onDone() {}, onClose() {}, initialSamples: SAMPLES }));
   assert.equal((html.match(/>Add and check</g) || []).length, 1);
-  assert.equal((html.match(/disabled="">After step 3</g) || []).length, 1);
+  assert.equal((html.match(/disabled="">Not yet</g) || []).length, 1);
+  assert.equal((html.match(/class="demo-blocked dp-small dp-block" role="note">[^<]*first: step 3</g) || []).length, 1); // Round 9
   assert.equal((html.match(/class="demo-sample-done">Added</g) || []).length, 1);
   assert.ok(!html.includes("All samples added"));
   assert.match(html, /<li class="is-done">/); assert.match(html, /<li class="is-next">/); assert.match(html, /<li class="is-later">/);

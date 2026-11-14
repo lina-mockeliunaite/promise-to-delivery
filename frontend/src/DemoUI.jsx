@@ -5,7 +5,7 @@ import ResetDemo from "./ResetDemo.jsx";
 import { runReset } from "./deals.js";
 import { hashFor } from "./dealpage.js";
 import { blockLines, parsePreview } from "./preview.js";
-import { startAction, whileIdle, CHOICE_OTHER, CHOICE_TITLE, FIRST_DEAL, DEMO_WAS_RESET, START_FRESH, runState, clearTourDone, ALL_ADDED, BAR_DONE, BAR_NOTE_FALLBACK, DemoNavContext, GUIDES, GuideStateContext, LandingStateContext, START_LABEL, NAME_NOTE, NO_SAMPLES, TOUR_KEYS, addSample, barStepText, centeredScrollTop, filingLine, guideSteps, markTourDone, sampleSteps, startGuidedDemo, tourCaptions, tourDone, useDemo } from "./demo.js";
+import { GUIDE_DEAL_NAME, activeGuide, awayFrom, requestStep, setActiveGuide, sampleBlockedLine, startAction, whileIdle, CHOICE_OTHER, CHOICE_TITLE, FIRST_DEAL, DEMO_WAS_RESET, START_FRESH, runState, clearTourDone, ALL_ADDED, BAR_DONE, BAR_NOTE_FALLBACK, DemoNavContext, GUIDES, GuideStateContext, LandingStateContext, START_LABEL, NAME_NOTE, NO_SAMPLES, TOUR_KEYS, addSample, barStepText, centeredScrollTop, filingLine, guideSteps, markTourDone, sampleSteps, startGuidedDemo, tourCaptions, tourDone, useDemo } from "./demo.js";
 
 // 13 Nov, Round 8: the first deal's state, read once, for the public demo only (null elsewhere and until known; a failed read counts as "start as before").
 export function useRunState(enabled, client = api) {
@@ -18,6 +18,22 @@ export function useRunState(enabled, client = api) {
     }, () => live && setState(null));
     return () => { live = false; };
   }, [enabled]);
+  return state;
+}
+
+// 14 Nov, Round 9: the state of another deal's guide, read when the visitor is somewhere else (the deal list, the welcome page, the other deal): its steps and whether its handover is locked.
+export function useRemoteGuide(deal, enabled, refreshKey = "", client = api) {
+  const [state, setState] = useState(null);
+  useEffect(() => {
+    if (!enabled || !deal) { setState(null); return undefined; }
+    let live = true;
+    Promise.all([client.fetchRegister(deal), client.fetchDocuments(deal), client.fetchSamples(deal)]).then(([reg, docs, smp]) => {
+      if (!live) return;
+      const complete = !!reg.handover?.complete;
+      setState({ deal, complete, steps: guideSteps(deal, smp.samples, docs.documents, reg.commitments, complete, tourDone(deal)) });
+    }, () => live && setState(null));
+    return () => { live = false; };
+  }, [enabled, deal, refreshKey]);
   return state;
 }
 
@@ -106,6 +122,13 @@ export function DemoBar({ initialSamples = null, initialOpen = false, initialTou
   const [, setToured] = useState(0); // a re-render when the tour is marked done
   const bar = useRef(null);
   const deal = guide?.deal;
+  // Round 9: the active path. The page's own guide is the path when it is the active deal's; otherwise the active deal's state is read, and if it has progress and is not finished,
+  // the bar says where the visitor is on it and offers the way back. A locked deal's guide is finished: the page's own steps show.
+  const active = demo.public ? activeGuide() : null;
+  const onActivePage = !!guide && deal === active;
+  const remote = useRemoteGuide(active, demo.public && !onActivePage, `${deal ?? ""}|${onLanding}`);
+  const awayRemote = !onActivePage && remote ? awayFrom({ steps: remote.steps, complete: remote.complete, here: false }) : null;
+  const goBackRemote = () => { requestStep(active); nav?.current?.(active); };
   useEffect(() => {
     if (!demo.public || !deal || guide.handoverComplete || initialSamples) return undefined;
     let alive = true;
@@ -137,39 +160,47 @@ export function DemoBar({ initialSamples = null, initialOpen = false, initialTou
   const steps = guide && GUIDES[deal] && (guide.handoverComplete || samples) ? guideSteps(deal, samples, guide.documents, guide.commitments, guide.handoverComplete, toured ?? tourDone(deal)) : null;
   const allDone = !!steps && steps.every((s) => s.state === "done");
   const now = steps && !allDone ? barStepText(steps) : null;
-  const captions = steps && tour != null ? tourCaptions(deal, guide.facts) : null; // while the tour runs, the bar's text is the caption
+  const awayHere = onActivePage && steps ? awayFrom({ steps, complete: guide.handoverComplete, here: guide.here !== false }) : null; // on the active deal's page but not where the step is
+  const away = awayHere ?? awayRemote;
+  const captions = steps && tour != null && !away ? tourCaptions(deal, guide.facts) : null; // while the tour runs, the bar's text is the caption
+  const shown = away ? (awayHere ? steps : remote.steps) : steps; // the steps the bar draws: the active deal's when the visitor is away from it
+  const otherDeal = away && deal && deal !== active ? GUIDE_DEAL_NAME[active] : null; // on another deal's page: say whose steps these are
+  const goBack = () => { setOpen(false); if (awayHere) guide.onDo(awayHere.step); else goBackRemote(); };
+  const guideThisDeal = () => { setActiveGuide(deal); setToured((n) => n + 1); };
   return (
     <div className="demo-bar" ref={bar} role="region" aria-label="Public demo">
       <div className="demo-bar-row">
-        {steps && <span className="demo-bar-pill">Demo guide</span>}
-        {!steps && <strong className="demo-bar-status">{demo.banner}</strong>}
-        {!steps && !onLanding && <StartDemoButton className="demo-bar-do" />}
-        {steps && (
+        {shown && <span className="demo-bar-pill">Demo guide</span>}
+        {!shown && <strong className="demo-bar-status">{demo.banner}</strong>}
+        {!shown && !onLanding && <StartDemoButton className="demo-bar-do" />}
+        {shown && (
           <span className="demo-bar-stepblock" role="status">
             <span className="demo-bar-meta">
-              <span className="demo-bar-n">{allDone ? `All ${steps.length} steps` : `Step ${now.n} of ${steps.length}`}</span>
-              <span className="demo-bar-dots" role="img" aria-label={`${steps.filter((s) => s.state === "done").length} of ${steps.length} steps done`}>
-                {steps.map((s) => <span key={s.n} className={`demo-bar-dot is-${s.state}`} />)}
+              <span className="demo-bar-n">{away ? away.line : allDone ? `All ${steps.length} steps` : `Step ${now.n} of ${steps.length}`}</span>
+              <span className="demo-bar-dots" role="img" aria-label={`${shown.filter((s) => s.state === "done").length} of ${shown.length} steps done`}>
+                {shown.map((s) => <span key={s.n} className={`demo-bar-dot is-${s.state}`} />)}
               </span>
             </span>
-            <span className="demo-bar-step">{captions ? captions[tour] : allDone ? BAR_DONE : now.text}</span>
+            <span className="demo-bar-step">{away ? `${otherDeal ? `${otherDeal}: ` : ""}${away.step.label}` : captions ? captions[tour] : allDone ? BAR_DONE : now.text}</span>
           </span>
         )}
         {captions && <span className="demo-bar-tourn">{tour + 1} of {captions.length}</span>}
         {captions && <button type="button" className="demo-bar-do" onClick={() => (tour < captions.length - 1 ? goTour(tour + 1) : stopTour(true))}>{tour < captions.length - 1 ? "Next" : "Finish"}</button>}
         {captions && <button type="button" className="demo-bar-link" onClick={() => stopTour(true)}>Skip tour</button>}
-        {!captions && now && <button type="button" className="demo-bar-do" onClick={() => { setOpen(false); if (now.step.kind === "tour") goTour(0); else guide.onDo(now.step); }}>{now.step.kind === "tour" ? "Show me" : `Do step ${now.n}`}</button>}
+        {away && <button type="button" className="demo-bar-do" onClick={goBack}>{away.button}</button>}
+        {away && otherDeal && guide?.deal && <button type="button" className="demo-bar-link" onClick={guideThisDeal}>Guide this deal</button>}
+        {!away && !captions && now && <button type="button" className="demo-bar-do" onClick={() => { setOpen(false); setActiveGuide(deal); if (now.step.kind === "tour") goTour(0); else guide.onDo(now.step); }}>{now.step.kind === "tour" ? "Show me" : `Do step ${now.n}`}</button>}
         <span className="demo-bar-right">
-          {steps && <button type="button" className="demo-bar-link" aria-expanded={open} aria-haspopup="true" onClick={() => setOpen(!open)}>All steps ▾</button>}
+          {shown && <button type="button" className="demo-bar-link" aria-expanded={open} aria-haspopup="true" onClick={() => setOpen(!open)}>All steps ▾</button>}
           <ResetDemo variant="bar" />
         </span>
       </div>
       <ResetNotice />
-      {steps && open && (
+      {shown && open && (
         <div className="demo-bar-menu" role="group" aria-label="All steps">
           <p className="demo-bar-menu-status">{demo.banner}</p>
           <ol className="demo-guide-list">
-            {steps.map((s) => (
+            {shown.map((s) => (
               <li key={s.n} className={`is-${s.state}`}>
                 <span className="demo-guide-n" aria-hidden="true">{s.state === "done" ? "✓" : s.n}</span>
                 <span className="demo-guide-label">{s.label}<span className="dp-sr">{s.state === "done" ? " (done)" : s.state === "current" ? " (current)" : ""}</span></span>
@@ -286,17 +317,18 @@ export function SamplePicker({ deal, documents, labels, onDone, onClose, initial
       {samples && samples.length === 0 && !error && <p className="dp-faint dp-small">{NO_SAMPLES}</p>}
       {samples && samples.length > 0 && steps.every((x) => x.state === "done") && <p className="demo-all-added" role="status">{ALL_ADDED[deal] ?? ""}</p>}
       <ol className="demo-sample-list">
-        {steps.map(({ sample: s, n, state, after }) => (
+        {steps.map(({ sample: s, n, state, after }, idx) => (
           <li key={s.file} className={`is-${state}`}>
             <span className="demo-sample-n" aria-hidden="true">{n}</span>
             <div>
               <strong>{s.title}</strong>
               <span className="dp-small dp-block">{s.summary}</span>
               <span className="dp-faint dp-small dp-block">{filingLine(s, documents, labels)}</span>
+              {state === "later" && idx > 0 && <span className="demo-blocked dp-small dp-block" role="note">{sampleBlockedLine(steps[idx - 1].sample.title, after)}</span>}
             </div>
             <span className="demo-sample-actions">
               {state === "next" && <button type="button" className="dp-btn dp-btn-dark" disabled={!!busy} onClick={() => add(s)}>{busy === s.file ? "Checking…" : "Add and check"}</button>}
-              {state === "later" && <button type="button" className="dp-btn dp-btn-dark" disabled>After step {after}</button>}
+              {state === "later" && <button type="button" className="dp-btn dp-btn-dark" disabled>Not yet</button>}
               {state === "done" && <span className="demo-sample-done">Added</span>}
               <button type="button" className="dp-link-btn dp-brand demo-sample-preview" disabled={!!busy} onClick={() => show(s)}>Preview</button>
             </span>

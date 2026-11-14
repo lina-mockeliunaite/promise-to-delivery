@@ -28,9 +28,10 @@ export async function verifyText(text, stored) {
 
 // The print appendix: one entry per document with a stored hash, each starting on a new page. texts: { [source_version_id]: text }.
 // The text is carried exactly as read, never reformatted.
-export function appendixEntries(documents, texts) {
+export function appendixEntries(documents, texts, live = []) {
   return (documents ?? []).filter(hasStoredText).map((d) => ({
     key: `${d.source_version_id}`, name: d.name, version: d.version, date: d.version_date || d.date || "", sha256: d.sha256,
     text: texts?.[d.source_version_id] ?? null,
+    format: (live ?? []).find((x) => x.source_version_id === d.source_version_id)?.format ?? ((live ?? []).length ? "Text" : null), // the live document says what it was uploaded as; null until the documents are known (print waits)
   }));
 }

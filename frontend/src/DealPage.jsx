@@ -3,7 +3,7 @@
 // deal's shape stay in view. The only way a gap closes is a new document version that the check confirms; notes and "seen"
 // never close anything.
 import { BrandBlock } from "./Logo.jsx";
-import { useCallback, useContext, useEffect, useId, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useId, useRef, useState, useMemo } from "react";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-500.css";
 import "@fontsource/inter/latin-600.css";
@@ -21,7 +21,7 @@ import { CardHead, CatalogueNames, CoverageLines, Drawer, DrawerHead, Commitment
 import { FICTIONAL } from "./brand.js";
 import CatalogueModal from "./CatalogueModal.jsx";
 import { DemoNameNote, SamplePicker, UseSampleText } from "./DemoUI.jsx";
-import { GUIDES, GuidePublishContext, NAME_NOTE, REFUSED_FINDINGS, guideAction, handoverSampleFor, noteLimit, noteSampleFor, useDemo } from "./demo.js";
+import { GUIDES, GuidePublishContext, NAME_NOTE, REFUSED_FINDINGS, addressedAllowed, addressedBlockedLine, guideAction, guideSteps, handoverSampleFor, lockBlockedLine, noteLimit, noteSampleFor, setActiveGuide, stepHere, takePendingStep, tourDone, useDemo } from "./demo.js";
 import "./DealPage.css";
 
 const Icon = ({ d, size = 15 }) => <DIcon d={d} size={size} />;
@@ -341,7 +341,7 @@ function Modal({ title, sub, dot, onClose, children }) {
 
 
 // Record a note, in the drawer. Keep it open (default) or mark as addressed by note; the name is asked for only if none is stored.
-function NoteForm({ deal, c, titleId, name, setName, canDecide, freshnessLabel, message, checking, onCheckAgain, onNoted, onBack, onClose }) {
+export function NoteForm({ deal, c, titleId, name, setName, canDecide, freshnessLabel, message, checking, onCheckAgain, onNoted, onBack, onClose, addressedBlocked = "" }) {
   const demo = useDemo();
   const sample = noteSampleFor(demo, deal, c);
   const open = c.issues.filter((i) => i.state !== "Resolved");
@@ -380,16 +380,16 @@ function NoteForm({ deal, c, titleId, name, setName, canDecide, freshnessLabel, 
             <span><strong>Keep it open, add context.</strong> <em className="dp-default">Default</em><br />It stays under Needs attention with your note shown inside the row,
               for example "Delivery will raise it at kick-off".</span>
           </label>
-          <label className={how === "addressed" ? "is-on" : ""}>
-            <input type="radio" name="how" checked={how === "addressed"} onChange={() => setHow("addressed")} />
+          <label className={`${how === "addressed" && !addressedBlocked ? "is-on" : ""}${addressedBlocked ? " is-disabled" : ""}`.trim()} aria-disabled={addressedBlocked ? "true" : undefined}>
+            <input type="radio" name="how" checked={how === "addressed" && !addressedBlocked} disabled={!!addressedBlocked} onChange={() => setHow("addressed")} />
             <span><strong>Mark as addressed by note.</strong><br />The documents still differ. It moves to "Addressed by note", stays in
-              the handover record, and reopens if the documents change.</span>
+              the handover record, and reopens if the documents change.{addressedBlocked && <><br /><em className="demo-blocked" role="note">{addressedBlocked}</em></>}</span>
           </label>
         </div>
         <label className="dp-field">
           <span>Note or recorded agreement</span>
           <textarea value={note} onChange={(e) => setNote(e.target.value)} rows={5} maxLength={noteLimit(demo)} autoFocus />
-          {sample && <UseSampleText onUse={() => { setNote(sample.text); if (sample.addressed) setHow("addressed"); }} />}
+          {sample && <UseSampleText onUse={() => { setNote(sample.text); if (sample.addressed && !addressedBlocked) setHow("addressed"); }} />}
         </label>
         <div className="dp-author">
           {!name.trim() || changing ? (
@@ -783,13 +783,33 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
     setTourKey(key);
     if (key) { clearOverlays(false); setTimeout(() => requestAnimationFrame(() => document.querySelector(key === "brief" ? ".dp-brief-card" : key === "journey" ? ".dp-aside" : "#dp-commitments")?.scrollIntoView({ behavior: "smooth", block: "start" })), 80); }
   };
+  // Round 9 (14 Nov): this deal's guide steps, for the page's own checks (is the visitor where the step is, may a note be marked as addressed) and for "Back to step N".
+  const [guideSamples, setGuideSamples] = useState(null);
+  useEffect(() => {
+    if (!demo.public || !GUIDES[deal]) { setGuideSamples(null); return undefined; }
+    let live = true;
+    api.fetchSamples(deal).then((r) => live && setGuideSamples(r.samples), () => live && setGuideSamples([]));
+    return () => { live = false; };
+  }, [demo.public, deal]);
+  const guideNow = useMemo(() => (demo.public && GUIDES[deal] && guideSamples && reg && docs
+    ? guideSteps(deal, guideSamples, docs.documents, reg.commitments, !!reg.handover.complete, tourDone(deal)) : null), [demo.public, deal, guideSamples, reg, docs]);
+  const guideView = { drawer: drawer ? { type: drawer.type, id: drawer.id ?? drawer.fromId ?? null } : null, catalogueOpen: catFocus !== null };
+  const guideHere = guideNow ? stepHere(guideNow.find((s) => s.state === "current"), reg?.commitments, guideView) : true;
   useEffect(() => {
     if (!demo.public || !GUIDES[deal] || !reg || !docs) return undefined;
-    publishGuide({ deal, documents: docs.documents, commitments: reg.commitments, handoverComplete: !!reg.handover.complete,
+    publishGuide({ deal, documents: docs.documents, commitments: reg.commitments, handoverComplete: !!reg.handover.complete, here: guideHere,
       facts: { goLive: reg.brief?.go_live, stage: reg.stage.current, stageLabel: reg.stage.current_label, open: reg.open_rows.length },
       onDo: (step) => doStepRef.current(step), onTour: (key) => tourRef.current(key) });
     return () => publishGuide(null);
-  }, [demo.public, deal, reg, docs, publishGuide]);
+  }, [demo.public, deal, reg, docs, publishGuide, guideHere]);
+  // "Back to step N" from another page: the deal opens, then the current step is opened where it happens. This only opens a drawer or the handover card; it adds, saves and locks nothing.
+  useEffect(() => {
+    if (!guideNow || !takePendingStep(deal)) return;
+    const current = guideNow.find((s) => s.state === "current");
+    if (current && current.kind !== "tour") doStepRef.current(current);
+  }, [deal, guideNow]);
+  // Adding a sample on a guided deal makes it the active path (as do the bar's own "Do step" / "Show me" and "Guide this deal"); saving a note does not, so a note on Alder never moves the visitor's path off Noma.
+  const markActive = () => { if (demo.public && GUIDES[deal]) setActiveGuide(deal); };
   const openCommitment = (c) => { setDrawer({ type: "commitment", id: c.id }); writeHash(c.ref); };
   const closeDrawer = useCallback(() => { setDrawer(null); writeHash(null); }, [writeHash]);
 
@@ -815,6 +835,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
   };
 
   const docDone = async (review, added) => {
+    markActive();
     const acted = drawerC?.name ?? null; // the commitment the document was added from; none when added from the sidebar
     closeDrawer();
     setMessage(null);
@@ -962,9 +983,12 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
                     <button type="button" className="dp-btn" onClick={() => setCompleting(false)}>Cancel</button>
                   </span>
                 ) : (
-                  <button type="button" className="dp-btn dp-btn-dark" disabled={missing.length > 0} onClick={() => setCompleting(true)}>
-                    <Icon d={I.check} /> Lock handover record
-                  </button>
+                  <>
+                    <button type="button" className="dp-btn dp-btn-dark" disabled={missing.length > 0} onClick={() => setCompleting(true)}>
+                      <Icon d={I.check} /> Lock handover record
+                    </button>
+                    {demo.public && missing.length > 0 && <span className="demo-blocked dp-small" role="note">{lockBlockedLine(missing)}</span>}
+                  </>
                 )}
               </div>
             </div>
@@ -1011,7 +1035,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
           {drawer.type === "note" && drawerC && (
             <NoteForm deal={deal} c={drawerC} titleId="dr-title" name={name} setName={setName} canDecide={reg.can_decide}
                       freshnessLabel={reg.freshness_label} message={message} checking={checking} onCheckAgain={checkAgain}
-                      onNoted={() => { toCommitment(); load(); onDealsChanged?.(); }} onBack={toCommitment} onClose={closeDrawer} />
+                      onNoted={() => { toCommitment(); load(); onDealsChanged?.(); }} addressedBlocked={demo.public && GUIDES[deal] && !addressedAllowed(deal, guideNow, drawerC) ? addressedBlockedLine(deal) : ""} onBack={toCommitment} onClose={closeDrawer} />
           )}
         </Drawer>
       )}

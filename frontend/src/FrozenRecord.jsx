@@ -1,7 +1,7 @@
 // Frozen handover record (16 Oct; reordered 19 Oct). What Delivery inherited,
 // read from the snapshot saved when the handover was completed. Nothing here can change, and nothing is recomputed:
 // it shows the record as it stood, plus the record's SHA-256 fingerprint so anyone can check it was not edited.
-import { BrandBlock } from "./Logo.jsx";
+import Logo, { BrandBlock } from "./Logo.jsx";
 import { useEffect, useMemo, useState } from "react";
 import * as api from "./api.js";
 import { fmtDate, fmtDateTime } from "./format.js";
@@ -10,6 +10,7 @@ import {
 } from "./dealpage.js";
 import { CatalogueNames, Drawer, CommitmentView, CoverageLines, DocumentView, TitleLine, Icon, ICON } from "./Drawer.jsx";
 import BriefCard from "./BriefCard.jsx";
+import { PreviewDoc } from "./DemoUI.jsx";
 import { appendixEntries, hasStoredText, shortHash } from "./docHash.js";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
 import { FICTIONAL } from "./brand.js";
@@ -82,13 +83,19 @@ export function RecordDetail({ v, documents, onOpenDoc }) {
   );
 }
 
+// Round 9 (14 Nov): under each document's header in the print appendix, and a document that is not Markdown (PDF, Word, Excel, PowerPoint, plain text) prints as plain paragraphs.
+export const APPENDIX_NOTE = "SHA-256 covers the source text Dealshape read; formatting here is for reading.";
+export function PlainText({ text }) {
+  return String(text ?? "").split(/\n{2,}/).filter((p) => p.trim()).map((p, k) => <p key={k} className="fr-plain-para">{p}</p>);
+}
+
 // "Documents at handover" (each with its SHA-256) and the record fingerprint. On screen they sit in the folded "Record details"; the same block is also
 // rendered once more for print only, outside the fold, so a printed record always carries them whether or not the fold is open (11 Nov).
-export function RecordBody({ s, hv, interactive, setDrawer, copy, copied, signedLabels = {} }) {
+export function RecordBody({ s, hv, interactive, setDrawer, copy, copied, signedLabels = {}, print = false }) {
   return (
     <div className="fr-record-body">
           <div>
-            <span className="dp-side-title">Documents at handover</span>
+            {print ? <h2 className="fr-print-h">Documents at handover</h2> : <span className="dp-side-title">Documents at handover</span>}
             <ul className="dp-docs">
               {byDocumentDate(s.documents).map((d) => {
                 const name = `${d.name}${d.version > 1 ? ` · v${d.version}` : ""}`;
@@ -118,6 +125,7 @@ export function RecordBody({ s, hv, interactive, setDrawer, copy, copied, signed
           </div>
           {hv.fingerprint && (
             <div>
+              {print && <h2 className="fr-print-h">Record details</h2>}
               <span className="dp-side-title"><Lock /> Record fingerprint</span>
               <code className="fr-hash" title={hv.fingerprint}><span className="fr-h-short">{hv.fingerprint.slice(0, 12)}…{hv.fingerprint.slice(-4)}</span><span className="fr-h-full">{hv.fingerprint}</span></code>
               <span className="dp-faint dp-small">
@@ -194,7 +202,7 @@ export default function FrozenRecord({ deal, onBack }) {
     ...closedOnly.map((p) => frozenView({ item: { promise: p, findings: [], ...(s.closed_items ?? []).find((x) => x.promise === p) }, status: "closed", closedFindings: closedFor(p), live: liveOf(p), ...common })),
   ];
   const active = drawer ? views.find((v) => v.key === (drawer.key ?? drawer.fromKey)) : null;
-  const appendix = withText ? appendixEntries(s.documents, texts) : [];
+  const appendix = withText ? appendixEntries(s.documents, texts, documents) : [];
   // The live documents know both dates of each signed document (the saved record does not, and is not changed): shown beside it, display only.
   const signedLabels = Object.fromEntries(documents.filter((d) => signedDatesLabel(d)).map((d) => [d.source_version_id, signedDatesLabel(d)]));
   const printAll = () => { if (evidencePending) return; setRecord(true); setTimeout(() => window.print(), 80); }; // printing waits until the evidence labels are final
@@ -210,6 +218,8 @@ export default function FrozenRecord({ deal, onBack }) {
 
   return (
     <div className="dp fr">
+      {/* Round 9 (14 Nov): the printed record starts with the Dealshape logo; on screen this is not shown */}
+      <div className="fr-print-head" aria-hidden="true"><Logo height={34} /></div>
       <div className="fr-ident" aria-hidden={!headerGone}>
         <IdentityLine name={s.deal} stage={`Stage: ${s.stage}`} goLive={s.brief?.go_live} show={headerGone} />
       </div>
@@ -222,7 +232,7 @@ export default function FrozenRecord({ deal, onBack }) {
               <input type="checkbox" checked={withText} onChange={(e) => setWithText(e.target.checked)} /> Include full document text
             </label>
           )}
-          <button type="button" className="dp-btn" onClick={printAll} disabled={evidencePending || (withText && appendix.some((a) => a.text === null))}>Print or save as PDF</button>
+          <button type="button" className="dp-btn" onClick={printAll} disabled={evidencePending || (withText && appendix.some((a) => a.text === null || a.format === null))}>Print or save as PDF</button>
         </span>
       </div>
 
@@ -251,8 +261,10 @@ export default function FrozenRecord({ deal, onBack }) {
         </div>
       </section>
 
+      <h2 className="fr-print-h">Deal brief</h2>
       <BriefCard brief={s.brief} record />
 
+      <h2 className="fr-print-h">Commitments</h2>
       <section className={`dp-card dp-promises ${counts.open ? "is-attention" : "is-clear"}`}>
         <div className="dp-sec-head"><h2>Commitments</h2></div>
         <CoverageLines part="main" lines={coverageLines(s.check_coverage?.rejected, hv.check_split)} />
@@ -266,7 +278,8 @@ export default function FrozenRecord({ deal, onBack }) {
         <CoverageLines part="quiet" lines={coverageLines(s.check_coverage?.rejected, hv.check_split)} />
       </section>
 
-      <section className="dp-card">
+      <h2 className="fr-print-h">Handover notes</h2>
+      <section className="dp-card fr-notes-card">
         <div className="dp-sec-head"><h2>Handover notes</h2><span className="dp-chip dp-chip-grey"><Lock size={11} /> Locked</span></div>
         <div className="dp-notes">
           {["sales", "delivery"].map((role) => {
@@ -293,7 +306,7 @@ export default function FrozenRecord({ deal, onBack }) {
         <RecordBody s={s} hv={hv} interactive setDrawer={setDrawer} copy={copy} copied={copied} signedLabels={signedLabels} />
       </details>
       <section className="dp-card fr-print-record" aria-hidden="true">
-        <RecordBody s={s} hv={hv} interactive={false} setDrawer={setDrawer} copy={copy} copied={copied} signedLabels={signedLabels} />
+        <RecordBody s={s} hv={hv} interactive={false} print setDrawer={setDrawer} copy={copy} copied={copied} signedLabels={signedLabels} />
       </section>
 
       <footer className="dp-foot">{FICTIONAL}</footer>
@@ -304,7 +317,8 @@ export default function FrozenRecord({ deal, onBack }) {
             <section key={a.key} className="fr-appendix-doc">
               <h2>{a.name}{a.version > 1 ? ` · v${a.version}` : ""}</h2>
               <p>Version {a.version} · {fmtDate(a.date)} · SHA-256 <code>{a.sha256}</code></p>
-              <pre>{a.text}</pre>
+              <p className="fr-appendix-note">{APPENDIX_NOTE}</p>
+              <div className="fr-appendix-text">{a.text !== null && (a.format === "Markdown" ? <PreviewDoc text={a.text} /> : <PlainText text={a.text} />)}</div>
             </section>
           ))}
         </div>

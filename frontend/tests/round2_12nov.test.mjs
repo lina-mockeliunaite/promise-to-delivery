@@ -18,7 +18,7 @@ test("landing (public mode): the guided-demo button is first and primary, the ca
 
 test("the bar drops its guided-demo button on the landing page only; the deal list keeps it", () => {
   const ui = read("DemoUI.jsx");
-  assert.match(ui, /\{!steps && !onLanding && <StartDemoButton className="demo-bar-do" \/>\}/);
+  assert.match(ui, /\{!shown && !onLanding && <StartDemoButton className="demo-bar-do" \/>\}/);
   assert.match(ui, /<ResetDemo variant="bar" \/>/); // Reset demo stays
   assert.match(ui, /demo\.banner/); // so does the status text
   assert.match(read("Landing.jsx"), /publishLanding\(guided\); return \(\) => publishLanding\(false\)/); // off again when the landing goes

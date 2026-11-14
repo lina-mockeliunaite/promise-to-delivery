@@ -100,7 +100,7 @@ test("the link only fills the box: it is a plain button that sets the text; Save
   const html = renderToStaticMarkup(createElement(m.UseSampleText, { onUse() {} }));
   assert.equal(html, '<button type="button" class="dp-link-btn dp-brand demo-sample-text">Use sample text</button>');
   const page = read("DealPage.jsx");
-  assert.match(page, /\{sample && <UseSampleText onUse=\{\(\) => \{ setNote\(sample\.text\); if \(sample\.addressed\) setHow\("addressed"\); \}\} \/>\}/); // the note form
+  assert.match(page, /\{sample && <UseSampleText onUse=\{\(\) => \{ setNote\(sample\.text\); if \(sample\.addressed && !addressedBlocked\) setHow\("addressed"\); \}\} \/>\}/); // the note form
   assert.match(page, /\{sample && <UseSampleText onUse=\{\(\) => setText\(sample\)\} \/>\}/); // both handover fields (one component, sales and delivery)
   assert.equal((page.match(/<UseSampleText/g) || []).length, 2);
   // neither handler saves: no api call sits in the onUse bodies, and the forms still submit only on their own Save buttons

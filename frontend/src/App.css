@@ -424,6 +424,8 @@ main.home { max-width: 1440px; }
   .demo-bar-right { order: 4; }
   .demo-bar-menu, .demo-bar-reset { left: 16px; right: 16px; width: auto; }
 }
+/* Round 9 (14 Nov): at 480px and below the step label is clamped to two lines (the full wording is in "All steps") */
+@media (max-width: 480px) { .demo-bar-step { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; } }
 .demo-bar-tourn { flex: none; font-size: 13px; color: #cbd5e1; white-space: nowrap; }
 .demo-hint { margin: 8px 0 0; padding: 8px 10px; border-radius: 8px; background: var(--tint, #eef2ff); color: var(--ink, #0f172a); font-size: 13px; }
 /* The dropdown and the reset confirm match the bar: slate, light text, indigo for the current step and the primary button. */
@@ -470,3 +472,4 @@ main.home { max-width: 1440px; }
 .demo-choice-actions { display: flex; flex-direction: column; align-items: stretch; gap: 8px; }
 .demo-choice-actions .dp-link-btn { align-self: center; }
 .demo-reset-note { padding: 8px 20px; font-size: 14px; background: #7c2d12; color: #ffedd5; }
+.demo-blocked { color: #64748b; font-size: 12px; }
