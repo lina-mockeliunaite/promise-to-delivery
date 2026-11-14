@@ -12,6 +12,7 @@ import { CatalogueNames, Drawer, CommitmentView, CoverageLines, DocumentView, Ti
 import BriefCard from "./BriefCard.jsx";
 import { PreviewDoc } from "./DemoUI.jsx";
 import { appendixEntries, hasStoredText, shortHash } from "./docHash.js";
+import { citationsOf, plainParagraphs, planAnchors } from "./appendix.js";
 import { IdentityLine, useScrolledPast } from "./Identity.jsx";
 import { FICTIONAL } from "./brand.js";
 import "./DealPage.css";
@@ -30,7 +31,7 @@ const Check = () => (
 // One commitment in the record (11 Nov): its title and status, then the compact detail, the same on screen and in print. The row still opens the drawer
 // (the full evidence, with the AI summary, labelled). The detail is the same for every reader: what the customer was told, what the contract says, the gap
 // lines that matter, and how it was settled.
-function FrozenRow({ v, documents, active, onOpen, onOpenDoc }) {
+function FrozenRow({ v, documents, active, onOpen, onOpenDoc, anchorOf = null }) {
   const st = STATUS_CHIP[v.status];
   return (
     <li className={`dp-prow is-${v.status} ${active ? "is-active" : ""}`}>
@@ -45,36 +46,51 @@ function FrozenRow({ v, documents, active, onOpen, onOpenDoc }) {
         </span>
         <span className="dp-chevron fr-noprint" aria-hidden="true"><Icon d={ICON.chevron} size={16} /></span>
       </div>
-      <RecordDetail v={v} documents={documents} onOpenDoc={onOpenDoc} />
+      <RecordDetail v={v} documents={documents} onOpenDoc={onOpenDoc} anchorOf={anchorOf} />
     </li>
   );
 }
 
-export function RecordDetail({ v, documents, onOpenDoc }) {
+// Round 10 (14 Nov): with the full text in the print, a citation links to its place in the appendix (anchorOf gives the mark's id, or null when the quote is not found word for word); the link
+// shows in print only. data-cite and data-cite-status say what each citation is and whether it linked (or why not), for checking.
+function Cite({ anchorOf, kind, doc, quote }) {
+  if (!anchorOf || !quote) return null;
+  const st = anchorOf.status(doc, quote);
+  return st.id
+    ? <>{" "}<a className="fr-cite" href={`#${st.id}`} data-cite={kind} data-cite-status="linked">In the appendix →</a></>
+    : <span className="fr-cite-none" data-cite={kind} data-cite-status={st.reason} hidden />;
+}
+
+export function RecordDetail({ v, documents, onOpenDoc, anchorOf = null }) {
   const r = recordLines(v, documents);
+  const contractCite = citationsOf(v).find((c) => c.kind === "contract");
   return (
     <div className="fr-detail">
-      {r.told.length > 0 && <div><strong>Customer was told:</strong>{r.told.map((t) => <p key={t} className="fr-quote">{t}</p>)}</div>}
+      {r.told.length > 0 && <div><strong>Customer was told:</strong>{r.told.map((t, k) => <p key={t} className="fr-quote">{t}{v.told[k] && <Cite anchorOf={anchorOf} kind="told" doc={v.told[k].doc} quote={v.told[k].quote} />}</p>)}</div>}
       {r.scope && (
         <>
           <p className="fr-why"><strong>Why it&rsquo;s open:</strong> {r.scope.why}</p>
           <p className="fr-related">{r.scope.start}
             {r.scope.startDoc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(r.scope.startDoc, r.scope.startQuote); }}>Open the clause</button></>}
+            {r.scope.startDoc && <Cite anchorOf={anchorOf} kind="scope-start" doc={r.scope.startDoc} quote={r.scope.startQuote} />}
           </p>
           <p className="fr-related">{r.scope.approval}
             {r.scope.approvalDoc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(r.scope.approvalDoc, r.scope.approvalQuote); }}>Open the approval</button></>}
+            {r.scope.approvalDoc && <Cite anchorOf={anchorOf} kind="scope-approval" doc={r.scope.approvalDoc} quote={r.scope.approvalQuote} />}
           </p>
         </>
       )}
       {r.contract && (
         <p><strong>Contract says:</strong> {r.contract}
           {v.signed?.doc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(v.signed.doc, v.signed.quote); }}>Open the signed clause</button></>}
+          {contractCite && <Cite anchorOf={anchorOf} kind="contract" doc={contractCite.doc} quote={contractCite.quote} />}
         </p>
       )}
       {r.why && <p className="fr-why"><strong>Why it reopened:</strong> {r.why}</p>}
       {r.related && (
         <p className="fr-related"><strong>{r.related.heading}</strong> · Related clause: {r.related.text}
           {r.related.doc && onOpenDoc && <>{" "}<button type="button" className="dr-linkbtn fr-noprint" onClick={(e) => { e.stopPropagation(); onOpenDoc(r.related.doc, r.related.quote); }}>Open the clause</button></>}
+          {r.related.doc && <Cite anchorOf={anchorOf} kind="related" doc={r.related.doc} quote={r.related.quote} />}
         </p>
       )}
       {r.gaps.map((g) => <p key={g} className="fr-gap">{g}</p>)}
@@ -85,8 +101,24 @@ export function RecordDetail({ v, documents, onOpenDoc }) {
 
 // Round 9 (14 Nov): under each document's header in the print appendix, and a document that is not Markdown (PDF, Word, Excel, PowerPoint, plain text) prints as plain paragraphs.
 export const APPENDIX_NOTE = "SHA-256 covers the source text Dealshape read; formatting here is for reading.";
-export function PlainText({ text }) {
-  return String(text ?? "").split(/\n{2,}/).filter((p) => p.trim()).map((p, k) => <p key={k} className="fr-plain-para">{p}</p>);
+// marks (Round 10): [{ from, to, id }] ranges of the stored text drawn as <mark>; without marks the paragraphs are exactly as before.
+export function PlainText({ text, marks = null }) {
+  if (!marks?.length) return String(text ?? "").split(/\n{2,}/).filter((p) => p.trim()).map((p, k) => <p key={k} className="fr-plain-para">{p}</p>);
+  return plainParagraphs(text).map((p, k) => {
+    const end = p.at + p.text.length;
+    const here = marks.filter((m) => m.from < end && m.to > p.at);
+    const parts = [];
+    let at = p.at;
+    for (const m of here) {
+      const a = Math.max(m.from, p.at);
+      const b = Math.min(m.to, end);
+      if (a > at) parts.push(p.text.slice(at - p.at, a - p.at));
+      parts.push(<mark key={m.id} id={m.from >= p.at ? m.id : undefined}>{p.text.slice(a - p.at, b - p.at)}</mark>); // the id sits where the mark starts
+      at = b;
+    }
+    if (at < end) parts.push(p.text.slice(at - p.at));
+    return <p key={k} className="fr-plain-para">{parts}</p>;
+  });
 }
 
 // "Documents at handover" (each with its SHA-256) and the record fingerprint. On screen they sit in the folded "Record details"; the same block is also
@@ -203,6 +235,9 @@ export default function FrozenRecord({ deal, onBack }) {
   ];
   const active = drawer ? views.find((v) => v.key === (drawer.key ?? drawer.fromKey)) : null;
   const appendix = withText ? appendixEntries(s.documents, texts, documents) : [];
+  // Round 10: the citations that link to the appendix, once every document's text is in (until then, and without the full text, no citation links)
+  const plan = withText && appendix.length > 0 && appendix.every((a) => a.text !== null)
+    ? planAnchors(appendix.map((a) => ({ id: a.key, text: a.text })), views.flatMap(citationsOf)) : null;
   // The live documents know both dates of each signed document (the saved record does not, and is not changed): shown beside it, display only.
   const signedLabels = Object.fromEntries(documents.filter((d) => signedDatesLabel(d)).map((d) => [d.source_version_id, signedDatesLabel(d)]));
   const printAll = () => { if (evidencePending) return; setRecord(true); setTimeout(() => window.print(), 80); }; // printing waits until the evidence labels are final
@@ -218,6 +253,8 @@ export default function FrozenRecord({ deal, onBack }) {
 
   return (
     <div className="dp fr">
+      {/* Round 10 (14 Nov): the running header on every printed page after the first (the first page has the logo); the page number is in the footer. Both sit in the page margin, so they cannot overlap the record. */}
+      <style>{`@media print { @page { @top-center { content: ${JSON.stringify(`${s.deal} \u00B7 Handover record`)}; } } @page :first { @top-center { content: none; } } }`}</style>
       {/* Round 9 (14 Nov): the printed record starts with the Dealshape logo; on screen this is not shown */}
       <div className="fr-print-head" aria-hidden="true"><Logo height={34} /></div>
       <div className="fr-ident" aria-hidden={!headerGone}>
@@ -271,7 +308,7 @@ export default function FrozenRecord({ deal, onBack }) {
         {views.length === 0 && <p className="dp-faint dp-pad">No commitment had a gap on the documents checked.</p>}
         <ul className="dp-plist">
           {views.map((v) => (
-            <FrozenRow key={v.key} v={v} documents={documents} onOpenDoc={(doc, quote) => doc && setDrawer({ type: "doc", docKey: doc.source_key, quote, fromKey: v.key })} active={active?.key === v.key}
+            <FrozenRow key={v.key} v={v} documents={documents} onOpenDoc={(doc, quote) => doc && setDrawer({ type: "doc", docKey: doc.source_key, quote, fromKey: v.key })} active={active?.key === v.key} anchorOf={plan}
                        onOpen={() => { setDrawer({ type: "commitment", key: v.key }); writeHash(v.key); }} />
           ))}
         </ul>
@@ -318,7 +355,7 @@ export default function FrozenRecord({ deal, onBack }) {
               <h2>{a.name}{a.version > 1 ? ` · v${a.version}` : ""}</h2>
               <p>Version {a.version} · {fmtDate(a.date)} · SHA-256 <code>{a.sha256}</code></p>
               <p className="fr-appendix-note">{APPENDIX_NOTE}</p>
-              <div className="fr-appendix-text">{a.text !== null && (a.format === "Markdown" ? <PreviewDoc text={a.text} /> : <PlainText text={a.text} />)}</div>
+              <div className="fr-appendix-text">{a.text !== null && (a.format === "Markdown" ? <PreviewDoc text={a.text} marks={plan?.marks[a.key]} /> : <PlainText text={a.text} marks={plan?.marks[a.key]} />)}</div>
             </section>
           ))}
         </div>

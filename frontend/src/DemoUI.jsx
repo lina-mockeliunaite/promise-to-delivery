@@ -5,6 +5,7 @@ import ResetDemo from "./ResetDemo.jsx";
 import { runReset } from "./deals.js";
 import { hashFor } from "./dealpage.js";
 import { blockLines, parsePreview } from "./preview.js";
+import { markPreview } from "./appendix.js";
 import { GUIDE_DEAL_NAME, activeGuide, awayFrom, requestStep, setActiveGuide, sampleBlockedLine, startAction, whileIdle, CHOICE_OTHER, CHOICE_TITLE, FIRST_DEAL, DEMO_WAS_RESET, START_FRESH, runState, clearTourDone, ALL_ADDED, BAR_DONE, BAR_NOTE_FALLBACK, DemoNavContext, GUIDES, GuideStateContext, LandingStateContext, START_LABEL, NAME_NOTE, NO_SAMPLES, TOUR_KEYS, addSample, barStepText, centeredScrollTop, filingLine, guideSteps, markTourDone, sampleSteps, startGuidedDemo, tourCaptions, tourDone, useDemo } from "./demo.js";
 
 // 13 Nov, Round 8: the first deal's state, read once, for the public demo only (null elsewhere and until known; a failed read counts as "start as before").
@@ -223,13 +224,14 @@ export function UseSampleText({ onUse }) {
 // highlighted (a highlighted table row for the pricing notes). `key` is the list of source line numbers from the sample route.
 function Inline({ nodes }) {
   return nodes.map((n, k) => (n.t === "strong" ? <strong key={k}><Inline nodes={n.children} /></strong> : n.t === "em" ? <em key={k}><Inline nodes={n.children} /></em>
-    : n.t === "code" ? <code key={k}>{n.text}</code> : n.text));
+    : n.t === "code" ? <code key={k}>{n.text}</code> : n.t === "mark" ? <mark key={k} id={n.id}><Inline nodes={n.children} /></mark> : n.text));
 }
 
-export function PreviewDoc({ text, keyLines = [] }) {
+// marks (Round 10, the print appendix): [{ from, to, id }] ranges of the stored text drawn as <mark>, the first of each carrying its id so a citation can link to it. Without marks nothing changes.
+export function PreviewDoc({ text, keyLines = [], marks = null }) {
   const key = new Set(keyLines);
   const hit = (b) => blockLines(b).some((l) => key.has(l));
-  return parsePreview(text).map((b, i) => {
+  return (marks?.length ? markPreview(parsePreview(text, true), marks) : parsePreview(text)).map((b, i) => {
     const cls = hit(b) && b.t !== "table" && b.t !== "p" ? " is-key" : "";
     if (b.t === "h") { const H = `h${Math.min(b.level + 2, 6)}`; return <H key={i} className={`demo-doc-h${cls}`}><Inline nodes={b.nodes} /></H>; }
     if (b.t === "hr") return <hr key={i} />;

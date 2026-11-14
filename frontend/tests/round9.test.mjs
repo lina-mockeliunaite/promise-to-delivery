@@ -187,7 +187,7 @@ test("C. print: the Dealshape logo first, clear section headings, page margins, 
   assert.ok(!/fr-notes-card[^{]*\{[^}]*break-before/.test(css));
   assert.match(css, /\.fr \.dp-prow \{ break-inside: avoid; \}/); // only each commitment stays whole
   assert.match(css, /\.fr-print-head, \.fr-print-h \{ display: none; \}/); // print only
-  assert.match(css, /@page \{ margin: 12mm 10mm; \}/);
+  assert.match(css, /@page \{ margin: 16mm 10mm 15mm;/); // Round 10: a little more at the top and bottom for the running header and the page number
   assert.match(css, /\.fr \.dp-topbar \{ display: none !important; \}/);
   assert.match(css, /\.fr \.dp-prow \{ break-inside: avoid; \}/); // each commitment stays on one page
   assert.match(css, /\.fr \.fr-appendix-doc \{ break-before: page; page-break-before: always; \}/);
@@ -204,7 +204,7 @@ test("C. print: Markdown documents are rendered as text (headings, lists, tables
   const plain = renderToStaticMarkup(createElement(PlainText, { text: "First paragraph\nstill the first\n\nSecond paragraph" }));
   assert.equal((plain.match(/<p /g) || []).length, 2); assert.ok(plain.includes("First paragraph\nstill the first") && !plain.includes("<table"));
   const fr = read("FrozenRecord.jsx"), css = read("DealPage.css");
-  assert.ok(fr.includes('a.format === "Markdown" ? <PreviewDoc text={a.text} /> : <PlainText text={a.text} />'));
+  assert.ok(fr.includes('a.format === "Markdown" ? <PreviewDoc text={a.text} marks={plan?.marks[a.key]} /> : <PlainText text={a.text} marks={plan?.marks[a.key]} />')); // Round 10: with the marks of the quoted places
   assert.match(css, /\.fr-appendix-text table \{[^}]*width: 100%;[^}]*table-layout: fixed;[^}]*\}/);
   assert.match(css, /\.fr-appendix-text th, \.fr-appendix-text td \{[^}]*overflow-wrap: anywhere;[^}]*\}/);
   // the format comes from the live document; unknown until the documents are known, and print waits for it (with the Round 8 label guard)

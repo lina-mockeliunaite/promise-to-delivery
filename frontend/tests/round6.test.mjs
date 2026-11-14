@@ -170,7 +170,7 @@ test("print: a record row is one block that print keeps together, so a reference
   const css = read("DealPage.css");
   assert.match(css, /@media print \{[\s\S]*?\.fr \.dp-prow \{ break-inside: avoid; \}/);
   const frozen = read("FrozenRecord.jsx");
-  assert.match(frozen, /<li className=\{`dp-prow[^`]*`\}>[\s\S]*?<RecordDetail v=\{v\} documents=\{documents\} onOpenDoc=\{onOpenDoc\} \/>\s*<\/li>/); // the detail (told, why it's open, contract says) is inside the row
+  assert.match(frozen, /<li className=\{`dp-prow[^`]*`\}>[\s\S]*?<RecordDetail v=\{v\} documents=\{documents\} onOpenDoc=\{onOpenDoc\} anchorOf=\{anchorOf\} \/>\s*<\/li>/); // the detail (told, why it's open, contract says) is inside the row
   assert.ok(css.includes(".dp-coverage { margin: 0; padding: 0 20px 8px; font-size: 12px; color: var(--muted); }"));
   assert.ok(css.includes(".dp-coverage.is-quiet { padding-top: 0; font-size: 11.5px; opacity: .85; }"));
   const html = renderToStaticMarkup(createElement(CoverageLines, { lines: coverageLines(3, { failed: 1, answered: 2 }) }));

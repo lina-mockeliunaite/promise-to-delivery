@@ -468,11 +468,13 @@ body:has(.dp) { background: #f8fafc; }
   /* The record's documents and fingerprint always print, whatever the on-screen fold is doing: the folded copy is hidden, the print-only copy shown (11 Nov). */
   .fr .fr-record { display: none; }
   .fr .fr-print-record { display: block; padding: 8px 0 0; }
-  @page { margin: 12mm 10mm; } /* Round 9: page margins, so a document's text and wide tables do not touch the paper's edge */
+  /* Round 10 (14 Nov): one set of page margins for the record and the appendix. The top and bottom hold the running header (every page after the first; its text is set from the record) and the footer's page number, in the margin so they never overlap content. */
+  @page { margin: 16mm 10mm 15mm; @bottom-center { content: "Page " counter(page) " / " counter(pages); font: 9pt "Inter", system-ui, sans-serif; color: #64748b; } @top-center { font: 9pt "Inter", system-ui, sans-serif; color: #64748b; } }
+  @page :first { @top-center { content: none; } }
   /* Round 9 (14 Nov): a printed record starts with the Dealshape logo and has clear section headings: Handover record (header and outcomes), Deal brief, Commitments, Handover notes, Documents at handover, Record details */
   .fr .dp-topbar { display: none !important; }
-  .fr .fr-print-head { display: block; padding: 0 20px 10px; }
-  .fr .fr-print-h { display: block; margin: 16px 20px 6px; padding-bottom: 4px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #334155; border-bottom: 1px solid #cbd5e1; break-after: avoid; }
+  .fr .fr-print-head { display: block; padding: 0 0 10px; } /* Round 10: headings and the logo line up with the card edges */
+  .fr .fr-print-h { display: block; margin: 16px 0 6px; padding-bottom: 4px; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #334155; border-bottom: 1px solid #cbd5e1; break-after: avoid; }
   .fr .dp-brief-card .dp-eyebrow { display: none; }
   /* Commitments and Handover notes take the same print heading as the other sections (the cards' own headings are not printed); only a commitment (or one note) is kept whole, so
      the Handover notes card may start right after the commitments instead of jumping to the next page */
@@ -482,7 +484,33 @@ body:has(.dp) { background: #f8fafc; }
   .fr .fr-print-record .fr-record-body > div { break-inside: avoid; }
   .fr .fr-appendix { display: block; }
   .fr .fr-appendix-doc { break-before: page; page-break-before: always; }
+
+  /* Round 10 (14 Nov): the printed record looks like the live locked record. Inter; thin grey card borders (the screen's soft shadow does not print), the same rounded corners and padding; the pale lock banner;
+     the bordered summary card; the purple rule on the Deal brief and the amber one on Commitments as real left borders; Sales and Delivery notes as their own bordered cards, side by side. Fills keep
+     their colour (print-color-adjust: exact), and every status also carries an outline and an icon, so it reads with "Background graphics" off. */
+  .dp.fr { font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, system-ui, sans-serif; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .fr .dp-card { border: 1px solid var(--line); box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+  .fr .fr-bar { border: 1px solid var(--line); }
+  .fr .fr-verdict { border: 1px solid var(--line); }
+  .fr .dp-brief-card::before, .fr .dp-promises::before { display: none; }
+  .fr .dp-brief-card, .fr .dp-promises { border-left: 4px solid var(--accent); }
+  .fr .dp-promises.is-attention { border-left-color: var(--amber-dot); }
+  .fr .dp-promises.is-clear { border-left-color: var(--grey-line); }
+  .fr .fr-notes-card { border: 0; padding: 0; background: transparent; }
+  .fr .dp-notes { gap: 10px; }
+  .fr .dp-note { border: 1px solid var(--line); break-inside: avoid; }
+  .fr .dp-chip-amber { border-color: var(--amber-dot); }
+  .fr .dp-chip-green { border-color: var(--green-dot); }
+  .fr .dp-chip-note { border-color: var(--grey-dot); }
+  .fr .dp-chip .dp-dot { width: 7px; height: 7px; border: 2px solid var(--amber-dot); box-sizing: border-box; } /* a ring that keeps its outline without background graphics; solid with them */
+  .fr .dp-chip .dp-dot-grey { border-color: var(--grey-dot); }
+  .fr .dp-chip .dp-dot-green { border-color: var(--green-dot); }
+  .fr .dp-stage-pill, .fr .dp-meta-strong { border: 1px solid var(--tint-line); }
+  .fr .dp-meta-strong { border-color: var(--line); }
+  .fr .fr-cite { display: inline; color: var(--accent); font-weight: 500; text-decoration: underline; text-underline-offset: 2px; white-space: nowrap; }
+  .fr .fr-appendix-text mark { background: var(--mark); color: #0f172a; border-radius: 2px; outline: 1px solid var(--amber-dot); outline-offset: 1px; text-decoration: underline; text-decoration-color: var(--amber-dot); text-decoration-thickness: 2px; text-underline-offset: 2px; }
 }
+.fr-cite { display: none; } /* print only (Round 10): the link to the quote's place in the appendix */
 
 /* Locked record: document hashes, the optional full-text appendix (print only), and the hash check in the document view (21 Oct) */
 .fr-h-full { display: none; }
