@@ -146,6 +146,8 @@ To restore the demo while the app is running, use **Reset demo** in the deal-lis
 
 The demo opens on the deals list with no API key. Both demo scripts (`docs/DEMO_SCRIPT_2026-10-21_noma.md`, the main one, and `docs/DEMO_SCRIPT_2026-10-20_alder.md`, the second) run end to end with no key, from saved model readings (the app still verifies every finding and rechecks every stored claim), when each file is filed exactly as the script says ("A new version of …"). Filing a revision as "A new document" gives it today's date, so it needs the model and therefore a key. Reading any other new or changed contract or customer document also needs `ANTHROPIC_API_KEY` in the server's terminal. The browser never sees it.
 
+Add the sample documents in the order shown in the demo script. Out of order, no saved reading matches, and without an API key the app adds nothing and asks for a key. Nothing is lost; add them in order.
+
 ## Where to look
 
 | File | What it is |
