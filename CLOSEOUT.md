@@ -1,10 +1,10 @@
 # Dealshape: close-out
 
-*Drafted by Claude on 2 Nov 2026 from DECISIONS.md, LEARNING_LOG.md, the README and the git history, for Lina to edit. Updated 13 Nov with Lina's figures for spend, hours and the video status.*
+*Drafted by Claude on 2 Nov 2026 from DECISIONS.md, LEARNING_LOG.md, the README and the git history, for Lina to edit. Updated 13 Nov with Lina's figures for spend and hours, and 16 Nov when the demo video was recorded.*
 
 ## In one paragraph
 
-Dealshape catches deal surprises before signing. It reads a B2B deal's paper trail (calls, RFP answers, proposal, SOW, contract) against the vendor's product catalogue and flags promises that are missing from the contract, worded differently there, not offered, or made without a recorded approval. AI proposes each gap, code checks every quote and citation, and people decide the response. It was built between 25 Sep and 31 Oct 2026, in 132 commits, as a hands-on project to learn to design, build and evaluate an AI product end to end.
+Dealshape catches deal surprises before signing. It reads a B2B deal's paper trail (calls, RFP answers, proposal, SOW, contract) against the vendor's product catalogue and flags promises that are missing from the contract, worded differently there, not offered, or made without a recorded approval. AI finds each gap, code verifies every quote and citation against its source, and teams decide. It was built between 25 Sep and 31 Oct 2026, then published and polished 10–14 Nov, as a hands-on project to learn to design, build and evaluate an AI product end to end.
 
 ## What exists at close
 
@@ -15,7 +15,8 @@ Dealshape catches deal surprises before signing. It reads a B2B deal's paper tra
 - A locked handover record with per-document SHA-256 hashes, checked in the browser.
 - Two vendors' catalogues through one pipeline (Elva and Aivuna).
 - A public demo (11 Nov): https://dealshape-demo.onrender.com. Noma Journeys and Alder Bank only, shared by every visitor, with sample files instead of uploads, no API key, and a reset every hour and on wake-up (free hosting sleeps when idle).
-- 925 Python and 337 front-end tests passing (13 Nov).
+- 925 Python and 362 front-end tests passing (14 Nov).
+- A demo video (16 Nov): a narrated screen recording of the Noma Journeys walkthrough on the local app, with an on-camera intro, edited in CapCut.
 
 ## Results
 
@@ -41,7 +42,6 @@ Read straight: v2 matched a good prompt on detection on one unseen deal. Its val
 ## What is not done, stated plainly
 
 - **The unaided test.** No one who had never seen the product has been asked to read a deal page cold. The 6 Oct and 16 Oct sessions were compromised (I named the gap first; I narrated first).
-- **The demo video:** still to do. Not re-recorded after 31 Oct; the public demo at https://dealshape-demo.onrender.com is the current walkthrough.
 - **A full promise inventory.** Only promises with findings are listed; listing every promise changes the tested prompt and needs a fresh sealed check.
 - **The detection prompt still names the first vendor.** Changing it raises the detection version and invalidates saved readings.
 - **No connectors or accounts.** Documents carry a Drive link field; no live Drive, CRM or sign-in.
@@ -65,7 +65,7 @@ Read straight: v2 matched a good prompt on detection on one unseen deal. Its val
 ## Cost and effort
 
 - API spend in November: $0.56 (about $0.45 for the three Alder readings on 13 Nov; the rest self-test runs). $15.87 of credit remaining. The API did not lapse on 31 Oct. Each sealed run cost about $0.25. The Claude subscription (Claude Code and chat) is separate and not included.
-- Commits: 132, 25 Sep to 31 Oct.
+- Commits: 132 from 25 Sep to 31 Oct, and 36 more from 2 to 14 Nov.
 - Hours: about 10 hours for 10–13 Nov (public demo, Alder rebuild, polish rounds, documentation). Build total not tracked.
 
 ## What I learned

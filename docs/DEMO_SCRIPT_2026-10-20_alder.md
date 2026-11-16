@@ -51,7 +51,7 @@
 
 ## Likely questions (short answers)
 
-- **"Where does the AI come in?"** "The model reads the paperwork and proposes each gap with exact quotes. Code checks every quote and citation, and only code can close a gap. The model never closes anything."
+- **"Where does the AI come in?"** "AI reads the paperwork and finds each gap with exact quotes. Code verifies every quote and citation, and only code can close a gap. The model never closes anything."
 - **"Why can't someone just mark it resolved?"** "They can record a decision, and it's shown as exactly that: a typed note, visibly different from documentary support, kept in the record. It reopens if a document in its checking fingerprint changes; signed paperwork doesn't reopen it."
 - **"How do you know it works?"** "Two deals were written and sealed before the code that tested them. Each configuration ran once. Version 2 found 8 of 8 labelled issues with no false flags on Atlas Remit. That's a small sample, and I say so in the README."
 - **"Why do scam-call alerts still need attention after the approval and the signed statement of work?"** "Because the approval starts on 1 May 2027 and the promise, in the signed statement of work, starts on 1 February. Dealshape reads two explicit dates from quotes it has already verified: the approval's effective date, which it finds after 'from', 'effective' or 'starting', and the commitment's start date, from the signed contract first, then the draft, then the customer's promise. If the approval starts later, the approval gap stays open and says which source the start date comes from. If either date is missing it behaves as before."

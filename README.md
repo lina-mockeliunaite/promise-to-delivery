@@ -2,7 +2,7 @@
 
 **Catch deal surprises before you sign.**
 
-Dealshape compares customer promises, contractual wording and the vendor's product catalogue, then flags commitments that are missing, different or unsupported, with linked source evidence. **AI surfaces gaps. Code checks sources. Teams decide the response.** For B2B Sales and Delivery teams.
+Dealshape compares customer promises, contractual wording and the vendor's product catalogue, then flags commitments that are missing, different or unsupported, with linked source evidence. **AI finds the gaps. Code verifies each quote against its source. Teams decide.** For B2B Sales and Delivery teams.
 
 *Built as the project From Promise to Delivery (hence the repository name); the product is Dealshape.*
 
@@ -56,13 +56,13 @@ One commitment can carry several gaps, and they close independently. An approval
 
 ## Where the AI comes in, and where it doesn't
 
-**AI surfaces gaps.** The model proposes potential gaps from the supplied documents and catalogue. It maps sales wording to the catalogue and the contract, which hand-written rules could not do on unseen deals (see the results below).
+**AI finds the gaps.** The model finds potential gaps from the supplied documents and catalogue. It maps sales wording to the catalogue and the contract, which hand-written rules could not do on unseen deals (see the results below).
 
-**Code checks sources.** A finding is shown only if its quoted wording and references check out. Code rechecks each stored claim when documents change and controls status changes under defined rules; a gap closes only when code can show its claim no longer holds. **The model never closes anything.** What code cannot check is the model's reading of a paraphrase; that is what the sealed runs measure. Source matching does not establish truth, legal meaning, completeness or actual delivery capability.
+**Code verifies each quote against its source.** A finding is shown only if its quoted wording and references check out. Code rechecks each stored claim when documents change and controls status changes under defined rules; a gap closes only when code can show its claim no longer holds. **The model never closes anything.** What code cannot check is the model's reading of a paraphrase; that is what the sealed runs measure. Source matching does not establish truth, legal meaning, completeness or actual delivery capability.
 
-**Teams decide the response.** People clarify expectations, establish capability boundaries, authorise exceptions, update agreements and decide how to proceed.
+**Teams decide.** People clarify expectations, establish capability boundaries, authorise exceptions, update agreements and decide how to proceed.
 
-At runtime Dealshape is an AI-powered review workflow, not an agent: one model call proposes, fixed code checks. The model does not choose tools, plan investigations or execute a sequence of actions.
+At runtime Dealshape is an AI-powered review workflow, not an agent: one model call finds, fixed code verifies. The model does not choose tools, plan investigations or execute a sequence of actions.
 
 ## How it was built
 
