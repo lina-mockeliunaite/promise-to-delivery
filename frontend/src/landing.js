@@ -24,7 +24,7 @@ export const cardParts = (parts) => (parts ?? []).map((p) => (p.strong ? { ...p,
 // cannot show "Approved: from 1 May". Both dates are what the sample files say (the RFP response: "live from the 1 February 2027 launch"; AB-05: "from 1 May 2027"); a test ties them.
 export const STATIC_CARDS = {
   // 13 Nov, Round 8: the card shows where the story ends up, not where it starts, so it says so
-  alder_bank: { title: "Scam-call alerts at launch", hook: "Promised: live at the 1 February launch \u00B7 Approved: from 1 May", preview: "Preview of the outcome" },
+  alder_bank: { title: "Scam-call alerts at launch", hook: "Promised: live at the 1 February launch \u00B7 Approved: from 1 May", preview: "The gap in this deal" },
 };
 
 // 13 Nov: what a landing card is right now. "waiting": its data has not answered yet, so it shows a placeholder of the card's size and nothing moves when the data arrives; "none": the data

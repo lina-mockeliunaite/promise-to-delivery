@@ -1669,3 +1669,6 @@ Documentation only; application behaviour, screens, tests and saved readings unc
 - **Scope of "verifies" (unchanged):** code verifies that each quote appears word for word in the document it cites and that each catalogue reference exists. It does not establish truth, legal meaning, completeness or delivery capability; the README says so under the same heading. On screen, evidence labels still say "confirmed" and "not re-checked at signing", never "verified" (13 Nov rule kept): those labels describe the signed-contract check, which confirms wording, not legal effect.
 - **Changed:** README (tagline, the three role headings, the runtime line), CLOSEOUT.md, `docs/DEMO_SCRIPT_2026-10-21_noma.md` and `docs/DEMO_SCRIPT_2026-10-20_alder.md`; outside the repo, deck slides 4 and 9, the closing-card canvas and the run sheet. Historical briefs, results and earlier DECISIONS entries keep their wording.
 
+
+## 17 Nov 2026: Alder landing card label
+Alder landing card label: 'The gap in this deal' replaces 'Preview of the outcome' (Round 8, item 4). A walkthrough showed 'preview' read as a teaser, not as the ending of the story. Display only; no engine, snapshot, cache, golden or sealed change.

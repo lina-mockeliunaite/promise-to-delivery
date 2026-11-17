@@ -137,7 +137,7 @@ test("3. in the locked record a quoted draft clause reads '(Draft SOW · not re-
 // ---- 4. the Alder card ------------------------------------------------------------------------------------------------------------------------------------------
 test("4. the Alder landing card says it previews the outcome; the Noma card (the starting state) does not", () => {
   const l = read("landing.js"), jsx = read("Landing.jsx");
-  assert.ok(l.includes('preview: "Preview of the outcome"'));
+  assert.ok(l.includes('preview: "The gap in this deal"'));
   assert.ok(jsx.includes("{STATIC_CARDS[s.deal].preview && <span className=\"land-preview\">{STATIC_CARDS[s.deal].preview}</span>}"));
   assert.equal(l.split("preview:").length - 1, 1); // one card only
 });
