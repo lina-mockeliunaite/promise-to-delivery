@@ -1,6 +1,6 @@
 # Dealshape: close-out
 
-*Drafted by Claude on 2 Nov 2026 from DECISIONS.md, LEARNING_LOG.md, the README and the git history, for Lina to edit. Updated 13 Nov with Lina's figures for spend and hours, and 16 Nov when the demo video was recorded.*
+*Drafted by Claude on 2 Nov 2026 from DECISIONS.md, LEARNING_LOG.md, the README and the git history, for Lina to edit. Updated 13 Nov with Lina's figures for spend and hours, 16 Nov when the demo video was recorded, and 17 Nov when the re-recorded video was published.*
 
 ## In one paragraph
 
@@ -16,7 +16,7 @@ Dealshape catches deal surprises before signing. It reads a B2B deal's paper tra
 - Two vendors' catalogues through one pipeline (Elva and Aivuna).
 - A public demo (11 Nov): https://dealshape-demo.onrender.com. Noma Journeys and Alder Bank only, shared by every visitor, with sample files instead of uploads, no API key, and a reset every hour and on wake-up (free hosting sleeps when idle).
 - 925 Python and 362 front-end tests passing (14 Nov).
-- A demo video (16 Nov): a narrated screen recording of the Noma Journeys walkthrough on the local app, with an on-camera intro, edited in CapCut.
+- A demo video (17 Nov): a 5½-minute narrated screen recording of the Noma Journeys walkthrough on the local app, with an on-camera intro, edited in Descript and published on YouTube (unlisted): https://youtu.be/fw7oGfPcaQI. The script was rewritten on 17 Nov to lead with value; an earlier 16 Nov recording was replaced.
 
 ## Results
 

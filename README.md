@@ -4,6 +4,8 @@
 
 Dealshape compares customer promises, contractual wording and the vendor's product catalogue, then flags commitments that are missing, different or unsupported, with linked source evidence. **AI finds the gaps. Code verifies each quote against its source. Teams decide.** For B2B Sales and Delivery teams.
 
+**Watch the 5-minute demo:** https://youtu.be/fw7oGfPcaQI · **Try it:** https://dealshape-demo.onrender.com
+
 *Built as the project From Promise to Delivery (hence the repository name); the product is Dealshape.*
 
 The customer remembers the proposal, the RFP answers and the calls; the contract says what it says. Dealshape reads a deal's paper trail before signing and again at handover, and shows what we're delivering, which commitments need attention and why, what people have noted about them, and which documents were checked. When the handover is complete it locks that record for Delivery, Customer Success and Support.
