@@ -1672,3 +1672,6 @@ Documentation only; application behaviour, screens, tests and saved readings unc
 
 ## 17 Nov 2026: Alder landing card label
 Alder landing card label: 'The gap in this deal' replaces 'Preview of the outcome' (Round 8, item 4). A walkthrough showed 'preview' read as a teaser, not as the ending of the story. Display only; no engine, snapshot, cache, golden or sealed change.
+
+## 18 Nov 2026: Link-preview (Open Graph) tags on the public demo
+Link-preview tags added to `frontend/index.html` (description, og:title/description/image/url/type, twitter:card summary_large_image) so shared links show an image; the image is `frontend/public/og-image.png` (1200x627), supplied by Lina. Display only; no engine, snapshot, cache, golden or sealed change.
