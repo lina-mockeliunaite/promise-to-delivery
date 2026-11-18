@@ -123,7 +123,7 @@ After the Coral Pay result, detection was rebuilt: one model call proposes each 
 ## How it was tested
 
 - **Sealed evaluation.** Two deals were written and sealed before the code that tested them, and each configuration ran once. The labels, documents and seals are never edited, and nothing was tuned on them.
-- **Automated tests:** 776 Python tests and 120 front-end tests. They include regression checks on extraction, five resolution scenarios, "a failed check stores nothing", and "no internal key reaches any screen".
+- **Automated tests:** 925 Python tests and 362 front-end tests (14 Nov). They include regression checks on extraction, five resolution scenarios, "a failed check stores nothing", and "no internal key reaches any screen".
 - **Reviewers:** a Head of Growth (6 Oct), a COO (15 Oct) and a Delivery lead (16 Oct), plus one outside UI review. Two reviewers in different roles asked for visibility, not workflow, and the product was rebuilt around that. **Not yet done: an unaided test** with someone who has never seen the product.
 
 ## Try it online

@@ -4,7 +4,7 @@
 
 ## In one paragraph
 
-Dealshape catches deal surprises before signing. It reads a B2B deal's paper trail (calls, RFP answers, proposal, SOW, contract) against the vendor's product catalogue and flags promises that are missing from the contract, worded differently there, not offered, or made without a recorded approval. AI finds each gap, code verifies every quote and citation against its source, and teams decide. It was built between 25 Sep and 31 Oct 2026, then published and polished 10–14 Nov, as a hands-on project to learn to design, build and evaluate an AI product end to end.
+Dealshape catches deal surprises before signing. It reads a B2B deal's paper trail (calls, RFP answers, proposal, SOW, contract) against the vendor's product catalogue and flags promises that are missing from the contract, worded differently there, not offered, or made without a recorded approval. AI finds each gap, code verifies every quote and citation against its source, and teams decide. It was built between 25 Sep and 31 Oct 2026, then published and polished 10–14 Nov, with the demo video and link previews added 16–18 Nov, as a hands-on project to learn to design, build and evaluate an AI product end to end.
 
 ## What exists at close
 
@@ -65,7 +65,7 @@ Read straight: v2 matched a good prompt on detection on one unseen deal. Its val
 ## Cost and effort
 
 - API spend in November: $0.56 (about $0.45 for the three Alder readings on 13 Nov; the rest self-test runs). $15.87 of credit remaining. The API did not lapse on 31 Oct. Each sealed run cost about $0.25. The Claude subscription (Claude Code and chat) is separate and not included.
-- Commits: 132 from 25 Sep to 31 Oct, and 36 more from 2 to 14 Nov.
+- Commits: 132 from 25 Sep to 31 Oct, 36 more from 2 to 14 Nov, and 5 from 16 to 18 Nov (wording, video link, landing-card label, link-preview image).
 - Hours: about 10 hours for 10–13 Nov (public demo, Alder rebuild, polish rounds, documentation). Build total not tracked.
 
 ## What I learned
