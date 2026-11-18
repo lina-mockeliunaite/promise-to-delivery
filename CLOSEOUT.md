@@ -70,4 +70,8 @@ Read straight: v2 matched a good prompt on detection on one unseen deal. Its val
 
 ## What I learned
 
-[Lina to write: three to five lines in your own words. Suggested prompts: the moment a result went against you and what you did; what "verified" means to you now; what you would tell a team adopting AI for compliance work.]
+- **Let the evidence overrule the design.** My first engine passed every test I wrote and then found 1 of 3 issues on a deal it had never seen. I rebuilt it rather than explain the result away, and fixing the pass mark before each run is what made that result impossible to argue with.
+- **"Verified" has to mean something narrow and checkable.** Here it means every quote appears word for word in the document it cites. It does not mean true, complete or legally binding, and the screen says exactly that much and no more.
+- **Users subtract.** A COO and a Delivery lead asked for visibility, not workflow. Removing half the features made the product clearer, and walking it as a stranger found more than a thousand tests had.
+- **Directing AI is mostly deciding what not to trust it with.** Claude Code wrote the code quickly; the work was in the briefs, the review of every plan, the tests, and one commit per change.
+- **For a team adopting AI in compliance work:** let the model find, make code check every claim against its source, keep the decision with people, and test on cases nobody tuned on. Then say plainly what was not checked.

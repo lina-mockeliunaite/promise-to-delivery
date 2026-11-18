@@ -271,3 +271,30 @@ Today’s checkpoint showed me how much the UI was getting in the way of underst
 - Committed after each working change this time, as separate commits (Round 8, the welcome-page fix, the label fix), instead of bundling days of work.
 - Kept the API key out of every file: set in Terminal only, and unset afterwards.
 - Open: the demo video (my call when), an unaided test with someone new, and a short backlog.
+
+## 14–18 Nov 2026: last product rounds, the video, publishing and archiving
+
+*Drafted by Claude from the session record at Lina's request, for her to edit.*
+
+**What I did**
+
+- **14 Nov.** Round 9 (a guided path that brings visitors back with "Back to step N", phone-width handover notes, a PDF with the logo) and Round 10 (the printed record matches the locked record on screen, and every quote links to its source in the appendix). A recovery kit and a repo bundle went into Drive.
+- **15–16 Nov.** Wrote and revised the video script, recorded a first version, and settled one wording for the three roles across every document: AI finds the gaps, code verifies each quote against its source, teams decide. The on-screen evidence labels still say "confirmed", never "verified".
+- **17 Nov.** Rewrote the voiceover to lead with value: what each gap would cost at kickoff, not just which button to press. Explained handover in the first sentence. Recorded and edited it in Descript, normalised the audio to YouTube's level and published it unlisted with chapters. Changed the Alder card label from "Preview of the outcome" to "The gap in this deal" after I had to ask what my own label meant.
+- **18 Nov.** Added a link-preview image so shared links show both deals; added Dealshape to LinkedIn as a project; sent the demo to friends for an unaided test (try it first, then watch). Ran a final audit across the laptop, GitHub, Drive and the Claude docs, and marked superseded files instead of deleting them.
+
+**What I learned**
+
+1. **Features don't sell a demo; consequences do.** The first script narrated clicks. The second said what each gap would cost Delivery at kickoff, and it was shorter and clearer.
+2. **If I need to ask what my own label means, a visitor has no chance.** "Preview of the outcome" was precise to me and opaque to everyone else.
+3. **One wording, everywhere.** The three-role line lived across the repo, the deck, the run sheet and the Drive documents. Changing it meant tracing every one, and recording the reversal in DECISIONS.md.
+4. **Audio and captions are part of the product.** The first export was 10 LUFS quieter than YouTube expects, and a caption spelled the customer "Norma" on screen. Small things a viewer notices before the substance.
+5. **Publishing has its own rules.** YouTube hides description links until the channel is verified; LinkedIn crops images to the centre and needs the PDF itself to show pages; a site needs Open Graph tags to show a picture when shared.
+6. **Archiving is checking, not filing.** The audit found a README still quoting test counts from October and documents pointing to a video file that had been replaced.
+
+**Process**
+
+- Committed each change separately (wording, label, video link, link preview), with a DECISIONS entry for the two reversals.
+- Claude Code made the code changes; I reviewed each report before committing and ran every git command myself.
+- Open: my own words in CLOSEOUT were drafted with Claude and still need my edit; the friends' unaided test; then Waterline.
+
