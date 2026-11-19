@@ -18,7 +18,7 @@ export const ABOUT_WHAT = { lead: "What this is.", text: "A working prototype of
 export const ABOUT_SHOWS = {
   heading: "What the demo shows",
   items: [
-    "It flags promises that don't match what the company approved or what the contract says: a promise stronger than approved, a promise the contract doesn't include and nobody withdrew, or terms that contradict each other. When the documents can't settle it, it says it needs more evidence.",
+    "It flags promises that don't match what the company approved, what the product offers or what the contract says: a promise stronger than approved, a channel, region or option the product doesn't offer, a promise the contract doesn't include and nobody withdrew, or terms that contradict each other. When the documents can't settle it, it says it needs more evidence.",
     "Every finding is checked against the source documents before it appears in the workspace, and again on each re-check.",
     "Saved handoff records are locked. A change creates a new version and never edits the old one.",
   ],

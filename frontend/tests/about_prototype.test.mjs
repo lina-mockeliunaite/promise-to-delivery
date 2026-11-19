@@ -36,7 +36,7 @@ const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, 
 // The approved wording, written out again here so a change to brand.js shows up as a failing test.
 const WHAT = "A working prototype of a deal workspace that reads a deal's paper trail before handover. All companies, people and deals are fictional.";
 const SHOWS = [
-  "It flags promises that don't match what the company approved or what the contract says: a promise stronger than approved, a promise the contract doesn't include and nobody withdrew, or terms that contradict each other. When the documents can't settle it, it says it needs more evidence.",
+  "It flags promises that don't match what the company approved, what the product offers or what the contract says: a promise stronger than approved, a channel, region or option the product doesn't offer, a promise the contract doesn't include and nobody withdrew, or terms that contradict each other. When the documents can't settle it, it says it needs more evidence.",
   "Every finding is checked against the source documents before it appears in the workspace, and again on each re-check.",
   "Saved handoff records are locked. A change creates a new version and never edits the old one.",
 ];

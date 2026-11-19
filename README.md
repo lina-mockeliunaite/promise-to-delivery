@@ -12,7 +12,7 @@ The customer remembers the proposal, the RFP answers and the calls; the contract
 
 It flags four kinds of mismatch:
 - **no approval found:** the catalogue needs a named approval (or the quantity is over a limit), and none is recorded;
-- **not offered:** what was promised isn't in the vendor's catalogue at all;
+- **not offered:** a promised channel, region or option isn't in the vendor's catalogue for that feature;
 - **not in the draft contract or SOW:** a firm promise has no matching wording in the contract;
 - **contract says something different:** the contract covers the same thing on different terms.
 
@@ -20,7 +20,7 @@ It also says what it could not check. If the model proposed findings whose quote
 
 **Design principle:** visibility, not workflow. It has no tasks, assignees, approvals or risk scores.
 
-*Demonstrated on fictional deals with a complete capability catalogue.* It is a local prototype, built in October 2026 to learn how to design, build and evaluate an AI system end to end.
+*Demonstrated on fictional deals with a complete capability catalogue.* It is a prototype, built in October and November 2026 to learn how to design, build and evaluate an AI system end to end, with a hosted public demo.
 
 ![The Noma Journeys deal page in Dealshape: three commitments needing attention, each with what the contract says and, where it applies, a badge for what is wrong with the promise](docs/screens/2026-10-27/readme_noma_deal.png)
 
@@ -123,14 +123,14 @@ After the Coral Pay result, detection was rebuilt: one model call proposes each 
 ## How it was tested
 
 - **Sealed evaluation.** Two deals were written and sealed before the code that tested them, and each configuration ran once. The labels, documents and seals are never edited, and nothing was tuned on them.
-- **Automated tests:** 925 Python tests and 362 front-end tests (14 Nov). They include regression checks on extraction, five resolution scenarios, "a failed check stores nothing", and "no internal key reaches any screen".
+- **Automated tests:** 925 Python tests and 369 front-end tests (19 Nov). They include regression checks on extraction, five resolution scenarios, "a failed check stores nothing", and "no internal key reaches any screen".
 - **Reviewers:** a Head of Growth (6 Oct), a COO (15 Oct) and a Delivery lead (16 Oct), plus one outside UI review. Two reviewers in different roles asked for visibility, not workflow, and the product was rebuilt around that. **Not yet done: an unaided test** with someone who has never seen the product.
 
 ## Try it online
 
 A hosted, read-and-try version of Dealshape: **https://dealshape-demo.onrender.com**. It is shared with other visitors, uses fictional data only, serves two deals (Noma Journeys and Alder Bank), takes its own sample files instead of uploads, never calls the model, and resets every hour (and on each wake-up). Notes are capped at 500 characters, and names and notes are visible to other visitors. Set it up with `DEPLOY.md`; it is switched on by `DEALSHAPE_PUBLIC_DEMO=1`, and without that variable nothing changes locally.
 
-Free hosting sleeps when idle, so the first load can take up to a minute. It is a shared demo with sample files only.
+Free hosting sleeps when idle, so the first load can take up to a minute.
 
 ## Run it locally
 
