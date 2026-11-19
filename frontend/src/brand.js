@@ -26,10 +26,10 @@ export const ABOUT_SHOWS = {
 export const ABOUT_SETUP = {
   heading: "How the demo is set up",
   items: [
-    "No AI model runs live here. The findings come from saved v2 readings, made earlier, and are checked against the documents in the same way as above.",
+    "No AI model runs live here. The findings were produced by AI in earlier runs and saved, and are checked against the documents in the same way as above.",
     "Two sample deals are pre-loaded: Noma Journeys and Alder Bank. You can add extra documents only from a set of bundled samples; uploading your own files is switched off.",
     "Approvals are names typed in by hand. There are no sign-ins.",
-    "This is one shared workspace. Everyone sees the same data. It resets every hour, whenever anyone clicks Reset demo, and when the app restarts, and resets clear saved records. Please don't enter real information.",
+    "This is one shared workspace. Everyone sees the same data. It resets every hour, whenever anyone clicks Reset demo, and when the app restarts. Each reset clears saved records. Please don't enter real information.",
   ],
 };
 export const ABOUT_SCOPE = {

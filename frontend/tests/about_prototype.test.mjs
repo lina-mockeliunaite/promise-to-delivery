@@ -41,10 +41,10 @@ const SHOWS = [
   "Saved handoff records are locked. A change creates a new version and never edits the old one.",
 ];
 const SETUP = [
-  "No AI model runs live here. The findings come from saved v2 readings, made earlier, and are checked against the documents in the same way as above.",
+  "No AI model runs live here. The findings were produced by AI in earlier runs and saved, and are checked against the documents in the same way as above.",
   "Two sample deals are pre-loaded: Noma Journeys and Alder Bank. You can add extra documents only from a set of bundled samples; uploading your own files is switched off.",
   "Approvals are names typed in by hand. There are no sign-ins.",
-  "This is one shared workspace. Everyone sees the same data. It resets every hour, whenever anyone clicks Reset demo, and when the app restarts, and resets clear saved records. Please don't enter real information.",
+  "This is one shared workspace. Everyone sees the same data. It resets every hour, whenever anyone clicks Reset demo, and when the app restarts. Each reset clears saved records. Please don't enter real information.",
 ];
 const SCOPE = "There are no connections to CRM, email or contract systems: documents come from files, not live sources. There are no user accounts or sign-in. Real use would need those connections, along with the security and data-access review they bring. This prototype focuses on the harder question first: can the documents be read reliably, and can every finding be proved against them?";
 
@@ -96,8 +96,9 @@ test("the open panel: the heading, a dialog named by it, a Close button, and eve
   for (const t of [DESCRIPTION, WHAT, ...SHOWS, ...SETUP, SCOPE, "Prototype v2."]) assert.ok(html.includes(esc(t)), t);
   for (const h of ["What the demo shows", "How the demo is set up", "Deliberately out of scope"]) assert.ok(html.includes(`<h3>${h}</h3>`), h);
   assert.ok(html.indexOf(esc(DESCRIPTION)) < html.indexOf(esc(WHAT)), "the description comes first");
+  assert.ok(html.endsWith('<section class="about-sec about-version"><p>Prototype v2.</p></section></div></div></div>'), "Prototype v2. is the last thing in the panel");
   const local = renderToStaticMarkup(createElement(AboutPanel, { sections: aboutSections(false), titleId: "t2", onAction: () => {} }));
-  assert.ok(!local.includes("How the demo is set up") && !local.includes("saved v2 readings"), "no setup section in local mode");
+  assert.ok(!local.includes("How the demo is set up") && !local.includes("produced by AI in earlier runs"), "no setup section in local mode");
   for (const t of [WHAT, ...SHOWS, SCOPE]) assert.ok(local.includes(esc(t)), t);
 });
 
