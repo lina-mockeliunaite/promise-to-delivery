@@ -2,7 +2,8 @@
 // what the check found, who has seen it, both handover notes. A commitment opens in a right-hand drawer, so the list and the
 // deal's shape stay in view. The only way a gap closes is a new document version that the check confirms; notes and "seen"
 // never close anything.
-import { BrandBlock } from "./Logo.jsx";
+import { BrandLink } from "./Logo.jsx";
+import AboutPrototype from "./AboutPrototype.jsx";
 import { useCallback, useContext, useEffect, useId, useRef, useState, useMemo } from "react";
 import "@fontsource/inter/latin-400.css";
 import "@fontsource/inter/latin-500.css";
@@ -695,7 +696,7 @@ const SHOW_DETAILED = typeof window !== "undefined" && new URLSearchParams(windo
 export function DealFooter({ onClassic }) {
   return (
     <footer className="dp-foot">
-      Checked against the documents listed and the product catalogue. {FICTIONAL}
+      Checked against the documents listed and the product catalogue. {FICTIONAL} <AboutPrototype />
       {onClassic && SHOW_DETAILED && <> · <button type="button" className="dp-link-btn" onClick={onClassic}>Open the detailed view</button></>}
     </footer>
   );
@@ -904,7 +905,7 @@ export default function DealPage({ deal, onBack, onDealsChanged, onClassic }) {
           <button type="button" className="dp-back" onClick={onBack}><Icon d={I.back} /> All deals</button>
           <IdentityLine name={reg.name} stage={reg.stage.current_label} goLive={reg.brief?.go_live} show={headerGone} />
         </span>
-        <BrandBlock className="dp-brandline" />
+        <BrandLink className="dp-brandline" />
         <span className="dp-topright">
           {name.trim() && (
             <span className="dp-me">

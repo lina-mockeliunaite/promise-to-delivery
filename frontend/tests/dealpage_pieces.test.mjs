@@ -73,5 +73,5 @@ test("footer: the scope sentence is gone; the coverage sentence and the fictiona
   assert.ok(html.includes("Checked against the documents listed and the product catalogue. All companies, people and deals are fictional."));
   assert.match(read("FrozenRecord.jsx"), /<footer className="dp-foot">\{FICTIONAL\}<\/footer>/); // 11 Nov: the record's footer is the fictional line only
   assert.match(read("Deals.jsx"), /<footer className="dl-pagefoot">\{FICTIONAL\}/);
-  assert.match(read("Landing.jsx"), /<footer className="dp-foot">\{FICTIONAL\}<\/footer>/);
+  assert.match(read("Landing.jsx"), /<footer className="dp-foot">\{FICTIONAL\} <AboutPrototype \/><\/footer>/); // 19 Nov: the landing footer also carries the About this prototype link
 });

@@ -99,12 +99,12 @@ test("#welcome shows the landing page even after it has been seen; a normal visi
   assert.equal(isWelcome("#d=welcome"), false);
 });
 
-test("the deals-list footer carries a muted About Dealshape link, and leaving #welcome clears the hash", async () => {
+test("the deals-list footer carries a muted About this prototype link (19 Nov: it replaced the About Dealshape button; the logo now leads to #welcome), and leaving #welcome clears the hash", async () => {
   const fs = await import("node:fs");
   const deals = fs.readFileSync(new URL("../src/Deals.jsx", import.meta.url), "utf8");
   const app = fs.readFileSync(new URL("../src/App.jsx", import.meta.url), "utf8");
-  assert.ok(deals.includes('className="dl-about"') && deals.includes("About Dealshape"));
-  assert.ok(app.includes("onAbout={about}") && app.includes("if (isWelcome(window.location.hash)) clearHash();"));
+  assert.ok(deals.includes('<AboutPrototype className="dl-about" />') && !deals.includes("About Dealshape"));
+  assert.ok(deals.includes("<BrandLink />") && app.includes("if (isWelcome(window.location.hash)) clearHash();"));
 });
 
 test("the landing page renders the headline, the two-line subhead, the description, the audience line and the cards label in order, with theme variables only", async () => {

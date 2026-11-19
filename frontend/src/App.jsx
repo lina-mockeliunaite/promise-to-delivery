@@ -4,7 +4,7 @@ import Handoff from "./Handoff.jsx";
 import Deals from "./Deals.jsx";
 import DealPage from "./DealPage.jsx";
 import Landing from "./Landing.jsx";
-import { WELCOME_HASH, isWelcome, landingSeen, markLandingSeen, showLanding } from "./landing.js";
+import { isWelcome, landingSeen, markLandingSeen, showLanding } from "./landing.js";
 import { TAGLINE } from "./brand.js";
 import { readHash } from "./dealpage.js";
 import { DEMO_OFF, DemoContext, DemoNavContext, GuidePublishContext, GuideStateContext, LandingPublishContext, LandingStateContext, useDemo } from "./demo.js";
@@ -1087,7 +1087,6 @@ function AppBody() {
     return () => window.removeEventListener("hashchange", onHash);
   }, []);
   const clearHash = () => window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}`);
-  const about = () => { window.history.replaceState(null, "", `${window.location.pathname}${window.location.search}${WELCOME_HASH}`); setLanding(true); };
 
   // 20 Oct: the first visit shows the landing page; leaving it (either way) is remembered in this browser.
   // It does not wait for the deal list: if the server cannot be reached it still shows, with one quiet line instead of the error box.
@@ -1100,7 +1099,7 @@ function AppBody() {
     return (
       <main className="home">
         {error && <Notice kind="error">{error}</Notice>}
-        <Deals deals={deals} onOpen={setCurrent} onAbout={about} onCreated={(d) => { setCurrent(d); loadDeals(); }} />
+        <Deals deals={deals} onOpen={setCurrent} onCreated={(d) => { setCurrent(d); loadDeals(); }} />
       </main>
     );
   }

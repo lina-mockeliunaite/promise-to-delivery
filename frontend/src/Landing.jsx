@@ -2,6 +2,7 @@
 // each with one concrete mismatch read from that deal's own stored data. No log-in (there are no accounts); uploading belongs to
 // "+ New deal". The full deal list stays one click away.
 import Logo from "./Logo.jsx";
+import AboutPrototype from "./AboutPrototype.jsx";
 import { useContext, useEffect, useState } from "react";
 import * as api from "./api.js";
 import { AUDIENCE_ITEMS, CARDS_LABEL, DESCRIPTION, FICTIONAL, SUBHEAD, TAGLINE } from "./brand.js";
@@ -90,7 +91,7 @@ export default function Landing({ deals, unavailable = false, onOpen, onList }) 
           </div>
         )}
       </div>
-      <footer className="dp-foot">{FICTIONAL}</footer>
+      <footer className="dp-foot">{FICTIONAL} <AboutPrototype /></footer>
     </div>
   );
 }

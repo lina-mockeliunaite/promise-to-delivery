@@ -1,6 +1,7 @@
 // Home screen: deals in handover (16 Oct; design from Google Stitch, screen 1, adapted to real data).
 // Visibility only. Every number comes from /api/workspace/deals; there are no invented metrics, statuses or actions.
-import { BrandBlock } from "./Logo.jsx";
+import { BrandLink } from "./Logo.jsx";
+import AboutPrototype from "./AboutPrototype.jsx";
 import { useMemo, useState } from "react";
 import * as api from "./api.js";
 import { FILTERS, SORTS, counts, initials, lastVendor, page, relativeTime, rememberVendor, vendorsOf, visibleDeals } from "./deals.js";
@@ -96,7 +97,7 @@ function NewDeal({ onCreated }) {
   );
 }
 
-export default function Deals({ deals, onOpen, onCreated, onAbout }) {
+export default function Deals({ deals, onOpen, onCreated }) {
   const [filter, setFilter] = useState("all");
   const demo = useDemo();
   const [query, setQuery] = useState("");
@@ -114,7 +115,7 @@ export default function Deals({ deals, onOpen, onCreated, onAbout }) {
 
   return (
     <div className="dl">
-      <header className="dl-brand"><BrandBlock /></header>
+      <header className="dl-brand"><BrandLink /></header>
       <section className="dl-head">
         <div>
           <div className="dl-title-row">
@@ -243,7 +244,7 @@ export default function Deals({ deals, onOpen, onCreated, onAbout }) {
           )}
         </footer>
       </section>
-      <footer className="dl-pagefoot">{FICTIONAL}{onAbout && <> <button type="button" className="dl-about" onClick={onAbout}>About Dealshape</button></>} {!demo.public && <ResetDemo />}</footer>
+      <footer className="dl-pagefoot">{FICTIONAL} <AboutPrototype className="dl-about" /> {!demo.public && <ResetDemo />}</footer>
     </div>
   );
 }

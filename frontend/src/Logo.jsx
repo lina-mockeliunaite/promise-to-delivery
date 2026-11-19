@@ -14,3 +14,13 @@ export function BrandBlock({ className = "" }) {
     </span>
   );
 }
+
+// 19 Nov: the logo as the route back to the landing page (#welcome), on the deal list and the live deal page. The locked record keeps the plain BrandBlock.
+// The class goes on the link, so a rule that hides the brand line (phone width) hides the whole link.
+export function BrandLink({ className = "" }) {
+  return (
+    <a className={`brand-link ${className}`.trim()} href="#welcome" aria-label={`${NAME} \u2014 overview`}>
+      <BrandBlock />
+    </a>
+  );
+}
